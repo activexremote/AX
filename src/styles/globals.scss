@@ -1,0 +1,288 @@
+@use "@carbon/styles/scss/config" with (
+  $css--font-face: false,
+  $font-path: "@ibm/plex"
+);
+
+@use "@carbon/styles/scss/theme" with (
+  $theme: (
+    background: #ffffff,
+    layer-01: #f4f4f4,
+    field-01: #f4f4f4,
+    interactive: #161616,
+    link-primary: #161616,
+    focus: #161616,
+  )
+);
+
+@use "@carbon/styles/scss/reset";
+@use "@carbon/styles/scss/grid";
+
+:root {
+  /* Monochrome accent scale (legacy --axr-blue-* names kept to avoid churn) */
+  --axr-blue-10: #f4f4f4;
+  --axr-blue-20: #e0e0e0;
+  --axr-blue-50: #8d8d8d;
+  --axr-blue-60: #161616;
+  --axr-blue-70: #000000;
+  --axr-blue-80: #000000;
+  --axr-blue-90: #000000;
+  --axr-blue-100: #000000;
+
+  --axr-green-30: #a8a8a8;
+  --axr-green-50: #393939;
+  --axr-green-60: #262626;
+  --axr-green-70: #161616;
+
+  --axr-gray-10: #f4f4f4;
+  --axr-gray-20: #e0e0e0;
+  --axr-gray-50: #8d8d8d;
+  --axr-gray-60: #6f6f6f;
+  --axr-gray-70: #525252;
+  --axr-gray-90: #262626;
+  --axr-gray-100: #161616;
+
+  --axr-text: #161616;
+  --axr-text-secondary: #525252;
+  --axr-text-helper: #6f6f6f;
+
+  --axr-border: #e0e0e0;
+  --axr-border-strong: #c6c6c6;
+  --axr-border-ink: #161616;
+
+  /* Marca propia: esquinas rectas en todo el campus */
+  --axr-radius-sm: 0px;
+  --axr-radius-md: 0px;
+
+  /* Tipografía de marca */
+  --axr-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Wordmark / logo: Major Mono Display (A→triángulo, X→reloj de arena) */
+  --axr-display: var(--font-major), "Major Mono Display", ui-monospace, monospace;
+  /* Etiquetas y eyebrows: ahora en Inter (antes IBM Plex Mono).
+     El nombre --axr-mono se mantiene para no tocar ~40 usos. */
+  --axr-mono: var(--axr-sans);
+  /* Sólo contenido de código real */
+  --axr-code: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, monospace;
+
+  /* Sombra dura desplazada — firma visual de la marca */
+  --axr-shadow-hard: 8px 8px 0 #161616;
+  --axr-shadow-hard-sm: 5px 5px 0 #161616;
+
+  /* Retícula de puntos de fondo */
+  --axr-dotgrid: radial-gradient(#e0e0e0 1px, transparent 1px);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: var(--axr-text);
+  font-family: var(--axr-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+a {
+  color: var(--axr-blue-60);
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+button {
+  font-family: inherit;
+}
+
+// Layout helpers
+.axr-page {
+  padding-top: 3rem; // header height
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.axr-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+// Etiqueta monoespaciada — mismo lenguaje que el eyebrow del login
+.axr-section-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--axr-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--axr-text-helper);
+
+  &::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    background: #161616;
+    flex-shrink: 0;
+  }
+}
+
+.axr-kpi {
+  background: #ffffff;
+  border: 1px solid var(--axr-border-ink);
+  padding: 1.25rem 1.5rem;
+
+  &__label {
+    font-family: var(--axr-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--axr-text-helper);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.625rem;
+  }
+
+  &__value {
+    font-size: 2.25rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: #161616;
+    line-height: 1.05;
+  }
+
+  &__hint {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--axr-text-helper);
+  }
+}
+
+.axr-card {
+  background: #ffffff;
+  border: 1px solid var(--axr-border-ink);
+  padding: 1.5rem;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+
+  &--clickable {
+    cursor: pointer;
+    &:hover {
+      box-shadow: var(--axr-shadow-hard-sm);
+      transform: translate(-2px, -2px);
+    }
+  }
+}
+
+.axr-progress {
+  position: relative;
+  height: 6px;
+  width: 100%;
+  background: var(--axr-gray-10);
+  border: 1px solid var(--axr-border);
+  overflow: hidden;
+
+  &__bar {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: #161616;
+    transition: width 0.3s ease;
+  }
+}
+
+.axr-divider {
+  height: 1px;
+  background: var(--axr-border);
+  border: 0;
+  margin: 1.5rem 0;
+}
+
+// Conmutador de idioma ES | EN
+.axr-locale {
+  display: inline-flex;
+  border: 1px solid var(--axr-border-ink);
+
+  button {
+    font-family: var(--axr-mono);
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    padding: 0.25rem 0.4rem;
+    background: #ffffff;
+    color: var(--axr-text-helper);
+    border: 0;
+    cursor: pointer;
+
+    & + button {
+      border-left: 1px solid var(--axr-border-ink);
+    }
+
+    &.is-active {
+      background: #161616;
+      color: #ffffff;
+      cursor: default;
+    }
+
+    &:not(.is-active):hover {
+      background: var(--axr-gray-10);
+      color: #161616;
+    }
+  }
+
+  &--dark {
+    border-color: rgba(255, 255, 255, 0.35);
+
+    button {
+      background: transparent;
+      color: rgba(255, 255, 255, 0.6);
+
+      & + button {
+        border-left-color: rgba(255, 255, 255, 0.35);
+      }
+
+      &.is-active {
+        background: #ffffff;
+        color: #161616;
+      }
+
+      &:not(.is-active):hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+      }
+    }
+  }
+}
+
+// Tira monoespaciada de cabecera de sección — motivo de marca del login
+.axr-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--axr-border-ink);
+  font-family: var(--axr-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--axr-text-helper);
+  background: #ffffff;
+
+  &__left {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #161616;
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    background: #161616;
+  }
+}

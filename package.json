@@ -1,5 +1,5 @@
 {
-  "name": "activexremote-campus-tmp",
+  "name": "activexremote-campus",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,9 +8,18 @@
     "start": "next start"
   },
   "dependencies": {
+    "@carbon/grid": "^11.56.0",
+    "@carbon/icons-react": "^11.81.0",
+    "@carbon/react": "^1.108.0",
+    "@carbon/styles": "^1.107.0",
+    "@supabase/ssr": "^0.10.3",
+    "@supabase/supabase-js": "^2.106.1",
     "next": "16.2.6",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "sass": "^1.99.0"
   },
   "devDependencies": {
     "@types/node": "^20",

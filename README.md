@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ActiveXRemote Campus
 
-## Getting Started
+Campus virtual de formación interna de ActiveXRemote. Inspirado en la
+plataforma de referencia, con diseño **IBM Carbon Design System**.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router, Server Components, Server Actions)
+- **TypeScript**
+- **IBM Carbon Design System** (`@carbon/react`, `@carbon/styles`) + IBM Plex
+- **Supabase** — Auth, Postgres (con RLS) y Storage
+
+## Roles
+
+- `alumno` — consume formación y hace quizzes
+- `profesor` — todo lo anterior + panel admin (módulos / lecciones / quizzes)
+- `administrador` — todo lo anterior + gestión de usuarios y roles
+
+## Puesta en marcha
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev          # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Las credenciales de Supabase están en `.env.local` (no se versiona).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Base de datos
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+El esquema y el seed están en `supabase/migrations/`. Para aplicarlos:
 
-## Learn More
+```bash
+PGPASSWORD='<password>' psql "<connection-string>" -f supabase/migrations/0001_initial_schema.sql
+PGPASSWORD='<password>' psql "<connection-string>" -f supabase/migrations/0002_seed_initial.sql
+```
 
-To learn more about Next.js, take a look at the following resources:
+### Crear el primer administrador
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+node scripts/create-admin.mjs <email> <password> "<Nombre>"
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Estructura
 
-## Deploy on Vercel
+```
+src/
+  app/
+    login/                  Login (email/password + Google OAuth)
+    auth/                   callback OAuth + sign-out
+    (campus)/               Campus para usuarios autenticados
+      page.tsx              Home: hero + ruta + catálogo de módulos
+      modulos/[slug]        Detalle de módulo + lecciones
+      lecciones/[id]        Lección: contenido + audio + quiz
+      mi-progreso           Dashboard de progreso del usuario
+    admin/                  Panel admin (profesor/administrador)
+      modulos               CRUD módulos y lecciones
+      lecciones/[id]        Editor de lección + audio + quiz
+      usuarios              Gestión de usuarios y roles
+  components/               UI: header, tarjetas, quiz, audio player...
+  lib/supabase/             Clientes Supabase (browser/server/admin)
+  lib/data/                 Acceso a datos (módulos, progreso, perfil)
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Integración de Slack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+El campus puede usar Slack como canal único de comunicación. Configúralo en
+**Admin → Integración Slack**: pega el Bot Token (`xoxb-...`), define los
+canales por rol y activa los eventos.
+
+Eventos: contenido publicado, lección completada, examen aprobado/suspendido,
+tarea asignada/recordatorio/vencida/completada, alta de usuario, resúmenes de
+progreso de alumnos y de cumplimiento de profesores, recordatorios de inactividad.
+
+### Cron (recordatorios y resúmenes periódicos)
+
+Endpoints protegidos con `CRON_SECRET`:
+
+```
+GET /api/cron/reminders         # tareas próximas a vencer / vencidas
+GET /api/cron/digest-students   # resumen de progreso → profesores
+GET /api/cron/digest-teachers   # cumplimiento → administración
+GET /api/cron/all               # los tres
+```
+
+Llámalos con `Authorization: Bearer <CRON_SECRET>`. En producción, prográmalos
+con Vercel Cron, GitHub Actions o cualquier servicio de cron. También se pueden
+lanzar a mano desde Admin → Integración Slack.
+
+## Funcionalidades
+
+- Login split-screen con email/contraseña y Google OAuth
+- Catálogo de módulos con ruta recomendada y stats
+- Lecciones con contenido Markdown, audio narrado y tabla de contenidos
+- Quizzes con corrección automática y pantalla "¡Has aprobado!"
+- Seguimiento de progreso: KPIs, progreso por módulo, actividad reciente
+- Exportar progreso a JSON / reiniciar progreso
+- Panel admin: CRUD de módulos, lecciones (editor Markdown + subida de
+  audio a Storage), quizzes, y gestión de roles de usuario

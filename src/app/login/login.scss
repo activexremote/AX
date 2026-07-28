@@ -1,0 +1,306 @@
+.axr-login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2.5rem 1.5rem;
+  background-color: #ffffff;
+  background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+  background-size: 22px 22px;
+
+  // ---- Framed container ----
+  &__frame {
+    width: 100%;
+    max-width: 1000px;
+    background: #ffffff;
+    border: 1px solid #161616;
+    box-shadow: 14px 14px 0 #161616;
+  }
+
+  // ---- Top strip ----
+  &__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #161616;
+    font-family: var(--axr-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    color: #161616;
+
+    &-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    &-dot {
+      width: 8px;
+      height: 8px;
+      background: #161616;
+      display: inline-block;
+    }
+
+    &-right {
+      color: var(--axr-text-helper);
+    }
+
+    &-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    @media (max-width: 560px) {
+      &-right { display: none; }
+    }
+  }
+
+  // ---- Two-column body ----
+  &__grid {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+
+    @media (max-width: 840px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // ---- Left: brand / intro ----
+  &__intro {
+    padding: 2.75rem 2.5rem;
+    border-right: 1px solid #161616;
+
+    @media (max-width: 840px) {
+      border-right: 0;
+      border-bottom: 1px solid #161616;
+      padding: 2.25rem 1.75rem;
+    }
+  }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+    color: #161616;
+  }
+
+  &__wordmark {
+    font-family: var(--axr-display);
+    font-size: 1.0625rem;
+    letter-spacing: 0.02em;
+    text-transform: lowercase;
+    line-height: 1.1;
+  }
+
+  &__eyebrow {
+    font-family: var(--axr-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--axr-text-helper);
+  }
+
+  &__headline {
+    font-size: 2.25rem;
+    line-height: 1.08;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 1rem 0;
+    color: #161616;
+
+    @media (max-width: 840px) {
+      font-size: 1.875rem;
+    }
+  }
+
+  &__lead {
+    margin: 0 0 2rem 0;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--axr-text-secondary);
+  }
+
+  &__tracks {
+    list-style: none;
+    margin: 0 0 2rem 0;
+    padding: 0;
+    border-top: 1px solid var(--axr-border);
+  }
+
+  &__track {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--axr-border);
+    font-size: 0.875rem;
+    color: #161616;
+  }
+
+  &__track-index {
+    font-family: var(--axr-mono);
+    font-size: 0.75rem;
+    color: var(--axr-text-helper);
+  }
+
+  &__integration {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.75rem 0.875rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid #161616;
+    background: #ffffff;
+
+    svg { flex-shrink: 0; }
+
+    span {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.75rem;
+      color: var(--axr-text-secondary);
+      line-height: 1.35;
+    }
+
+    strong {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #161616;
+    }
+  }
+
+  &__signature {
+    margin: 0;
+    font-family: var(--axr-mono);
+    font-size: 0.6875rem;
+    color: var(--axr-text-helper);
+    letter-spacing: 0.02em;
+  }
+
+  // ---- Right: access form ----
+  &__access {
+    padding: 2.75rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+
+    @media (max-width: 840px) {
+      padding: 2.25rem 1.75rem;
+    }
+  }
+
+  &__access-head {
+    margin-bottom: 1.75rem;
+  }
+
+  &__access-title {
+    margin: 0.375rem 0 0 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #161616;
+  }
+
+  // ---- Form fields ----
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    margin-bottom: 1.125rem;
+
+    label {
+      font-family: var(--axr-mono);
+      font-size: 0.6875rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--axr-text-secondary);
+    }
+
+    input {
+      width: 100%;
+      padding: 0.75rem 0.875rem;
+      background: #f4f4f4;
+      border: 0;
+      border-bottom: 1px solid #161616;
+      color: #161616;
+      font-size: 0.9375rem;
+      font-family: inherit;
+
+      &::placeholder { color: #a8a8a8; }
+
+      &:focus {
+        outline: 2px solid #161616;
+        outline-offset: -2px;
+        background: #ffffff;
+      }
+    }
+  }
+
+  &__submit {
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 0.9375rem 1rem;
+    background: #161616;
+    color: #ffffff;
+    border: 0;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    transition: background 0.15s ease;
+
+    &::after {
+      content: "→";
+      font-family: var(--axr-mono);
+    }
+
+    &:hover { background: #000000; }
+    &:disabled { background: #8d8d8d; cursor: not-allowed; }
+  }
+
+  &__error {
+    background: #fff1f1;
+    border-left: 3px solid #da1e28;
+    color: #750e13;
+    padding: 0.75rem 0.875rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+  }
+
+  &__ok {
+    background: #f4f4f4;
+    border-left: 3px solid #161616;
+    color: #161616;
+    padding: 0.75rem 0.875rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+  }
+
+  &__switch {
+    margin: 1.5rem 0 0 0;
+    font-size: 0.8125rem;
+    color: var(--axr-text-secondary);
+
+    a {
+      color: #161616;
+      font-weight: 600;
+      text-decoration: underline;
+    }
+  }
+
+  // ---- Bottom strip ----
+  &__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    border-top: 1px solid #161616;
+    font-family: var(--axr-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    color: var(--axr-text-helper);
+  }
+}

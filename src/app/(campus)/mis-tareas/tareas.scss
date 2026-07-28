@@ -1,0 +1,111 @@
+.axr-tareas-head {
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--axr-border-ink);
+  padding-bottom: 1rem;
+
+  h1 {
+    font-size: 1.625rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+
+  p {
+    margin: 0.25rem 0 0;
+    color: var(--axr-text-helper);
+    font-size: 0.875rem;
+  }
+}
+
+.axr-tareas-section {
+  font-family: var(--axr-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--axr-text-helper);
+  margin: 1.75rem 0 0.75rem;
+}
+
+.axr-tareas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.axr-tareas-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  border: 1px dashed var(--axr-border-ink);
+  color: var(--axr-text-helper);
+
+  span {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    margin: 0 0 1rem 0;
+  }
+}
+
+.axr-task-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 1.25rem;
+  background: #ffffff;
+  border: 1px solid var(--axr-border-ink);
+  border-left-width: 4px;
+  color: var(--axr-text);
+  transition: box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    box-shadow: var(--axr-shadow-hard-sm);
+    transform: translate(-3px, -3px);
+    text-decoration: none;
+  }
+
+  &[data-status="vencida"] {
+    border-left-color: #da1e28;
+  }
+
+  &[data-status="completada"] {
+    border-left-color: var(--axr-gray-50);
+  }
+
+  &__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__due {
+    font-family: var(--axr-mono);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--axr-text-helper);
+  }
+
+  &__title {
+    font-size: 1.0625rem;
+    font-weight: 600;
+  }
+
+  &__note {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--axr-text-secondary);
+    line-height: 1.45;
+  }
+
+  &__meta {
+    font-family: var(--axr-mono);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--axr-text-helper);
+  }
+}
