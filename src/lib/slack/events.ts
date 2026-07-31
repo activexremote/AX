@@ -13,6 +13,7 @@ export type SlackEventKey =
   | "assignment_overdue"
   | "assignment_completed"
   | "user_created"
+  | "lead_created"
   | "student_progress_digest"
   | "teacher_compliance_digest"
   | "reminder_inactive";
@@ -88,6 +89,13 @@ export const SLACK_EVENTS: Record<SlackEventKey, SlackEventDef> = {
     category: "admin",
     dm: false,
     emoji: "👤",
+  },
+  lead_created: {
+    label: "Nueva solicitud de información",
+    description: "Avisa a administración cuando alguien pide información desde la landing.",
+    category: "admin",
+    dm: false,
+    emoji: "🎯",
   },
   student_progress_digest: {
     label: "Resumen de progreso de alumnos",

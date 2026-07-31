@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BrandMark } from "@/components/brand-mark";
 import { SlackLogo } from "@/components/slack-logo";
 import { LocaleToggle } from "@/components/locale-toggle";
+import { LeadForm } from "@/components/landing/lead-form";
 import { getLocale } from "@/lib/i18n/server";
 import { landingCopy } from "@/app/bienvenida/copy";
 import "@/app/bienvenida/landing.scss";
@@ -77,19 +78,39 @@ export async function LandingView() {
           </Link>
 
           <nav className="axr-lp__nav-links">
+            {/* Desplegable sin JS: <details> es accesible por teclado de serie. */}
+            <details className="axr-lp__drop">
+              <summary>
+                {c.nav.courses.label}
+                <span className="axr-lp__drop-caret" aria-hidden />
+              </summary>
+              <div className="axr-lp__drop-menu">
+                {c.nav.courses.items.map((l) => (
+                  <a key={l.href} href={l.href}>
+                    {l.label}
+                  </a>
+                ))}
+              </div>
+            </details>
+
             {c.nav.links.map((l) => (
               <a key={l.href} href={l.href}>
                 {l.label}
               </a>
             ))}
+
+            {/* Presencia discreta: el campus no debe competir con el CTA. */}
+            <Link href="/login" className="axr-lp__nav-campus">
+              {c.nav.campus}
+            </Link>
           </nav>
 
           <div className="axr-lp__nav-meta">
             <LocaleToggle />
-            <Link href="/login" className="axr-lp__btn axr-lp__btn--solid">
-              {c.nav.enter}
+            <a href="#solicitar" className="axr-lp__btn axr-lp__btn--solid">
+              {c.nav.cta}
               <span aria-hidden>→</span>
-            </Link>
+            </a>
           </div>
         </div>
       </header>
@@ -97,22 +118,17 @@ export async function LandingView() {
       {/* ── Hero ────────────────────────────────────── */}
       <section className="axr-lp__hero">
         <div className="axr-lp__hero-inner">
-          <span className="axr-section-tag">{c.hero.tag}</span>
+          <div className="axr-lp__hero-brand">
+            <BrandMark size={30} className="axr-lp__hero-mark" />
+            <span className="axr-lp__hero-brand-name">{c.hero.brand}</span>
+            <span className="axr-lp__hero-brand-sub">{c.hero.tagline}</span>
+          </div>
+
           <h1 className="axr-lp__hero-title">
             <span className="axr-lp__hero-q">{c.hero.titleTop}</span>
             <span>{c.hero.titleBottom}</span>
           </h1>
           <p className="axr-lp__hero-lead">{c.hero.lead}</p>
-
-          <div className="axr-lp__hero-cta">
-            <Link href="/login" className="axr-lp__btn axr-lp__btn--solid axr-lp__btn--lg">
-              {c.hero.ctaPrimary}
-              <span aria-hidden>→</span>
-            </Link>
-            <a href="#metodo" className="axr-lp__btn axr-lp__btn--ghost axr-lp__btn--lg">
-              {c.hero.ctaSecondary}
-            </a>
-          </div>
 
           <div className="axr-lp__hero-stats">
             {c.hero.stats.map((s) => (
@@ -124,26 +140,11 @@ export async function LandingView() {
           </div>
         </div>
 
-        {/* Frame de "producto" — mockup brutalista del campus */}
-        <div className="axr-lp__frame" aria-hidden>
-          <div className="axr-lp__frame-bar">
-            <span className="axr-lp__frame-dot" />
-            <span>campus.activexremote</span>
-            <span className="axr-lp__frame-tag">ES · EN</span>
-          </div>
-          <div className="axr-lp__frame-body">
-            <BrandMark size={40} className="axr-lp__frame-mark" />
-            <div className="axr-lp__frame-lines">
-              <span style={{ width: "72%" }} />
-              <span style={{ width: "54%" }} />
-              <span style={{ width: "63%" }} />
-            </div>
-            <div className="axr-lp__frame-grid">
-              <span>RUTA 01</span>
-              <span>RUTA 02</span>
-              <span>RUTA 03</span>
-            </div>
-          </div>
+        {/* Formulario de captación — primer punto de conversión de la página. */}
+        <div className="axr-lp__hero-form">
+          <span className="axr-lp__eyebrow">{c.form.eyebrow}</span>
+          <h2 className="axr-lp__hero-form-title">{c.form.title}</h2>
+          <LeadForm copy={c.form} variant="hero" />
         </div>
       </section>
 
@@ -227,7 +228,12 @@ export async function LandingView() {
         </header>
         <div className="axr-lp__paths-grid">
           {c.paths.items.map((p, i) => (
-            <article key={p.name} className="axr-lp__path" data-variant={i}>
+            <article
+              key={p.name}
+              id={i === 0 ? "curso-professional" : "curso-founder"}
+              className="axr-lp__path"
+              data-variant={i}
+            >
               <span className="axr-lp__path-tag">{p.tag}</span>
               <h3 className="axr-lp__path-name">{p.name}</h3>
               <span className="axr-lp__path-sub">{p.sub}</span>
@@ -238,10 +244,10 @@ export async function LandingView() {
                   <li key={o}>{o}</li>
                 ))}
               </ul>
-              <Link href="/login" className="axr-lp__btn axr-lp__btn--invert axr-lp__path-cta">
+              <a href="#solicitar" className="axr-lp__btn axr-lp__btn--invert axr-lp__path-cta">
                 {c.paths.cta}
                 <span aria-hidden>→</span>
-              </Link>
+              </a>
             </article>
           ))}
         </div>
@@ -310,10 +316,10 @@ export async function LandingView() {
                 <li key={f}>{f}</li>
               ))}
             </ul>
-            <Link href="/login" className="axr-lp__btn axr-lp__btn--solid axr-lp__btn--lg axr-lp__plan-cta">
+            <a href="#solicitar" className="axr-lp__btn axr-lp__btn--solid axr-lp__btn--lg axr-lp__plan-cta">
               {c.access.cta}
               <span aria-hidden>→</span>
-            </Link>
+            </a>
           </div>
         </div>
       </section>
@@ -354,19 +360,19 @@ export async function LandingView() {
         </div>
       </section>
 
-      {/* ── CTA final ───────────────────────────────── */}
-      <section className="axr-lp__final">
+      {/* ── Formulario final (destino de todos los CTA) ─ */}
+      <section id="solicitar" className="axr-lp__final">
         <div className="axr-lp__final-inner">
-          <h2>
-            {c.finalCta.title}
-            <br />
-            <em>{c.finalCta.titleAccent}</em>
-          </h2>
-          <p>{c.finalCta.body}</p>
-          <Link href="/login" className="axr-lp__btn axr-lp__btn--invert axr-lp__btn--lg">
-            {c.finalCta.cta}
-            <span aria-hidden>→</span>
-          </Link>
+          <div className="axr-lp__final-text">
+            <span className="axr-lp__eyebrow">{c.form.eyebrow}</span>
+            <h2>
+              {c.finalCta.title}
+              <br />
+              <em>{c.finalCta.titleAccent}</em>
+            </h2>
+            <p>{c.finalCta.body}</p>
+          </div>
+          <LeadForm copy={c.form} variant="panel" />
         </div>
       </section>
 
