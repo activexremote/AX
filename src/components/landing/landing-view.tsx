@@ -4,6 +4,7 @@ import { BrandMark } from "@/components/brand-mark";
 import { SlackLogo } from "@/components/slack-logo";
 import { AccreditationRow, AccreditationSection } from "@/components/landing/accreditation";
 import { LandingNav } from "@/components/landing/landing-nav";
+import { RatingBadges } from "@/components/landing/rating-badges";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LeadForm } from "@/components/landing/lead-form";
 import { getLocale } from "@/lib/i18n/server";
@@ -96,6 +97,8 @@ export async function LandingView() {
               </div>
             ))}
           </div>
+
+          <RatingBadges items={c.ratings} />
 
           <AccreditationRow
             label={c.accreditation.heroLabel}

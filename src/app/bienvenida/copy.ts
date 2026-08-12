@@ -208,6 +208,13 @@ export const landingCopy = {
         },
       ],
     },
+    // Valoraciones del héroe. ⚠︎ PLACEHOLDER: son datos de maqueta sobre
+    // nuestro propio programa. Para G2/Trustpilot hace falta perfil real y
+    // su widget oficial (ver rating-badges.tsx).
+    ratings: [
+      { mark: "star" as const, score: "4,8/5", label: "320+ opiniones de alumnos" },
+      { mark: "star" as const, score: "96%", label: "recomienda el programa" },
+    ],
     // Acreditación: certificación privada, un certificador por área.
     accreditation: {
       heroLabel: "Certificado por",
@@ -547,6 +554,11 @@ export const landingCopy = {
         },
       ],
     },
+    // ⚠︎ PLACEHOLDER — see the note on the Spanish block above.
+    ratings: [
+      { mark: "star" as const, score: "4.8/5", label: "320+ student reviews" },
+      { mark: "star" as const, score: "96%", label: "would recommend it" },
+    ],
     accreditation: {
       heroLabel: "Certified by",
       eyebrow: "Accreditation",

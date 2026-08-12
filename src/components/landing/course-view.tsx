@@ -1,6 +1,7 @@
 import { BrandMark } from "@/components/brand-mark";
 import { AccreditationRow, AccreditationSection } from "@/components/landing/accreditation";
 import { LandingNav } from "@/components/landing/landing-nav";
+import { RatingBadges } from "@/components/landing/rating-badges";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LeadForm } from "@/components/landing/lead-form";
 import { landingCopy } from "@/app/bienvenida/copy";
@@ -54,6 +55,8 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
             {c.hero.cta}
             <span aria-hidden>→</span>
           </a>
+
+          <RatingBadges items={landingCopy[locale].ratings} />
 
           <AccreditationRow
             label={accreditation.heroLabel}
