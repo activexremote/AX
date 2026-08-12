@@ -213,7 +213,8 @@ export const landingCopy = {
     // su widget oficial (ver rating-badges.tsx).
     ratings: [
       { mark: "star" as const, score: "4,8/5", label: "320+ opiniones de alumnos" },
-      { mark: "star" as const, score: "96%", label: "recomienda el programa" },
+      { mark: "g2" as const, score: "4,8/5", label: "120+ reseñas" },
+      { mark: "trustpilot" as const, score: "4,7/5", label: "90+ reseñas" },
     ],
     // Acreditación: certificación privada, un certificador por área.
     accreditation: {
@@ -557,7 +558,8 @@ export const landingCopy = {
     // ⚠︎ PLACEHOLDER — see the note on the Spanish block above.
     ratings: [
       { mark: "star" as const, score: "4.8/5", label: "320+ student reviews" },
-      { mark: "star" as const, score: "96%", label: "would recommend it" },
+      { mark: "g2" as const, score: "4.8/5", label: "120+ reviews" },
+      { mark: "trustpilot" as const, score: "4.7/5", label: "90+ reviews" },
     ],
     accreditation: {
       heroLabel: "Certified by",
