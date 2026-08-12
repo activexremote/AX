@@ -1,12 +1,15 @@
 // ══════════════════════════════════════════════════════════
 //  Landing pública — estética estilo Founderz (colorida, gradientes
 //  mesh, esquinas redondeadas, píldoras, alto impacto) con nuestro
-//  toque: marca ΔX + tipografías Inter / Major Mono Display.
+//  toque: marca ΔX + Inter (wordmark en mayúsculas con tracking amplio).
 //  Ámbito 100% local a .axr-lp — el campus sigue siendo monocromo.
 // ══════════════════════════════════════════════════════════
 
 .axr-lp {
   --lp-max: 1200px;
+  // Altura fija del nav: el héroe se sube exactamente esto para quedar
+  // pegado a la barra superior, sin franja blanca de por medio.
+  --lp-nav-h: 86px;
 
   --lp-ink: #161326;
   --lp-body: #514d69;
@@ -101,8 +104,9 @@
     span {
       font-family: var(--axr-display);
       font-size: 0.8125rem;
-      letter-spacing: 0.02em;
-      text-transform: lowercase;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
     }
     &:hover { text-decoration: none; }
   }
@@ -115,11 +119,84 @@
   }
 }
 
+// ── Barra superior: cuenta atrás + plazas ───────────────
+.axr-lp__ticker {
+  position: relative;
+  z-index: 70;
+  background: var(--lp-ink);
+  color: #fff;
+
+  &-inner {
+    max-width: var(--lp-max);
+    margin: 0 auto;
+    padding: 0.55rem 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem 1.5rem;
+    font-size: 0.8125rem;
+  }
+
+  &-intro { font-weight: 600; }
+
+  &-clock {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  &-unit {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.2rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.12);
+
+    strong {
+      font-size: 0.875rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+    }
+    em {
+      font-style: normal;
+      font-size: 0.5625rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.65);
+    }
+  }
+
+  &-seats {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  &-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: #38d39f;
+    box-shadow: 0 0 0 3px rgba(56, 211, 159, 0.22);
+  }
+
+  @media (max-width: 620px) {
+    &-inner { gap: 0.4rem 0.9rem; font-size: 0.75rem; padding: 0.5rem 1rem; }
+    &-intro { flex-basis: 100%; text-align: center; }
+  }
+}
+
 // ── Nav flotante (píldora blanca) ───────────────────────
 .axr-lp__nav {
   position: sticky;
   top: 0;
   z-index: 60;
+  height: var(--lp-nav-h);
+  box-sizing: border-box;
   padding: 0.9rem 1.5rem;
   background: transparent;
 
@@ -223,7 +300,9 @@
 // ── Hero (gradiente mesh) ───────────────────────────────
 .axr-lp__hero {
   position: relative;
-  margin-top: -74px;
+  // 4px de más: si el nav crece un pelo (traducciones, zoom del navegador) el
+  // mesh sigue llegando a la barra superior. El sobrante queda tapado por ella.
+  margin-top: calc(-1 * var(--lp-nav-h) - 4px);
   // El padding lateral centra el contenido a --lp-max sin envoltorio extra.
   padding: 8.5rem max(1.5rem, calc((100% - var(--lp-max)) / 2)) 4.5rem;
   color: #ffffff;
@@ -256,7 +335,9 @@
   &-brand-name {
     font-family: var(--axr-display);
     font-size: 1.05rem;
-    letter-spacing: 0.14em;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
     color: #fff;
   }
   &-brand-sub {
@@ -327,7 +408,7 @@
       padding: 0.65rem 1.75rem;
       & + div { border-left: 1px solid rgba(255, 255, 255, 0.2); }
 
-      strong { font-family: var(--axr-display); font-size: 1.6rem; line-height: 1; color: #fff; }
+      strong { font-family: var(--axr-display); font-size: 1.6rem; font-weight: 800; line-height: 1; color: #fff; }
       span {
         font-family: var(--axr-mono);
         font-size: 0.6rem;
@@ -541,6 +622,7 @@
     left: 1.25rem;
     font-family: var(--axr-display);
     font-size: 1.35rem;
+    font-weight: 800;
     color: rgba(22, 19, 38, 0.35);
   }
 
@@ -586,7 +668,7 @@
   }
   &__row { display: flex; justify-content: space-between; align-items: center; }
   &__badge { font-family: var(--axr-mono); font-size: 0.625rem; letter-spacing: 0.04em; color: var(--lp-muted); }
-  &__pct { font-family: var(--axr-display); font-size: 1.1rem; color: var(--lp-accent); }
+  &__pct { font-family: var(--axr-display); font-size: 1.1rem; font-weight: 800; color: var(--lp-accent); }
   &__bar { height: 8px; border-radius: 999px; background: #ece9fa; overflow: hidden; span { display: block; height: 100%; border-radius: 999px; background: var(--lp-grad-1); } }
   &__steps {
     list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem;
@@ -661,7 +743,7 @@
     color: #fff;
     box-shadow: 0 18px 40px rgba(109, 92, 255, 0.3);
 
-    strong { font-family: var(--axr-display); font-size: 3.5rem; line-height: 0.9; color: #fff; }
+    strong { font-family: var(--axr-display); font-size: 3.5rem; font-weight: 800; letter-spacing: -0.03em; line-height: 0.9; color: #fff; }
     span { font-size: 0.8125rem; font-weight: 500; color: rgba(255, 255, 255, 0.85); }
 
     &--dark { background: var(--lp-ink); box-shadow: 0 18px 40px rgba(20, 16, 40, 0.28);
@@ -908,6 +990,7 @@
     flex: none;
     font-family: var(--axr-display);
     font-size: 0.9375rem;
+    font-weight: 800;
     line-height: 1.35;
     color: var(--lp-accent);
   }
@@ -940,6 +1023,7 @@
   &-n {
     font-family: var(--axr-display);
     font-size: 1.25rem;
+    font-weight: 800;
     line-height: 1;
     flex: none;
     background: var(--lp-grad-1);
@@ -984,6 +1068,8 @@
       strong {
         font-family: var(--axr-display);
         font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
         line-height: 1;
         background: var(--lp-grad-1);
         -webkit-background-clip: text;
@@ -1028,8 +1114,10 @@
 
     span {
       font-family: var(--axr-display);
-      font-size: 1.05rem;
-      letter-spacing: 0.04em;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
       color: var(--lp-muted);
       opacity: 0.75;
     }
@@ -1075,6 +1163,7 @@
     border-radius: 999px;
     font-family: var(--axr-display);
     font-size: 1rem;
+    font-weight: 700;
     color: #fff;
     background: var(--lp-grad-1);
   }
@@ -1164,7 +1253,7 @@
   &-price {
     text-align: right;
     strong {
-      display: block; font-family: var(--axr-display); font-size: 2rem; line-height: 1;
+      display: block; font-family: var(--axr-display); font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1;
       background: var(--lp-grad-1); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
     }
     span { font-family: var(--axr-mono); font-size: 0.625rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--lp-muted); }
@@ -1222,7 +1311,7 @@
   &-n {
     display: inline-grid; place-items: center;
     width: 44px; height: 44px; border-radius: 999px;
-    font-family: var(--axr-display); font-size: 1.1rem; color: #fff;
+    font-family: var(--axr-display); font-size: 1.1rem; font-weight: 800; color: #fff;
     background: var(--lp-grad-1);
   }
 }

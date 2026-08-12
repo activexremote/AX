@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Major_Mono_Display, IBM_Plex_Mono } from "next/font/google";
+import { Inter, IBM_Plex_Mono } from "next/font/google";
 
 import "@/styles/globals.scss";
 import { I18nProvider } from "@/lib/i18n/provider";
@@ -9,14 +9,8 @@ import { getI18n } from "@/lib/i18n/server";
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-});
-
-// Wordmark / logo — glifos geométricos (A→triángulo, X→reloj de arena)
-const major = Major_Mono_Display({
-  variable: "--font-major",
-  subsets: ["latin"],
-  weight: "400",
+  // 800 se usa en el wordmark y en las cifras grandes de la landing.
+  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
 // Sólo para contenido de código (bloques, textarea de lecciones)
@@ -39,7 +33,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${inter.variable} ${major.variable} ${plexMono.variable}`}
+      className={`${inter.variable} ${plexMono.variable}`}
     >
       <body>
         <I18nProvider value={{ locale, t }}>{children}</I18nProvider>

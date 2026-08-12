@@ -56,8 +56,11 @@
   /* Tipografía de marca */
   --axr-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, "Helvetica Neue", Arial, sans-serif;
-  /* Wordmark / logo: Major Mono Display (A→triángulo, X→reloj de arena) */
-  --axr-display: var(--font-major), "Major Mono Display", ui-monospace, monospace;
+  /* Wordmark / logo y cifras destacadas: Inter en mayúsculas con tracking
+     amplio. Antes era Major Mono Display, pero sus glifos geométricos
+     (A→triángulo, X→reloj de arena, R→Ʀ) hacían ilegible el nombre. El
+     carácter de marca lo aporta el símbolo ΔX (BrandMark), no la letra. */
+  --axr-display: var(--axr-sans);
   /* Etiquetas y eyebrows: ahora en Inter (antes IBM Plex Mono).
      El nombre --axr-mono se mantiene para no tocar ~40 usos. */
   --axr-mono: var(--axr-sans);

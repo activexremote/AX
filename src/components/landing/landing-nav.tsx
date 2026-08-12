@@ -2,7 +2,9 @@ import Link from "next/link";
 
 import { BrandMark } from "@/components/brand-mark";
 import { LocaleToggle } from "@/components/locale-toggle";
+import { CohortTicker } from "@/components/landing/cohort-ticker";
 import { landingCopy } from "@/app/bienvenida/copy";
+import { COHORT_START } from "@/app/bienvenida/cohort";
 import { getLocale } from "@/lib/i18n/server";
 
 // Nav compartido por la landing y las páginas de curso. Los enlaces con "#"
@@ -12,6 +14,8 @@ export async function LandingNav() {
   const c = landingCopy[locale].nav;
 
   return (
+    <>
+    <CohortTicker copy={landingCopy[locale].ticker} target={COHORT_START} />
     <header className="axr-lp__nav">
       <div className="axr-lp__nav-inner">
         <Link href="/" className="axr-lp__brand" aria-label="ActiveXRemote">
@@ -56,5 +60,6 @@ export async function LandingNav() {
         </div>
       </div>
     </header>
+    </>
   );
 }

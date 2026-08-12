@@ -8,6 +8,12 @@ export type LandingCopy = (typeof landingCopy)["es"];
 
 export const landingCopy = {
   es: {
+    // Barra superior. ⚠︎ Las plazas disponibles son un dato de maqueta.
+    ticker: {
+      intro: "La convocatoria arranca el 1 de diciembre",
+      seats: "8 de 25 plazas disponibles",
+      units: { d: "días", h: "horas", m: "min", s: "seg" },
+    },
     nav: {
       courses: {
         label: "Cursos",
@@ -309,6 +315,12 @@ export const landingCopy = {
     },
   },
   en: {
+    // ⚠︎ Seats left is placeholder data.
+    ticker: {
+      intro: "The cohort starts on December 1",
+      seats: "8 of 25 seats left",
+      units: { d: "days", h: "hours", m: "min", s: "sec" },
+    },
     nav: {
       courses: {
         label: "Courses",

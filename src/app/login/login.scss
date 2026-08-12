@@ -89,8 +89,9 @@
   &__wordmark {
     font-family: var(--axr-display);
     font-size: 1.0625rem;
-    letter-spacing: 0.02em;
-    text-transform: lowercase;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
     line-height: 1.1;
   }
 

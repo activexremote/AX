@@ -263,6 +263,7 @@
     &-n {
       font-family: var(--axr-display);
       font-size: 1.1rem;
+      font-weight: 800;
       color: var(--lp-accent);
     }
   }
@@ -372,6 +373,7 @@
       flex: none;
       font-family: var(--axr-display);
       font-size: 1.35rem;
+      font-weight: 800;
       line-height: 1;
       background: var(--lp-grad-1);
       -webkit-background-clip: text;
@@ -466,6 +468,7 @@
       border-radius: 999px;
       font-family: var(--axr-display);
       font-size: 1rem;
+      font-weight: 800;
       color: #fff;
       background: var(--lp-grad-1);
     }
