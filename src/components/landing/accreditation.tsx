@@ -2,20 +2,32 @@ import { SlackLogo } from "@/components/slack-logo";
 
 export type PartnerKey = "deel" | "remoteandtalent" | "slack";
 
-// Marca de cada entidad certificadora. Slack tiene su logo oficial en el
-// repo; Deel y Remoteandtalent van como wordmark hasta que estén los SVG
-// oficiales (colocarlos en public/logos/ y sustituir aquí).
+// Proporción de cada SVG (public/logos), para calcular el ancho a partir de
+// la altura y no deformar la marca.
+const LOGOS: Record<Exclude<PartnerKey, "slack">, { src: string; ratio: number }> = {
+  deel: { src: "/logos/deel.svg", ratio: 78 / 27 },
+  remoteandtalent: { src: "/logos/remoteandtalent.svg", ratio: 80 / 90 },
+};
+
+// Marca de cada entidad certificadora, con sus colores originales: Slack
+// inline (ya estaba en el repo) y los otros dos desde public/logos. El icono
+// de Remote&Talent es blanco, así que va sobre su propio chip oscuro.
 export function PartnerMark({ partner, size = 18 }: { partner: PartnerKey; size?: number }) {
   if (partner === "slack") return <SlackLogo size={size} />;
 
+  const { src, ratio } = LOGOS[partner];
+  const alt = partner === "deel" ? "Deel" : "Remoteandtalent.com";
+
   return (
-    <span
-      className="axr-lp__partner-word"
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={alt}
+      width={Math.round(size * ratio)}
+      height={size}
+      className="axr-lp__partner-logo"
       data-partner={partner}
-      style={{ fontSize: `${size * 0.78}px` }}
-    >
-      {partner === "deel" ? "Deel" : "Remote&Talent"}
-    </span>
+    />
   );
 }
 
@@ -51,7 +63,7 @@ export function AccreditationSection({ copy }: { copy: AccreditationCopy }) {
         {copy.partners.map((p) => (
           <article key={p.key} className="axr-lp__certifier" data-partner={p.key}>
             <span className="axr-lp__certifier-mark">
-              <PartnerMark partner={p.key} size={30} />
+              <PartnerMark partner={p.key} size={p.key === "remoteandtalent" ? 34 : 28} />
             </span>
             <h3>{p.name}</h3>
             <span className="axr-lp__certifier-area">{p.area}</span>
@@ -82,7 +94,7 @@ export function AccreditationRow({
       <span className="axr-lp__accred-marks">
         {partners.map((p) => (
           <span key={p.key} className="axr-lp__accred-mark">
-            <PartnerMark partner={p.key} size={18} />
+            <PartnerMark partner={p.key} size={p.key === "remoteandtalent" ? 22 : 18} />
             <span className="axr-lp__accred-name">{p.name}</span>
           </span>
         ))}

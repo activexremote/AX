@@ -1037,13 +1037,18 @@
 }
 
 // ── Acreditación ────────────────────────────────────────
-// Wordmark de las certificadoras sin logo oficial todavía.
-.axr-lp__partner-word {
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1;
-  white-space: nowrap;
-  color: currentColor;
+// Logos originales, sin recolorear (brand guidelines de cada compañía).
+// El icono de Remote&Talent es blanco: necesita su propio chip oscuro.
+.axr-lp__partner-logo {
+  display: block;
+  width: auto;
+
+  &[data-partner="remoteandtalent"] {
+    box-sizing: content-box;
+    padding: 0.28em;
+    border-radius: 7px;
+    background: #161326;
+  }
 }
 
 // Fila del héroe
@@ -1075,29 +1080,28 @@
   align-items: center;
   gap: 0.5rem;
 }
+// Píldora blanca en los dos tonos: el wordmark de Deel es casi negro y
+// sobre el mesh no se leería.
 .axr-lp__accred-mark {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.35rem 0.75rem;
+  gap: 0.5rem;
+  padding: 0.35rem 0.8rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  color: #fff;
-
-  [data-tone="light"] & {
-    background: #fff;
-    border-color: var(--lp-border);
-    color: var(--lp-ink);
-  }
+  background: #fff;
+  border: 1px solid var(--lp-border);
+  color: var(--lp-ink);
+  box-shadow: 0 6px 18px rgba(20, 12, 45, 0.12);
 }
 .axr-lp__accred-name {
   font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
 }
-// El nombre ya va en la píldora: el wordmark sólo estorbaría.
-.axr-lp__accred-mark .axr-lp__partner-word { display: none; }
+// Deel ya es un wordmark: repetir el nombre al lado sobra.
+.axr-lp__accred-mark:has(.axr-lp__partner-logo[data-partner="deel"]) .axr-lp__accred-name {
+  display: none;
+}
 
 // Sección completa
 .axr-lp__accred {
@@ -1155,7 +1159,7 @@
   &-mark {
     display: inline-flex;
     align-items: center;
-    height: 34px;
+    min-height: 42px;
     margin-bottom: 1.1rem;
     color: var(--lp-ink);
   }
