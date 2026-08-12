@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { LandingView } from "@/components/landing/landing-view";
 
 export const metadata: Metadata = {
-  title: "ActiveXRemote · Campus de formación",
+  title: "ActiveXRemote · The Remote Business School",
   description:
-    "El campus interno donde el equipo de ActiveXRemote aprende a comunicar, colaborar y liderar en remoto.",
+    "Consigue el empleo remoto internacional que mereces y aprende a construir tu propio negocio global. 14 módulos en directo, dos cursos: Remote Professional y Remote Founder.",
 };
 
 export default function LandingPage() {

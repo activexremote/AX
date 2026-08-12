@@ -1,0 +1,612 @@
+// ══════════════════════════════════════════════════════════
+//  Landings de curso (Remote Professional / Remote Founder).
+//  Se montan sobre .axr-lp (landing.scss): heredan nav, hero, botones,
+//  FAQ, bloque final y footer. Aquí sólo van las secciones propias.
+// ══════════════════════════════════════════════════════════
+
+.axr-cp {
+  // El curso Founder usa la paleta cálida para distinguirse del Professional.
+  &[data-course="remote-founder"] {
+    --lp-accent: #e4462f;
+    --lp-accent-strong: #c3341f;
+    --lp-soft: #fdf3f0;
+    --lp-soft-2: #fbe9e4;
+    --lp-border: #f6ddd6;
+    --lp-grad-1: linear-gradient(140deg, #ff7a3d 0%, #e11d74 100%);
+    --lp-mesh:
+      radial-gradient(60% 85% at 12% 18%, #ff6a3d 0%, transparent 60%),
+      radial-gradient(55% 75% at 88% 12%, #ffb03d 0%, transparent 55%),
+      radial-gradient(65% 85% at 78% 88%, #d61f9c 0%, transparent 58%),
+      radial-gradient(70% 90% at 22% 92%, #7b2ff7 0%, transparent 60%),
+      linear-gradient(160deg, #4a1636 0%, #2a0f2c 100%);
+
+    .axr-lp__btn--solid { box-shadow: 0 10px 26px rgba(228, 70, 47, 0.34); }
+    .axr-lp__final-inner { box-shadow: 0 30px 70px rgba(74, 22, 54, 0.35); }
+  }
+
+  // Cabecera de sección reutilizada por casi todos los bloques.
+  &__head {
+    max-width: var(--lp-max);
+    margin: 0 auto 2.5rem;
+    text-align: center;
+
+    h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.08;
+      margin: 0 0 0.75rem;
+      @media (max-width: 480px) { font-size: 1.85rem; }
+    }
+    p {
+      color: var(--lp-body);
+      max-width: 68ch;
+      margin: 0 auto;
+      line-height: 1.6;
+      font-size: 1.0625rem;
+    }
+  }
+
+  // ── Hero ──────────────────────────────────────────────
+  &__title {
+    font-size: 3.35rem;
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    margin: 0 0 0.5rem;
+    @media (max-width: 780px) { font-size: 2.5rem; }
+    @media (max-width: 480px) { font-size: 2rem; }
+  }
+
+  &__subtitle {
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    margin: 0 0 1rem;
+    color: rgba(255, 255, 255, 0.82);
+    @media (max-width: 480px) { font-size: 1.1rem; }
+  }
+
+  &__hero-body {
+    margin: 0 0 2rem;
+    display: grid;
+    gap: 0.7rem;
+
+    p {
+      margin: 0;
+      max-width: 54ch;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.72);
+      @media (max-width: 980px) { margin-inline: auto; }
+    }
+  }
+
+  // Barra de cifras del hero: mismos estilos que la landing, más compacta
+  // porque aquí conviven con el CTA y el texto largo del curso.
+  &__facts {
+    margin-bottom: 2rem;
+    div { padding: 0.6rem 1.35rem; strong { font-size: 1.35rem; } }
+    @media (max-width: 480px) {
+      flex-wrap: wrap;
+      div { padding: 0.45rem 0.9rem; }
+    }
+  }
+
+  // ── El cambio de contexto ─────────────────────────────
+  &__shift {
+    padding: 5rem 1.5rem 3rem;
+
+    &-inner {
+      max-width: var(--lp-max);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 3rem;
+      align-items: start;
+      @media (max-width: 900px) { grid-template-columns: 1fr; gap: 2rem; }
+    }
+
+    &-text {
+      h2 {
+        font-size: 2.4rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.08;
+        margin: 0 0 1.25rem;
+        @media (max-width: 480px) { font-size: 1.8rem; }
+      }
+      p {
+        color: var(--lp-body);
+        line-height: 1.6;
+        font-size: 1.0625rem;
+        margin: 0 0 0.9rem;
+        max-width: 48ch;
+      }
+    }
+
+    &-list {
+      border-radius: var(--lp-radius);
+      background: var(--lp-soft);
+      border: 1px solid var(--lp-border);
+      padding: 2rem 2.15rem;
+
+      ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 0.7rem;
+      }
+      li {
+        position: relative;
+        padding-left: 1.5rem;
+        font-size: 0.9375rem;
+        line-height: 1.45;
+        color: var(--lp-ink);
+        &::before {
+          content: "→";
+          position: absolute;
+          left: 0;
+          font-family: var(--axr-mono);
+          color: var(--lp-accent);
+        }
+      }
+    }
+
+    &-close {
+      margin: 1.5rem 0 0;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--lp-border);
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.5;
+      color: var(--lp-ink);
+    }
+  }
+
+  // ── Enfoque ───────────────────────────────────────────
+  &__contrast {
+    padding: 3rem 1.5rem;
+
+    &-inner {
+      max-width: var(--lp-max);
+      margin: 0 auto;
+      border-radius: var(--lp-radius);
+      background: var(--lp-ink);
+      color: #fff;
+      padding: 3.5rem 3rem;
+      @media (max-width: 600px) { padding: 2.25rem 1.5rem; }
+
+      h2 {
+        font-size: 2.4rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.08;
+        margin: 0 0 1rem;
+        max-width: 22ch;
+        @media (max-width: 480px) { font-size: 1.8rem; }
+      }
+    }
+
+    &-lead {
+      margin: 0 0 1.75rem;
+      font-family: var(--axr-mono);
+      font-size: 0.8125rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    &-highlight {
+      display: inline-block;
+      margin: 0 0 1.75rem;
+      padding: 0.7rem 1.4rem;
+      border-radius: 999px;
+      background: var(--lp-grad-1);
+      font-size: 1.125rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #fff;
+    }
+
+    &-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+
+      p {
+        margin: 0;
+        padding-top: 1.25rem;
+        border-top: 2px solid rgba(255, 255, 255, 0.22);
+        font-size: 1rem;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.85);
+      }
+    }
+  }
+
+  // ── ¿Para quién es? ───────────────────────────────────
+  &__audience {
+    padding: 4.5rem 1.5rem 3rem;
+
+    &-grid {
+      max-width: var(--lp-max);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+      @media (max-width: 600px) { grid-template-columns: 1fr; }
+    }
+
+    &-card {
+      position: relative;
+      border-radius: var(--lp-radius-md);
+      background: #fff;
+      border: 1px solid var(--lp-border);
+      padding: 1.75rem 1.6rem;
+      box-shadow: 0 8px 24px rgba(20, 16, 40, 0.05);
+
+      strong {
+        display: block;
+        font-size: 1.0625rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        margin: 0.75rem 0 0.5rem;
+        max-width: 26ch;
+      }
+      p { margin: 0; font-size: 0.9375rem; color: var(--lp-body); line-height: 1.5; }
+    }
+
+    &-n {
+      font-family: var(--axr-display);
+      font-size: 1.1rem;
+      color: var(--lp-accent);
+    }
+  }
+
+  // ── Lo que vas a construir ────────────────────────────
+  &__build {
+    padding: 4rem 1.5rem;
+    background: var(--lp-soft);
+
+    &-grid {
+      max-width: var(--lp-max);
+      margin: 0 auto;
+      list-style: none;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+      @media (max-width: 600px) { grid-template-columns: 1fr; }
+    }
+
+    &-card {
+      border-radius: var(--lp-radius-md);
+      background: #fff;
+      border: 1px solid var(--lp-border);
+      padding: 1.5rem 1.5rem 1.6rem;
+      border-left: 3px solid var(--lp-accent);
+
+      strong {
+        display: block;
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        margin-bottom: 0.4rem;
+      }
+      p { margin: 0; font-size: 0.9375rem; color: var(--lp-body); line-height: 1.5; }
+    }
+  }
+
+  // ── El programa ───────────────────────────────────────
+  &__program {
+    padding: 4.5rem 1.5rem 3rem;
+  }
+
+  &__phase {
+    max-width: var(--lp-max);
+    margin: 0 auto 3rem;
+
+    &-head {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--lp-border);
+
+      h3 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin: 0.4rem 0 0;
+        @media (max-width: 480px) { font-size: 1.4rem; }
+      }
+      p {
+        margin: 0.75rem 0 0;
+        max-width: 70ch;
+        color: var(--lp-body);
+        line-height: 1.6;
+        font-size: 1rem;
+      }
+    }
+
+    &-tag {
+      display: inline-block;
+      font-family: var(--axr-mono);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #fff;
+      background: var(--lp-grad-1);
+      border-radius: 999px;
+      padding: 0.3rem 0.8rem;
+    }
+  }
+
+  &__modules {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    @media (max-width: 820px) { grid-template-columns: 1fr; }
+  }
+
+  &__module {
+    display: flex;
+    gap: 1.1rem;
+    align-items: flex-start;
+    border-radius: var(--lp-radius-md);
+    background: #fff;
+    border: 1px solid var(--lp-border);
+    padding: 1.6rem 1.65rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(20, 16, 40, 0.08); }
+
+    &-n {
+      flex: none;
+      font-family: var(--axr-display);
+      font-size: 1.35rem;
+      line-height: 1;
+      background: var(--lp-grad-1);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
+
+    &-body {
+      min-width: 0;
+      strong {
+        display: block;
+        font-size: 1.0625rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        margin-bottom: 0.45rem;
+      }
+      > p { margin: 0 0 0.9rem; font-size: 0.9375rem; color: var(--lp-body); line-height: 1.55; }
+    }
+
+    &-points {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+
+      li {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--lp-accent);
+        background: var(--lp-soft);
+        border-radius: 999px;
+        padding: 0.3rem 0.7rem;
+      }
+    }
+
+    &-exercise {
+      margin: 1rem 0 0;
+      padding-top: 0.9rem;
+      border-top: 1px dashed var(--lp-border);
+      font-size: 0.875rem;
+      line-height: 1.5;
+      color: var(--lp-ink);
+
+      span {
+        display: block;
+        font-family: var(--axr-mono);
+        font-size: 0.625rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--lp-muted);
+        margin-bottom: 0.25rem;
+      }
+    }
+  }
+
+  // ── Metodología ───────────────────────────────────────
+  &__method {
+    padding: 4rem 1.5rem;
+    background: var(--lp-soft);
+
+    &-grid {
+      max-width: var(--lp-max);
+      margin: 0 auto;
+      list-style: none;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+      @media (max-width: 520px) { grid-template-columns: 1fr; }
+    }
+
+    &-card {
+      border-radius: var(--lp-radius-md);
+      background: #fff;
+      border: 1px solid var(--lp-border);
+      padding: 1.75rem 1.5rem;
+
+      strong { display: block; font-size: 1.0625rem; font-weight: 700; margin: 0.9rem 0 0.4rem; }
+      p { margin: 0; font-size: 0.9375rem; color: var(--lp-body); line-height: 1.5; }
+    }
+
+    &-n {
+      display: inline-grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      font-family: var(--axr-display);
+      font-size: 1rem;
+      color: #fff;
+      background: var(--lp-grad-1);
+    }
+
+    &-note {
+      max-width: var(--lp-max);
+      margin: 1.5rem auto 0;
+      text-align: center;
+      font-size: 0.9375rem;
+      color: var(--lp-body);
+    }
+  }
+
+  // ── El sistema (cadena) ───────────────────────────────
+  &__system {
+    padding: 4rem 1.5rem;
+
+    &-inner {
+      max-width: var(--lp-max);
+      margin: 0 auto;
+      border-radius: var(--lp-radius);
+      padding: 3.5rem 3rem;
+      color: #fff;
+      background: var(--lp-mesh);
+      box-shadow: 0 26px 60px rgba(20, 12, 45, 0.28);
+      @media (max-width: 600px) { padding: 2.25rem 1.5rem; }
+
+      h2 {
+        font-size: 2.3rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.08;
+        margin: 0 0 1rem;
+        max-width: 24ch;
+        @media (max-width: 480px) { font-size: 1.7rem; }
+      }
+      > p { margin: 0 0 0.6rem; font-size: 1.0625rem; line-height: 1.55; color: rgba(255, 255, 255, 0.85); }
+    }
+
+    &-close {
+      margin: 1.75rem 0 0 !important;
+      font-weight: 600;
+      color: #fff !important;
+    }
+  }
+
+  &__chain {
+    list-style: none;
+    margin: 1.75rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+
+    li {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 0.45rem 0.95rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #fff;
+
+      &:not(:last-child)::after {
+        content: "→";
+        font-family: var(--axr-mono);
+        color: rgba(255, 255, 255, 0.55);
+        margin-left: 0.15rem;
+      }
+    }
+  }
+
+  // ── Resultados ────────────────────────────────────────
+  &__outcomes {
+    padding: 3rem 1.5rem 4.5rem;
+
+    &-grid {
+      max-width: var(--lp-max);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+      @media (max-width: 600px) { grid-template-columns: 1fr; }
+    }
+  }
+
+  &__outcome {
+    border-radius: var(--lp-radius-md);
+    background: var(--lp-soft);
+    border: 1px solid var(--lp-border);
+    padding: 1.75rem 1.6rem;
+
+    strong { display: block; font-size: 1.0625rem; font-weight: 700; margin: 0.85rem 0 0.4rem; }
+    p { margin: 0; font-size: 0.9375rem; color: var(--lp-body); line-height: 1.5; }
+
+    &-mark { color: var(--lp-accent); display: block; }
+  }
+
+  // ── Convocatoria y precio ─────────────────────────────
+  &__enroll {
+    padding: 1rem 1.5rem 4.5rem;
+
+    &-inner {
+      max-width: var(--lp-max);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+      @media (max-width: 820px) { grid-template-columns: 1fr; gap: 2rem; }
+    }
+
+    &-text {
+      h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.08;
+        margin: 0 0 1rem;
+        @media (max-width: 480px) { font-size: 1.9rem; }
+      }
+      > p { color: var(--lp-body); line-height: 1.6; margin: 0; max-width: 42ch; font-size: 1.0625rem; }
+    }
+
+    &-bundle {
+      margin-top: 1.25rem !important;
+      padding: 0.75rem 1rem;
+      border-radius: var(--lp-radius-sm);
+      background: var(--lp-soft);
+      border: 1px solid var(--lp-border);
+      font-size: 0.9375rem !important;
+      font-weight: 600;
+      color: var(--lp-accent) !important;
+    }
+  }
+
+  // El bloque final hereda del landing, pero aquí lleva varias líneas de texto.
+  .axr-lp__final-text p + p { margin-top: 0.6rem; }
+}

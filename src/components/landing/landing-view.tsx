@@ -2,7 +2,8 @@ import Link from "next/link";
 
 import { BrandMark } from "@/components/brand-mark";
 import { SlackLogo } from "@/components/slack-logo";
-import { LocaleToggle } from "@/components/locale-toggle";
+import { LandingNav } from "@/components/landing/landing-nav";
+import { LandingFooter } from "@/components/landing/landing-footer";
 import { LeadForm } from "@/components/landing/lead-form";
 import { getLocale } from "@/lib/i18n/server";
 import { landingCopy } from "@/app/bienvenida/copy";
@@ -69,51 +70,7 @@ export async function LandingView() {
 
   return (
     <main className="axr-lp">
-      {/* ── Nav ─────────────────────────────────────── */}
-      <header className="axr-lp__nav">
-        <div className="axr-lp__nav-inner">
-          <Link href="/" className="axr-lp__brand" aria-label="ActiveXRemote">
-            <BrandMark size={22} className="axr-lp__brand-mark" />
-            <span>ActiveXRemote</span>
-          </Link>
-
-          <nav className="axr-lp__nav-links">
-            {/* Desplegable sin JS: <details> es accesible por teclado de serie. */}
-            <details className="axr-lp__drop">
-              <summary>
-                {c.nav.courses.label}
-                <span className="axr-lp__drop-caret" aria-hidden />
-              </summary>
-              <div className="axr-lp__drop-menu">
-                {c.nav.courses.items.map((l) => (
-                  <a key={l.href} href={l.href}>
-                    {l.label}
-                  </a>
-                ))}
-              </div>
-            </details>
-
-            {c.nav.links.map((l) => (
-              <a key={l.href} href={l.href}>
-                {l.label}
-              </a>
-            ))}
-
-            {/* Presencia discreta: el campus no debe competir con el CTA. */}
-            <Link href="/login" className="axr-lp__nav-campus">
-              {c.nav.campus}
-            </Link>
-          </nav>
-
-          <div className="axr-lp__nav-meta">
-            <LocaleToggle />
-            <a href="#solicitar" className="axr-lp__btn axr-lp__btn--solid">
-              {c.nav.cta}
-              <span aria-hidden>→</span>
-            </a>
-          </div>
-        </div>
-      </header>
+      <LandingNav />
 
       {/* ── Hero ────────────────────────────────────── */}
       <section className="axr-lp__hero">
@@ -244,10 +201,16 @@ export async function LandingView() {
                   <li key={o}>{o}</li>
                 ))}
               </ul>
-              <a href="#solicitar" className="axr-lp__btn axr-lp__btn--invert axr-lp__path-cta">
-                {c.paths.cta}
-                <span aria-hidden>→</span>
-              </a>
+              <div className="axr-lp__path-actions">
+                <a href="#solicitar" className="axr-lp__btn axr-lp__btn--invert axr-lp__path-cta">
+                  {c.paths.cta}
+                  <span aria-hidden>→</span>
+                </a>
+                <Link href={p.href} className="axr-lp__path-detail">
+                  {c.paths.detail}
+                  <span aria-hidden>→</span>
+                </Link>
+              </div>
             </article>
           ))}
         </div>
@@ -260,6 +223,10 @@ export async function LandingView() {
           <h2>{c.curriculum.title}</h2>
           <p>{c.curriculum.lead}</p>
         </header>
+        <div className="axr-lp__curriculum-phase">
+          <span className="axr-lp__phase-tag">{c.curriculum.coreTag}</span>
+          <h3>{c.curriculum.coreName}</h3>
+        </div>
         <ol className="axr-lp__curriculum-grid">
           {c.curriculum.modules.map((m) => (
             <li key={m.n} className="axr-lp__module">
@@ -271,9 +238,79 @@ export async function LandingView() {
             </li>
           ))}
         </ol>
-        <p className="axr-lp__curriculum-note">
-          <span aria-hidden>+</span> {c.curriculum.pathNote}
-        </p>
+
+        {/* Fase 2: los 7 módulos propios de cada curso. */}
+        <div className="axr-lp__curriculum-phase axr-lp__curriculum-phase--tracks">
+          <span className="axr-lp__phase-tag">{c.curriculum.tracksTag}</span>
+          <h3>{c.curriculum.tracksTitle}</h3>
+        </div>
+        <div className="axr-lp__tracks">
+          {c.curriculum.tracks.map((track, i) => (
+            <article key={track.name} className="axr-lp__track" data-variant={i}>
+              <header className="axr-lp__track-head">
+                <span className="axr-lp__track-tag">{track.tag}</span>
+                <h4>{track.name}</h4>
+              </header>
+              <ol className="axr-lp__track-modules">
+                {track.modules.map((m) => (
+                  <li key={m.n}>
+                    <span className="axr-lp__track-n">{m.n}</span>
+                    <div>
+                      <strong>{m.title}</strong>
+                      <p>{m.desc}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+              <Link href={track.href} className="axr-lp__track-cta">
+                {c.curriculum.trackCta}
+                <span aria-hidden>→</span>
+              </Link>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Alumni (placeholder: ver nota en copy.ts) ─── */}
+      <section id="alumni" className="axr-lp__social">
+        <header className="axr-lp__social-head">
+          <span className="axr-lp__eyebrow">{c.social.eyebrow}</span>
+          <h2>{c.social.title}</h2>
+          <p>{c.social.lead}</p>
+          <div className="axr-lp__social-stats">
+            {c.social.stats.map((s) => (
+              <div key={s.label}>
+                <strong>{s.value}</strong>
+                <span>{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </header>
+
+        <div className="axr-lp__social-grid">
+          {c.social.items.map((t) => (
+            <figure key={t.name} className="axr-lp__testimonial">
+              <blockquote>{t.quote}</blockquote>
+              <figcaption>
+                <span className="axr-lp__testimonial-avatar" aria-hidden>
+                  {t.name.charAt(0)}
+                </span>
+                <span>
+                  <strong>{t.name}</strong>
+                  <em>{t.role}</em>
+                </span>
+                <span className="axr-lp__testimonial-course">{t.course}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+
+        <p className="axr-lp__social-logos-title">{c.social.logosTitle}</p>
+        <div className="axr-lp__social-logos">
+          {c.social.logos.map((logo) => (
+            <span key={logo}>{logo}</span>
+          ))}
+        </div>
       </section>
 
       {/* ── Equipo ──────────────────────────────────── */}
@@ -311,11 +348,13 @@ export async function LandingView() {
                 <span>{c.access.planNote}</span>
               </div>
             </div>
+            <p className="axr-lp__plan-start">{c.access.planStart}</p>
             <ul className="axr-lp__plan-features">
               {c.access.features.map((f) => (
                 <li key={f}>{f}</li>
               ))}
             </ul>
+            <p className="axr-lp__plan-bundle">{c.access.planBundle}</p>
             <a href="#solicitar" className="axr-lp__btn axr-lp__btn--solid axr-lp__btn--lg axr-lp__plan-cta">
               {c.access.cta}
               <span aria-hidden>→</span>
@@ -376,40 +415,7 @@ export async function LandingView() {
         </div>
       </section>
 
-      {/* ── Footer ──────────────────────────────────── */}
-      <footer className="axr-lp__footer">
-        <div className="axr-lp__footer-inner">
-          <div className="axr-lp__footer-brand">
-            <Link href="/" className="axr-lp__brand" aria-label="ActiveXRemote">
-              <BrandMark size={22} className="axr-lp__brand-mark" />
-              <span>ActiveXRemote</span>
-            </Link>
-            <p>{c.footer.tagline}</p>
-            <div className="axr-lp__footer-locale">
-              <LocaleToggle tone="dark" />
-            </div>
-          </div>
-
-          <div className="axr-lp__footer-cols">
-            {c.footer.cols.map((col) => (
-              <div key={col.title} className="axr-lp__footer-col">
-                <span className="axr-lp__eyebrow">{col.title}</span>
-                {col.links.map((l) =>
-                  l.href.startsWith("#") ? (
-                    <a key={l.label} href={l.href}>{l.label}</a>
-                  ) : (
-                    <Link key={l.label} href={l.href}>{l.label}</Link>
-                  ),
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="axr-lp__footer-bar">
-          <span>{c.footer.access}</span>
-          <span>v1.0</span>
-        </div>
-      </footer>
+      <LandingFooter />
     </main>
   );
 }

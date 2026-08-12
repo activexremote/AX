@@ -12,8 +12,8 @@ export const landingCopy = {
       courses: {
         label: "Cursos",
         items: [
-          { href: "#curso-professional", label: "Curso Remote Professional" },
-          { href: "#curso-founder", label: "Curso Remote Founder" },
+          { href: "/cursos/remote-professional", label: "Curso Remote Professional" },
+          { href: "/cursos/remote-founder", label: "Curso Remote Founder" },
         ],
       },
       links: [
@@ -31,8 +31,9 @@ export const landingCopy = {
       lead: "Consigue el empleo remoto internacional que mereces y aprende a construir tu propio negocio global.",
       stats: [
         { value: "14", label: "módulos" },
+        { value: "56h", label: "en directo" },
+        { value: "14", label: "semanas" },
         { value: "2", label: "caminos" },
-        { value: "4h", label: "por clase en vivo" },
       ],
     },
     form: {
@@ -103,8 +104,8 @@ export const landingCopy = {
       body: "Notion, Slack, Wise, Deel, Zapier, LLMs… Montas tu propio sistema operativo remoto y el campus te avisa de cada avance en Slack.",
     },
     bento: {
-      stat1: { value: "14", label: "módulos · 7 núcleo + 7 por camino" },
-      stat2: { value: "4h", label: "por clase, en vivo" },
+      stat1: { value: "+320", label: "profesionales formados en 18 países" },
+      stat2: { value: "56h", label: "en directo, en 14 semanas" },
       quote:
         "«El remoto no falla por la distancia. Falla por no haber aprendido a trabajar así.»",
       quoteBy: "Manifiesto ActiveXRemote",
@@ -113,12 +114,14 @@ export const landingCopy = {
       eyebrow: "Elige tu camino",
       title: "Dos rutas. Un mismo nivel de exigencia.",
       lead: "Comparten los 7 módulos núcleo y se separan en la especialización. Puedes cambiar de camino cuando quieras.",
-      cta: "Empezar este camino",
+      cta: "Solicita información",
+      detail: "Ver el programa completo",
       items: [
         {
           tag: "Camino 01",
           name: "Remote Professional",
           sub: "Career Accelerator",
+          href: "/cursos/remote-professional",
           forWho: "Para empleados y contractors",
           desc: "Consigue roles remotos internacionales mejor pagados y conviértete en el profesional distribuido que las empresas se pelean por contratar.",
           outcomes: [
@@ -135,6 +138,7 @@ export const landingCopy = {
           tag: "Camino 02",
           name: "Remote Founder",
           sub: "Global Builder",
+          href: "/cursos/remote-founder",
           forWho: "Para founders, freelancers y solopreneurs",
           desc: "Lanza, automatiza y escala un negocio borderless de altos márgenes, con la IA como tu primer empleado y clientes en todo el mundo.",
           outcomes: [
@@ -153,6 +157,8 @@ export const landingCopy = {
       eyebrow: "El programa",
       title: "14 módulos que lo cubren todo.",
       lead: "Empieza por los 7 módulos núcleo, compartidos por ambos caminos. Son la base de todo profesional remoto de élite.",
+      coreTag: "Fase 1 · Núcleo común",
+      coreName: "Fundamentos globales",
       modules: [
         { n: "01", title: "Mindset remoto y el nuevo mercado global", desc: "De empleado local a «startup personal» en un mercado global competitivo." },
         { n: "02", title: "Geoposicionamiento y optimización fiscal", desc: "Maximiza tu ingreso neto con residencia, visados y fiscalidad inteligente." },
@@ -162,7 +168,77 @@ export const landingCopy = {
         { n: "06", title: "Life Ops: energía y anti-burnout", desc: "Timeboxing, límites digitales y hábitos para rendir sin quemarte." },
         { n: "07", title: "Legal y compliance transfronterizo", desc: "Contratos, facturación internacional y estatus legal claro." },
       ],
-      pathNote: "7 módulos especializados según tu camino: Professional o Founder.",
+      tracksTag: "Fase 2 · Especialización",
+      tracksTitle: "Y después, los 7 módulos de tu curso.",
+      trackCta: "Ver el curso completo",
+      tracks: [
+        {
+          tag: "Camino 01",
+          name: "Remote Professional",
+          href: "/cursos/remote-professional",
+          modules: [
+            { n: "08", title: "Advanced Remote Job Hacking", desc: "Encuentra las oportunidades ocultas y llega a quien decide." },
+            { n: "09", title: "AI-Driven Job Hunting & Application Engineering", desc: "IA para analizar ofertas, superar filtros ATS y personalizar candidaturas." },
+            { n: "10", title: "International Personal Branding & Portfolios", desc: "CV, LinkedIn y portfolio listos para recruiters internacionales." },
+            { n: "11", title: "Video & Asynchronous Interview Performance", desc: "Domina la entrevista en vídeo y la comunicación asíncrona." },
+            { n: "12", title: "Global Salary Negotiation & Compensation", desc: "Analiza tu compensación total y prepara contraofertas." },
+            { n: "13", title: "Onboarding & Succeeding in Distributed Teams", desc: "Construye confianza durante tus primeros 90 días." },
+            { n: "14", title: "Career Scaling & Fractional Remote Operations", desc: "Evoluciona hacia roles senior, advisory y fractional." },
+          ],
+        },
+        {
+          tag: "Camino 02",
+          name: "Remote Founder",
+          href: "/cursos/remote-founder",
+          modules: [
+            { n: "08", title: "Freedom Business Design & Market Validation", desc: "Elige modelo, encuentra el problema y valida antes de construir." },
+            { n: "09", title: "AI-Driven Business Operations & Marketing", desc: "Opera y haz marketing con IA de principio a fin." },
+            { n: "10", title: "B2B Client Acquisition & International Sales", desc: "Consigue clientes internacionales con outbound e inbound." },
+            { n: "11", title: "High-Converting Offers & Minimalist Landing Pages", desc: "Ofertas premium y páginas simples que convierten." },
+            { n: "12", title: "Distributed Operations Systems & SOPs", desc: "Documenta procesos, dashboards y entrega al cliente." },
+            { n: "13", title: "Automation, Delegation & Scaling Up", desc: "Decide qué automatizar, qué delegar y qué mantener." },
+            { n: "14", title: "Borderless Corporate Formations & Asset Protection", desc: "Estructura tu empresa y protege tus activos a nivel global." },
+          ],
+        },
+      ],
+    },
+    // ⚠︎ PLACEHOLDER — cifras, valoraciones, testimonios y marcas son
+    // ejemplos de maquetación. Sustituir por datos reales antes de publicar:
+    // un testimonio inventado atribuido a una persona es publicidad engañosa.
+    social: {
+      eyebrow: "Alumni",
+      title: "Ya lo están haciendo.",
+      lead: "Profesionales que salieron del programa con un sistema, no con apuntes.",
+      stats: [
+        { value: "+320", label: "alumnos formados" },
+        { value: "18", label: "países" },
+        { value: "4,8/5", label: "valoración media" },
+      ],
+      logosTitle: "Nuestros alumnos trabajan hoy en equipos distribuidos como",
+      logos: ["Northwind", "Lumen Labs", "Cobalt", "Fernweh", "Atlas Remote", "Kiona"],
+      items: [
+        {
+          quote:
+            "Llevaba un año echando currículums a ciegas. Con el módulo de job hacking pasé de enviar CV a hablar directamente con quien contrata: tres procesos abiertos en cinco semanas.",
+          name: "Marta G.",
+          role: "Product Designer · Valencia",
+          course: "Remote Professional",
+        },
+        {
+          quote:
+            "Facturaba por horas y vivía pegada al calendario. Empaqueté mi servicio, subí precio y ahora entrego lo mismo con la mitad de reuniones.",
+          name: "Nadia R.",
+          role: "Consultora de operaciones · Bogotá",
+          course: "Remote Founder",
+        },
+        {
+          quote:
+            "La parte legal y fiscal era mi bloqueo real. Salí con el contrato, la facturación internacional y la estructura resueltas, y firmé mi primer cliente en EE. UU.",
+          name: "Iván P.",
+          role: "Desarrollador freelance · Bilbao",
+          course: "Remote Founder",
+        },
+      ],
     },
     team: {
       eyebrow: "Quién está detrás",
@@ -175,19 +251,22 @@ export const landingCopy = {
       ],
     },
     access: {
-      eyebrow: "Acceso",
-      title: "Un campus. Los dos caminos.",
-      lead: "Acceso completo al programa para el personal autorizado de ActiveXRemote. Sin coste, sin límites de tiempo.",
-      planName: "Acceso al campus",
-      planPrice: "Incluido",
-      planNote: "para el personal autorizado",
+      eyebrow: "Convocatoria",
+      title: "Una escuela. Dos cursos. Un mismo campus.",
+      lead: "Cada convocatoria es un grupo reducido: clases en directo, campus virtual con las grabaciones y acompañamiento en Slack durante todo el programa.",
+      planName: "Un curso · 14 módulos",
+      planPrice: "2.400 €",
+      planNote: "pago único o 3 plazos de 800 €",
+      planStart: "Arranca el 1 de diciembre de 2026 · grupos de 25 plazas",
+      planBundle: "Los dos cursos: 3.900 € · matrícula anticipada 2.100 € hasta el 31 de octubre",
       features: [
-        "Los 14 módulos (núcleo + ambos caminos)",
-        "Clases de 4h con audio narrado",
+        "14 módulos en directo (56 h lectivas)",
+        "Una sesión de 4h por semana, durante 14 semanas",
+        "Campus virtual con grabaciones y audio narrado",
         "Frameworks y plantillas descargables",
-        "Ejercicio práctico en cada módulo",
-        "Integración con Slack",
-        "A tu ritmo, sin caducidad",
+        "Ejercicio práctico y feedback en cada módulo",
+        "Comunidad y seguimiento en Slack",
+        "Certificado de finalización",
       ],
       cta: "Solicita información",
     },
@@ -210,6 +289,8 @@ export const landingCopy = {
         { q: "¿Necesito conocimientos previos?", a: "No. Los 7 módulos núcleo parten de cero y la especialización sube de nivel de forma progresiva." },
         { q: "¿Qué herramientas voy a usar?", a: "Notion, Slack, Wise, Deel, Zapier y modelos de IA, entre otras. Montas tu propio stack remoto durante el programa." },
         { q: "¿Es en directo o asíncrono?", a: "Las clases son en vivo, y tienes material, audio narrado y ejercicios para avanzar a tu ritmo en asíncrono." },
+        { q: "¿Cuándo empieza la próxima convocatoria?", a: "El 1 de diciembre de 2026, con una sesión de 4h por semana durante 14 semanas. Los grupos son de 25 plazas: solicita información y te enviamos calendario y horarios." },
+        { q: "¿Cuánto cuesta?", a: "2.400 € por curso, en pago único o en 3 plazos de 800 € sin intereses. Los dos cursos juntos son 3.900 €, y hay matrícula anticipada de 2.100 € hasta el 31 de octubre." },
       ],
     },
     finalCta: {
@@ -221,7 +302,7 @@ export const landingCopy = {
       tagline: "The Remote Business School · formación en trabajo remoto global",
       access: "El campus virtual es de acceso restringido a alumnos matriculados",
       cols: [
-        { title: "Cursos", links: [{ href: "#curso-professional", label: "Remote Professional" }, { href: "#curso-founder", label: "Remote Founder" }, { href: "#modulos", label: "Módulos" }] },
+        { title: "Cursos", links: [{ href: "/cursos/remote-professional", label: "Remote Professional" }, { href: "/cursos/remote-founder", label: "Remote Founder" }, { href: "#modulos", label: "Módulos" }] },
         { title: "Escuela", links: [{ href: "#metodo", label: "Método" }, { href: "#faq", label: "FAQ" }, { href: "#solicitar", label: "Solicita información" }] },
         { title: "Campus virtual", links: [{ href: "/login", label: "Entrar al campus" }] },
       ],
@@ -232,8 +313,8 @@ export const landingCopy = {
       courses: {
         label: "Courses",
         items: [
-          { href: "#curso-professional", label: "Remote Professional Course" },
-          { href: "#curso-founder", label: "Remote Founder Course" },
+          { href: "/cursos/remote-professional", label: "Remote Professional Course" },
+          { href: "/cursos/remote-founder", label: "Remote Founder Course" },
         ],
       },
       links: [
@@ -251,8 +332,9 @@ export const landingCopy = {
       lead: "Land the international remote job you deserve and learn to build your own global business.",
       stats: [
         { value: "14", label: "modules" },
+        { value: "56h", label: "live" },
+        { value: "14", label: "weeks" },
         { value: "2", label: "paths" },
-        { value: "4h", label: "per live class" },
       ],
     },
     form: {
@@ -323,8 +405,8 @@ export const landingCopy = {
       body: "Notion, Slack, Wise, Deel, Zapier, LLMs… You build your own remote operating system and the campus pings every milestone in Slack.",
     },
     bento: {
-      stat1: { value: "14", label: "modules · 7 core + 7 per path" },
-      stat2: { value: "4h", label: "per class, live" },
+      stat1: { value: "+320", label: "professionals trained across 18 countries" },
+      stat2: { value: "56h", label: "live, across 14 weeks" },
       quote:
         "“Remote doesn't fail because of distance. It fails when nobody learned to work this way.”",
       quoteBy: "ActiveXRemote Manifesto",
@@ -333,12 +415,14 @@ export const landingCopy = {
       eyebrow: "Choose your path",
       title: "Two routes. One level of rigor.",
       lead: "They share the 7 core modules and split at specialization. You can switch paths whenever you want.",
-      cta: "Start this path",
+      cta: "Request information",
+      detail: "See the full program",
       items: [
         {
           tag: "Path 01",
           name: "Remote Professional",
           sub: "Career Accelerator",
+          href: "/cursos/remote-professional",
           forWho: "For employees and contractors",
           desc: "Land better-paid international remote roles and become the distributed professional companies fight to hire.",
           outcomes: [
@@ -355,6 +439,7 @@ export const landingCopy = {
           tag: "Path 02",
           name: "Remote Founder",
           sub: "Global Builder",
+          href: "/cursos/remote-founder",
           forWho: "For founders, freelancers and solopreneurs",
           desc: "Launch, automate and scale a high-margin borderless business, with AI as your first employee and clients worldwide.",
           outcomes: [
@@ -373,6 +458,8 @@ export const landingCopy = {
       eyebrow: "The program",
       title: "14 modules that cover it all.",
       lead: "Start with the 7 core modules, shared by both paths. They're the foundation of every elite remote professional.",
+      coreTag: "Phase 1 · Shared core",
+      coreName: "Global foundations",
       modules: [
         { n: "01", title: "Remote mindset & the new global market", desc: "From local employee to a “personal startup” in a competitive global market." },
         { n: "02", title: "Geo-positioning & tax optimization", desc: "Maximize your net income with smart residency, visas and taxes." },
@@ -382,7 +469,75 @@ export const landingCopy = {
         { n: "06", title: "Life Ops: energy & anti-burnout", desc: "Timeboxing, digital boundaries and habits to perform without burning out." },
         { n: "07", title: "Cross-border legal & compliance", desc: "Contracts, international invoicing and a clear legal status." },
       ],
-      pathNote: "7 specialized modules based on your path: Professional or Founder.",
+      tracksTag: "Phase 2 · Specialization",
+      tracksTitle: "Then, the 7 modules of your course.",
+      trackCta: "See the full course",
+      tracks: [
+        {
+          tag: "Path 01",
+          name: "Remote Professional",
+          href: "/cursos/remote-professional",
+          modules: [
+            { n: "08", title: "Advanced Remote Job Hacking", desc: "Find the hidden openings and reach the people who decide." },
+            { n: "09", title: "AI-Driven Job Hunting & Application Engineering", desc: "AI to analyze job posts, beat ATS filters and tailor applications." },
+            { n: "10", title: "International Personal Branding & Portfolios", desc: "CV, LinkedIn and portfolio ready for international recruiters." },
+            { n: "11", title: "Video & Asynchronous Interview Performance", desc: "Master the video interview and async communication." },
+            { n: "12", title: "Global Salary Negotiation & Compensation", desc: "Analyze total compensation and prepare counter-offers." },
+            { n: "13", title: "Onboarding & Succeeding in Distributed Teams", desc: "Build trust during your first 90 days." },
+            { n: "14", title: "Career Scaling & Fractional Remote Operations", desc: "Move toward senior, advisory and fractional roles." },
+          ],
+        },
+        {
+          tag: "Path 02",
+          name: "Remote Founder",
+          href: "/cursos/remote-founder",
+          modules: [
+            { n: "08", title: "Freedom Business Design & Market Validation", desc: "Pick a model, find the problem and validate before you build." },
+            { n: "09", title: "AI-Driven Business Operations & Marketing", desc: "Run operations and marketing with AI end to end." },
+            { n: "10", title: "B2B Client Acquisition & International Sales", desc: "Win international clients with outbound and inbound." },
+            { n: "11", title: "High-Converting Offers & Minimalist Landing Pages", desc: "Premium offers and simple pages that convert." },
+            { n: "12", title: "Distributed Operations Systems & SOPs", desc: "Document processes, dashboards and client delivery." },
+            { n: "13", title: "Automation, Delegation & Scaling Up", desc: "Decide what to automate, what to delegate and what to keep." },
+            { n: "14", title: "Borderless Corporate Formations & Asset Protection", desc: "Structure your company and protect your assets globally." },
+          ],
+        },
+      ],
+    },
+    // ⚠︎ PLACEHOLDER — see the note on the Spanish block above.
+    social: {
+      eyebrow: "Alumni",
+      title: "They're already doing it.",
+      lead: "Professionals who left the program with a system, not with notes.",
+      stats: [
+        { value: "+320", label: "students trained" },
+        { value: "18", label: "countries" },
+        { value: "4.8/5", label: "average rating" },
+      ],
+      logosTitle: "Our alumni now work in distributed teams like",
+      logos: ["Northwind", "Lumen Labs", "Cobalt", "Fernweh", "Atlas Remote", "Kiona"],
+      items: [
+        {
+          quote:
+            "I spent a year sending CVs into the void. With the job hacking module I went from applying to talking directly to hiring managers: three live processes in five weeks.",
+          name: "Marta G.",
+          role: "Product Designer · Valencia",
+          course: "Remote Professional",
+        },
+        {
+          quote:
+            "I billed by the hour and lived glued to my calendar. I productized my service, raised my price and now I deliver the same with half the meetings.",
+          name: "Nadia R.",
+          role: "Operations consultant · Bogotá",
+          course: "Remote Founder",
+        },
+        {
+          quote:
+            "Legal and tax was my real blocker. I finished with the contract, international invoicing and structure sorted, and signed my first US client.",
+          name: "Iván P.",
+          role: "Freelance developer · Bilbao",
+          course: "Remote Founder",
+        },
+      ],
     },
     team: {
       eyebrow: "Who's behind it",
@@ -395,19 +550,22 @@ export const landingCopy = {
       ],
     },
     access: {
-      eyebrow: "Access",
-      title: "One campus. Both paths.",
-      lead: "Full access to the program for authorized ActiveXRemote staff. No cost, no time limits.",
-      planName: "Campus access",
-      planPrice: "Included",
-      planNote: "for authorized staff",
+      eyebrow: "Cohort",
+      title: "One school. Two courses. One campus.",
+      lead: "Every cohort is a small group: live classes, a virtual campus with the recordings and support on Slack throughout the program.",
+      planName: "One course · 14 modules",
+      planPrice: "€2,400",
+      planNote: "one payment or 3 instalments of €800",
+      planStart: "Starts December 1, 2026 · groups of 25 seats",
+      planBundle: "Both courses: €3,900 · early bird €2,100 until October 31",
       features: [
-        "All 14 modules (core + both paths)",
-        "4h classes with narrated audio",
+        "14 live modules (56 teaching hours)",
+        "One 4h session per week, for 14 weeks",
+        "Virtual campus with recordings and narrated audio",
         "Downloadable frameworks and templates",
-        "Hands-on exercise in every module",
-        "Slack integration",
-        "At your pace, no expiry",
+        "Hands-on exercise and feedback in every module",
+        "Community and follow-up on Slack",
+        "Certificate of completion",
       ],
       cta: "Request information",
     },
@@ -430,6 +588,8 @@ export const landingCopy = {
         { q: "Do I need prior knowledge?", a: "No. The 7 core modules start from scratch and the specialization levels up progressively." },
         { q: "What tools will I use?", a: "Notion, Slack, Wise, Deel, Zapier and AI models, among others. You build your own remote stack during the program." },
         { q: "Is it live or async?", a: "Classes are live, and you get materials, narrated audio and exercises to progress at your own pace, async." },
+        { q: "When does the next cohort start?", a: "December 1, 2026, with one 4h session per week for 14 weeks. Groups are capped at 25 seats: request information and we'll send you the calendar and schedule." },
+        { q: "How much does it cost?", a: "€2,400 per course, in one payment or 3 interest-free instalments of €800. Both courses together are €3,900, and there's an early-bird price of €2,100 until October 31." },
       ],
     },
     finalCta: {
@@ -441,7 +601,7 @@ export const landingCopy = {
       tagline: "The Remote Business School · global remote work training",
       access: "The virtual campus is restricted to enrolled students",
       cols: [
-        { title: "Courses", links: [{ href: "#curso-professional", label: "Remote Professional" }, { href: "#curso-founder", label: "Remote Founder" }, { href: "#modulos", label: "Modules" }] },
+        { title: "Courses", links: [{ href: "/cursos/remote-professional", label: "Remote Professional" }, { href: "/cursos/remote-founder", label: "Remote Founder" }, { href: "#modulos", label: "Modules" }] },
         { title: "School", links: [{ href: "#metodo", label: "Method" }, { href: "#faq", label: "FAQ" }, { href: "#solicitar", label: "Request information" }] },
         { title: "Virtual campus", links: [{ href: "/login", label: "Enter the campus" }] },
       ],

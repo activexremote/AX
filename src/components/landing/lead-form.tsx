@@ -11,9 +11,13 @@ type Props = {
   copy: FormCopy;
   /** "hero" es compacto (va dentro del héroe); "panel" es el bloque grande previo al footer. */
   variant?: "hero" | "panel";
+  /** Cursos ya marcados al cargar — las landings de curso marcan el suyo. */
+  preselect?: string[];
+  /** Texto alternativo del botón (los CTA de cada curso tienen su propia frase). */
+  submitLabel?: string;
 };
 
-export function LeadForm({ copy, variant = "hero" }: Props) {
+export function LeadForm({ copy, variant = "hero", preselect = [], submitLabel }: Props) {
   const uid = useId();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +57,12 @@ export function LeadForm({ copy, variant = "hero" }: Props) {
         <div className="axr-lead__course-opts">
           {copy.courses.map((course) => (
             <label key={course.key} className="axr-lead__course">
-              <input type="checkbox" name="courses" value={course.key} />
+              <input
+                type="checkbox"
+                name="courses"
+                value={course.key}
+                defaultChecked={preselect.includes(course.key)}
+              />
               <span className="axr-lead__course-box" aria-hidden />
               <span className="axr-lead__course-text">
                 <strong>{course.label}</strong>
@@ -104,7 +113,7 @@ export function LeadForm({ copy, variant = "hero" }: Props) {
       ) : null}
 
       <button type="submit" className="axr-lead__submit" disabled={pending}>
-        {pending ? copy.sending : copy.submit}
+        {pending ? copy.sending : submitLabel ?? copy.submit}
         {!pending && <span aria-hidden>→</span>}
       </button>
 
