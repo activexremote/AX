@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { BrandMark } from "@/components/brand-mark";
 import { SlackLogo } from "@/components/slack-logo";
+import { AccreditationRow, AccreditationSection } from "@/components/landing/accreditation";
 import { LandingNav } from "@/components/landing/landing-nav";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LeadForm } from "@/components/landing/lead-form";
@@ -95,6 +96,12 @@ export async function LandingView() {
               </div>
             ))}
           </div>
+
+          <AccreditationRow
+            label={c.accreditation.heroLabel}
+            partners={c.accreditation.partners}
+            tone="dark"
+          />
         </div>
 
         {/* Formulario de captación — primer punto de conversión de la página. */}
@@ -270,6 +277,9 @@ export async function LandingView() {
           ))}
         </div>
       </section>
+
+      {/* ── Acreditación ────────────────────────────── */}
+      <AccreditationSection copy={c.accreditation} />
 
       {/* ── Alumni (placeholder: ver nota en copy.ts) ─── */}
       <section id="alumni" className="axr-lp__social">

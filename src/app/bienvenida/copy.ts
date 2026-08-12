@@ -208,6 +208,37 @@ export const landingCopy = {
         },
       ],
     },
+    // Acreditación: certificación privada, un certificador por área.
+    accreditation: {
+      heroLabel: "Certificado por",
+      eyebrow: "Acreditación",
+      title: "Un diploma certificado por tres compañías, cada una en su terreno.",
+      lead: "La certificación es privada: no es un título académico oficial, sino el sello de tres empresas que trabajan cada día en las áreas que enseñamos. Cada una audita y certifica los módulos de su especialidad, y su sello aparece en el diploma que recibes al terminar.",
+      partners: [
+        {
+          key: "deel" as const,
+          name: "Deel",
+          area: "Legal, contratación y pagos",
+          desc: "Certifica los módulos de fundamentos legales y compliance internacional: contractor vs employee, Employer of Record, contratos, facturación y fiscalidad transfronteriza. Es la parte del programa que validan con sus propios criterios de contratación global.",
+          modules: "Módulos 2, 3 y 7",
+        },
+        {
+          key: "remoteandtalent" as const,
+          name: "Remoteandtalent.com",
+          area: "Empleabilidad y talento remoto",
+          desc: "Certifica la ruta de carrera: búsqueda de oportunidades, marca personal internacional, entrevistas remotas y negociación salarial. Validan que lo que enseñamos es lo que hoy piden de verdad las empresas que contratan en remoto.",
+          modules: "Módulos 8 a 12 · Camino Professional",
+        },
+        {
+          key: "slack" as const,
+          name: "Slack",
+          area: "Comunicación y trabajo distribuido",
+          desc: "Certifica los módulos de comunicación asíncrona y colaboración en equipos distribuidos: cómo se documenta, se decide y se genera confianza sin compartir oficina, con las prácticas de su propio manual de trabajo distribuido.",
+          modules: "Módulos 1, 4 y 13",
+        },
+      ],
+      note: "El diploma detalla los módulos superados y lleva el sello de las tres compañías. Es una certificación privada de empresa; no equivale a un título oficial ni a un grado universitario.",
+    },
     // ⚠︎ PLACEHOLDER — cifras, valoraciones, testimonios y marcas son
     // ejemplos de maquetación. Sustituir por datos reales antes de publicar:
     // un testimonio inventado atribuido a una persona es publicidad engañosa.
@@ -272,7 +303,7 @@ export const landingCopy = {
         "Frameworks y plantillas descargables",
         "Ejercicio práctico y feedback en cada módulo",
         "Comunidad y seguimiento en Slack",
-        "Certificado de finalización",
+        "Diploma certificado por Deel, Remoteandtalent y Slack",
       ],
       cta: "Solicita información",
     },
@@ -296,6 +327,7 @@ export const landingCopy = {
         { q: "¿Qué herramientas voy a usar?", a: "Notion, Slack, Wise, Deel, Zapier y modelos de IA, entre otras. Montas tu propio stack remoto durante el programa." },
         { q: "¿Es en directo o asíncrono?", a: "Las clases son en vivo, y tienes material, audio narrado y ejercicios para avanzar a tu ritmo en asíncrono." },
         { q: "¿Cuándo empieza la próxima convocatoria?", a: "El 1 de diciembre de 2026, con una sesión de 4h por semana durante 14 semanas. Los grupos son de 25 plazas: solicita información y te enviamos calendario y horarios." },
+        { q: "¿El diploma es un título oficial?", a: "No. Es una certificación privada: el diploma detalla los módulos superados y lleva el sello de Deel (legal, contratación y pagos), Remoteandtalent.com (empleabilidad y talento remoto) y Slack (comunicación y trabajo distribuido), cada una en su área. No equivale a un grado universitario ni a un título académico oficial." },
         { q: "¿Cuánto cuesta?", a: "2.400 € por curso, en pago único o en 3 plazos de 800 € sin intereses. Los dos cursos juntos son 3.900 €, y hay matrícula anticipada de 2.100 € hasta el 31 de octubre." },
       ],
     },
@@ -515,6 +547,36 @@ export const landingCopy = {
         },
       ],
     },
+    accreditation: {
+      heroLabel: "Certified by",
+      eyebrow: "Accreditation",
+      title: "A diploma certified by three companies, each in its own field.",
+      lead: "The certification is private: not an official academic degree, but the seal of three companies that work every day in the areas we teach. Each one audits and certifies the modules in its specialty, and its seal appears on the diploma you receive.",
+      partners: [
+        {
+          key: "deel" as const,
+          name: "Deel",
+          area: "Legal, hiring and payments",
+          desc: "Certifies the legal and international compliance modules: contractor vs employee, Employer of Record, contracts, invoicing and cross-border taxation. It's the part of the program they validate against their own global hiring criteria.",
+          modules: "Modules 2, 3 and 7",
+        },
+        {
+          key: "remoteandtalent" as const,
+          name: "Remoteandtalent.com",
+          area: "Employability and remote talent",
+          desc: "Certifies the career track: opportunity sourcing, international personal brand, remote interviews and salary negotiation. They validate that what we teach is what companies hiring remotely actually ask for today.",
+          modules: "Modules 8 to 12 · Professional path",
+        },
+        {
+          key: "slack" as const,
+          name: "Slack",
+          area: "Communication and distributed work",
+          desc: "Certifies the async communication and distributed collaboration modules: how you document, decide and build trust without sharing an office, following the practices in their own distributed work playbook.",
+          modules: "Modules 1, 4 and 13",
+        },
+      ],
+      note: "The diploma lists the modules you completed and carries the seal of all three companies. It is a private corporate certification; it is not equivalent to an official degree.",
+    },
     // ⚠︎ PLACEHOLDER — see the note on the Spanish block above.
     social: {
       eyebrow: "Alumni",
@@ -577,7 +639,7 @@ export const landingCopy = {
         "Downloadable frameworks and templates",
         "Hands-on exercise and feedback in every module",
         "Community and follow-up on Slack",
-        "Certificate of completion",
+        "Diploma certified by Deel, Remoteandtalent and Slack",
       ],
       cta: "Request information",
     },
@@ -601,6 +663,7 @@ export const landingCopy = {
         { q: "What tools will I use?", a: "Notion, Slack, Wise, Deel, Zapier and AI models, among others. You build your own remote stack during the program." },
         { q: "Is it live or async?", a: "Classes are live, and you get materials, narrated audio and exercises to progress at your own pace, async." },
         { q: "When does the next cohort start?", a: "December 1, 2026, with one 4h session per week for 14 weeks. Groups are capped at 25 seats: request information and we'll send you the calendar and schedule." },
+        { q: "Is the diploma an official degree?", a: "No. It is a private certification: the diploma lists the modules you completed and carries the seal of Deel (legal, hiring and payments), Remoteandtalent.com (employability and remote talent) and Slack (communication and distributed work), each in its own area. It is not equivalent to a university or official academic degree." },
         { q: "How much does it cost?", a: "€2,400 per course, in one payment or 3 interest-free instalments of €800. Both courses together are €3,900, and there's an early-bird price of €2,100 until October 31." },
       ],
     },

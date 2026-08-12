@@ -1036,6 +1036,160 @@
   p { margin: 0; font-size: 0.9375rem; color: var(--lp-body); line-height: 1.5; }
 }
 
+// ── Acreditación ────────────────────────────────────────
+// Wordmark de las certificadoras sin logo oficial todavía.
+.axr-lp__partner-word {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  white-space: nowrap;
+  color: currentColor;
+}
+
+// Fila del héroe
+.axr-lp__accred-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.25rem;
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+
+  &[data-tone="light"] { border-top-color: var(--lp-border); }
+  @media (max-width: 980px) { justify-content: center; }
+}
+.axr-lp__accred-label {
+  font-family: var(--axr-mono);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+
+  [data-tone="light"] & { color: var(--lp-muted); }
+}
+.axr-lp__accred-marks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.axr-lp__accred-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
+
+  [data-tone="light"] & {
+    background: #fff;
+    border-color: var(--lp-border);
+    color: var(--lp-ink);
+  }
+}
+.axr-lp__accred-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+// El nombre ya va en la píldora: el wordmark sólo estorbaría.
+.axr-lp__accred-mark .axr-lp__partner-word { display: none; }
+
+// Sección completa
+.axr-lp__accred {
+  padding: 4.5rem 1.5rem;
+  background: var(--lp-soft);
+
+  &-head {
+    max-width: var(--lp-max);
+    margin: 0 auto 2.5rem;
+    text-align: center;
+
+    h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.08;
+      margin: 0 0 0.75rem;
+      @media (max-width: 480px) { font-size: 1.85rem; }
+    }
+    p { color: var(--lp-body); max-width: 68ch; margin: 0 auto; line-height: 1.6; font-size: 1.0625rem; }
+  }
+
+  &-grid {
+    max-width: var(--lp-max);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    @media (max-width: 900px) { grid-template-columns: 1fr; max-width: 560px; }
+  }
+
+  &-note {
+    max-width: 720px;
+    margin: 2rem auto 0;
+    padding: 1rem 1.25rem;
+    border-radius: var(--lp-radius-md);
+    background: #fff;
+    border: 1px dashed var(--lp-border);
+    text-align: center;
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    color: var(--lp-body);
+  }
+}
+
+.axr-lp__certifier {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--lp-radius);
+  background: #fff;
+  border: 1px solid var(--lp-border);
+  padding: 2rem 1.85rem;
+  box-shadow: 0 10px 30px rgba(20, 16, 40, 0.06);
+
+  &-mark {
+    display: inline-flex;
+    align-items: center;
+    height: 34px;
+    margin-bottom: 1.1rem;
+    color: var(--lp-ink);
+  }
+
+  h3 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 0.35rem; }
+
+  &-area {
+    font-family: var(--axr-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--lp-accent);
+  }
+
+  p {
+    margin: 1rem 0 1.25rem;
+    flex: 1;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--lp-body);
+  }
+
+  &-modules {
+    align-self: flex-start;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--lp-ink);
+    background: var(--lp-soft);
+    border-radius: 999px;
+    padding: 0.4rem 0.85rem;
+  }
+}
+
 // ── Alumni / testimonios ────────────────────────────────
 .axr-lp__social {
   padding: 4.5rem 1.5rem;
