@@ -9,8 +9,7 @@ import { getI18n } from "@/lib/i18n/server";
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-  // 800 se usa en el wordmark y en las cifras grandes de la landing.
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 // Sólo para contenido de código (bloques, textarea de lecciones)

@@ -156,7 +156,7 @@
 
     strong {
       font-size: 0.875rem;
-      font-weight: 800;
+      font-weight: 700;
       font-variant-numeric: tabular-nums;
       letter-spacing: 0.02em;
     }
@@ -408,7 +408,7 @@
       padding: 0.65rem 1.75rem;
       & + div { border-left: 1px solid rgba(255, 255, 255, 0.2); }
 
-      strong { font-family: var(--axr-display); font-size: 1.6rem; font-weight: 800; line-height: 1; color: #fff; }
+      strong { font-family: var(--axr-display); font-size: 1.6rem; font-weight: 700; line-height: 1; color: #fff; }
       span {
         font-family: var(--axr-mono);
         font-size: 0.6rem;
@@ -622,7 +622,7 @@
     left: 1.25rem;
     font-family: var(--axr-display);
     font-size: 1.35rem;
-    font-weight: 800;
+    font-weight: 700;
     color: rgba(22, 19, 38, 0.35);
   }
 
@@ -668,7 +668,7 @@
   }
   &__row { display: flex; justify-content: space-between; align-items: center; }
   &__badge { font-family: var(--axr-mono); font-size: 0.625rem; letter-spacing: 0.04em; color: var(--lp-muted); }
-  &__pct { font-family: var(--axr-display); font-size: 1.1rem; font-weight: 800; color: var(--lp-accent); }
+  &__pct { font-family: var(--axr-display); font-size: 1.1rem; font-weight: 700; color: var(--lp-accent); }
   &__bar { height: 8px; border-radius: 999px; background: #ece9fa; overflow: hidden; span { display: block; height: 100%; border-radius: 999px; background: var(--lp-grad-1); } }
   &__steps {
     list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem;
@@ -743,7 +743,7 @@
     color: #fff;
     box-shadow: 0 18px 40px rgba(109, 92, 255, 0.3);
 
-    strong { font-family: var(--axr-display); font-size: 3.5rem; font-weight: 800; letter-spacing: -0.03em; line-height: 0.9; color: #fff; }
+    strong { font-family: var(--axr-display); font-size: 3.5rem; font-weight: 700; letter-spacing: -0.03em; line-height: 0.9; color: #fff; }
     span { font-size: 0.8125rem; font-weight: 500; color: rgba(255, 255, 255, 0.85); }
 
     &--dark { background: var(--lp-ink); box-shadow: 0 18px 40px rgba(20, 16, 40, 0.28);
@@ -990,7 +990,7 @@
     flex: none;
     font-family: var(--axr-display);
     font-size: 0.9375rem;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 1.35;
     color: var(--lp-accent);
   }
@@ -1023,7 +1023,7 @@
   &-n {
     font-family: var(--axr-display);
     font-size: 1.25rem;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 1;
     flex: none;
     background: var(--lp-grad-1);
@@ -1068,7 +1068,7 @@
       strong {
         font-family: var(--axr-display);
         font-size: 1.5rem;
-        font-weight: 800;
+        font-weight: 700;
         letter-spacing: -0.02em;
         line-height: 1;
         background: var(--lp-grad-1);
@@ -1253,7 +1253,7 @@
   &-price {
     text-align: right;
     strong {
-      display: block; font-family: var(--axr-display); font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1;
+      display: block; font-family: var(--axr-display); font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1;
       background: var(--lp-grad-1); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
     }
     span { font-family: var(--axr-mono); font-size: 0.625rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--lp-muted); }
@@ -1311,7 +1311,7 @@
   &-n {
     display: inline-grid; place-items: center;
     width: 44px; height: 44px; border-radius: 999px;
-    font-family: var(--axr-display); font-size: 1.1rem; font-weight: 800; color: #fff;
+    font-family: var(--axr-display); font-size: 1.1rem; font-weight: 700; color: #fff;
     background: var(--lp-grad-1);
   }
 }
