@@ -31,91 +31,89 @@
     text-align: center;
 
     h2 {
-      font-size: 2.5rem;
+      font-size: clamp(1.75rem, 6.2vw, 2.5rem);
       font-weight: 700;
       letter-spacing: -0.03em;
-      line-height: 1.08;
+      line-height: 1.1;
+      text-wrap: balance;
       margin: 0 0 0.75rem;
-      @media (max-width: 480px) { font-size: 1.85rem; }
     }
     p {
       color: var(--lp-body);
       max-width: 68ch;
       margin: 0 auto;
       line-height: 1.6;
-      font-size: 1.0625rem;
+      font-size: 1rem;
+      @media (min-width: 641px) { font-size: 1.0625rem; }
     }
   }
 
   // ── Hero ──────────────────────────────────────────────
   &__title {
-    font-size: 3.35rem;
+    font-size: clamp(1.95rem, 8.6vw, 3.35rem);
     font-weight: 700;
-    line-height: 1.02;
+    line-height: 1.05;
     letter-spacing: -0.035em;
+    text-wrap: balance;
     margin: 0 0 0.5rem;
-    @media (max-width: 780px) { font-size: 2.5rem; }
-    @media (max-width: 480px) { font-size: 2rem; }
   }
 
   &__subtitle {
-    font-size: 1.35rem;
+    font-size: clamp(1.05rem, 4.4vw, 1.35rem);
     font-weight: 600;
-    line-height: 1.25;
+    line-height: 1.3;
     letter-spacing: -0.01em;
+    text-wrap: balance;
     margin: 0 0 1rem;
     color: rgba(255, 255, 255, 0.82);
-    @media (max-width: 480px) { font-size: 1.1rem; }
   }
 
   &__hero-body {
-    margin: 0 0 2rem;
+    margin: 0 0 1.75rem;
     display: grid;
     gap: 0.7rem;
 
     p {
-      margin: 0;
+      margin: 0 auto;
       max-width: 54ch;
       font-size: 0.9375rem;
       line-height: 1.6;
       color: rgba(255, 255, 255, 0.72);
-      @media (max-width: 980px) { margin-inline: auto; }
+      @media (min-width: 981px) { margin-inline: 0; }
     }
   }
 
   // Barra de cifras del hero: mismos estilos que la landing, más compacta
   // porque aquí conviven con el CTA y el texto largo del curso.
   &__facts {
-    margin-bottom: 2rem;
-    div { padding: 0.6rem 1.35rem; strong { font-size: 1.35rem; } }
-    @media (max-width: 480px) {
-      flex-wrap: wrap;
-      div { padding: 0.45rem 0.9rem; }
+    margin-bottom: 1.75rem;
+    @media (min-width: 700px) {
+      div { padding: 0.6rem 1.35rem; strong { font-size: 1.35rem; } }
     }
   }
 
   // ── El cambio de contexto ─────────────────────────────
   &__shift {
-    padding: 5rem 1.5rem 3rem;
+    padding: var(--lp-section) var(--lp-pad-r) 2rem var(--lp-pad-l);
 
     &-inner {
       max-width: var(--lp-max);
       margin: 0 auto;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 3rem;
+      grid-template-columns: 1fr;
+      gap: 1.75rem;
       align-items: start;
-      @media (max-width: 900px) { grid-template-columns: 1fr; gap: 2rem; }
+      @media (min-width: 901px) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 3rem; }
     }
 
     &-text {
       h2 {
-        font-size: 2.4rem;
+        font-size: clamp(1.7rem, 6vw, 2.4rem);
         font-weight: 700;
         letter-spacing: -0.03em;
-        line-height: 1.08;
+        line-height: 1.1;
+        text-wrap: balance;
         margin: 0 0 1.25rem;
-        @media (max-width: 480px) { font-size: 1.8rem; }
       }
       p {
         color: var(--lp-body);
@@ -130,7 +128,8 @@
       border-radius: var(--lp-radius);
       background: var(--lp-soft);
       border: 1px solid var(--lp-border);
-      padding: 2rem 2.15rem;
+      padding: 1.35rem 1.15rem;
+      @media (min-width: 481px) { padding: 2rem 2.15rem; }
 
       ul {
         list-style: none;
@@ -156,8 +155,8 @@
     }
 
     &-close {
-      margin: 1.5rem 0 0;
-      padding-top: 1.25rem;
+      margin: 1.25rem 0 0;
+      padding-top: 1.15rem;
       border-top: 1px solid var(--lp-border);
       font-size: 1rem;
       font-weight: 600;
@@ -168,7 +167,7 @@
 
   // ── Enfoque ───────────────────────────────────────────
   &__contrast {
-    padding: 3rem 1.5rem;
+    padding: 2rem var(--lp-pad-r) 2rem var(--lp-pad-l);
 
     &-inner {
       max-width: var(--lp-max);
@@ -176,34 +175,38 @@
       border-radius: var(--lp-radius);
       background: var(--lp-ink);
       color: #fff;
-      padding: 3.5rem 3rem;
-      @media (max-width: 600px) { padding: 2.25rem 1.5rem; }
+      padding: 1.75rem 1.25rem;
+      @media (min-width: 601px) { padding: 3.5rem 3rem; }
 
       h2 {
-        font-size: 2.4rem;
+        font-size: clamp(1.7rem, 6vw, 2.4rem);
         font-weight: 700;
         letter-spacing: -0.03em;
-        line-height: 1.08;
+        line-height: 1.1;
+        text-wrap: balance;
         margin: 0 0 1rem;
         max-width: 22ch;
-        @media (max-width: 480px) { font-size: 1.8rem; }
       }
     }
 
     &-lead {
-      margin: 0 0 1.75rem;
+      margin: 0 0 1.5rem;
       font-family: var(--axr-mono);
-      font-size: 0.8125rem;
-      letter-spacing: 0.08em;
+      font-size: 0.875rem;
+      letter-spacing: 0.06em;
+      line-height: 1.5;
       text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.55);
+      color: rgba(255, 255, 255, 0.68);
     }
 
     &-highlight {
       display: inline-block;
       margin: 0 0 1.75rem;
-      padding: 0.7rem 1.4rem;
-      border-radius: 999px;
+      padding: 0.7rem 1.25rem;
+      // Al partirse en dos líneas, el óvalo perfecto queda raro: se suaviza.
+      border-radius: 20px;
+      line-height: 1.3;
+      @media (min-width: 601px) { padding: 0.7rem 1.4rem; border-radius: 999px; }
       background: var(--lp-grad-1);
       font-size: 1.125rem;
       font-weight: 700;
@@ -229,16 +232,16 @@
 
   // ── ¿Para quién es? ───────────────────────────────────
   &__audience {
-    padding: 4.5rem 1.5rem 3rem;
+    padding: var(--lp-section) var(--lp-pad-r) 2rem var(--lp-pad-l);
 
     &-grid {
       max-width: var(--lp-max);
       margin: 0 auto;
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
-      @media (max-width: 600px) { grid-template-columns: 1fr; }
+      grid-template-columns: 1fr;
+      gap: 0.85rem;
+      @media (min-width: 601px) { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+      @media (min-width: 901px) { grid-template-columns: repeat(3, 1fr); }
     }
 
     &-card {
@@ -246,8 +249,9 @@
       border-radius: var(--lp-radius-md);
       background: #fff;
       border: 1px solid var(--lp-border);
-      padding: 1.75rem 1.6rem;
+      padding: 1.4rem 1.25rem;
       box-shadow: 0 8px 24px rgba(20, 16, 40, 0.05);
+      @media (min-width: 481px) { padding: 1.75rem 1.6rem; }
 
       strong {
         display: block;
@@ -270,7 +274,7 @@
 
   // ── Lo que vas a construir ────────────────────────────
   &__build {
-    padding: 4rem 1.5rem;
+    padding: var(--lp-section) var(--lp-pad-r) var(--lp-section) var(--lp-pad-l);
     background: var(--lp-soft);
 
     &-grid {
@@ -279,10 +283,10 @@
       list-style: none;
       padding: 0;
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
-      @media (max-width: 600px) { grid-template-columns: 1fr; }
+      grid-template-columns: 1fr;
+      gap: 0.85rem;
+      @media (min-width: 601px) { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+      @media (min-width: 901px) { grid-template-columns: repeat(3, 1fr); }
     }
 
     &-card {
@@ -305,24 +309,25 @@
 
   // ── El programa ───────────────────────────────────────
   &__program {
-    padding: 4.5rem 1.5rem 3rem;
+    padding: var(--lp-section) var(--lp-pad-r) 2rem var(--lp-pad-l);
   }
 
   &__phase {
     max-width: var(--lp-max);
-    margin: 0 auto 3rem;
+    margin: 0 auto 2rem;
+    @media (min-width: 821px) { margin-bottom: 3rem; }
 
     &-head {
-      margin-bottom: 1.5rem;
-      padding-bottom: 1.25rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
       border-bottom: 1px solid var(--lp-border);
 
       h3 {
-        font-size: 1.75rem;
+        font-size: clamp(1.35rem, 5vw, 1.75rem);
         font-weight: 700;
         letter-spacing: -0.02em;
+        line-height: 1.2;
         margin: 0.4rem 0 0;
-        @media (max-width: 480px) { font-size: 1.4rem; }
       }
       p {
         margin: 0.75rem 0 0;
@@ -336,9 +341,9 @@
     &-tag {
       display: inline-block;
       font-family: var(--axr-mono);
-      font-size: 0.6875rem;
+      font-size: 0.75rem;
       font-weight: 700;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       color: #fff;
       background: var(--lp-grad-1);
@@ -352,9 +357,9 @@
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    @media (max-width: 820px) { grid-template-columns: 1fr; }
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+    @media (min-width: 821px) { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
   }
 
   &__module {
@@ -364,10 +369,13 @@
     border-radius: var(--lp-radius-md);
     background: #fff;
     border: 1px solid var(--lp-border);
-    padding: 1.6rem 1.65rem;
+    padding: 1.25rem 1.15rem;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
+    @media (min-width: 481px) { padding: 1.6rem 1.65rem; }
 
-    &:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(20, 16, 40, 0.08); }
+    @media (hover: hover) {
+      &:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(20, 16, 40, 0.08); }
+    }
 
     &-n {
       flex: none;
@@ -386,8 +394,9 @@
       min-width: 0;
       strong {
         display: block;
-        font-size: 1.0625rem;
+        font-size: 1rem;
         font-weight: 700;
+        line-height: 1.3;
         letter-spacing: -0.01em;
         margin-bottom: 0.45rem;
       }
@@ -403,12 +412,12 @@
       gap: 0.35rem;
 
       li {
-        font-size: 0.75rem;
+        font-size: 0.8125rem;
         font-weight: 500;
         color: var(--lp-accent);
         background: var(--lp-soft);
         border-radius: 999px;
-        padding: 0.3rem 0.7rem;
+        padding: 0.35rem 0.75rem;
       }
     }
 
@@ -416,16 +425,16 @@
       margin: 1rem 0 0;
       padding-top: 0.9rem;
       border-top: 1px dashed var(--lp-border);
-      font-size: 0.875rem;
+      font-size: 0.9375rem;
       line-height: 1.5;
       color: var(--lp-ink);
 
       span {
         display: block;
         font-family: var(--axr-mono);
-        font-size: 0.625rem;
+        font-size: 0.6875rem;
         font-weight: 700;
-        letter-spacing: 0.12em;
+        letter-spacing: 0.1em;
         text-transform: uppercase;
         color: var(--lp-muted);
         margin-bottom: 0.25rem;
@@ -435,7 +444,7 @@
 
   // ── Metodología ───────────────────────────────────────
   &__method {
-    padding: 4rem 1.5rem;
+    padding: var(--lp-section) var(--lp-pad-r) var(--lp-section) var(--lp-pad-l);
     background: var(--lp-soft);
 
     &-grid {
@@ -444,19 +453,20 @@
       list-style: none;
       padding: 0;
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1rem;
-      @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
-      @media (max-width: 520px) { grid-template-columns: 1fr; }
+      grid-template-columns: 1fr;
+      gap: 0.85rem;
+      @media (min-width: 521px) { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+      @media (min-width: 901px) { grid-template-columns: repeat(4, 1fr); }
     }
 
     &-card {
       border-radius: var(--lp-radius-md);
       background: #fff;
       border: 1px solid var(--lp-border);
-      padding: 1.75rem 1.5rem;
+      padding: 1.4rem 1.25rem;
+      @media (min-width: 481px) { padding: 1.75rem 1.5rem; }
 
-      strong { display: block; font-size: 1.0625rem; font-weight: 700; margin: 0.9rem 0 0.4rem; }
+      strong { display: block; font-size: 1.0625rem; font-weight: 700; line-height: 1.3; margin: 0.9rem 0 0.4rem; }
       p { margin: 0; font-size: 0.9375rem; color: var(--lp-body); line-height: 1.5; }
     }
 
@@ -475,7 +485,7 @@
 
     &-note {
       max-width: var(--lp-max);
-      margin: 1.5rem auto 0;
+      margin: 1.25rem auto 0;
       text-align: center;
       font-size: 0.9375rem;
       color: var(--lp-body);
@@ -484,28 +494,29 @@
 
   // ── El sistema (cadena) ───────────────────────────────
   &__system {
-    padding: 4rem 1.5rem;
+    padding: var(--lp-section) var(--lp-pad-r) var(--lp-section) var(--lp-pad-l);
 
     &-inner {
       max-width: var(--lp-max);
       margin: 0 auto;
       border-radius: var(--lp-radius);
-      padding: 3.5rem 3rem;
+      padding: 1.75rem 1.25rem;
       color: #fff;
       background: var(--lp-mesh);
       box-shadow: 0 26px 60px rgba(20, 12, 45, 0.28);
-      @media (max-width: 600px) { padding: 2.25rem 1.5rem; }
+      @media (min-width: 601px) { padding: 3.5rem 3rem; }
 
       h2 {
-        font-size: 2.3rem;
+        font-size: clamp(1.6rem, 5.8vw, 2.3rem);
         font-weight: 700;
         letter-spacing: -0.03em;
-        line-height: 1.08;
+        line-height: 1.1;
+        text-wrap: balance;
         margin: 0 0 1rem;
         max-width: 24ch;
-        @media (max-width: 480px) { font-size: 1.7rem; }
       }
-      > p { margin: 0 0 0.6rem; font-size: 1.0625rem; line-height: 1.55; color: rgba(255, 255, 255, 0.85); }
+      > p { margin: 0 0 0.6rem; font-size: 1rem; line-height: 1.55; color: rgba(255, 255, 255, 0.85); }
+      @media (min-width: 641px) { > p { font-size: 1.0625rem; } }
     }
 
     &-close {
@@ -522,7 +533,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
 
     li {
       display: inline-flex;
@@ -531,8 +542,8 @@
       border-radius: 999px;
       background: rgba(255, 255, 255, 0.14);
       border: 1px solid rgba(255, 255, 255, 0.25);
-      padding: 0.45rem 0.95rem;
-      font-size: 0.8125rem;
+      padding: 0.5rem 0.95rem;
+      font-size: 0.875rem;
       font-weight: 600;
       color: #fff;
 
@@ -547,16 +558,16 @@
 
   // ── Resultados ────────────────────────────────────────
   &__outcomes {
-    padding: 3rem 1.5rem 4.5rem;
+    padding: 2rem var(--lp-pad-r) var(--lp-section) var(--lp-pad-l);
 
     &-grid {
       max-width: var(--lp-max);
       margin: 0 auto;
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
-      @media (max-width: 600px) { grid-template-columns: 1fr; }
+      grid-template-columns: 1fr;
+      gap: 0.85rem;
+      @media (min-width: 601px) { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+      @media (min-width: 901px) { grid-template-columns: repeat(3, 1fr); }
     }
   }
 
@@ -564,9 +575,10 @@
     border-radius: var(--lp-radius-md);
     background: var(--lp-soft);
     border: 1px solid var(--lp-border);
-    padding: 1.75rem 1.6rem;
+    padding: 1.4rem 1.25rem;
+    @media (min-width: 481px) { padding: 1.75rem 1.6rem; }
 
-    strong { display: block; font-size: 1.0625rem; font-weight: 700; margin: 0.85rem 0 0.4rem; }
+    strong { display: block; font-size: 1.0625rem; font-weight: 700; line-height: 1.3; margin: 0.85rem 0 0.4rem; }
     p { margin: 0; font-size: 0.9375rem; color: var(--lp-body); line-height: 1.5; }
 
     &-mark { color: var(--lp-accent); display: block; }
@@ -574,28 +586,29 @@
 
   // ── Convocatoria y precio ─────────────────────────────
   &__enroll {
-    padding: 1rem 1.5rem 4.5rem;
+    padding: 1rem var(--lp-pad-r) var(--lp-section) var(--lp-pad-l);
 
     &-inner {
       max-width: var(--lp-max);
       margin: 0 auto;
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 3rem;
+      grid-template-columns: 1fr;
+      gap: 1.75rem;
       align-items: center;
-      @media (max-width: 820px) { grid-template-columns: 1fr; gap: 2rem; }
+      @media (min-width: 821px) { grid-template-columns: 1fr 1fr; gap: 3rem; }
     }
 
     &-text {
       h2 {
-        font-size: 2.5rem;
+        font-size: clamp(1.8rem, 6.2vw, 2.5rem);
         font-weight: 700;
         letter-spacing: -0.03em;
-        line-height: 1.08;
+        line-height: 1.1;
+        text-wrap: balance;
         margin: 0 0 1rem;
-        @media (max-width: 480px) { font-size: 1.9rem; }
       }
-      > p { color: var(--lp-body); line-height: 1.6; margin: 0; max-width: 42ch; font-size: 1.0625rem; }
+      > p { color: var(--lp-body); line-height: 1.6; margin: 0; max-width: 42ch; font-size: 1rem; }
+      @media (min-width: 641px) { > p { font-size: 1.0625rem; } }
     }
 
     &-bundle {
@@ -612,4 +625,314 @@
 
   // El bloque final hereda del landing, pero aquí lleva varias líneas de texto.
   .axr-lp__final-text p + p { margin-top: 0.6rem; }
+}
+
+// ══════════════════════════════════════════════════════════
+//  Bloques firma. Uno por curso, y sólo uno: es lo que impide que las dos
+//  landings se confundan cuando alguien llega desde un anuncio.
+// ══════════════════════════════════════════════════════════
+
+.axr-cp__signature {
+  padding: var(--lp-section) var(--lp-pad-r) var(--lp-section) var(--lp-pad-l);
+  background: var(--lp-soft);
+
+  &-close {
+    max-width: 62ch;
+    margin: 1.75rem auto 0;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.6;
+    color: var(--lp-ink);
+  }
+}
+
+// ── Embudo · Remote Professional ────────────────────────
+.axr-funnel {
+  max-width: 820px;
+  margin: 0 auto;
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+
+  &__stage {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem 1.15rem;
+    border-radius: var(--lp-radius-md);
+    background: #ffffff;
+    border: 1px solid var(--lp-border);
+
+    @media (min-width: 721px) {
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+      align-items: center;
+      gap: 1.5rem;
+      padding: 1.15rem 1.4rem;
+    }
+  }
+
+  // Cifra arriba, barra debajo: así se lee esté o no desplegada.
+  &__bar {
+    display: grid;
+    gap: 0.45rem;
+    align-content: center;
+  }
+
+  &__track {
+    display: block;
+    height: 12px;
+    border-radius: 999px;
+    background: var(--lp-soft);
+    overflow: hidden;
+  }
+
+  &__fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: 999px;
+    background: var(--lp-grad-1);
+    transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1) calc(var(--i, 0) * 110ms);
+
+    [data-on="true"] & { width: var(--w); }
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+      width: var(--w);
+    }
+  }
+
+  &__value {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+
+    strong {
+      font-family: var(--axr-display);
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      color: var(--lp-accent);
+    }
+    em {
+      font-style: normal;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--lp-muted);
+    }
+  }
+
+  &__text {
+    strong {
+      display: block;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+      margin-bottom: 0.3rem;
+    }
+    p {
+      margin: 0 0 0.6rem;
+      font-size: 0.875rem;
+      line-height: 1.55;
+      color: var(--lp-body);
+    }
+  }
+
+  &__fix {
+    display: block;
+    padding: 0.5rem 0.7rem;
+    border-radius: var(--lp-radius-sm);
+    background: var(--lp-soft);
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    font-weight: 600;
+    color: var(--lp-accent);
+
+    em {
+      display: block;
+      font-style: normal;
+      font-family: var(--axr-mono);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--lp-muted);
+      margin-bottom: 0.15rem;
+    }
+  }
+}
+
+// ── Modelo de negocio · Remote Founder ──────────────────
+.axr-model {
+  max-width: 900px;
+  margin: 0 auto;
+
+  &__cols {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+    @media (min-width: 821px) { grid-template-columns: 1fr 1fr; gap: 1rem; }
+  }
+
+  &__col {
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--lp-radius);
+    padding: 1.5rem 1.25rem;
+    @media (min-width: 481px) { padding: 1.85rem 1.6rem; }
+
+    // Izquierda apagada, derecha en color: el contraste es el mensaje.
+    &[data-variant="before"] {
+      background: #ffffff;
+      border: 1px solid var(--lp-border);
+      h3 { color: var(--lp-muted); }
+    }
+    &[data-variant="after"] {
+      background: var(--lp-ink);
+      border: 1px solid var(--lp-ink);
+      color: #ffffff;
+      box-shadow: 0 22px 50px rgba(20, 16, 40, 0.28);
+
+      h3 { color: #ffffff; }
+      .axr-model__desc,
+      .axr-model__row dd { color: rgba(255, 255, 255, 0.85); }
+      .axr-model__row { border-color: rgba(255, 255, 255, 0.14); }
+      .axr-model__row dt,
+      .axr-model__ceiling em { color: rgba(255, 255, 255, 0.55); }
+      .axr-model__ceiling { color: #ffffff; border-color: rgba(255, 255, 255, 0.22); }
+      .axr-model__meter-label { color: rgba(255, 255, 255, 0.6); }
+      .axr-model__meter-track { background: rgba(255, 255, 255, 0.16); }
+      .axr-model__meter-fill { background: var(--lp-grad-1); }
+      .axr-model__meter-value { color: #ffffff; }
+    }
+  }
+
+  &__tag {
+    font-family: var(--axr-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--lp-accent);
+  }
+
+  h3 {
+    font-size: clamp(1.25rem, 4.8vw, 1.6rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin: 0.5rem 0 0.5rem;
+  }
+
+  &__desc {
+    margin: 0 0 1.1rem;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--lp-body);
+  }
+
+  &__rows {
+    margin: 0 0 1.25rem;
+    display: grid;
+    gap: 0;
+  }
+
+  &__row {
+    padding: 0.7rem 0;
+    border-top: 1px solid var(--lp-border);
+
+    dt {
+      font-family: var(--axr-mono);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--lp-muted);
+      margin-bottom: 0.2rem;
+    }
+    dd {
+      margin: 0;
+      font-size: 0.9375rem;
+      line-height: 1.45;
+      color: var(--lp-ink);
+    }
+  }
+
+  // La única cifra que compara los dos modelos.
+  &__meter {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.35rem 0.75rem;
+    margin-top: auto;
+    padding-top: 0.5rem;
+
+    &-label {
+      grid-column: 1 / -1;
+      font-family: var(--axr-mono);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--lp-muted);
+    }
+    &-track {
+      height: 10px;
+      border-radius: 999px;
+      background: var(--lp-soft);
+      overflow: hidden;
+    }
+    &-fill {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+      background: var(--lp-grad-1);
+      transition: width 1s cubic-bezier(0.22, 1, 0.36, 1) 0.15s;
+      @media (prefers-reduced-motion: reduce) { transition: none; }
+    }
+    &-value {
+      font-family: var(--axr-display);
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--lp-accent);
+    }
+  }
+
+  &__ceiling {
+    margin: 1.1rem 0 0;
+    padding-top: 0.9rem;
+    border-top: 1px dashed var(--lp-border);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    font-weight: 600;
+    color: var(--lp-ink);
+
+    em {
+      display: block;
+      font-style: normal;
+      font-family: var(--axr-mono);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--lp-muted);
+      margin-bottom: 0.2rem;
+    }
+  }
+
+  &__close {
+    max-width: 62ch;
+    margin: 1.75rem auto 0;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.6;
+    color: var(--lp-ink);
+  }
 }

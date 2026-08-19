@@ -7,6 +7,11 @@ import { LandingNav } from "@/components/landing/landing-nav";
 import { RatingBadges } from "@/components/landing/rating-badges";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LeadForm } from "@/components/landing/lead-form";
+import { ToolsSection } from "@/components/landing/tools-section";
+import { Roadmap } from "@/components/landing/roadmap";
+import { GlossarySection } from "@/components/landing/glossary-section";
+import { HeroBackdrop } from "@/components/landing/hero-backdrop";
+import { FacultySection } from "@/components/landing/faculty-section";
 import { getLocale } from "@/lib/i18n/server";
 import { landingCopy } from "@/app/bienvenida/copy";
 import "@/app/bienvenida/landing.scss";
@@ -75,7 +80,13 @@ export async function LandingView() {
       <LandingNav />
 
       {/* ── Hero ────────────────────────────────────── */}
+      {/* Tres bloques y no dos: promesa, formulario y prueba social van por
+          separado para poder reordenarlos. En móvil el formulario sube justo
+          detrás del titular —es la única acción de la página— y la prueba
+          social baja a reforzar. En escritorio vuelven a su sitio. */}
       <section className="axr-lp__hero">
+        <HeroBackdrop />
+
         <div className="axr-lp__hero-inner">
           <div className="axr-lp__hero-brand">
             <BrandMark size={30} className="axr-lp__hero-mark" />
@@ -88,7 +99,16 @@ export async function LandingView() {
             <span>{c.hero.titleBottom}</span>
           </h1>
           <p className="axr-lp__hero-lead">{c.hero.lead}</p>
+        </div>
 
+        {/* Formulario de captación — primer punto de conversión de la página. */}
+        <div className="axr-lp__hero-form">
+          <span className="axr-lp__eyebrow">{c.form.eyebrow}</span>
+          <h2 className="axr-lp__hero-form-title">{c.form.title}</h2>
+          <LeadForm copy={c.form} variant="hero" />
+        </div>
+
+        <div className="axr-lp__hero-proof">
           <div className="axr-lp__hero-stats">
             {c.hero.stats.map((s) => (
               <div key={s.label}>
@@ -105,13 +125,6 @@ export async function LandingView() {
             partners={c.accreditation.partners}
             tone="dark"
           />
-        </div>
-
-        {/* Formulario de captación — primer punto de conversión de la página. */}
-        <div className="axr-lp__hero-form">
-          <span className="axr-lp__eyebrow">{c.form.eyebrow}</span>
-          <h2 className="axr-lp__hero-form-title">{c.form.title}</h2>
-          <LeadForm copy={c.form} variant="hero" />
         </div>
       </section>
 
@@ -169,6 +182,30 @@ export async function LandingView() {
           </div>
         </div>
       </section>
+
+      {/* ── El stack (va detrás del bloque de Slack: misma idea) ─ */}
+      <ToolsSection />
+
+      {/* ── Diccionario ─────────────────────────────── */}
+      {/* En la portada, una selección: los doce términos que más deciden en un
+          proceso remoto internacional. Los 34 están en /glosario, y así la
+          portada no duplica el hub entero. */}
+      <GlossarySection
+        only={[
+          "employer-of-record",
+          "contractor-internacional",
+          "residencia-fiscal",
+          "visado-nomada-digital",
+          "solapamiento-horario",
+          "trabajo-asincrono",
+          "ats",
+          "compensacion-global",
+          "geo-pay",
+          "negocio-borderless",
+          "oferta-productizada",
+          "stack-remoto",
+        ]}
+      />
 
       {/* ── Bento stats ─────────────────────────────── */}
       <section className="axr-lp__bento">
@@ -326,24 +363,8 @@ export async function LandingView() {
         </div>
       </section>
 
-      {/* ── Equipo ──────────────────────────────────── */}
-      <section id="equipo" className="axr-lp__team">
-        <header className="axr-lp__team-head">
-          <span className="axr-lp__eyebrow">{c.team.eyebrow}</span>
-          <h2>{c.team.title}</h2>
-          <p>{c.team.lead}</p>
-        </header>
-        <div className="axr-lp__team-grid">
-          {c.team.roles.map((r) => (
-            <article key={r.role} className="axr-lp__role">
-              <span className="axr-lp__role-tag">{r.tag}</span>
-              <BrandMark size={28} className="axr-lp__role-mark" />
-              <h3>{r.role}</h3>
-              <p>{r.desc}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+      {/* ── Equipo docente ──────────────────────────── */}
+      <FacultySection />
 
       {/* ── Acceso / plan ───────────────────────────── */}
       <section id="acceso" className="axr-lp__access">
@@ -376,21 +397,14 @@ export async function LandingView() {
         </div>
       </section>
 
-      {/* ── Cómo funciona ───────────────────────────── */}
+      {/* ── Cómo funciona: cronograma de la convocatoria ─ */}
       <section id="como" className="axr-lp__steps">
         <header className="axr-lp__steps-head">
           <span className="axr-lp__eyebrow">{c.steps.eyebrow}</span>
           <h2>{c.steps.title}</h2>
+          <p>{c.steps.lead}</p>
         </header>
-        <ol className="axr-lp__steps-grid">
-          {c.steps.items.map((s) => (
-            <li key={s.n} className="axr-lp__step">
-              <span className="axr-lp__step-n">{s.n}</span>
-              <strong>{s.title}</strong>
-              <p>{s.desc}</p>
-            </li>
-          ))}
-        </ol>
+        <Roadmap copy={c.steps} />
       </section>
 
       {/* ── FAQ ─────────────────────────────────────── */}

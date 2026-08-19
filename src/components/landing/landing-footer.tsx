@@ -2,12 +2,13 @@ import Link from "next/link";
 
 import { BrandMark } from "@/components/brand-mark";
 import { LocaleToggle } from "@/components/locale-toggle";
+import { CookieSettingsLink } from "@/components/consent/cookie-settings-link";
 import { landingCopy } from "@/app/bienvenida/copy";
 import { getLocale } from "@/lib/i18n/server";
 
 // Footer compartido por la landing y las páginas de curso. Aquí es donde vive
 // el acceso al campus virtual, para no competir con la captación de leads.
-export async function LandingFooter() {
+export async function LandingFooter({ base = "" }: { base?: string } = {}) {
   const locale = await getLocale();
   const c = landingCopy[locale].footer;
 
@@ -31,7 +32,7 @@ export async function LandingFooter() {
               <span className="axr-lp__eyebrow">{col.title}</span>
               {col.links.map((l) =>
                 l.href.startsWith("#") ? (
-                  <a key={l.label} href={l.href}>{l.label}</a>
+                  <a key={l.label} href={`${base}${l.href}`}>{l.label}</a>
                 ) : (
                   <Link key={l.label} href={l.href}>{l.label}</Link>
                 ),
@@ -42,7 +43,8 @@ export async function LandingFooter() {
       </div>
       <div className="axr-lp__footer-bar">
         <span>{c.access}</span>
-        <span>v1.0</span>
+        {/* Revocar el consentimiento tiene que ser tan fácil como darlo. */}
+        <CookieSettingsLink label={c.cookieSettings} />
       </div>
     </footer>
   );

@@ -41,3 +41,13 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 admin 2.scss
+
+# Ajustes locales de Claude Code (específicos de cada máquina)
+.claude/settings.local.json
+
+# Duplicados que genera Finder al copiar ("archivo 2.ts"). No compilan y
+# rompen el type check: se quedan en local hasta decidir si se borran.
+* [0-9].ts
+* [0-9].tsx
+* [0-9].scss
+* [0-9].json

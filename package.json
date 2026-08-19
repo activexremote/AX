@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "tools:icons": "node scripts/build-tool-icons.mjs",
+    "tools:logos": "node scripts/fetch-logos.mjs --write"
   },
   "dependencies": {
     "@carbon/grid": "^11.56.0",
@@ -25,6 +27,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "simple-icons": "^16.28.0",
     "typescript": "^5"
   }
 }

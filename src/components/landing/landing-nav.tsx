@@ -3,15 +3,21 @@ import Link from "next/link";
 import { BrandMark } from "@/components/brand-mark";
 import { LocaleToggle } from "@/components/locale-toggle";
 import { CohortTicker } from "@/components/landing/cohort-ticker";
+import { LandingMenu } from "@/components/landing/landing-menu";
+import { LandingCtaBar } from "@/components/landing/landing-cta-bar";
 import { landingCopy } from "@/app/bienvenida/copy";
 import { COHORT_START } from "@/app/bienvenida/cohort";
 import { getLocale } from "@/lib/i18n/server";
 
 // Nav compartido por la landing y las páginas de curso. Los enlaces con "#"
 // apuntan a secciones que existen en todas ellas (#metodo, #faq, #solicitar).
-export async function LandingNav() {
+// Por debajo de 981px los enlaces se pliegan en <LandingMenu>.
+export async function LandingNav({ base = "" }: { base?: string } = {}) {
   const locale = await getLocale();
   const c = landingCopy[locale].nav;
+  const ticker = landingCopy[locale].ticker;
+  // Las páginas sin las secciones ancladas (legales) pasan base="/bienvenida".
+  const anchor = (href: string) => (href.startsWith("#") ? `${base}${href}` : href);
 
   return (
     <>
@@ -40,7 +46,7 @@ export async function LandingNav() {
           </details>
 
           {c.links.map((l) => (
-            <a key={l.href} href={l.href}>
+            <a key={l.href} href={anchor(l.href)}>
               {l.label}
             </a>
           ))}
@@ -52,14 +58,24 @@ export async function LandingNav() {
         </nav>
 
         <div className="axr-lp__nav-meta">
-          <LocaleToggle />
-          <a href="#solicitar" className="axr-lp__btn axr-lp__btn--solid">
-            {c.cta}
-            <span aria-hidden>→</span>
+          <div className="axr-lp__nav-locale">
+            <LocaleToggle />
+          </div>
+          {/* Dos etiquetas, una visible por tamaño: la frase entera no cabe en
+              la píldora del móvil y `display: none` la oculta también al lector
+              de pantalla, así que no se anuncia dos veces. */}
+          <a href={anchor("#solicitar")} className="axr-lp__btn axr-lp__btn--solid axr-lp__nav-cta">
+            <span className="axr-lp__nav-cta-short">{c.ctaShort}</span>
+            <span className="axr-lp__nav-cta-full">{c.cta}</span>
+            <span className="axr-lp__nav-cta-arrow" aria-hidden>→</span>
           </a>
+          <LandingMenu copy={c} base={base} />
         </div>
       </div>
     </header>
+
+    {/* Sólo móvil: recupera el CTA una vez el héroe queda atrás. */}
+    <LandingCtaBar note={ticker.intro} cta={c.cta} />
     </>
   );
 }

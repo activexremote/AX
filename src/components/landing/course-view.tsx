@@ -4,8 +4,14 @@ import { LandingNav } from "@/components/landing/landing-nav";
 import { RatingBadges } from "@/components/landing/rating-badges";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LeadForm } from "@/components/landing/lead-form";
+import { ToolsSection } from "@/components/landing/tools-section";
+import { HeroBackdrop } from "@/components/landing/hero-backdrop";
+import { CourseFunnel } from "@/components/landing/course-funnel";
+import { CourseModel } from "@/components/landing/course-model";
 import { landingCopy } from "@/app/bienvenida/copy";
 import { courseCopy, type CourseSlug } from "@/app/cursos/copy";
+import { COURSE_CATEGORIES } from "@/app/bienvenida/tools";
+import { funnelCopy, modelCopy } from "@/app/cursos/signature";
 import { getLocale } from "@/lib/i18n/server";
 import "@/app/bienvenida/landing.scss";
 import "@/app/cursos/course.scss";
@@ -18,6 +24,10 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
   const locale = await getLocale();
   const c = courseCopy[locale][slug];
   const form = landingCopy[locale].form;
+  // Cada curso tiene su bloque propio: el otro no lo lleva. Es lo que hace
+  // que un anuncio que apunta aquí no se confunda con el otro.
+  const funnel = funnelCopy[locale];
+  const model = modelCopy[locale];
   const accreditation = landingCopy[locale].accreditation;
 
   return (
@@ -26,6 +36,8 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
 
       {/* ── Hero ────────────────────────────────────── */}
       <section className="axr-lp__hero">
+        <HeroBackdrop />
+
         <div className="axr-lp__hero-inner">
           <div className="axr-lp__hero-brand">
             <BrandMark size={26} className="axr-lp__hero-mark" />
@@ -72,6 +84,28 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
           <LeadForm copy={form} variant="hero" preselect={[slug]} />
         </div>
       </section>
+
+      {/* ── Bloque firma del curso ──────────────────── */}
+      {slug === "remote-professional" ? (
+        <section className="axr-cp__signature axr-cp__signature--funnel">
+          <header className="axr-cp__head">
+            <span className="axr-lp__eyebrow">{funnel.eyebrow}</span>
+            <h2>{funnel.title}</h2>
+            <p>{funnel.lead}</p>
+          </header>
+          <CourseFunnel copy={funnel} />
+          <p className="axr-cp__signature-close">{funnel.close}</p>
+        </section>
+      ) : (
+        <section className="axr-cp__signature axr-cp__signature--model">
+          <header className="axr-cp__head">
+            <span className="axr-lp__eyebrow">{model.eyebrow}</span>
+            <h2>{model.title}</h2>
+            <p>{model.lead}</p>
+          </header>
+          <CourseModel copy={model} />
+        </section>
+      )}
 
       {/* ── El cambio de contexto ───────────────────── */}
       <section className="axr-cp__shift">
@@ -203,6 +237,9 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
         </ol>
         {c.method.note ? <p className="axr-cp__method-note">{c.method.note}</p> : null}
       </section>
+
+      {/* ── El stack: sólo las categorías que toca este curso ─ */}
+      <ToolsSection only={COURSE_CATEGORIES[slug]} />
 
       {/* ── El sistema (cadena) ─────────────────────── */}
       <section className="axr-cp__system">
