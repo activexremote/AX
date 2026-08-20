@@ -22,12 +22,12 @@ export const article: Article = {
   ogTitle: "El stack remoto mínimo",
   ogDescription:
     "Pocas herramientas bien conectadas rinden más que muchas a medio usar. Las categorías que importan.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-06-23",
+  updated: "2026-06-23",
   readingMinutes: 11,
   author: "Equipo ActiveXRemote",
   terms: ["stack-remoto", "documentacion-asincrona", "automatizacion-no-code", "trabajo-asincrono", "agente-ia"],
-  related: ["trabajo-asincrono-guia", "automatizar-negocio-sin-codigo", "primeros-90-dias-equipo-distribuido"],
+  related: ["automatizar-negocio-sin-codigo", "primeros-90-dias-equipo-distribuido", "trabajo-asincrono-guia", "entrevista-remota-video-asincrona"],
   external: [
     { label: "INCIBE · Seguridad en el teletrabajo", url: "https://www.incibe.es" },
     { label: "Agencia Europea de Ciberseguridad · Trabajo remoto seguro", url: "https://www.enisa.europa.eu" },
@@ -171,4 +171,5 @@ export const article: Article = {
     { q: "¿Merece la pena pagar por herramientas o usar las más baratas?", a: "Júzgalo por si la herramienta cubre bien su categoría y se integra con las demás. El error caro no es la suscripción: es adoptar una segunda herramienta porque la primera nunca se configuró bien." },
     { q: "¿Cómo migro sin perder información?", a: "Una categoría cada vez, dejando el sistema antiguo legible pero sin escritura durante un periodo y redirigiendo a la gente de forma explícita. Dos sistemas escribibles en paralelo es justo como empieza la acumulación." },
   ],
+  hero: { file: "/blog/pila.svg", alt: "Diagrama: cuatro capas apiladas, cada una más estrecha que la de abajo." },
 };

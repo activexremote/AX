@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "IA para buscar trabajo remoto",
   ogDescription:
     "Acelera la preparación, no sustituye el criterio. Los usos que funcionan y las señales que delatan un texto generado.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-06-30",
+  updated: "2026-06-30",
   readingMinutes: 11,
   author: "Equipo ActiveXRemote",
   course: "remote-professional",
   terms: ["prompt-engineering", "agente-ia", "ats", "cv-internacional", "portfolio-internacional"],
-  related: ["cv-internacional-ats", "trabajo-remoto-internacional-desde-espana", "negociar-salario-remoto-internacional"],
+  related: ["cv-internacional-ats", "portfolio-para-recruiters-internacionales", "automatizar-negocio-sin-codigo", "entrevista-remota-video-asincrona"],
   external: [
     { label: "Comisión Europea · Reglamento Europeo de Inteligencia Artificial", url: "https://digital-strategy.ec.europa.eu" },
     { label: "Comité Europeo de Protección de Datos · Tratamiento de datos personales", url: "https://www.edpb.europa.eu" },
@@ -164,4 +164,5 @@ export const article: Article = {
     { q: "¿La IA puede rellenar formularios de candidatura por mí?", a: "Existen herramientas que lo hacen, pero conviene revisar cada envío. Los formularios enviados en masa sin revisar generan errores que sí descartan, y algunas empresas los detectan por el patrón." },
     { q: "¿Merece la pena pagar por una herramienta de IA para buscar trabajo?", a: "Depende del volumen. Si vas a preparar muchas candidaturas, las versiones de pago suelen permitir desactivar el uso de tus datos para entrenamiento, que es la diferencia relevante más allá de la calidad del modelo." },
   ],
+  hero: { file: "/blog/amplificador.svg", alt: "Diagrama: una señal entra en un amplificador triangular y salen cinco." },
 };

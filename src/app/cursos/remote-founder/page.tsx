@@ -1,12 +1,13 @@
 import type { Metadata, Viewport } from "next";
 
 import { CourseView } from "@/components/landing/course-view";
-import { courseCopy } from "@/app/cursos/copy";
+import { CourseSchema, courseMetadata } from "@/app/cursos/seo";
 import { getLocale } from "@/lib/i18n/server";
 
+const SLUG = "remote-founder" as const;
+
 export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
-  return courseCopy[locale]["remote-founder"].meta;
+  return courseMetadata(await getLocale(), SLUG);
 }
 
 // La barra del ticker tiñe la UI de Safari; `cover` deja que el mesh y el
@@ -14,6 +15,12 @@ export async function generateMetadata(): Promise<Metadata> {
 // con env(safe-area-inset-*) en landing.scss).
 export const viewport: Viewport = { themeColor: "#161326", viewportFit: "cover" };
 
-export default function RemoteFounderPage() {
-  return <CourseView slug="remote-founder" />;
+export default async function RemoteFounderPage() {
+  const locale = await getLocale();
+  return (
+    <>
+      <CourseSchema locale={locale} slug={SLUG} />
+      <CourseView slug={SLUG} />
+    </>
+  );
 }

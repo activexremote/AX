@@ -59,6 +59,20 @@ export type ArticleSpec = {
 // ── Español ──────────────────────────────────────────────
 export const MAP_ES: readonly ArticleSpec[] = [
   {
+    slug: "que-es-activexremote",
+    locale: "es",
+    cluster: "metodo",
+    funnel: "mofu",
+    intent: "navegacional",
+    keyword: "qué es ActiveXRemote",
+    longTail: ["escuela de trabajo remoto internacional", "manifiesto trabajo remoto", "para quién es ActiveXRemote"],
+    title: "Qué es ActiveXRemote, y por qué existe",
+    priority: 1,
+    terms: ["trabajo-remoto", "negocio-borderless", "employer-of-record", "residencia-fiscal"],
+    links: ["trabajo-remoto-internacional-desde-espana", "curso-trabajo-remoto-cual-elegir"],
+    status: "publicado",
+  },
+  {
     slug: "trabajo-remoto-internacional-desde-espana",
     locale: "es",
     cluster: "empleo",
@@ -384,6 +398,20 @@ export const MAP_ES: readonly ArticleSpec[] = [
 // ── English ──────────────────────────────────────────────
 export const MAP_EN: readonly ArticleSpec[] = [
   {
+    slug: "what-is-activexremote",
+    locale: "en",
+    cluster: "metodo",
+    funnel: "mofu",
+    intent: "navegacional",
+    keyword: "what is ActiveXRemote",
+    longTail: ["international remote work school", "remote work manifesto", "who ActiveXRemote is for"],
+    title: "What ActiveXRemote is, and why it exists",
+    priority: 1,
+    terms: ["trabajo-remoto", "negocio-borderless", "employer-of-record", "residencia-fiscal"],
+    links: ["international-remote-jobs-from-europe", "worker-misclassification-risk"],
+    status: "publicado",
+  },
+  {
     slug: "international-remote-jobs-from-europe",
     locale: "en",
     cluster: "empleo",
@@ -688,8 +716,19 @@ export const CONTENT_MAP: Record<Locale, readonly ArticleSpec[]> = {
   en: MAP_EN,
 };
 
-/** Pares equivalentes ES↔EN, para las etiquetas hreflang. */
+/**
+ * Pares equivalentes ES↔EN, para las etiquetas hreflang.
+ *
+ * Sólo entran aquí los artículos que de verdad cuentan lo mismo en los dos
+ * idiomas. Quedan fuera a propósito, porque no tienen traducción y no hay
+ * ningún otro texto que haga sus veces:
+ *   · ES  curso-trabajo-remoto-cual-elegir   (cómo distinguir formación de humo)
+ *   · EN  worker-misclassification-risk      (contractor que en realidad es empleado)
+ * Estaban emparejados entre sí y son artículos distintos: declararlo así hacía
+ * que Google pudiera servir el texto equivocado al buscar en el otro idioma.
+ */
 export const HREFLANG_PAIRS: Record<string, string> = {
+  "que-es-activexremote": "what-is-activexremote",
   "trabajo-remoto-internacional-desde-espana": "international-remote-jobs-from-europe",
   "como-trabajar-para-empresa-extranjera-legalmente": "employer-of-record-vs-contractor",
   "cv-internacional-ats": "ats-friendly-resume",
@@ -709,7 +748,6 @@ export const HREFLANG_PAIRS: Record<string, string> = {
   "cobrar-clientes-extranjero": "getting-paid-internationally",
   "automatizar-negocio-sin-codigo": "no-code-automation-for-solopreneurs",
   "sop-documentar-procesos": "writing-sops-to-delegate",
-  "curso-trabajo-remoto-cual-elegir": "worker-misclassification-risk",
 };
 
 /** Palabras vetadas en todo el contenido del blog. */

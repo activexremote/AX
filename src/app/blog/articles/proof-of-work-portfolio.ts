@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "A Portfolio That Works When Nobody Knows Your Employers",
   ogDescription:
     "Recruiters abroad cannot call your old manager. Evidence replaces reputation, and evidence has a format.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-04-28",
+  updated: "2026-04-28",
   readingMinutes: 10,
   author: "ActiveXRemote Team",
   course: "remote-professional",
   terms: ["portfolio-internacional", "marca-personal", "cv-internacional", "ats"],
-  related: ["ats-friendly-resume", "international-remote-jobs-from-europe", "async-interview-and-video-screening"],
+  related: ["ats-friendly-resume", "ai-for-job-search", "async-interview-and-video-screening", "negotiating-remote-salary"],
   external: [
     { label: "European Commission · Europass and skills documentation", url: "https://europa.eu/europass/en" },
     { label: "EURES · Presenting yourself to European employers", url: "https://eures.europa.eu" },
@@ -169,4 +169,5 @@ export const article: Article = {
     { q: "Should the portfolio be in English?", a: "If you are applying internationally, yes. Keep a version in your own language if you also apply locally, but the international one should be in the market's language." },
     { q: "How do I link it from my CV?", a: "Near the top, in the header, as a plain URL that is readable when the CV is printed. Buried at the bottom it will not be clicked." },
   ],
+  hero: { file: "/blog/muestrario.svg", alt: "Diagram: a grid of six work samples with one standing out from the rest." },
 };

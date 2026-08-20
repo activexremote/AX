@@ -1,7 +1,7 @@
 import { PROTOTYPE_RATINGS } from "@/app/bienvenida/flags";
 
 export type RatingItem = {
-  /** "star" es nuestra valoración; "g2"/"trustpilot" van tras PROTOTYPE_RATINGS. */
+  /** "star" es nuestra valoración; las tres van tras PROTOTYPE_RATINGS. */
   mark: "star" | "g2" | "trustpilot";
   score: string;
   label: string;
@@ -48,7 +48,10 @@ function Mark({ mark }: { mark: RatingItem["mark"] }) {
 }
 
 export function RatingBadges({ items }: { items: readonly RatingItem[] }) {
-  const shown = items.filter((item) => item.mark === "star" || PROTOTYPE_RATINGS);
+  // La valoración propia también es de maqueta, así que el interruptor las
+  // tapa todas: antes se colaba porque el filtro sólo miraba G2 y Trustpilot.
+  if (!PROTOTYPE_RATINGS) return null;
+  const shown = items;
   if (!shown.length) return null;
 
   return (

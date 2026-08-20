@@ -63,7 +63,7 @@ export type CourseCopy = {
 const professionalEs: CourseCopy = {
   slug: "remote-professional",
   meta: {
-    title: "Curso Remote Professional · ActiveXRemote",
+    title: "Curso Remote Professional",
     description:
       "Construye una carrera profesional sin fronteras: 14 módulos para competir por oportunidades remotas internacionales.",
   },
@@ -450,7 +450,7 @@ const professionalEs: CourseCopy = {
       "Frameworks y plantillas descargables",
       "Ejercicio y feedback en cada módulo",
       "Comunidad y seguimiento en Slack",
-      "Diploma certificado por Deel, Remoteandtalent y Slack",
+      "Diploma de ActiveXRemote con los módulos superados",
     ],
     cta: "Solicita información",
   },
@@ -518,7 +518,7 @@ const professionalEs: CourseCopy = {
 const founderEs: CourseCopy = {
   slug: "remote-founder",
   meta: {
-    title: "Curso Remote Founder · ActiveXRemote",
+    title: "Curso Remote Founder",
     description:
       "Construye un negocio que pueda funcionar desde cualquier lugar: 14 módulos para pasar de habilidad a negocio global.",
   },
@@ -916,7 +916,7 @@ const founderEs: CourseCopy = {
       "Frameworks y plantillas descargables",
       "Ejercicio y feedback en cada módulo",
       "Comunidad y seguimiento en Slack",
-      "Diploma certificado por Deel, Remoteandtalent y Slack",
+      "Diploma de ActiveXRemote con los módulos superados",
     ],
     cta: "Solicita información",
   },
@@ -989,7 +989,7 @@ const founderEs: CourseCopy = {
 const professionalEn: CourseCopy = {
   slug: "remote-professional",
   meta: {
-    title: "Remote Professional Course · ActiveXRemote",
+    title: "Remote Professional Course",
     description:
       "Build a borderless professional career: 14 modules to compete for international remote opportunities.",
   },
@@ -1375,7 +1375,7 @@ const professionalEn: CourseCopy = {
       "Downloadable frameworks and templates",
       "Exercise and feedback in every module",
       "Community and follow-up on Slack",
-      "Diploma certified by Deel, Remoteandtalent and Slack",
+      "An ActiveXRemote diploma listing the modules you completed",
     ],
     cta: "Request information",
   },
@@ -1443,7 +1443,7 @@ const professionalEn: CourseCopy = {
 const founderEn: CourseCopy = {
   slug: "remote-founder",
   meta: {
-    title: "Remote Founder Course · ActiveXRemote",
+    title: "Remote Founder Course",
     description:
       "Build a business that can run from anywhere: 14 modules to go from a skill to a global business.",
   },
@@ -1840,7 +1840,7 @@ const founderEn: CourseCopy = {
       "Downloadable frameworks and templates",
       "Exercise and feedback in every module",
       "Community and follow-up on Slack",
-      "Diploma certified by Deel, Remoteandtalent and Slack",
+      "An ActiveXRemote diploma listing the modules you completed",
     ],
     cta: "Request information",
   },

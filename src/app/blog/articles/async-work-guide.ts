@@ -22,12 +22,12 @@ export const article: Article = {
   ogTitle: "Asynchronous Work",
   ogDescription:
     "Async is not replying later. It is designing work so nobody is blocked waiting for you.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-04-07",
+  updated: "2026-04-07",
   readingMinutes: 11,
   author: "ActiveXRemote Team",
   terms: ["trabajo-asincrono", "documentacion-asincrona", "solapamiento-horario", "stack-remoto", "onboarding-distribuido"],
-  related: ["time-zone-overlap-explained", "remote-work-stack", "first-90-days-remote-team"],
+  related: ["first-90-days-remote-team", "remote-burnout-signals", "async-interview-and-video-screening", "remote-work-stack"],
   external: [
     { label: "Eurofound · Telework and working conditions research", url: "https://www.eurofound.europa.eu" },
     { label: "ILO · Teleworking arrangements guidance", url: "https://www.ilo.org" },
@@ -174,4 +174,5 @@ export const article: Article = {
     { q: "How much overlap does an async team need?", a: "Two to four hours is common and usually enough for the meetings that genuinely require simultaneity. Teams needing more than that are typically synchronous teams that have not admitted it." },
     { q: "Can async work for creative or exploratory work?", a: "Partly. Early exploration where the question is still forming benefits from real-time conversation. Once the question is clear, written iteration usually produces better thinking than another call." },
   ],
+  hero: { file: "/blog/asincronia.svg", alt: "Diagram: two working days in different time zones handing over without ever overlapping." },
 };

@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "Tus primeros 90 días en un equipo distribuido",
   ogDescription:
     "En remoto nadie aprende por ósmosis. Qué entregar, con quién hablar y qué escribir cada mes.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-07-07",
+  updated: "2026-07-07",
   readingMinutes: 10,
   author: "Equipo ActiveXRemote",
   course: "remote-professional",
   terms: ["onboarding-distribuido", "documentacion-asincrona", "trabajo-asincrono", "burnout-remoto", "stack-remoto"],
-  related: ["trabajo-asincrono-guia", "burnout-remoto-senales", "solapamiento-horario-ofertas-remotas"],
+  related: ["trabajo-asincrono-guia", "entrevista-remota-video-asincrona", "burnout-remoto-senales", "solapamiento-horario-ofertas-remotas"],
   external: [
     { label: "Eurofound · Teletrabajo y condiciones de trabajo", url: "https://www.eurofound.europa.eu" },
     { label: "Ley 10/2021 de trabajo a distancia · BOE", url: "https://www.boe.es" },
@@ -174,4 +174,5 @@ export const article: Article = {
     { q: "¿Y si no me dan suficiente trabajo?", a: "Busca algo sin dueño y empieza a mantenerlo. En todos los equipos hay cosas huérfanas, y adoptar una es el camino más corto de recién llegado a compañero útil." },
     { q: "¿Cuándo empiezo a dar feedback?", a: "En el mes dos, mientras todavía tengas mirada fresca. Lo que ves al llegar se vuelve invisible en pocos meses, así que anótalo aunque actúes más tarde." },
   ],
+  hero: { file: "/blog/rampa.svg", alt: "Diagrama: tres tramos ascendentes que representan los tres primeros meses." },
 };

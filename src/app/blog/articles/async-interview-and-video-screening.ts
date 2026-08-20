@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "Async Interviews and Video Screens",
   ogDescription:
     "Recorded answers, written rounds and take-homes test different things than a conversation. Prepare accordingly.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-05-05",
+  updated: "2026-05-05",
   readingMinutes: 11,
   author: "ActiveXRemote Team",
   course: "remote-professional",
   terms: ["trabajo-asincrono", "onboarding-distribuido", "portfolio-internacional", "documentacion-asincrona"],
-  related: ["ats-friendly-resume", "proof-of-work-portfolio", "negotiating-remote-salary"],
+  related: ["first-90-days-remote-team", "time-zone-overlap-explained", "async-work-guide", "ats-friendly-resume"],
   external: [
     { label: "European Commission · Artificial Intelligence Act and recruitment", url: "https://digital-strategy.ec.europa.eu" },
     { label: "European Data Protection Board · Automated decision-making guidance", url: "https://www.edpb.europa.eu" },
@@ -163,4 +163,5 @@ export const article: Article = {
     { q: "What technical setup do I need?", a: "Camera at eye level, light in front of you rather than behind, and a microphone closer than your laptop's. Ten minutes of setup improves every answer you record." },
     { q: "Should I follow up after an async stage?", a: "A short message confirming submission and offering to expand on anything is fine. Long follow-ups restating your answers do not help and can read as not trusting the process." },
   ],
+  hero: { file: "/blog/pantalla-voz.svg", alt: "Diagram: a video screen beside the waveform of a recorded answer." },
 };

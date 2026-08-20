@@ -14,6 +14,9 @@ export type SlackEventKey =
   | "assignment_completed"
   | "user_created"
   | "lead_created"
+  | "order_paid"
+  | "order_abandoned"
+  | "payment_failed"
   | "student_progress_digest"
   | "teacher_compliance_digest"
   | "reminder_inactive";
@@ -96,6 +99,28 @@ export const SLACK_EVENTS: Record<SlackEventKey, SlackEventDef> = {
     category: "admin",
     dm: false,
     emoji: "🎯",
+  },
+  order_paid: {
+    label: "Matrícula pagada",
+    description: "Avisa cuando alguien completa el pago y se le abre el acceso al campus.",
+    category: "admin",
+    dm: false,
+    emoji: "💳",
+  },
+  order_abandoned: {
+    label: "Checkout abandonado",
+    description:
+      "Avisa cuando alguien deja su email y no llega a pagar. Es la lista de gente a la que merece la pena llamar.",
+    category: "admin",
+    dm: false,
+    emoji: "🛒",
+  },
+  payment_failed: {
+    label: "Cobro rechazado",
+    description: "Avisa cuando falla un plazo y el acceso queda suspendido.",
+    category: "admin",
+    dm: false,
+    emoji: "🚫",
   },
   student_progress_digest: {
     label: "Resumen de progreso de alumnos",

@@ -7,6 +7,12 @@ import { DEMO_FACULTY, FACULTY, facultyCopy } from "@/app/bienvenida/faculty";
 // paga un programa elige también por quién lo imparte, y tres tarjetas sin
 // persona no responden a esa pregunta.
 export async function FacultySection() {
+  // Mientras los nombres y las fotos sean de muestra, la sección no se pinta.
+  // Un aviso de "datos de ejemplo" bajo tres retratos de Unsplash no arregla
+  // que se esté vendiendo formación con profesorado que no existe: lo que
+  // arregla el problema es no enseñarlo hasta tener al equipo real.
+  if (DEMO_FACULTY) return null;
+
   const locale = await getLocale();
   const c = facultyCopy[locale];
 

@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "Your First 90 Days on a Distributed Team",
   ogDescription:
     "Nobody learns by osmosis remotely. What to deliver, who to meet and what to write in each of the first three months.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-07-07",
+  updated: "2026-07-07",
   readingMinutes: 10,
   author: "ActiveXRemote Team",
   course: "remote-professional",
   terms: ["onboarding-distribuido", "documentacion-asincrona", "trabajo-asincrono", "burnout-remoto", "stack-remoto"],
-  related: ["async-work-guide", "remote-burnout-signals", "time-zone-overlap-explained"],
+  related: ["async-work-guide", "async-interview-and-video-screening", "remote-burnout-signals", "time-zone-overlap-explained"],
   external: [
     { label: "Eurofound · Telework and working conditions", url: "https://www.eurofound.europa.eu" },
     { label: "ILO · Practical guide on teleworking", url: "https://www.ilo.org" },
@@ -174,4 +174,5 @@ export const article: Article = {
     { q: "What if I am not given enough work?", a: "Find something unowned and start maintaining it. Unowned things exist in every team and taking one is the fastest path from new joiner to useful colleague." },
     { q: "When should I start giving feedback?", a: "In month two, while your fresh perspective still exists. The things you notice as a newcomer become invisible to you within a few months, so write them down even if you act later." },
   ],
+  hero: { file: "/blog/rampa.svg", alt: "Diagram: three rising steps representing the first three months." },
 };

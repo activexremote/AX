@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "Dejar de cobrar por horas",
   ogDescription:
     "Cómo pasar de vender tiempo a vender un resultado con alcance y precio cerrados, sin contratar a nadie.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-07-21",
+  updated: "2026-07-21",
   readingMinutes: 12,
   author: "Equipo ActiveXRemote",
   course: "remote-founder",
   terms: ["oferta-productizada", "solopreneur", "negocio-borderless", "sop", "automatizacion-no-code"],
-  related: ["conseguir-clientes-b2b-internacionales", "automatizar-negocio-sin-codigo", "cobrar-clientes-extranjero"],
+  related: ["sop-documentar-procesos", "conseguir-clientes-b2b-internacionales", "automatizar-negocio-sin-codigo", "curso-trabajo-remoto-cual-elegir"],
   external: [
     { label: "Comisión Europea · Apoyo a pymes y trabajo autónomo", url: "https://single-market-economy.ec.europa.eu" },
     { label: "OCDE · Estudios sobre trabajo por cuenta propia", url: "https://data.oecd.org" },
@@ -173,4 +173,5 @@ export const article: Article = {
     { q: "¿Puedo cobrar por horas y productizado a la vez?", a: "Durante la transición, sí, y es lo recomendable. A largo plazo conviene que la vía por horas tenga un precio claramente superior, para que no compita con la cerrada." },
     { q: "¿Cuándo automatizo?", a: "Cuando hayas entregado el mismo proceso varias veces sin cambios y sepas exactamente qué pasos no requieren criterio. Automatizar antes multiplica los errores en lugar del margen." },
   ],
+  hero: { file: "/blog/producto-cerrado.svg", alt: "Diagrama: horas sueltas de distinta longitud que se compactan en un único bloque cerrado." },
 };

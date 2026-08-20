@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink } from "@/components/locale-link";
 
 import { BrandMark } from "@/components/brand-mark";
 import { LocaleToggle } from "@/components/locale-toggle";
@@ -24,10 +24,10 @@ export async function LandingNav({ base = "" }: { base?: string } = {}) {
     <CohortTicker copy={landingCopy[locale].ticker} target={COHORT_START} />
     <header className="axr-lp__nav">
       <div className="axr-lp__nav-inner">
-        <Link href="/" className="axr-lp__brand" aria-label="ActiveXRemote">
+        <LocaleLink href="/" className="axr-lp__brand" aria-label="ActiveXRemote">
           <BrandMark size={22} className="axr-lp__brand-mark" />
           <span>ActiveXRemote</span>
-        </Link>
+        </LocaleLink>
 
         <nav className="axr-lp__nav-links">
           {/* Desplegable sin JS: <details> es accesible por teclado de serie. */}
@@ -38,23 +38,32 @@ export async function LandingNav({ base = "" }: { base?: string } = {}) {
             </summary>
             <div className="axr-lp__drop-menu">
               {c.courses.items.map((l) => (
-                <Link key={l.href} href={l.href}>
+                <LocaleLink key={l.href} href={l.href}>
                   {l.label}
-                </Link>
+                </LocaleLink>
               ))}
             </div>
           </details>
 
-          {c.links.map((l) => (
-            <a key={l.href} href={anchor(l.href)}>
-              {l.label}
-            </a>
-          ))}
+          {/* Las anclas se resuelven contra la página base y van como <a>;
+              las rutas de verdad pasan por LocaleLink para no perder el
+              idioma (en inglés, "Blog" tiene que llevar a /en/blog). */}
+          {c.links.map((l) =>
+            l.href.startsWith("#") ? (
+              <a key={l.href} href={anchor(l.href)}>
+                {l.label}
+              </a>
+            ) : (
+              <LocaleLink key={l.href} href={l.href}>
+                {l.label}
+              </LocaleLink>
+            ),
+          )}
 
           {/* Presencia discreta: el campus no debe competir con el CTA. */}
-          <Link href="/login" className="axr-lp__nav-campus">
+          <LocaleLink href="/login" className="axr-lp__nav-campus">
             {c.campus}
-          </Link>
+          </LocaleLink>
         </nav>
 
         <div className="axr-lp__nav-meta">

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink } from "@/components/locale-link";
 
 import { getLocale } from "@/lib/i18n/server";
 import {
@@ -6,6 +6,7 @@ import {
   TERM_CATEGORIES,
   TERM_CATEGORY_LABEL,
   glossaryCopy,
+  termPath,
 } from "@/app/glosario/terms";
 // La sección vive en la portada pero sus estilos son los del diccionario:
 // se importan aquí para que viajen con el componente allá donde se monte.
@@ -73,10 +74,10 @@ export async function GlossarySection({ only }: Props) {
               </summary>
               <div className="axr-gloss__def">
                 <p>{t.short}</p>
-                <Link href={`/glosario/${term.id}`} className="axr-gloss__link">
+                <LocaleLink href={termPath(term, locale)} className="axr-gloss__link">
                   {c.seeTerm}
                   <span aria-hidden>→</span>
-                </Link>
+                </LocaleLink>
               </div>
             </details>
           );
@@ -84,10 +85,10 @@ export async function GlossarySection({ only }: Props) {
       </div>
 
       <p className="axr-gloss__all">
-        <Link href="/glosario" className="axr-lp__btn axr-lp__btn--ghost">
+        <LocaleLink href="/glosario" className="axr-lp__btn axr-lp__btn--ghost">
           {c.seeAll}
           <span aria-hidden>→</span>
-        </Link>
+        </LocaleLink>
       </p>
     </section>
   );

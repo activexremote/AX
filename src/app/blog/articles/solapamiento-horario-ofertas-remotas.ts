@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "El solapamiento horario: el requisito que descarta en silencio",
   ogDescription:
     "Una línea de la oferta decide desde qué países se puede optar. Cómo leerla y cuándo negociarla.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-04-14",
+  updated: "2026-04-14",
   readingMinutes: 10,
   author: "Equipo ActiveXRemote",
   course: "remote-professional",
   terms: ["solapamiento-horario", "trabajo-asincrono", "burnout-remoto", "onboarding-distribuido"],
-  related: ["trabajo-remoto-internacional-desde-espana", "trabajo-asincrono-guia", "burnout-remoto-senales"],
+  related: ["burnout-remoto-senales", "entrevista-remota-video-asincrona", "primeros-90-dias-equipo-distribuido", "trabajo-asincrono-guia"],
   external: [
     { label: "Ley 10/2021 de trabajo a distancia · BOE", url: "https://www.boe.es" },
     { label: "Eurofound · Tiempo de trabajo y teletrabajo", url: "https://www.eurofound.europa.eu" },
@@ -169,4 +169,5 @@ export const article: Article = {
     { q: "¿Y si la oferta no menciona el solapamiento?", a: "Pregúntalo. Que no aparezca suele significar que nadie lo escribió, no que no exista expectativa. La respuesta también te dirá cuánto han pensado sobre distribución." },
     { q: "¿El solapamiento cambia una vez dentro?", a: "Puede derivar, normalmente al alza, según se acumulan reuniones. Acordar un punto de revisión a los noventa días te da un momento legítimo para reajustarlo antes de que se convierta en la norma." },
   ],
+  hero: { file: "/blog/solapamiento.svg", alt: "Diagrama: dos jornadas y la franja estrecha en la que de verdad se solapan." },
 };

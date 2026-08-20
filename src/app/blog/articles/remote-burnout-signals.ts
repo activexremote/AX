@@ -22,12 +22,12 @@ export const article: Article = {
   ogTitle: "Remote Burnout: The Signals Before Exhaustion",
   ogDescription:
     "Loss of judgement and difficulty starting tasks come before tiredness. What to change, structurally.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-07-14",
+  updated: "2026-07-14",
   readingMinutes: 10,
   author: "ActiveXRemote Team",
   terms: ["burnout-remoto", "solapamiento-horario", "trabajo-asincrono", "onboarding-distribuido"],
-  related: ["time-zone-overlap-explained", "async-work-guide", "first-90-days-remote-team"],
+  related: ["time-zone-overlap-explained", "async-work-guide", "first-90-days-remote-team", "async-interview-and-video-screening"],
   external: [
     { label: "World Health Organization · Burn-out in ICD-11", url: "https://www.who.int" },
     { label: "EU-OSHA · Psychosocial risks and stress at work", url: "https://osha.europa.eu" },
@@ -168,4 +168,5 @@ export const article: Article = {
     { q: "Do employers have obligations here?", a: "In many jurisdictions yes: duties around psychosocial risk assessment, and in several countries a recognised right to disconnect. It is not purely a personal matter." },
     { q: "How do I rebuild after taking time off?", a: "Return to something structurally different, reduce concurrent commitments rather than working faster, and deliberately rebuild the non-work contact that usually disappeared first." },
   ],
+  hero: { file: "/blog/onda-decreciente.svg", alt: "Diagram: a wave losing amplitude from a marked point onwards." },
 };

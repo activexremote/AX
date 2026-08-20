@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "Cobrar de clientes extranjeros sin perder margen",
   ogDescription:
     "El margen de conversión se lleva más que las comisiones visibles. Cómo elegir método, moneda y factura.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-06-16",
+  updated: "2026-06-16",
   readingMinutes: 11,
   author: "Equipo ActiveXRemote",
   course: "remote-founder",
   terms: ["facturacion-internacional", "multidivisa", "contractor-internacional", "negocio-borderless"],
-  related: ["conseguir-clientes-b2b-internacionales", "de-freelance-a-negocio-productizado", "como-trabajar-para-empresa-extranjera-legalmente"],
+  related: ["negociar-salario-remoto-internacional", "conseguir-clientes-b2b-internacionales", "de-freelance-a-negocio-productizado", "curso-trabajo-remoto-cual-elegir"],
   external: [
     { label: "Agencia Tributaria · Localización de prestaciones de servicios", url: "https://sede.agenciatributaria.gob.es" },
     { label: "Comisión Europea · Normas del IVA para servicios transfronterizos", url: "https://taxation-customs.ec.europa.eu" },
@@ -175,4 +175,5 @@ export const article: Article = {
     { q: "¿Las plataformas de pago retienen impuestos?", a: "Algunas aplican retenciones o exigen documentación fiscal según tu país y el suyo. Conviene revisarlo al darse de alta, no al recibir la primera liquidación con menos importe del esperado." },
     { q: "¿Cuánto tarda en llegar una transferencia internacional?", a: "Entre uno y cinco días laborables según ruta y divisa. Los pagos con datos bancarios locales suelen liquidarse como una transferencia nacional, en el mismo día o al siguiente." },
   ],
+  hero: { file: "/blog/fuga-cobro.svg", alt: "Diagrama: un canal de cobro del que se desvía una parte antes de llegar al destino." },
 };

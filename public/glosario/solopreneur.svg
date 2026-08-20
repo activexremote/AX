@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320" role="img" aria-label="Solopreneur — ActiveXRemote">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF7A3D"/>
+      <stop offset="1" stop-color="#E11D74"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" fill="#F4F3FB"/>
+  <g transform="translate(160 160)">
+    <g fill="url(#g)" stroke="none"><circle cx="0" cy="0" r="34"/></g>    <g fill="none" stroke="#161326" stroke-width="6" stroke-linejoin="miter" stroke-linecap="butt"><path d="M0 -44 v-42 M0 44 v42 M-44 0 h-42 M44 0 h42 M-31 -31 l-30 -30 M31 31 l30 30 M31 -31 l30 -30 M-31 31 l-30 30"/></g>
+  </g>
+</svg>

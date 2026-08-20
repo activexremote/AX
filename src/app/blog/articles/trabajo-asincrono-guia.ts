@@ -22,12 +22,12 @@ export const article: Article = {
   ogTitle: "Trabajo asíncrono: estar en remoto no es funcionar en remoto",
   ogDescription:
     "El asíncrono no es responder luego. Es escribir para que nadie quede bloqueado esperando.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-04-07",
+  updated: "2026-04-07",
   readingMinutes: 11,
   author: "Equipo ActiveXRemote",
   terms: ["trabajo-asincrono", "documentacion-asincrona", "solapamiento-horario", "stack-remoto", "onboarding-distribuido"],
-  related: ["solapamiento-horario-ofertas-remotas", "stack-remoto-imprescindible", "primeros-90-dias-equipo-distribuido"],
+  related: ["primeros-90-dias-equipo-distribuido", "burnout-remoto-senales", "entrevista-remota-video-asincrona", "solapamiento-horario-ofertas-remotas"],
   external: [
     { label: "Eurofound · Teletrabajo y condiciones laborales", url: "https://www.eurofound.europa.eu" },
     { label: "Ley 10/2021 de trabajo a distancia · BOE", url: "https://www.boe.es" },
@@ -175,4 +175,5 @@ export const article: Article = {
     { q: "¿Cuánto solapamiento horario necesita un equipo asíncrono?", a: "Entre dos y cuatro horas suele bastar para las reuniones que de verdad requieren simultaneidad. Los equipos que necesitan más suelen ser equipos síncronos que no lo han reconocido." },
     { q: "¿Sirve el asíncrono para trabajo creativo?", a: "En parte. La exploración inicial, cuando la pregunta aún se está formando, gana con conversación en tiempo real. Una vez clara la pregunta, la iteración escrita suele producir mejor pensamiento que otra llamada." },
   ],
+  hero: { file: "/blog/asincronia.svg", alt: "Diagrama: dos jornadas en husos distintos que se relevan sin coincidir nunca." },
 };

@@ -26,7 +26,17 @@ export function LoginForm({ mode, redirectTo }: Props) {
       const action = mode === "signin" ? signInWithPassword : signUpWithPassword;
       const result: unknown = await action(formData);
       if (result && typeof result === "object") {
-        if ("error" in result && typeof result.error === "string") setError(result.error);
+        if ("error" in result && typeof result.error === "string") {
+          setError(result.error);
+          return;
+        }
+        // Navegación dura, no router.push: es la que hace que el navegador
+        // ofrezca guardar el email y la contraseña que se acaban de enviar.
+        // Con una navegación de cliente el gestor nunca ve el envío.
+        if ("redirect" in result && typeof result.redirect === "string") {
+          window.location.assign(result.redirect);
+          return;
+        }
         if ("message" in result && typeof result.message === "string") setOk(result.message);
       }
     });

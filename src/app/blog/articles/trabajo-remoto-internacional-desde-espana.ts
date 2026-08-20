@@ -27,8 +27,8 @@ export const article: Article = {
   ogTitle: "Trabajo remoto internacional desde España: cómo funciona de verdad",
   ogDescription:
     "Contrato, impuestos, husos horarios y salario: los cuatro puntos donde se cae la mayoría de candidaturas internacionales, explicados paso a paso.",
-  published: "2026-08-18",
-  updated: "2026-08-18",
+  published: "2026-03-31",
+  updated: "2026-03-31",
   readingMinutes: 14,
   author: "Equipo ActiveXRemote",
   course: "remote-professional",
@@ -42,12 +42,7 @@ export const article: Article = {
     "geo-pay",
     "ats",
   ],
-  related: [
-    "como-trabajar-para-empresa-extranjera-legalmente",
-    "cv-internacional-ats",
-    "solapamiento-horario-ofertas-remotas",
-    "negociar-salario-remoto-internacional",
-  ],
+  related: ["negociar-salario-remoto-internacional", "curso-trabajo-remoto-cual-elegir", "que-es-activexremote", "como-trabajar-para-empresa-extranjera-legalmente"],
   external: [
     { label: "Agencia Tributaria · Residencia fiscal de las personas físicas", url: "https://sede.agenciatributaria.gob.es" },
     { label: "Comisión Europea · Trabajar en otro país de la UE", url: "https://europa.eu/youreurope/citizens/work/index_es.htm" },
@@ -297,4 +292,5 @@ export const article: Article = {
       a: "Técnicamente sí, legalmente depende. Muchas empresas limitan días y países en su política de trabajo desde cualquier lugar, porque tu presencia prolongada en otro país puede crearles obligaciones fiscales. Avisar antes evita rescisiones incómodas.",
     },
   ],
+  hero: { file: "/blog/mercado-global.svg", alt: "Diagrama: dos husos horarios unidos por un arco de trabajo que cruza la distancia." },
 };

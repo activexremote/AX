@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "The ATS-Friendly Resume",
   ogDescription:
     "Columns, tables and image PDFs quietly destroy applications. Here is the format that gets through and the wording that gets read.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-04-21",
+  updated: "2026-04-21",
   readingMinutes: 11,
   author: "ActiveXRemote Team",
   course: "remote-professional",
   terms: ["ats", "cv-internacional", "portfolio-internacional", "marca-personal"],
-  related: ["international-remote-jobs-from-europe", "proof-of-work-portfolio", "ai-for-job-search"],
+  related: ["proof-of-work-portfolio", "ai-for-job-search", "async-interview-and-video-screening", "negotiating-remote-salary"],
   external: [
     { label: "W3C · Structured document accessibility", url: "https://www.w3.org/WAI/" },
     { label: "European Commission · Europass CV guidance", url: "https://europa.eu/europass/en" },
@@ -170,4 +170,5 @@ export const article: Article = {
     { q: "Are skill rating bars useful?", a: "No. «85% Python» communicates nothing verifiable and the graphic often breaks parsing. List the tool or leave it out." },
     { q: "Is a cover letter still worth writing?", a: "Only when specific. Three lines connecting your experience to that role's actual problem outperform a long generic letter, which is usually skipped." },
   ],
+  hero: { file: "/blog/criba-candidatura.svg", alt: "Diagram: a resume passes through a filter slot and comes out as what the machine can read." },
 };

@@ -275,3 +275,15 @@
     }
   }
 }
+
+// Campus sin matrícula activa. Aparece cuando la política de acceso no
+// devuelve ningún módulo: es un estado normal, no un fallo.
+.axr-modules__empty {
+  border: 1px dashed var(--axr-border, #d5d3e0);
+  border-radius: 10px;
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+
+  strong { display: block; margin-bottom: 0.4rem; font-size: 1.0625rem; }
+  p { margin: 0 auto 1rem; max-width: 46ch; line-height: 1.55; }
+}

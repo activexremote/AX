@@ -23,13 +23,13 @@ export const article: Article = {
   ogTitle: "Trabajar para una empresa extranjera: qué figura te conviene",
   ogDescription:
     "Filial, Employer of Record o contractor. Comparativa honesta de las tres vías, con los riesgos que nadie te cuenta en la entrevista.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-05-19",
+  updated: "2026-08-18",
   readingMinutes: 12,
   author: "Equipo ActiveXRemote",
   course: "remote-professional",
   terms: ["employer-of-record", "contractor-internacional", "falso-autonomo", "nomina-internacional", "establecimiento-permanente"],
-  related: ["trabajo-remoto-internacional-desde-espana", "residencia-fiscal-nomada-digital", "cobrar-clientes-extranjero"],
+  related: ["negociar-salario-remoto-internacional", "trabajo-remoto-internacional-desde-espana", "curso-trabajo-remoto-cual-elegir", "cobrar-clientes-extranjero"],
   external: [
     { label: "Seguridad Social · Trabajo transfronterizo y teletrabajo", url: "https://www.seg-social.es" },
     { label: "Comisión Europea · Derechos laborales en la UE", url: "https://europa.eu/youreurope/citizens/work/index_es.htm" },
@@ -175,4 +175,5 @@ export const article: Article = {
     { q: "¿Debo firmar una cláusula de exclusividad como contractor?", a: "Es un indicio fuerte de relación laboral encubierta. Si la empresa la exige, tiene sentido preguntar por qué no ofrece entonces un contrato de empleo con sus garantías." },
     { q: "¿Quién paga mi seguro médico trabajando para una empresa extranjera?", a: "Depende de la figura. Como empleado vía Employer of Record, las cotizaciones locales te dan cobertura pública y a veces se añade un seguro privado. Como contractor, la cobertura corre de tu cuenta salvo que se pacte lo contrario." },
   ],
+  hero: { file: "/blog/intermediario-legal.svg", alt: "Diagrama: dos empresas en países distintos y el contrato que hace de puente entre ambas." },
 };

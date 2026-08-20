@@ -22,12 +22,12 @@ export const article: Article = {
   ogTitle: "Misclassification: When a Contractor Is Really an Employee",
   ogDescription:
     "Authorities look at substance, not the contract. The indicators that matter and what reclassification actually costs.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-05-26",
+  updated: "2026-08-18",
   readingMinutes: 11,
   author: "ActiveXRemote Team",
   terms: ["falso-autonomo", "contractor-internacional", "employer-of-record", "nomina-internacional"],
-  related: ["employer-of-record-vs-contractor", "international-remote-jobs-from-europe", "getting-paid-internationally"],
+  related: ["employer-of-record-vs-contractor", "negotiating-remote-salary", "international-remote-jobs-from-europe", "getting-paid-internationally"],
   external: [
     { label: "ILO · Employment Relationship Recommendation No. 198", url: "https://www.ilo.org" },
     { label: "European Commission · Platform work and employment status", url: "https://ec.europa.eu/social" },
@@ -170,4 +170,5 @@ export const article: Article = {
     { q: "What if my client insists on fixed working hours?", a: "That is a request for employee-style availability. Either negotiate outcome-based terms, or ask them to engage you through an Employer of Record so the structure matches what they actually want." },
     { q: "How far back can reclassification reach?", a: "It varies by jurisdiction, but limitation periods commonly span several years. That is why the risk grows quietly the longer an ambiguous arrangement continues." },
   ],
+  hero: { file: "/blog/etiqueta-erronea.svg", alt: "Diagram: a triangular shape sitting inside a dashed outline meant for a circle." },
 };

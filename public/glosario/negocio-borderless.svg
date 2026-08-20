@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320" role="img" aria-label="Negocio borderless — ActiveXRemote">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF7A3D"/>
+      <stop offset="1" stop-color="#E11D74"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" fill="#F4F3FB"/>
+  <g transform="translate(160 160)">
+    <g fill="none" stroke="#161326" stroke-width="7" stroke-linejoin="miter" stroke-linecap="butt"><circle cx="0" cy="0" r="76"/></g>    <g fill="none" stroke="#161326" stroke-width="6" stroke-linejoin="miter" stroke-linecap="butt"><path d="M-72 -28 h144 M-72 28 h144"/></g>    <g fill="none" stroke="#161326" stroke-width="6" stroke-linejoin="miter" stroke-linecap="butt"><path d="M0 -76 a46 76 0 0 0 0 152 a46 76 0 0 0 0 -152"/></g>    <g fill="url(#g)" stroke="none"><path d="M0 -76 a76 76 0 0 1 76 76 h-76 z"/></g>
+  </g>
+</svg>

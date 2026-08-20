@@ -9,7 +9,7 @@ const LOGOS: Record<Exclude<PartnerKey, "slack">, { src: string; ratio: number }
   remoteandtalent: { src: "/logos/remoteandtalent.svg", ratio: 80 / 90 },
 };
 
-// Marca de cada entidad certificadora, con sus colores originales: Slack
+// Marca de cada colaborador, con sus colores originales: Slack
 // inline (ya estaba en el repo) y los otros dos desde public/logos. El icono
 // de Remote&Talent es blanco, así que va sobre su propio chip oscuro.
 export function PartnerMark({ partner, size = 18 }: { partner: PartnerKey; size?: number }) {
@@ -48,8 +48,9 @@ export type AccreditationCopy = {
   note: string;
 };
 
-// Sección completa: quién certifica qué. Se usa en la landing y en las dos
-// páginas de curso, así que la explicación es idéntica en las tres.
+// Sección completa: con qué plataformas se trabaja y en qué módulos. Se usa
+// en la landing y en las dos páginas de curso, así que la explicación —y su
+// descargo de marcas— es idéntica en las tres.
 export function AccreditationSection({ copy }: { copy: AccreditationCopy }) {
   return (
     <section id="acreditacion" className="axr-lp__accred">

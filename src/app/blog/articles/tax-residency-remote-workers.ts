@@ -22,12 +22,12 @@ export const article: Article = {
   ogTitle: "Tax Residency for Remote Workers",
   ogDescription:
     "The rule everyone quotes, the one that actually decides, and the treaty tie-breakers that resolve a dual claim.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-06-02",
+  updated: "2026-08-18",
   readingMinutes: 12,
   author: "ActiveXRemote Team",
   terms: ["residencia-fiscal", "regla-183-dias", "doble-imposicion", "nomada-digital", "establecimiento-permanente"],
-  related: ["digital-nomad-visa-comparison", "employer-of-record-vs-contractor", "getting-paid-internationally"],
+  related: ["digital-nomad-visa-comparison", "employer-of-record-vs-contractor", "what-is-activexremote", "getting-paid-internationally"],
   external: [
     { label: "OECD · Model Tax Convention on Income and Capital", url: "https://www.oecd.org/tax/treaties/" },
     { label: "European Commission · Taxes when moving within the EU", url: "https://europa.eu/youreurope/citizens/work/taxes/index_en.htm" },
@@ -164,4 +164,5 @@ export const article: Article = {
     { q: "Can tax authorities find out where I have been?", a: "Yes. Financial account information is exchanged automatically between many jurisdictions, and flights, accounts and contributions all leave records. Your own documentation exists to explain, not to conceal." },
     { q: "When should I speak to a tax adviser?", a: "Before moving, not after. The decisions that can still be optimised are the ones you have not yet taken; once a tax year has closed, the room to manoeuvre is minimal." },
   ],
+  hero: { file: "/blog/umbral-dias.svg", alt: "Diagram: a grid of days in the year with a threshold line separating those that count from those that don't." },
 };

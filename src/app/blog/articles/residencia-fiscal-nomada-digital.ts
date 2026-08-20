@@ -22,12 +22,12 @@ export const article: Article = {
   ogTitle: "Residencia fiscal: los 183 días no son una frontera segura",
   ogDescription:
     "El criterio que casi todo el mundo cita mal, el que de verdad decide, y las reglas de desempate cuando dos países te consideran residente.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-06-02",
+  updated: "2026-08-18",
   readingMinutes: 12,
   author: "Equipo ActiveXRemote",
   terms: ["residencia-fiscal", "regla-183-dias", "doble-imposicion", "nomada-digital", "visado-nomada-digital"],
-  related: ["visados-nomada-digital-comparativa", "como-trabajar-para-empresa-extranjera-legalmente", "cobrar-clientes-extranjero"],
+  related: ["visados-nomada-digital-comparativa", "que-es-activexremote", "trabajo-remoto-internacional-desde-espana", "cobrar-clientes-extranjero"],
   external: [
     { label: "Agencia Tributaria · Residencia fiscal de personas físicas", url: "https://sede.agenciatributaria.gob.es" },
     { label: "OCDE · Modelo de Convenio Tributario sobre la Renta", url: "https://www.oecd.org/tax/treaties/" },
@@ -165,4 +165,5 @@ export const article: Article = {
     { q: "¿Cuándo debo consultar a un asesor fiscal?", a: "Antes de mudarte, no después. Las decisiones que se pueden optimizar son las que aún no has tomado; una vez transcurrido el ejercicio, el margen es mínimo." },
     { q: "¿Hacienda puede saber dónde he estado?", a: "Sí. Hay intercambio automático de información financiera entre administraciones, y los registros de vuelos, cuentas y cotizaciones dejan rastro. La documentación propia sirve para explicar, no para ocultar." },
   ],
+  hero: { file: "/blog/umbral-dias.svg", alt: "Diagrama: rejilla de días del año con una línea de corte que separa los que cuentan de los que no." },
 };

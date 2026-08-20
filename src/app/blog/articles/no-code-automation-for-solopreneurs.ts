@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "No-Code Automation: What to Automate First",
   ogDescription:
     "Document, stabilise, then automate. The order matters more than the tool.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-08-11",
+  updated: "2026-08-11",
   readingMinutes: 11,
   author: "ActiveXRemote Team",
   course: "remote-founder",
   terms: ["automatizacion-no-code", "sop", "agente-ia", "solopreneur", "stack-remoto"],
-  related: ["writing-sops-to-delegate", "productised-service-business", "remote-work-stack"],
+  related: ["productised-service-business", "remote-work-stack", "writing-sops-to-delegate", "b2b-clients-without-network"],
   external: [
     { label: "European Commission · Digitalisation support for SMEs", url: "https://single-market-economy.ec.europa.eu" },
     { label: "European Data Protection Board · Automated processing guidance", url: "https://www.edpb.europa.eu" },
@@ -175,4 +175,5 @@ export const article: Article = {
     { q: "Are there data protection implications?", a: "Yes, if the flows handle personal data. Where the data is processed and who has access are matters you may need to declare, which is one reason self-hosting is sometimes worth the maintenance." },
     { q: "How much time does this actually save?", a: "It depends entirely on frequency. A step taking five minutes ten times a week returns real hours; the same step done monthly rarely repays the build and maintenance cost." },
   ],
+  hero: { file: "/blog/automatismo.svg", alt: "Diagram: a trigger chaining one task, which in turn branches into two more." },
 };

@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "El currículum que pasa el ATS",
   ogDescription:
     "Foto, columnas y tablas: tres cosas normales aquí que descartan tu candidatura fuera. Cómo montar el documento que sí se lee.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-04-21",
+  updated: "2026-04-21",
   readingMinutes: 11,
   author: "Equipo ActiveXRemote",
   course: "remote-professional",
   terms: ["ats", "cv-internacional", "portfolio-internacional", "marca-personal"],
-  related: ["trabajo-remoto-internacional-desde-espana", "portfolio-para-recruiters-internacionales", "ia-para-buscar-trabajo-remoto"],
+  related: ["portfolio-para-recruiters-internacionales", "ia-para-buscar-trabajo-remoto", "entrevista-remota-video-asincrona", "trabajo-remoto-internacional-desde-espana"],
   external: [
     { label: "Comisión Europea · Europass y formatos de CV", url: "https://europa.eu/europass/es" },
     { label: "W3C · Accesibilidad de documentos estructurados", url: "https://www.w3.org/WAI/" },
@@ -170,4 +170,5 @@ export const article: Article = {
     { q: "¿Es mejor un currículum en inglés o en español?", a: "En el idioma de la oferta. Si la vacante está publicada en inglés, todo el documento va en inglés, incluidos los títulos de los puestos." },
     { q: "¿La carta de presentación sigue sirviendo?", a: "Sólo si es específica. Tres líneas que conecten tu experiencia con el problema concreto de esa vacante rinden más que una carta larga y genérica." },
   ],
+  hero: { file: "/blog/criba-candidatura.svg", alt: "Diagrama: un currículum atraviesa la ranura de un filtro y sale reducido a lo que la máquina sabe leer." },
 };

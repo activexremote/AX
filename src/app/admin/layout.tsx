@@ -30,6 +30,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/admin/tareas">{t.admin.navTasks}</Link>
           {profile.role === "administrador" ? (
             <>
+              <Link href="/admin/matriculas">{t.admin.navOrders}</Link>
               <Link href="/admin/usuarios">{t.admin.navUsers}</Link>
               <Link href="/admin/slack">{t.admin.navSlack}</Link>
             </>

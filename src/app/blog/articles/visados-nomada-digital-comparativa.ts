@@ -22,12 +22,12 @@ export const article: Article = {
   ogTitle: "Visados de nómada digital: qué piden de verdad",
   ogDescription:
     "Ingresos, seguro, clientes locales y la pregunta fiscal que nadie lee hasta después.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-06-09",
+  updated: "2026-08-18",
   readingMinutes: 11,
   author: "Equipo ActiveXRemote",
   terms: ["visado-nomada-digital", "nomada-digital", "residencia-fiscal", "regla-183-dias", "trabajo-remoto"],
-  related: ["residencia-fiscal-nomada-digital", "trabajo-remoto-internacional-desde-espana", "como-trabajar-para-empresa-extranjera-legalmente"],
+  related: ["residencia-fiscal-nomada-digital", "que-es-activexremote", "trabajo-remoto-internacional-desde-espana", "cobrar-clientes-extranjero"],
   external: [
     { label: "Ministerio de Inclusión, Seguridad Social y Migraciones", url: "https://www.inclusion.gob.es" },
     { label: "Ley 28/2022 de fomento del ecosistema de empresas emergentes · BOE", url: "https://www.boe.es" },
@@ -169,4 +169,5 @@ export const article: Article = {
     { q: "¿Qué pasa cuando caduca?", a: "Depende de si es renovable, y varía. Algunos se renuevan sin problema si sigues cumpliendo condiciones, otros son de un solo periodo y exigen salir o cambiar a otro permiso." },
     { q: "¿Necesito seguro médico si ya tengo cobertura pública en mi país?", a: "Casi siempre sí. Estos permisos exigen cobertura privada válida localmente durante toda la duración, y las pólizas que excluyen el destino o caducan a mitad son un motivo habitual de denegación." },
   ],
+  hero: { file: "/blog/requisitos.svg", alt: "Diagrama: cinco barras de ingresos frente a la línea mínima que exige el visado." },
 };

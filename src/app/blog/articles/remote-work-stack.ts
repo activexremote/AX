@@ -22,12 +22,12 @@ export const article: Article = {
   ogTitle: "The Minimum Remote Stack",
   ogDescription:
     "Fewer, well-connected tools beat many half-used ones. The categories that matter and the rules that keep them useful.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-06-23",
+  updated: "2026-06-23",
   readingMinutes: 11,
   author: "ActiveXRemote Team",
   terms: ["stack-remoto", "documentacion-asincrona", "automatizacion-no-code", "trabajo-asincrono", "agente-ia"],
-  related: ["async-work-guide", "no-code-automation-for-solopreneurs", "first-90-days-remote-team"],
+  related: ["no-code-automation-for-solopreneurs", "first-90-days-remote-team", "async-work-guide", "async-interview-and-video-screening"],
   external: [
     { label: "European Union Agency for Cybersecurity · Secure remote working", url: "https://www.enisa.europa.eu" },
     { label: "European Data Protection Board · Processor guidance", url: "https://www.edpb.europa.eu" },
@@ -170,4 +170,5 @@ export const article: Article = {
     { q: "Is it worth paying for tools or using the cheapest options?", a: "Judge by whether the tool holds a category well and integrates with the others. The expensive mistake is not the subscription, it is adopting a second tool because the first was never properly configured." },
     { q: "How do I migrate without losing information?", a: "Move one category at a time, keep the old system readable but read-only for a period, and redirect people explicitly. Parallel writable systems are how sprawl starts." },
   ],
+  hero: { file: "/blog/pila.svg", alt: "Diagram: four stacked layers, each narrower than the one beneath it." },
 };

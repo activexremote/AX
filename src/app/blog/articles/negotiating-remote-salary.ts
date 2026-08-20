@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "Negotiating a Remote Salary",
   ogDescription:
     "Role-based or location-based pay changes the entire argument. Here is how to find out and what to do with the answer.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-05-12",
+  updated: "2026-05-12",
   readingMinutes: 11,
   author: "ActiveXRemote Team",
   course: "remote-professional",
   terms: ["compensacion-global", "geo-pay", "multidivisa", "contractor-internacional", "employer-of-record"],
-  related: ["international-remote-jobs-from-europe", "ats-friendly-resume", "employer-of-record-vs-contractor"],
+  related: ["international-remote-jobs-from-europe", "employer-of-record-vs-contractor", "getting-paid-internationally", "worker-misclassification-risk"],
   external: [
     { label: "European Commission · Pay Transparency Directive", url: "https://ec.europa.eu/social" },
     { label: "OECD · Average wages statistics", url: "https://data.oecd.org" },
@@ -166,4 +166,5 @@ export const article: Article = {
     { q: "Should I mention competing offers?", a: "Only if they are real and you would accept them. As an objective data point it works; as a bluff it is easy to detect and damages the relationship." },
     { q: "How often are salaries reviewed at remote companies?", a: "Usually annually, often tied to a performance cycle. Asking during the negotiation avoids discovering two years later that no mechanism exists." },
   ],
+  hero: { file: "/blog/balanza.svg", alt: "Diagram: a scale tipped between what is offered and what is asked for." },
 };

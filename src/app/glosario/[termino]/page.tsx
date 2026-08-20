@@ -1,16 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { notFound } from "next/navigation";
-import Link from "next/link";
+import Image from "next/image";
+import { notFound, redirect } from "next/navigation";
+import { LocaleLink } from "@/components/locale-link";
 
 import { LandingNav } from "@/components/landing/landing-nav";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { getLocale } from "@/lib/i18n/server";
-import { ENTITY } from "@/app/legal/entity";
+import { withLocale } from "@/lib/i18n/routing";
+import { absolute, alternates, OG_LOCALE, SITE_NAME, SITE_URL } from "@/lib/seo";
 import {
   TERMS,
   TERM_CATEGORY_LABEL,
   getTerm,
   glossaryCopy,
+  termPath,
 } from "@/app/glosario/terms";
 import "@/app/bienvenida/landing.scss";
 import "@/app/glosario/glosario.scss";
@@ -18,7 +21,12 @@ import "@/app/glosario/glosario.scss";
 export const viewport: Viewport = { themeColor: "#161326", viewportFit: "cover" };
 
 export function generateStaticParams() {
-  return TERMS.map((t) => ({ termino: t.id }));
+  // Los dos slugs: el español resuelve /glosario/residencia-fiscal y el inglés
+  // /en/glossary/tax-residence, que el proxy no traduce (sólo traduce
+  // segmentos de ruta, no identificadores de contenido).
+  return TERMS.flatMap((t) =>
+    t.slugEn ? [{ termino: t.id }, { termino: t.slugEn }] : [{ termino: t.id }],
+  );
 }
 
 export async function generateMetadata({
@@ -31,7 +39,10 @@ export async function generateMetadata({
   if (!term) return {};
   const locale = await getLocale();
   const t = term[locale];
-  const url = `https://${ENTITY.domain}/glosario/${term.id}`;
+  // El identificador del término es el mismo en los dos idiomas, así que la
+  // ruta sólo cambia en el prefijo: /glosario/eor y /en/glosario/eor.
+  // Cada idioma tiene su ruta: el id es el dato, el slug es la dirección.
+  const path = termPath(term, locale);
 
   return {
     // El título responde la pregunta con la que se busca: "qué es X".
@@ -41,8 +52,21 @@ export async function generateMetadata({
         : `What is ${t.term}? Definition and why it matters`,
     description: t.short.slice(0, 155),
     keywords: [t.term, ...t.synonyms],
-    alternates: { canonical: url },
-    openGraph: { type: "article", title: t.term, description: t.short, url },
+    // Cada idioma tiene una dirección distinta para la misma ficha, así que
+    // el par hreflang no puede construirse con una sola ruta.
+    alternates: alternates(locale, path, {
+      es: `/glosario/${term.id}`,
+      en: `/glosario/${term.slugEn ?? term.id}`,
+    }),
+    openGraph: {
+      type: "article",
+      siteName: SITE_NAME,
+      locale: OG_LOCALE[locale],
+      title: t.term,
+      description: t.short,
+      url: absolute(locale, path),
+    },
+    twitter: { card: "summary_large_image", title: t.term, description: t.short },
   };
 }
 
@@ -56,10 +80,17 @@ export default async function TermPage({
   if (!term) notFound();
 
   const locale = await getLocale();
+
+  // Cada idioma tiene una sola dirección buena para cada ficha. Como getTerm
+  // acepta los dos slugs, /en/glossary/residencia-fiscal también resolvía y
+  // dejaba el mismo contenido en dos URLs; se manda a la suya.
+  const path = termPath(term, locale);
+  if (`/glosario/${termino}` !== path) redirect(withLocale(locale, path));
+
   const c = glossaryCopy[locale];
   const t = term[locale];
   const related = term.related.map(getTerm).filter(Boolean);
-  const url = `https://${ENTITY.domain}/glosario/${term.id}`;
+  const url = absolute(locale, path);
 
   const schema = {
     "@context": "https://schema.org",
@@ -70,14 +101,15 @@ export default async function TermPage({
         name: t.term,
         alternateName: t.synonyms,
         description: t.short,
-        inDefinedTermSet: `https://${ENTITY.domain}/glosario#set`,
+        image: `${SITE_URL}/glosario/${term.id}.svg`,
+        inDefinedTermSet: `${absolute(locale, "/glosario")}#set`,
         url,
       },
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "ActiveXRemote", item: `https://${ENTITY.domain}/bienvenida` },
-          { "@type": "ListItem", position: 2, name: c.hubTitle, item: `https://${ENTITY.domain}/glosario` },
+          { "@type": "ListItem", position: 1, name: "ActiveXRemote", item: absolute(locale, "/bienvenida") },
+          { "@type": "ListItem", position: 2, name: c.hubTitle, item: absolute(locale, "/glosario") },
           { "@type": "ListItem", position: 3, name: t.term, item: url },
         ],
       },
@@ -105,10 +137,14 @@ export default async function TermPage({
 
       <article className="axr-gloss-page__inner axr-gloss-page__term">
         <nav className="axr-gloss-page__crumbs" aria-label="breadcrumb">
-          <Link href="/glosario">{c.backToHub}</Link>
+          <LocaleLink href="/glosario">{c.backToHub}</LocaleLink>
           <span aria-hidden>·</span>
           <span>{TERM_CATEGORY_LABEL[locale][term.category]}</span>
         </nav>
+
+        <figure className="axr-gloss-page__art">
+          <Image src={`/glosario/${term.id}.svg`} alt="" width={360} height={360} priority />
+        </figure>
 
         <header className="axr-gloss-page__head">
           <h1>{t.term}</h1>
@@ -133,10 +169,10 @@ export default async function TermPage({
             <ul>
               {related.map((r) => (
                 <li key={r!.id}>
-                  <Link href={`/glosario/${r!.id}`}>
+                  <LocaleLink href={termPath(r!, locale)}>
                     <strong>{r![locale].term}</strong>
                     <span>{r![locale].short}</span>
-                  </Link>
+                  </LocaleLink>
                 </li>
               ))}
             </ul>
@@ -145,10 +181,10 @@ export default async function TermPage({
 
         <aside className="axr-gloss-page__cta">
           <p>{c.inProgram}</p>
-          <Link href="/bienvenida#solicitar" className="axr-lp__btn axr-lp__btn--solid">
+          <LocaleLink href="/bienvenida#solicitar" className="axr-lp__btn axr-lp__btn--solid">
             {locale === "es" ? "Solicita información" : "Request information"}
             <span aria-hidden>→</span>
-          </Link>
+          </LocaleLink>
         </aside>
       </article>
 

@@ -42,6 +42,16 @@ export function ModuleForm({ module, onDone }: { module?: Module; onDone?: () =>
           <input name="order_index" type="number" defaultValue={module?.order_index ?? 0} />
         </div>
       </div>
+      {/* Decide quién ve el módulo: la política de acceso de la base de datos
+          filtra por esto contra las matrículas del alumno. */}
+      <div className="axr-form__row">
+        <label>{t.adminForm.fCourse}</label>
+        <select name="course" defaultValue={module?.course ?? "core"}>
+          <option value="core">{t.adminForm.courseCore}</option>
+          <option value="remote-professional">{t.adminForm.courseProfessional}</option>
+          <option value="remote-founder">{t.adminForm.courseFounder}</option>
+        </select>
+      </div>
       <div className="axr-form__row">
         <label>{t.adminForm.fCode}</label>
         <input name="code" defaultValue={module?.code ?? ""} placeholder="MÓDULO 0 · ONBOARDING GENERAL" />

@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
+import { LocaleLink } from "@/components/locale-link";
 
 import { LandingNav } from "@/components/landing/landing-nav";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { CookieSettingsLink } from "@/components/consent/cookie-settings-link";
 import { getLocale } from "@/lib/i18n/server";
+import { alternates } from "@/lib/seo";
 import { ENTITY_READY, EU_REP_READY } from "@/app/legal/entity";
 import { LEGAL_SLUGS, legalDocs, legalNav, type LegalSlug } from "@/app/legal/copy";
 import "@/app/bienvenida/landing.scss";
@@ -30,11 +31,14 @@ export async function generateMetadata({
   if (!isSlug(slug)) return {};
   const locale = await getLocale();
   const doc = legalDocs[locale][slug];
+  // Son páginas de servicio: tienen que existir y ser accesibles, pero no
+  // compiten por posicionamiento ni deben salir en resultados. El comentario
+  // decía justo eso mientras el código las marcaba como indexables.
   return {
-    title: `${doc.title} · ActiveXRemote`,
+    title: doc.title,
     description: doc.summary,
-    // Son páginas de servicio: que no compitan por posicionamiento.
-    robots: { index: true, follow: true },
+    alternates: alternates(locale, `/legal/${slug}`),
+    robots: { index: false, follow: true },
   };
 }
 
@@ -81,9 +85,9 @@ export default async function LegalPage({
 
         <nav className="axr-legal__tabs" aria-label={nav.indexLabel}>
           {LEGAL_SLUGS.map((s) => (
-            <Link key={s} href={`/legal/${s}`} aria-current={s === slug ? "page" : undefined}>
+            <LocaleLink key={s} href={`/legal/${s}`} aria-current={s === slug ? "page" : undefined}>
               {nav.labels[s]}
-            </Link>
+            </LocaleLink>
           ))}
           <CookieSettingsLink className="axr-legal__tabs-cookies" label={nav.cookieSettings} />
         </nav>

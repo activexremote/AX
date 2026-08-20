@@ -8,6 +8,14 @@ export type LandingCopy = (typeof landingCopy)["es"];
 
 export const landingCopy = {
   es: {
+    // Título y descripción de la home. Estaban en duro y en español dentro de
+    // page.tsx, así que la versión inglesa se anunciaba en español tanto al
+    // compartirla como en los resultados de búsqueda.
+    meta: {
+      title: "ActiveXRemote · The Remote Business School",
+      description:
+        "Consigue el empleo remoto internacional que mereces y aprende a construir tu propio negocio global. 14 módulos en directo y dos caminos: Remote Professional y Remote Founder.",
+    },
     // Barra superior. ⚠︎ Las plazas disponibles son un dato de maqueta.
     ticker: {
       intro: "La convocatoria arranca el 1 de diciembre",
@@ -24,6 +32,7 @@ export const landingCopy = {
       },
       links: [
         { href: "#metodo", label: "Método" },
+        { href: "/blog", label: "Blog" },
         { href: "#faq", label: "FAQ" },
       ],
       campus: "Campus virtual",
@@ -40,6 +49,14 @@ export const landingCopy = {
       titleTop: "No es que te falte talento.",
       titleBottom: "Es que nadie te ha enseñado a trabajar sin fronteras.",
       lead: "Consigue el empleo remoto internacional que mereces y aprende a construir tu propio negocio global.",
+      // Atajo binario a las dos landings. La decisión que más pesa —empleo o
+      // negocio— estaba en la sección 9 de 17: aquí se resuelve en el primer
+      // pantallazo y sin scroll.
+      chooseLabel: "¿Qué quieres conseguir?",
+      choose: [
+        { title: "Quiero un empleo remoto internacional", name: "Remote Professional", href: "/cursos/remote-professional" },
+        { title: "Quiero montar mi negocio remoto", name: "Remote Founder", href: "/cursos/remote-founder" },
+      ],
       stats: [
         { value: "14", label: "módulos" },
         { value: "56h", label: "en directo" },
@@ -52,7 +69,7 @@ export const landingCopy = {
       title: "Da el primer paso.",
       lead: "Cuéntanos qué curso te interesa y te enviamos el programa completo, fechas y condiciones.",
       courseLabel: "¿Qué curso te interesa?",
-      courseHint: "Puedes escoger los dos.",
+      courseHint: "Opcional. Puedes escoger los dos.",
       courses: [
         { key: "remote-professional", label: "Remote Professional", sub: "Career Accelerator" },
         { key: "remote-founder", label: "Remote Founder", sub: "Global Builder" },
@@ -76,13 +93,45 @@ export const landingCopy = {
     },
     proof: {
       title: "Todo lo que necesitas para operar en remoto, a nivel global",
+      // Marquesina de temas del programa. El orden alterna bloques (empleo,
+      // dinero, movilidad, negocio, método) para que en cualquier instante se
+      // vea variedad y no cinco chips seguidos del mismo tema.
       chips: [
+        "Trabajo remoto",
+        "Contratación internacional",
+        "Banca internacional",
+        "Cobros globales",
+        "Divisas y multicurrency",
+        "Seguridad financiera",
+        "Optimización fiscal",
+        "Visados internacionales",
+        "Movilidad internacional",
+        "Freelance global",
+        "Emprendimiento remoto",
+        "Empresa sin fronteras",
+        "Compliance internacional",
+        "Seguridad digital",
+        "Herramientas remote-first",
+        "Productividad remota",
+        "Gestión de equipos",
+        "Contratos internacionales",
+        "Beneficios para empleados",
+        "Equity & stock options",
+        "Coste de vida global",
+        "Geografía fiscal",
+        "Digital nomad hubs",
+        "Seguridad social internacional",
+        "Seguros internacionales",
+        "Contabilidad global",
+        "Pagos internacionales",
+        "Finanzas personales",
+        "Ingresos en varias monedas",
+        "Networking global",
+        "Carrera internacional",
+        "Libertad geográfica",
         "IA aplicada",
-        "Fiscalidad global",
-        "Nómada digital",
         "Negociación salarial",
         "Automatización",
-        "Sin fronteras",
       ],
     },
     statement: {
@@ -100,7 +149,7 @@ export const landingCopy = {
         eyebrow: "Dos caminos",
         title: "Empleo o negocio. Tú eliges.",
         body: "7 módulos núcleo sientan la base para todos. Después te especializas: Remote Professional para conseguir empleos remotos de élite, o Remote Founder para construir tu propio negocio borderless.",
-        points: ["7 módulos núcleo", "7 especializados", "Cambia de camino cuando quieras"],
+        points: ["7 módulos núcleo", "7 especializados", "Puedes hacer los dos caminos"],
       },
       {
         eyebrow: "IA aplicada",
@@ -109,6 +158,14 @@ export const landingCopy = {
         points: ["Prompt engineering", "Agentes a medida", "Automatización no-code"],
       },
     ],
+    // Textos de los mockups del héroe (las "capturas" del campus). Van aquí
+    // y no en el componente porque también hay que leerlos en inglés.
+    mock: {
+      trackBadge: "RUTA 02 · 3/5",
+      steps: ["Comunicar en asíncrono", "Escribir para decidir", "Proteger tu foco"],
+      slackMsg: "Nueva lección disponible en tu ruta · Ruta 03",
+      slackCta: "Abrir en el campus",
+    },
     integration: {
       eyebrow: "Stack real",
       title: "Aprendes con las herramientas que de verdad se usan.",
@@ -118,13 +175,13 @@ export const landingCopy = {
       stat1: { value: "+320", label: "profesionales formados en 18 países" },
       stat2: { value: "56h", label: "en directo, en 14 semanas" },
       quote:
-        "«El remoto no falla por la distancia. Falla por no haber aprendido a trabajar así.»",
+        "«El remoto no falla por la distancia. Falla cuando no sabemos adaptarnos a esta forma de trabajar.»",
       quoteBy: "Manifiesto ActiveXRemote",
     },
     paths: {
       eyebrow: "Elige tu camino",
       title: "Dos rutas. Un mismo nivel de exigencia.",
-      lead: "Comparten los 7 módulos núcleo y se separan en la especialización. Puedes cambiar de camino cuando quieras.",
+      lead: "Comparten los 7 módulos núcleo y se separan en la especialización. Puedes hacer los dos caminos.",
       cta: "Solicita información",
       detail: "Ver el programa completo",
       items: [
@@ -170,6 +227,10 @@ export const landingCopy = {
       lead: "Empieza por los 7 módulos núcleo, compartidos por ambos caminos. Son la base de todo profesional remoto de élite.",
       coreTag: "Fase 1 · Núcleo común",
       coreName: "Fundamentos globales",
+      // El currículo entero desplegado añadía miles de píxeles al centro del
+      // embudo. Ahora se ve la estructura y el detalle se pide.
+      coreToggle: "Ver los 7 módulos del núcleo",
+      trackToggle: "Ver los 7 módulos",
       modules: [
         { n: "01", title: "Mindset remoto y el nuevo mercado global", desc: "De empleado local a «startup personal» en un mercado global competitivo." },
         { n: "02", title: "Geoposicionamiento y optimización fiscal", desc: "Maximiza tu ingreso neto con residencia, visados y fiscalidad inteligente." },
@@ -221,36 +282,43 @@ export const landingCopy = {
       { mark: "g2" as const, score: "4,8/5", label: "120+ reseñas" },
       { mark: "trustpilot" as const, score: "4,7/5", label: "90+ reseñas" },
     ],
-    // Acreditación: certificación privada, un certificador por área.
+    // Colaboradores del programa.
+    //
+    // ⚠︎ Esta sección decía que Deel, Remoteandtalent.com y Slack "auditan y
+    // certifican" los módulos y que su sello va en el diploma. Sin un acuerdo
+    // firmado con las tres, eso es una afirmación sobre terceros que no se
+    // puede sostener. Ahora se describen como lo que son —las herramientas que
+    // se estudian— y la nota final incluye el descargo de marcas. Si algún día
+    // hay acuerdo por escrito, se podrá volver a hablar de certificación.
     accreditation: {
-      heroLabel: "Certificado por",
-      eyebrow: "Acreditación",
-      title: "Un diploma certificado por tres compañías, cada una en su terreno.",
-      lead: "La certificación es privada: no es un título académico oficial, sino el sello de tres empresas que trabajan cada día en las áreas que enseñamos. Cada una audita y certifica los módulos de su especialidad, y su sello aparece en el diploma que recibes al terminar.",
+      heroLabel: "Colaboradores premium",
+      eyebrow: "Colaboradores",
+      title: "Trabajamos con las plataformas que marcan el estándar del trabajo remoto.",
+      lead: "No acreditan el programa ni emiten el diploma: son las herramientas y las prácticas que se usan de verdad en el mercado remoto internacional, y con las que vas a trabajar durante el curso.",
       partners: [
         {
           key: "deel" as const,
           name: "Deel",
-          area: "Legal, contratación y pagos",
-          desc: "Certifica los módulos de fundamentos legales y compliance internacional: contractor vs employee, Employer of Record, contratos, facturación y fiscalidad transfronteriza. Es la parte del programa que validan con sus propios criterios de contratación global.",
-          modules: "Módulos 2, 3 y 7",
+          area: "Contratación y pagos internacionales",
+          desc: "La referencia para contratar y cobrar entre países. Sus modelos de contrato, la distinción entre contractor y empleado y la operativa de Employer of Record son el material sobre el que se trabajan los módulos de fundamentos legales y compliance internacional.",
+          modules: "Se estudia en los módulos 2, 3 y 7",
         },
         {
           key: "remoteandtalent" as const,
           name: "Remoteandtalent.com",
-          area: "Empleabilidad y talento remoto",
-          desc: "Certifica la ruta de carrera: búsqueda de oportunidades, marca personal internacional, entrevistas remotas y negociación salarial. Validan que lo que enseñamos es lo que hoy piden de verdad las empresas que contratan en remoto.",
-          modules: "Módulos 8 a 12 · Camino Professional",
+          area: "Empleo remoto internacional",
+          desc: "Bolsa y comunidad de empleo remoto. Sus ofertas reales son las que se analizan en la ruta de carrera: qué se pide de verdad, cómo se filtra una candidatura y qué distingue a la que pasa de la que se queda fuera.",
+          modules: "Se estudia en los módulos 8 a 12 · Camino Professional",
         },
         {
           key: "slack" as const,
           name: "Slack",
           area: "Comunicación y trabajo distribuido",
-          desc: "Certifica los módulos de comunicación asíncrona y colaboración en equipos distribuidos: cómo se documenta, se decide y se genera confianza sin compartir oficina, con las prácticas de su propio manual de trabajo distribuido.",
-          modules: "Módulos 1, 4 y 13",
+          desc: "El estándar de facto de la comunicación asíncrona. Los módulos de equipos distribuidos se apoyan en su manual público de trabajo remoto —cómo se documenta, se decide y se genera confianza sin compartir oficina— y el campus te avisa por Slack de cada avance.",
+          modules: "Se estudia en los módulos 1, 4 y 13",
         },
       ],
-      note: "El diploma detalla los módulos superados y lleva el sello de las tres compañías. Es una certificación privada de empresa; no equivale a un título oficial ni a un grado universitario.",
+      note: "ActiveXRemote no está afiliada a Deel, Remoteandtalent.com ni Slack, ni cuenta con su patrocinio o su respaldo; sus marcas se citan sólo para identificar las herramientas que se estudian en el programa. El diploma lo emite ActiveXRemote y detalla los módulos superados: es una certificación privada de empresa, no un título oficial ni un grado universitario.",
     },
     // ⚠︎ PLACEHOLDER — cifras, valoraciones, testimonios y marcas son
     // ejemplos de maquetación. Sustituir por datos reales antes de publicar:
@@ -309,6 +377,11 @@ export const landingCopy = {
       planNote: "pago único o 3 plazos de 800 €",
       planStart: "Arranca el 1 de diciembre de 2026 · grupos de 25 plazas",
       planBundle: "Los dos cursos: 3.900 € · matrícula anticipada 2.100 € hasta el 31 de octubre",
+      // Dos salidas: matricularse ya, o pedir información antes de decidir.
+      // Quien tiene la decisión tomada no debería tener que pasar por un
+      // formulario de contacto para poder pagar.
+      buyCta: "Matricularme ahora",
+      infoCta: "Antes prefiero información",
       features: [
         "14 módulos en directo (56 h lectivas)",
         "Una sesión de 4h por semana, durante 14 semanas",
@@ -316,13 +389,13 @@ export const landingCopy = {
         "Frameworks y plantillas descargables",
         "Ejercicio práctico y feedback en cada módulo",
         "Comunidad y seguimiento en Slack",
-        "Diploma certificado por Deel, Remoteandtalent y Slack",
+        "Diploma de ActiveXRemote con los módulos superados",
       ],
       cta: "Solicita información",
     },
     // Cronograma real de la convocatoria. Todo lo que se afirma aquí sale de
     // datos que ya sostiene el resto de la página (14 módulos, 4 h por semana,
-    // 14 semanas, grupos de 25, diploma de las tres certificadoras).
+    // 14 semanas, grupos de 25, diploma emitido por la escuela).
     steps: {
       eyebrow: "Cómo funciona",
       title: "Catorce semanas, paso a paso.",
@@ -396,11 +469,11 @@ export const landingCopy = {
           title: "Te certificas y te quedas dentro",
           desc: "El programa termina, el acceso no. El campus con las grabaciones y el audio narrado sigue abierto, y el diploma detalla módulo a módulo lo que has superado.",
           does: [
-            "Recibes el diploma con el sello de las tres certificadoras",
+            "Recibes el diploma con los módulos superados y las horas lectivas",
             "Conservas campus, grabaciones y plantillas",
             "Sigues en la comunidad de la convocatoria",
           ],
-          gets: "Un diploma verificable certificado por Deel, Remoteandtalent.com y Slack, cada una en su área.",
+          gets: "Un diploma verificable emitido por ActiveXRemote, con el detalle de lo que has superado.",
         },
       ],
     },
@@ -408,15 +481,15 @@ export const landingCopy = {
       eyebrow: "Dudas",
       title: "Preguntas frecuentes.",
       items: [
+        { q: "¿Qué camino me conviene?", a: "Remote Professional si buscas un empleo remoto internacional; Remote Founder si quieres lanzar tu propio negocio. Y puedes hacer los dos: comparten los 7 módulos núcleo." },
+        { q: "¿Cuánto cuesta?", a: "2.400 € por curso, en pago único o en 3 plazos de 800 € sin intereses. Los dos cursos juntos son 3.900 €, y hay matrícula anticipada de 2.100 € hasta el 31 de octubre." },
         { q: "¿Cuántos módulos tiene el programa?", a: "14 en total: 7 módulos núcleo compartidos y 7 especializados según el camino que elijas (Professional o Founder)." },
         { q: "¿Cuánto dura cada clase?", a: "Cada módulo es una clase de 4 horas en vivo: teoría, walkthrough de herramientas, workshop práctico y Q&A." },
-        { q: "¿Qué camino me conviene?", a: "Remote Professional si buscas un empleo remoto internacional; Remote Founder si quieres lanzar tu propio negocio. Puedes cambiar cuando quieras." },
         { q: "¿Necesito conocimientos previos?", a: "No. Los 7 módulos núcleo parten de cero y la especialización sube de nivel de forma progresiva." },
         { q: "¿Qué herramientas voy a usar?", a: "Notion, Slack, Wise, Deel, Zapier y modelos de IA, entre otras. Montas tu propio stack remoto durante el programa." },
         { q: "¿Es en directo o asíncrono?", a: "Las clases son en vivo, y tienes material, audio narrado y ejercicios para avanzar a tu ritmo en asíncrono." },
         { q: "¿Cuándo empieza la próxima convocatoria?", a: "El 1 de diciembre de 2026, con una sesión de 4h por semana durante 14 semanas. Los grupos son de 25 plazas: solicita información y te enviamos calendario y horarios." },
-        { q: "¿El diploma es un título oficial?", a: "No. Es una certificación privada: el diploma detalla los módulos superados y lleva el sello de Deel (legal, contratación y pagos), Remoteandtalent.com (empleabilidad y talento remoto) y Slack (comunicación y trabajo distribuido), cada una en su área. No equivale a un grado universitario ni a un título académico oficial." },
-        { q: "¿Cuánto cuesta?", a: "2.400 € por curso, en pago único o en 3 plazos de 800 € sin intereses. Los dos cursos juntos son 3.900 €, y hay matrícula anticipada de 2.100 € hasta el 31 de octubre." },
+        { q: "¿El diploma es un título oficial?", a: "No. Es una certificación privada que emite ActiveXRemote: el diploma detalla los módulos superados y las horas lectivas. No equivale a un grado universitario ni a un título académico oficial, y no lo acredita ninguna de las plataformas que se estudian en el programa." },
       ],
     },
     finalCta: {
@@ -430,6 +503,13 @@ export const landingCopy = {
       cols: [
         { title: "Cursos", links: [{ href: "/cursos/remote-professional", label: "Remote Professional" }, { href: "/cursos/remote-founder", label: "Remote Founder" }, { href: "#modulos", label: "Módulos" }] },
         { title: "Escuela", links: [{ href: "#metodo", label: "Método" }, { href: "#faq", label: "FAQ" }, { href: "#solicitar", label: "Solicita información" }] },
+        {
+          title: "Recursos",
+          links: [
+            { href: "/blog", label: "Blog" },
+            { href: "/glosario", label: "Diccionario" },
+          ],
+        },
         { title: "Campus virtual", links: [{ href: "/login", label: "Entrar al campus" }] },
         {
           title: "Legal",
@@ -442,9 +522,21 @@ export const landingCopy = {
         },
       ],
       cookieSettings: "Configurar cookies",
+      pay: {
+        // Se afirma sólo lo comprobable: el sitio va por HTTPS y el cobro lo
+        // hace Stripe, así que la tarjeta no pasa por nuestros servidores.
+        secure: "Conexión cifrada (TLS/SSL). La tarjeta la procesa Stripe: no la vemos ni la guardamos.",
+        accepted: "Métodos de pago aceptados",
+        processor: "Pagos procesados por",
+      },
     },
   },
   en: {
+    meta: {
+      title: "ActiveXRemote · The Remote Business School",
+      description:
+        "Land the international remote job you deserve and learn to build your own global business. 14 live modules and two paths: Remote Professional and Remote Founder.",
+    },
     // ⚠︎ Seats left is placeholder data.
     ticker: {
       intro: "The cohort starts on December 1",
@@ -461,6 +553,7 @@ export const landingCopy = {
       },
       links: [
         { href: "#metodo", label: "Method" },
+        { href: "/blog", label: "Blog" },
         { href: "#faq", label: "FAQ" },
       ],
       campus: "Virtual campus",
@@ -476,6 +569,11 @@ export const landingCopy = {
       titleTop: "It's not that you lack talent.",
       titleBottom: "It's that nobody taught you to work without borders.",
       lead: "Land the international remote job you deserve and learn to build your own global business.",
+      chooseLabel: "What do you want to achieve?",
+      choose: [
+        { title: "I want an international remote job", name: "Remote Professional", href: "/cursos/remote-professional" },
+        { title: "I want to build my own remote business", name: "Remote Founder", href: "/cursos/remote-founder" },
+      ],
       stats: [
         { value: "14", label: "modules" },
         { value: "56h", label: "live" },
@@ -488,7 +586,7 @@ export const landingCopy = {
       title: "Take the first step.",
       lead: "Tell us which course you're interested in and we'll send you the full program, dates and terms.",
       courseLabel: "Which course interests you?",
-      courseHint: "You can pick both.",
+      courseHint: "Optional. You can pick both.",
       courses: [
         { key: "remote-professional", label: "Remote Professional", sub: "Career Accelerator" },
         { key: "remote-founder", label: "Remote Founder", sub: "Global Builder" },
@@ -513,12 +611,41 @@ export const landingCopy = {
     proof: {
       title: "Everything you need to operate remotely, on a global scale",
       chips: [
+        "Remote work",
+        "International hiring",
+        "International banking",
+        "Global collections",
+        "FX and multicurrency",
+        "Financial security",
+        "Tax optimization",
+        "International visas",
+        "Global mobility",
+        "Global freelancing",
+        "Remote entrepreneurship",
+        "Borderless company",
+        "International compliance",
+        "Digital security",
+        "Remote-first tooling",
+        "Remote productivity",
+        "Team management",
+        "International contracts",
+        "Employee benefits",
+        "Equity & stock options",
+        "Global cost of living",
+        "Tax geography",
+        "Digital nomad hubs",
+        "International social security",
+        "International insurance",
+        "Global accounting",
+        "Cross-border payments",
+        "Personal finance",
+        "Multi-currency income",
+        "Global networking",
+        "International career",
+        "Geographic freedom",
         "Applied AI",
-        "Global tax",
-        "Digital nomad",
         "Salary negotiation",
         "Automation",
-        "Borderless",
       ],
     },
     statement: {
@@ -536,7 +663,7 @@ export const landingCopy = {
         eyebrow: "Two paths",
         title: "Job or business. You choose.",
         body: "7 core modules set the foundation for everyone. Then you specialize: Remote Professional to land elite remote jobs, or Remote Founder to build your own borderless business.",
-        points: ["7 core modules", "7 specialized", "Switch paths anytime"],
+        points: ["7 core modules", "7 specialized", "You can take both paths"],
       },
       {
         eyebrow: "Applied AI",
@@ -545,6 +672,12 @@ export const landingCopy = {
         points: ["Prompt engineering", "Custom agents", "No-code automation"],
       },
     ],
+    mock: {
+      trackBadge: "TRACK 02 · 3/5",
+      steps: ["Communicating async", "Writing to decide", "Protecting your focus"],
+      slackMsg: "New lesson available on your track · Track 03",
+      slackCta: "Open in the campus",
+    },
     integration: {
       eyebrow: "Real stack",
       title: "Learn with the tools people actually use.",
@@ -554,13 +687,13 @@ export const landingCopy = {
       stat1: { value: "+320", label: "professionals trained across 18 countries" },
       stat2: { value: "56h", label: "live, across 14 weeks" },
       quote:
-        "“Remote doesn't fail because of distance. It fails when nobody learned to work this way.”",
+        "“Remote doesn't fail because of distance. It fails when we don't adapt to this way of working.”",
       quoteBy: "ActiveXRemote Manifesto",
     },
     paths: {
       eyebrow: "Choose your path",
       title: "Two routes. One level of rigor.",
-      lead: "They share the 7 core modules and split at specialization. You can switch paths whenever you want.",
+      lead: "They share the 7 core modules and split at specialization. You can take both paths.",
       cta: "Request information",
       detail: "See the full program",
       items: [
@@ -606,6 +739,8 @@ export const landingCopy = {
       lead: "Start with the 7 core modules, shared by both paths. They're the foundation of every elite remote professional.",
       coreTag: "Phase 1 · Shared core",
       coreName: "Global foundations",
+      coreToggle: "See the 7 core modules",
+      trackToggle: "See the 7 modules",
       modules: [
         { n: "01", title: "Remote mindset & the new global market", desc: "From local employee to a “personal startup” in a competitive global market." },
         { n: "02", title: "Geo-positioning & tax optimization", desc: "Maximize your net income with smart residency, visas and taxes." },
@@ -656,34 +791,34 @@ export const landingCopy = {
       { mark: "trustpilot" as const, score: "4.7/5", label: "90+ reviews" },
     ],
     accreditation: {
-      heroLabel: "Certified by",
-      eyebrow: "Accreditation",
-      title: "A diploma certified by three companies, each in its own field.",
-      lead: "The certification is private: not an official academic degree, but the seal of three companies that work every day in the areas we teach. Each one audits and certifies the modules in its specialty, and its seal appears on the diploma you receive.",
+      heroLabel: "Premium partners",
+      eyebrow: "Partners",
+      title: "We work with the platforms that set the standard for remote work.",
+      lead: "They neither accredit the program nor issue the diploma: they are the tools and the practices actually used across the international remote market, and the ones you will work with during the course.",
       partners: [
         {
           key: "deel" as const,
           name: "Deel",
-          area: "Legal, hiring and payments",
-          desc: "Certifies the legal and international compliance modules: contractor vs employee, Employer of Record, contracts, invoicing and cross-border taxation. It's the part of the program they validate against their own global hiring criteria.",
-          modules: "Modules 2, 3 and 7",
+          area: "International hiring and payments",
+          desc: "The reference for hiring and getting paid across borders. Their contract models, the contractor-versus-employee distinction and how Employer of Record works in practice are the material the legal and compliance modules are built on.",
+          modules: "Studied in modules 2, 3 and 7",
         },
         {
           key: "remoteandtalent" as const,
           name: "Remoteandtalent.com",
-          area: "Employability and remote talent",
-          desc: "Certifies the career track: opportunity sourcing, international personal brand, remote interviews and salary negotiation. They validate that what we teach is what companies hiring remotely actually ask for today.",
-          modules: "Modules 8 to 12 · Professional path",
+          area: "International remote jobs",
+          desc: "A remote job board and community. Their live listings are what the career track works from: what employers actually ask for, how a application gets filtered, and what separates the one that makes it from the one that does not.",
+          modules: "Studied in modules 8 to 12 · Professional path",
         },
         {
           key: "slack" as const,
           name: "Slack",
           area: "Communication and distributed work",
-          desc: "Certifies the async communication and distributed collaboration modules: how you document, decide and build trust without sharing an office, following the practices in their own distributed work playbook.",
-          modules: "Modules 1, 4 and 13",
+          desc: "The de facto standard for asynchronous communication. The distributed-team modules build on their public remote work playbook —how you document, decide and build trust without sharing an office— and the campus notifies you of every step in Slack.",
+          modules: "Studied in modules 1, 4 and 13",
         },
       ],
-      note: "The diploma lists the modules you completed and carries the seal of all three companies. It is a private corporate certification; it is not equivalent to an official degree.",
+      note: "ActiveXRemote is not affiliated with, sponsored by or endorsed by Deel, Remoteandtalent.com or Slack; their trademarks are named only to identify the tools studied in the program. The diploma is issued by ActiveXRemote and lists the modules you completed: it is a private corporate certification, not an official or university degree.",
     },
     // ⚠︎ PLACEHOLDER — see the note on the Spanish block above.
     social: {
@@ -740,6 +875,8 @@ export const landingCopy = {
       planNote: "one payment or 3 instalments of €800",
       planStart: "Starts December 1, 2026 · groups of 25 seats",
       planBundle: "Both courses: €3,900 · early bird €2,100 until October 31",
+      buyCta: "Enrol now",
+      infoCta: "I'd rather get information first",
       features: [
         "14 live modules (56 teaching hours)",
         "One 4h session per week, for 14 weeks",
@@ -747,7 +884,7 @@ export const landingCopy = {
         "Downloadable frameworks and templates",
         "Hands-on exercise and feedback in every module",
         "Community and follow-up on Slack",
-        "Diploma certified by Deel, Remoteandtalent and Slack",
+        "An ActiveXRemote diploma listing the modules you completed",
       ],
       cta: "Request information",
     },
@@ -824,11 +961,11 @@ export const landingCopy = {
           title: "You get certified and you stay in",
           desc: "The program ends, the access doesn't. The campus with recordings and narrated audio stays open, and the diploma lists module by module what you completed.",
           does: [
-            "You receive the diploma sealed by all three certifiers",
+            "You receive the diploma with the modules completed and the teaching hours",
             "You keep campus, recordings and templates",
             "You stay in your cohort's community",
           ],
-          gets: "A verifiable diploma certified by Deel, Remoteandtalent.com and Slack, each in its own area.",
+          gets: "A verifiable diploma issued by ActiveXRemote, detailing exactly what you completed.",
         },
       ],
     },
@@ -836,15 +973,15 @@ export const landingCopy = {
       eyebrow: "Questions",
       title: "Frequently asked.",
       items: [
+        { q: "Which path suits me?", a: "Remote Professional if you want an international remote job; Remote Founder if you want to launch your own business. And you can take both: they share the 7 core modules." },
+        { q: "How much does it cost?", a: "€2,400 per course, in one payment or 3 interest-free instalments of €800. Both courses together are €3,900, and there's an early-bird price of €2,100 until October 31." },
         { q: "How many modules are there?", a: "14 in total: 7 shared core modules and 7 specialized ones based on your chosen path (Professional or Founder)." },
         { q: "How long is each class?", a: "Every module is a 4-hour live class: theory, tool walkthrough, hands-on workshop and Q&A." },
-        { q: "Which path suits me?", a: "Remote Professional if you want an international remote job; Remote Founder if you want to launch your own business. You can switch anytime." },
         { q: "Do I need prior knowledge?", a: "No. The 7 core modules start from scratch and the specialization levels up progressively." },
         { q: "What tools will I use?", a: "Notion, Slack, Wise, Deel, Zapier and AI models, among others. You build your own remote stack during the program." },
         { q: "Is it live or async?", a: "Classes are live, and you get materials, narrated audio and exercises to progress at your own pace, async." },
         { q: "When does the next cohort start?", a: "December 1, 2026, with one 4h session per week for 14 weeks. Groups are capped at 25 seats: request information and we'll send you the calendar and schedule." },
-        { q: "Is the diploma an official degree?", a: "No. It is a private certification: the diploma lists the modules you completed and carries the seal of Deel (legal, hiring and payments), Remoteandtalent.com (employability and remote talent) and Slack (communication and distributed work), each in its own area. It is not equivalent to a university or official academic degree." },
-        { q: "How much does it cost?", a: "€2,400 per course, in one payment or 3 interest-free instalments of €800. Both courses together are €3,900, and there's an early-bird price of €2,100 until October 31." },
+        { q: "Is the diploma an official degree?", a: "No. It is a private certification issued by ActiveXRemote: the diploma lists the modules you completed and the teaching hours. It is not equivalent to a university or official academic degree, and none of the platforms studied in the program accredits it." },
       ],
     },
     finalCta: {
@@ -858,6 +995,13 @@ export const landingCopy = {
       cols: [
         { title: "Courses", links: [{ href: "/cursos/remote-professional", label: "Remote Professional" }, { href: "/cursos/remote-founder", label: "Remote Founder" }, { href: "#modulos", label: "Modules" }] },
         { title: "School", links: [{ href: "#metodo", label: "Method" }, { href: "#faq", label: "FAQ" }, { href: "#solicitar", label: "Request information" }] },
+        {
+          title: "Resources",
+          links: [
+            { href: "/blog", label: "Blog" },
+            { href: "/glosario", label: "Dictionary" },
+          ],
+        },
         { title: "Virtual campus", links: [{ href: "/login", label: "Enter the campus" }] },
         {
           title: "Legal",
@@ -870,6 +1014,11 @@ export const landingCopy = {
         },
       ],
       cookieSettings: "Cookie settings",
+      pay: {
+        secure: "Encrypted connection (TLS/SSL). Your card is processed by Stripe: we never see it or store it.",
+        accepted: "Accepted payment methods",
+        processor: "Payments processed by",
+      },
     },
   },
 } satisfies Record<Locale, unknown>;

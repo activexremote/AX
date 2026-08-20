@@ -1,6 +1,8 @@
 import type { Locale } from "@/lib/i18n/config";
 
 import type { Article } from "@/app/blog/types";
+import { article as esManifiesto } from "@/app/blog/articles/que-es-activexremote";
+import { article as enManifiesto } from "@/app/blog/articles/what-is-activexremote";
 import { article as esRemoteEspana } from "@/app/blog/articles/trabajo-remoto-internacional-desde-espana";
 import { article as esEmpresaExtranjera } from "@/app/blog/articles/como-trabajar-para-empresa-extranjera-legalmente";
 import { article as esCvAts } from "@/app/blog/articles/cv-internacional-ats";
@@ -46,6 +48,8 @@ import { article as esVisados } from "@/app/blog/articles/visados-nomada-digital
 // declara los 40 previstos; aquí sólo están los que existen de verdad, para
 // que el sitemap y el listado nunca enlacen a una página que no hay.
 const ALL: readonly Article[] = [
+  esManifiesto,
+  enManifiesto,
   esRemoteEspana,
   esEmpresaExtranjera,
   esCvAts,
@@ -99,3 +103,24 @@ export function getArticle(slug: string): Article | undefined {
 }
 
 export const ALL_ARTICLES = ALL;
+
+/**
+ * El post 1 de cada idioma: qué es ActiveXRemote.
+ *
+ * Va destacado en la portada del blog y en las landings. Se marca por slug y
+ * no por fecha porque es el más antiguo: ordenando por fecha quedaría el
+ * último, que es justo donde no sirve.
+ */
+const FEATURED: Record<Locale, string> = {
+  es: "que-es-activexremote",
+  en: "what-is-activexremote",
+};
+
+export function featuredArticle(locale: Locale): Article | undefined {
+  return getArticle(FEATURED[locale]);
+}
+
+/** Los artículos del idioma SIN el destacado, para no repetirlo en la rejilla. */
+export function articlesForList(locale: Locale): Article[] {
+  return articlesFor(locale).filter((a) => a.slug !== FEATURED[locale]);
+}

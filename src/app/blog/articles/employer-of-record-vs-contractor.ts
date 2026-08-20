@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "Employer of Record vs Contractor",
   ogDescription:
     "Rights, tax, admin and risk compared side by side, plus the clauses that decide how bad a contractor agreement can get.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-05-19",
+  updated: "2026-08-18",
   readingMinutes: 12,
   author: "ActiveXRemote Team",
   course: "remote-professional",
   terms: ["employer-of-record", "contractor-internacional", "falso-autonomo", "nomina-internacional", "establecimiento-permanente"],
-  related: ["international-remote-jobs-from-europe", "worker-misclassification-risk", "getting-paid-internationally"],
+  related: ["worker-misclassification-risk", "negotiating-remote-salary", "international-remote-jobs-from-europe", "getting-paid-internationally"],
   external: [
     { label: "European Commission · Employment rights across the EU", url: "https://europa.eu/youreurope/citizens/work/index_en.htm" },
     { label: "ILO · Employment Relationship Recommendation", url: "https://www.ilo.org" },
@@ -168,4 +168,5 @@ export const article: Article = {
     { q: "Should I set up a limited company instead of invoicing personally?", a: "It depends on volume, liability exposure and your country's tax treatment. It adds administration, so it usually makes sense above a certain revenue level rather than from day one." },
     { q: "Is an uncapped liability clause normal?", a: "It is common in first drafts and rarely defended when challenged. A cap tied to fees paid in the preceding twelve months is a standard and reasonable counter-proposal." },
   ],
+  hero: { file: "/blog/intermediario-legal.svg", alt: "Diagram: two companies in different countries and the contract bridging them." },
 };

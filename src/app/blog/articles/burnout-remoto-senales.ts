@@ -22,12 +22,12 @@ export const article: Article = {
   ogTitle: "Burnout remoto: las señales antes del cansancio",
   ogDescription:
     "La pérdida de criterio y la dificultad para empezar llegan antes que el cansancio. Qué cambiar, estructuralmente.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-07-14",
+  updated: "2026-07-14",
   readingMinutes: 10,
   author: "Equipo ActiveXRemote",
   terms: ["burnout-remoto", "solapamiento-horario", "trabajo-asincrono", "onboarding-distribuido"],
-  related: ["solapamiento-horario-ofertas-remotas", "trabajo-asincrono-guia", "primeros-90-dias-equipo-distribuido"],
+  related: ["solapamiento-horario-ofertas-remotas", "primeros-90-dias-equipo-distribuido", "trabajo-asincrono-guia", "entrevista-remota-video-asincrona"],
   external: [
     { label: "Organización Mundial de la Salud · Burnout en la CIE-11", url: "https://www.who.int" },
     { label: "Instituto Nacional de Seguridad y Salud en el Trabajo", url: "https://www.insst.es" },
@@ -168,4 +168,5 @@ export const article: Article = {
     { q: "¿Tiene obligaciones la empresa?", a: "Sí. En España existe el derecho a la desconexión digital y obligaciones de evaluación de riesgos psicosociales. No es un asunto exclusivamente personal." },
     { q: "¿Cómo me reconstruyo después de parar?", a: "Volviendo a algo estructuralmente distinto, reduciendo compromisos simultáneos en lugar de trabajar más rápido, y recuperando a propósito el contacto no laboral que casi siempre fue lo primero en desaparecer." },
   ],
+  hero: { file: "/blog/onda-decreciente.svg", alt: "Diagrama: una onda que pierde amplitud a partir de un punto marcado." },
 };

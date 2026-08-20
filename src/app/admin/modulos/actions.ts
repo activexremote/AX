@@ -16,6 +16,17 @@ async function assertStaff() {
   return supabase;
 }
 
+const COURSE_KEYS = ["core", "remote-professional", "remote-founder"] as const;
+
+/** El curso llega de un <select>, pero un formulario se puede reenviar a mano:
+ *  un valor inventado aquí rompería el filtro de acceso, así que se descarta. */
+function readCourse(formData: FormData): (typeof COURSE_KEYS)[number] {
+  const value = String(formData.get("course") ?? "core");
+  return (COURSE_KEYS as readonly string[]).includes(value)
+    ? (value as (typeof COURSE_KEYS)[number])
+    : "core";
+}
+
 export async function createModule(formData: FormData) {
   const supabase = await assertStaff();
   const slug = String(formData.get("slug") ?? "").trim();
@@ -32,6 +43,7 @@ export async function createModule(formData: FormData) {
     accent: (formData.get("accent") as string) || "#161616",
     order_index: Number(formData.get("order_index") ?? 0),
     estimated_minutes: Number(formData.get("estimated_minutes") ?? 0) || null,
+    course: readCourse(formData),
     available,
   });
   if (error) return { error: error.message };
@@ -62,6 +74,7 @@ export async function updateModule(id: string, formData: FormData) {
       accent: (formData.get("accent") as string) || null,
       order_index: Number(formData.get("order_index") ?? 0),
       estimated_minutes: Number(formData.get("estimated_minutes") ?? 0) || null,
+      course: readCourse(formData),
       available: formData.get("available") === "on",
     })
     .eq("id", id);

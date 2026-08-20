@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "Un portfolio que convence a quien no conoce tus empresas",
   ogDescription:
     "Quien contrata desde otro continente no puede llamar a tu antiguo jefe. La evidencia sustituye a la reputación.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-04-28",
+  updated: "2026-04-28",
   readingMinutes: 10,
   author: "Equipo ActiveXRemote",
   course: "remote-professional",
   terms: ["portfolio-internacional", "marca-personal", "cv-internacional", "ats"],
-  related: ["cv-internacional-ats", "trabajo-remoto-internacional-desde-espana", "entrevista-remota-video-asincrona"],
+  related: ["cv-internacional-ats", "ia-para-buscar-trabajo-remoto", "entrevista-remota-video-asincrona", "trabajo-remoto-internacional-desde-espana"],
   external: [
     { label: "Comisión Europea · Europass y documentación de competencias", url: "https://europa.eu/europass/es" },
     { label: "EURES · Portal europeo de empleo", url: "https://eures.europa.eu" },
@@ -169,4 +169,5 @@ export const article: Article = {
     { q: "¿El portfolio debe estar en inglés?", a: "Si aspiras a puestos internacionales, sí. Mantén una versión en español si también te presentas aquí, pero la internacional debe estar en el idioma del mercado." },
     { q: "¿Cómo lo enlazo desde el currículum?", a: "Arriba, en la cabecera, como una dirección legible incluso si el documento se imprime. Enterrado al final no se pulsa." },
   ],
+  hero: { file: "/blog/muestrario.svg", alt: "Diagrama: una rejilla de seis piezas de trabajo con una destacada sobre las demás." },
 };

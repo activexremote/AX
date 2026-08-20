@@ -1,8 +1,10 @@
 import { BrandMark } from "@/components/brand-mark";
 import { AccreditationRow, AccreditationSection } from "@/components/landing/accreditation";
 import { LandingNav } from "@/components/landing/landing-nav";
+import { LocaleLink } from "@/components/locale-link";
 import { RatingBadges } from "@/components/landing/rating-badges";
 import { LandingFooter } from "@/components/landing/landing-footer";
+import { BlogSection } from "@/components/landing/blog-section";
 import { LeadForm } from "@/components/landing/lead-form";
 import { ToolsSection } from "@/components/landing/tools-section";
 import { HeroBackdrop } from "@/components/landing/hero-backdrop";
@@ -31,7 +33,7 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
   const accreditation = landingCopy[locale].accreditation;
 
   return (
-    <main className="axr-lp axr-cp" data-course={slug}>
+    <main className="axr-lp axr-cp" data-course={slug} data-snap>
       <LandingNav />
 
       {/* ── Hero ────────────────────────────────────── */}
@@ -193,28 +195,39 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
               {phase.lead ? <p>{phase.lead}</p> : null}
             </header>
 
-            <ol className="axr-cp__modules">
-              {phase.modules.map((m) => (
-                <li key={m.n} className="axr-cp__module">
-                  <span className="axr-cp__module-n">{m.n}</span>
-                  <div className="axr-cp__module-body">
-                    <strong>{m.title}</strong>
-                    <p>{m.lead}</p>
-                    <ul className="axr-cp__module-points">
-                      {m.points.map((p) => (
-                        <li key={p}>{p}</li>
-                      ))}
-                    </ul>
-                    {m.exercise ? (
-                      <p className="axr-cp__module-exercise">
-                        <span>{locale === "es" ? "Ejercicio" : "Exercise"}</span>
-                        {m.exercise}
-                      </p>
-                    ) : null}
-                  </div>
-                </li>
-              ))}
-            </ol>
+            {/* Los 7 módulos de cada fase, con sus puntos y su ejercicio, eran
+                la mitad del largo de la página. Se pliegan igual que en la
+                home: la estructura se ve, el detalle se pide. */}
+            <details className="axr-lp__curriculum-fold axr-cp__fold">
+              <summary>
+                <span className="axr-lp__curriculum-more">
+                  {landingCopy[locale].curriculum.trackToggle}
+                  <span className="axr-lp__faq-sign" aria-hidden />
+                </span>
+              </summary>
+              <ol className="axr-cp__modules">
+                {phase.modules.map((m) => (
+                  <li key={m.n} className="axr-cp__module">
+                    <span className="axr-cp__module-n">{m.n}</span>
+                    <div className="axr-cp__module-body">
+                      <strong>{m.title}</strong>
+                      <p>{m.lead}</p>
+                      <ul className="axr-cp__module-points">
+                        {m.points.map((p) => (
+                          <li key={p}>{p}</li>
+                        ))}
+                      </ul>
+                      {m.exercise ? (
+                        <p className="axr-cp__module-exercise">
+                          <span>{locale === "es" ? "Ejercicio" : "Exercise"}</span>
+                          {m.exercise}
+                        </p>
+                      ) : null}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </details>
           </div>
         ))}
       </section>
@@ -299,9 +312,17 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
                 <li key={item}>{item}</li>
               ))}
             </ul>
-            <a href="#solicitar" className="axr-lp__btn axr-lp__btn--solid axr-lp__btn--lg axr-lp__plan-cta">
-              {c.enroll.cta}
+            {/* El curso ya está elegido: se lo lleva puesto al checkout para
+                que no tenga que volver a decirlo. */}
+            <LocaleLink
+              href={`/matricula?curso=${slug}`}
+              className="axr-lp__btn axr-lp__btn--solid axr-lp__btn--lg axr-lp__plan-cta"
+            >
+              {landingCopy[locale].access.buyCta}
               <span aria-hidden>→</span>
+            </LocaleLink>
+            <a href="#solicitar" className="axr-lp__plan-alt">
+              {landingCopy[locale].access.infoCta}
             </a>
           </div>
         </div>
@@ -324,6 +345,11 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
           ))}
         </div>
       </section>
+
+      {/* ── Blog ────────────────────────────────────── */}
+      {/* Filtrado por curso: a quien está mirando Remote Founder no le sirve
+          una guía de currículums. */}
+      <BlogSection course={slug} />
 
       {/* ── Formulario final (destino de todos los CTA) ─ */}
       <section id="solicitar" className="axr-lp__final">

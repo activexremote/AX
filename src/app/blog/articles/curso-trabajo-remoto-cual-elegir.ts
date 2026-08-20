@@ -24,12 +24,12 @@ export const article: Article = {
   ogTitle: "Cursos de trabajo remoto: cómo distinguir formación de humo",
   ogDescription:
     "Ocho criterios verificables y las señales de alarma que aparecen antes de pagar.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-08-18",
+  updated: "2026-08-18",
   readingMinutes: 11,
   author: "Equipo ActiveXRemote",
   terms: ["trabajo-remoto", "negocio-borderless", "employer-of-record", "oferta-productizada"],
-  related: ["trabajo-remoto-internacional-desde-espana", "de-freelance-a-negocio-productizado", "cv-internacional-ats"],
+  related: ["que-es-activexremote", "trabajo-remoto-internacional-desde-espana", "conseguir-clientes-b2b-internacionales", "de-freelance-a-negocio-productizado"],
   external: [
     { label: "Comisión Europea · Marco Europeo de Cualificaciones", url: "https://europa.eu/europass/es/european-qualifications-framework-eqf" },
     { label: "Comisión Europea · Derechos del consumidor en contratos a distancia", url: "https://commission.europa.eu" },
@@ -182,4 +182,5 @@ export const article: Article = {
     { q: "¿Y si el curso no me sirve una vez empezado?", a: "Pregunta antes de matricularte qué política existe: si hay cambio de convocatoria, si el acceso al material se mantiene y en qué condiciones. Que la respuesta esté por escrito importa más que cuál sea." },
     { q: "¿Qué preguntas debería hacer antes de pagar?", a: "Qué tendré hecho al terminar, quién imparte cada bloque, quién revisa mis entregas, cuánto dura el acceso, qué certifica exactamente el diploma y cuáles son las condiciones de cancelación. Si alguna se responde con evasivas, ya sabes algo." },
   ],
+  hero: { file: "/blog/bifurcacion.svg", alt: "Diagrama: un camino que se bifurca en dos destinos distintos." },
 };

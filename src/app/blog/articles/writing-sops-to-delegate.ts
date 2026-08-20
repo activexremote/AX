@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "Writing SOPs You Can Actually Hand Over",
   ogDescription:
     "The test is simple: can an outsider follow it and get the same result without asking anything?",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-08-04",
+  updated: "2026-08-04",
   readingMinutes: 10,
   author: "ActiveXRemote Team",
   course: "remote-founder",
   terms: ["sop", "documentacion-asincrona", "automatizacion-no-code", "oferta-productizada", "solopreneur"],
-  related: ["no-code-automation-for-solopreneurs", "productised-service-business", "async-work-guide"],
+  related: ["productised-service-business", "no-code-automation-for-solopreneurs", "b2b-clients-without-network", "remote-work-stack"],
   external: [
     { label: "ISO · Quality management principles", url: "https://www.iso.org" },
     { label: "European Commission · SME digitalisation resources", url: "https://single-market-economy.ec.europa.eu" },
@@ -175,4 +175,5 @@ export const article: Article = {
     { q: "Are SOPs only useful if I have employees?", a: "No. They are what makes delegation, automation and selling a productised service possible, and they are also what lets you return to an infrequent task without relearning it." },
     { q: "What is the difference between an SOP and a checklist?", a: "A checklist confirms steps were done by someone who already knows how. An SOP teaches someone who does not, which is why it needs decision criteria and failure handling." },
   ],
+  hero: { file: "/blog/procedimiento.svg", alt: "Diagram: three numbered steps turning into a handover document." },
 };

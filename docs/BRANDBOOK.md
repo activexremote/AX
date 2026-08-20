@@ -458,7 +458,33 @@ Set único: **IBM Carbon Icons** (`@carbon/icons-react`). Estilo de línea, traz
 
 ### Ilustración
 
-No hay ilustración de marca. Lo que la sustituye: **capturas reales de herramientas**, diagramas de línea en tinta y retículas de logos. Nada de vectores genéricos de personas ni de stock corporativo.
+Sigue sin haber ilustración decorativa ni stock: nada de vectores genéricos de personas. Lo que sí existen son **dos sistemas generados**, uno por sección, que comparten paleta pero no registro. Fuera de ellos se usan capturas reales de herramientas y retículas de logos.
+
+|  | Blog | Diccionario |
+|---|---|---|
+| Fichero | `public/blog/*.svg` | `public/glosario/*.svg` |
+| Genera | `scripts/build-blog-art.mjs` | `scripts/build-glossary-art.mjs` |
+| Lienzo | 800 × 450 apaisado | 320 × 320 cuadrado |
+| Registro | **diagrama** que explica | **marca** que identifica |
+| Fondo | `#F4F3FB` + retícula de puntos | `#F4F3FB` liso |
+| Trazo | fino, 2–5, variable | medio, 6–7, constante |
+| Firma | cuadrado indicador, filete y ΔX | ninguna |
+
+**Los dos usan el gradiente de marca para las masas y tinta para la línea.** El color nunca es el único mensaje: cada pieza tiene además su propia forma, así que se distingue en escala de grises.
+
+**Regla de variedad (blog).** La primera versión tenía conceptos distintos pero todas se dibujaban igual —rectángulos finos y una flecha—, y seguidas en la portada parecían la misma imagen. Cada pieza tiene que cambiar en al menos **tres de estos cinco ejes** respecto de sus vecinas:
+
+1. forma dominante — círculo · rectángulo · triángulo · onda · trayecto
+2. composición — radial · rejilla · carriles · pila · dispersión
+3. densidad — tres masas grandes frente a treinta piezas pequeñas
+4. relleno — sólo línea · masa con gradiente · tinta maciza
+5. eje — horizontal · vertical · diagonal · concéntrico
+
+**Acento por área**, el mismo en los dos sistemas: empleo `#5B4BF5` · negocio `#E4462F` · fiscalidad `#2F6BFF` · legal `#14B8C4` · método `#A855F7` · herramientas `#FF7A3D`.
+
+**Para añadir una pieza:** una entrada en `GLYPHS` y otra en `TOPICS` (blog) o en `GLYPHS` indexado por id de término (diccionario). Nunca se edita un SVG de `public/` a mano: se regenera con `npm run blog:art` o `npm run glossary:art`.
+
+⚠︎ **No se usa el lenguaje del campus en el sitio público.** La primera versión del diccionario eran fichas de tinta con esquina recta y formas macizas: eso es Carbon monocromo, radio 0, y desentonaba con una web de radios de 12–26 px, lavanda y gradientes. No era cuestión de gusto, era el sistema equivocado.
 
 ### Capturas de pantalla en clase
 

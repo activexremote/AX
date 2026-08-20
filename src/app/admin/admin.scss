@@ -390,3 +390,52 @@ code {
   padding: 0.0625rem 0.3125rem;
   border-radius: 3px;
 }
+
+// ── Matrículas ──────────────────────────────────────────
+.axr-admin-card--flag {
+  border-left: 3px solid #f1a208;
+
+  h2 { margin: 0 0 0.25rem; font-size: 1rem; }
+  > p { margin: 0 0 0.9rem; color: var(--axr-text-helper); font-size: 0.875rem; }
+}
+
+.axr-admin-recover {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--axr-border, #d5d3e0);
+    border-radius: 8px;
+    font-size: 0.875rem;
+  }
+  span, time { color: var(--axr-text-helper); }
+  time { margin-left: auto; }
+}
+
+// El color dice el estado de un vistazo: verde cobrado, ámbar pendiente de
+// cobro, rojo lo que necesita que alguien haga algo.
+.axr-admin-pill {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #eceaf6;
+  color: #4a4560;
+
+  &[data-status="pagado"],
+  &[data-status="completado"] { background: #e3f6ec; color: #14663c; }
+  &[data-status="en_plazos"]  { background: #e8eefc; color: #23458f; }
+  &[data-status="iniciado"]   { background: #fdf1dc; color: #7a5406; }
+  &[data-status="expirado"]   { background: #fdf1dc; color: #7a5406; }
+  &[data-status="fallido"],
+  &[data-status="reembolsado"] { background: #fdecec; color: #a32020; }
+}

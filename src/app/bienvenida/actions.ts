@@ -31,7 +31,9 @@ export async function submitLead(formData: FormData): Promise<LeadResult> {
   const phone = String(formData.get("phone") ?? "").trim();
   const city = String(formData.get("city") ?? "").trim();
 
-  if (!courses.length) return { error: "missing_course" };
+  // El curso es opcional: quien todavía no lo tiene claro es justo el lead
+  // que hay que capturar. Si no marca ninguno, se guarda vacío y lo resuelve
+  // la llamada comercial.
   if (!firstName || !lastName || !email || !phone || !city) return { error: "missing_fields" };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return { error: "bad_email" };
 
@@ -59,7 +61,7 @@ export async function submitLead(formData: FormData): Promise<LeadResult> {
         `*Email:* ${email}`,
         `*Teléfono:* ${phone}`,
         `*Ciudad:* ${city}`,
-        `*Curso(s):* ${courses.map((c) => COURSE_LABELS[c]).join(" + ")}`,
+        `*Curso(s):* ${courses.length ? courses.map((c) => COURSE_LABELS[c]).join(" + ") : "sin especificar"}`,
       ],
     });
   } catch {

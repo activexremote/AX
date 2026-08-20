@@ -28,11 +28,15 @@ export const ENTITY = {
   // ── Pendiente de rellenar ────────────────────────────────
   /**
    * Número de licencia comercial de la zona franca. Sustituye al NIF.
-   * ⚠︎ "Consultar por email" no es un identificador: la normativa europea de
-   * consumo pide identificar al empresario antes de contratar. Sirve para
-   * salir a producción, pero conviene poner el número real.
+   *
+   * ⚠︎ PENDIENTE: hay que poner el número real. Antes decía "Consultar por
+   * email", que no es un identificador y además dejaba ENTITY_READY en true,
+   * así que el aviso de documento incompleto no llegaba a mostrarse nunca.
+   * Vacío es honesto: la normativa europea de consumo exige identificar al
+   * empresario antes de contratar, y hasta que el número esté, las páginas
+   * legales lo advierten en pantalla.
    */
-  licenceNo: "Consultar por email",
+  licenceNo: "",
   /** Correo de contacto general y para ejercer derechos. Imprescindible. */
   email: "activexremote@gmail.com",
   /** Teléfono de contacto. Opcional. */

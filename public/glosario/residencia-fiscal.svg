@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320" role="img" aria-label="Residencia fiscal — ActiveXRemote">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3D7BFF"/>
+      <stop offset="1" stop-color="#6D5CFF"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" fill="#F4F3FB"/>
+  <g transform="translate(160 160)">
+    <g fill="url(#g)" stroke="none"><path d="M0 -84 a52 52 0 0 1 52 52 c0 40 -52 96 -52 96 s-52 -56 -52 -96 a52 52 0 0 1 52 -52 z"/></g>    <g fill="none" stroke="#161326" stroke-width="6" stroke-linejoin="miter" stroke-linecap="butt"><circle cx="0" cy="-32" r="18" fill="#F4F3FB"/></g>
+  </g>
+</svg>

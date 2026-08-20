@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ModuleIcon } from "@/components/module-icon";
@@ -6,7 +7,15 @@ import { getProgressForCurrentUser } from "@/lib/data/progress";
 import { getCurrentProfile } from "@/lib/data/profile";
 import { CampusHeader } from "@/components/campus-header";
 import { getI18n } from "@/lib/i18n/server";
+import { SITE_URL } from "@/lib/seo";
 import "@/app/(campus)/home.scss";
+
+// A quien no tiene sesión, "/" le sirve exactamente la misma landing que
+// /bienvenida (ver (campus)/layout.tsx). Sin canónica eran dos URL con el
+// mismo contenido compitiendo entre sí; ésta declara cuál es la buena.
+export const metadata: Metadata = {
+  alternates: { canonical: `${SITE_URL}/bienvenida` },
+};
 
 export default async function CampusHome() {
   // Invitados: el layout del campus renderiza la landing pública; aquí salimos
@@ -78,6 +87,19 @@ export default async function CampusHome() {
             <h2>{t.home.modulesTitle}</h2>
             <p>{t.home.modulesSubtitle}</p>
           </header>
+
+          {/* Sin matrícula activa la base de datos no devuelve ni un módulo
+              (política has_course_access). Decirlo con todas las letras evita
+              que parezca que el campus está roto. */}
+          {modules.length === 0 ? (
+            <div className="axr-modules__empty">
+              <strong>{t.home.noAccessTitle}</strong>
+              <p>{t.home.noAccessBody}</p>
+              <Link href="/bienvenida" className="axr-btn">
+                {t.home.noAccessCta}
+              </Link>
+            </div>
+          ) : null}
 
           <div className="axr-modules__grid">
             {modules.map((m) => (

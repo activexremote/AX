@@ -49,6 +49,33 @@ export function LeadForm({ copy, variant = "hero", preselect = [], submitLabel }
 
   return (
     <form className="axr-lead" data-variant={variant} action={handleSubmit} noValidate>
+      <div className="axr-lead__grid">
+        {/* `--pair`: nombre y apellidos comparten fila en móvil. Son los dos
+            campos de valor más corto del formulario, así que a media columna
+            siguen siendo cómodos, y ahorrarse una fila es lo que hace que la
+            tarjeta entera quepa en la pantalla de un teléfono. */}
+        <div className="axr-lead__field axr-lead__field--pair">
+          <label htmlFor={`${uid}-first`}>{copy.firstName}</label>
+          <input id={`${uid}-first`} name="first_name" type="text" autoComplete="given-name" required />
+        </div>
+        <div className="axr-lead__field axr-lead__field--pair">
+          <label htmlFor={`${uid}-last`}>{copy.lastName}</label>
+          <input id={`${uid}-last`} name="last_name" type="text" autoComplete="family-name" required />
+        </div>
+        <div className="axr-lead__field">
+          <label htmlFor={`${uid}-email`}>{copy.email}</label>
+          <input id={`${uid}-email`} name="email" type="email" autoComplete="email" required />
+        </div>
+        <div className="axr-lead__field">
+          <label htmlFor={`${uid}-phone`}>{copy.phone}</label>
+          <input id={`${uid}-phone`} name="phone" type="tel" autoComplete="tel" required />
+        </div>
+        <div className="axr-lead__field axr-lead__field--wide">
+          <label htmlFor={`${uid}-city`}>{copy.city}</label>
+          <input id={`${uid}-city`} name="city" type="text" autoComplete="address-level2" required />
+        </div>
+      </div>
+
       <fieldset className="axr-lead__courses">
         <legend>
           {copy.courseLabel}
@@ -72,29 +99,6 @@ export function LeadForm({ copy, variant = "hero", preselect = [], submitLabel }
           ))}
         </div>
       </fieldset>
-
-      <div className="axr-lead__grid">
-        <div className="axr-lead__field">
-          <label htmlFor={`${uid}-first`}>{copy.firstName}</label>
-          <input id={`${uid}-first`} name="first_name" type="text" autoComplete="given-name" required />
-        </div>
-        <div className="axr-lead__field">
-          <label htmlFor={`${uid}-last`}>{copy.lastName}</label>
-          <input id={`${uid}-last`} name="last_name" type="text" autoComplete="family-name" required />
-        </div>
-        <div className="axr-lead__field">
-          <label htmlFor={`${uid}-email`}>{copy.email}</label>
-          <input id={`${uid}-email`} name="email" type="email" autoComplete="email" required />
-        </div>
-        <div className="axr-lead__field">
-          <label htmlFor={`${uid}-phone`}>{copy.phone}</label>
-          <input id={`${uid}-phone`} name="phone" type="tel" autoComplete="tel" required />
-        </div>
-        <div className="axr-lead__field axr-lead__field--wide">
-          <label htmlFor={`${uid}-city`}>{copy.city}</label>
-          <input id={`${uid}-city`} name="city" type="text" autoComplete="address-level2" required />
-        </div>
-      </div>
 
       {/* Honeypot — oculto para personas, irresistible para bots. */}
       <input

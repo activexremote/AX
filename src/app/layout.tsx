@@ -6,6 +6,7 @@ import { I18nProvider } from "@/lib/i18n/provider";
 import { ConsentDefaultScript } from "@/components/consent/consent-default-script";
 import { ConsentMount } from "@/components/consent/consent-mount";
 import { getI18n } from "@/lib/i18n/server";
+import { SITE_NAME, SITE_URL } from "@/lib/seo";
 
 // Texto y UI — tipografía del sistema de marca
 const inter = Inter({
@@ -21,9 +22,18 @@ const plexMono = IBM_Plex_Mono({
   weight: ["400", "500"],
 });
 
+// `metadataBase` es lo que permite que el resto de páginas declaren rutas
+// relativas (og:image, canónicas) y salgan como URL absolutas. Sin él, Next
+// avisa en cada build y las tarjetas sociales se quedan sin imagen.
 export const metadata: Metadata = {
-  title: "ActiveXRemote · Campus",
-  description: "Plataforma interna de formación de ActiveXRemote.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "ActiveXRemote · The Remote Business School",
+    template: "%s · ActiveXRemote",
+  },
+  description:
+    "Formación en directo para trabajar y montar negocio sin fronteras. Dos caminos: Remote Professional y Remote Founder.",
+  applicationName: SITE_NAME,
 };
 
 // Sin maximumScale ni userScalable: el zoom con dos dedos debe seguir ahí.

@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "SOPs: documentar un proceso para poder soltarlo",
   ogDescription:
     "La prueba es sencilla: ¿alguien de fuera lo sigue y obtiene el mismo resultado sin preguntar nada?",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-08-04",
+  updated: "2026-08-04",
   readingMinutes: 10,
   author: "Equipo ActiveXRemote",
   course: "remote-founder",
   terms: ["sop", "documentacion-asincrona", "automatizacion-no-code", "oferta-productizada", "solopreneur"],
-  related: ["automatizar-negocio-sin-codigo", "de-freelance-a-negocio-productizado", "trabajo-asincrono-guia"],
+  related: ["de-freelance-a-negocio-productizado", "automatizar-negocio-sin-codigo", "conseguir-clientes-b2b-internacionales", "stack-remoto-imprescindible"],
   external: [
     { label: "ISO · Principios de gestión de la calidad", url: "https://www.iso.org" },
     { label: "Comisión Europea · Recursos de digitalización para pymes", url: "https://single-market-economy.ec.europa.eu" },
@@ -175,4 +175,5 @@ export const article: Article = {
     { q: "¿Sirven los SOP si no tengo empleados?", a: "Sí. Son lo que hace posible delegar, automatizar y vender un servicio productizado, y también lo que te permite retomar una tarea poco frecuente sin volver a aprenderla." },
     { q: "¿Qué diferencia hay entre un SOP y una lista de comprobación?", a: "Una lista confirma que se hicieron los pasos, para alguien que ya sabe cómo. Un SOP enseña a quien no sabe, y por eso necesita criterios de decisión y qué hacer cuando algo falla." },
   ],
+  hero: { file: "/blog/procedimiento.svg", alt: "Diagrama: tres pasos numerados que se convierten en un documento entregable." },
 };

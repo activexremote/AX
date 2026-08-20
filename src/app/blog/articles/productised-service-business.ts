@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "Stop Charging by the Hour",
   ogDescription:
     "Fixed scope, fixed price, a documented process. How to sell an outcome instead of your time.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-07-21",
+  updated: "2026-07-21",
   readingMinutes: 12,
   author: "ActiveXRemote Team",
   course: "remote-founder",
   terms: ["oferta-productizada", "solopreneur", "negocio-borderless", "sop", "automatizacion-no-code"],
-  related: ["b2b-clients-without-network", "getting-paid-internationally", "no-code-automation-for-solopreneurs"],
+  related: ["writing-sops-to-delegate", "b2b-clients-without-network", "no-code-automation-for-solopreneurs", "what-is-activexremote"],
   external: [
     { label: "European Commission · Support for SMEs and self-employment", url: "https://single-market-economy.ec.europa.eu" },
     { label: "OECD · Self-employment statistics", url: "https://data.oecd.org" },
@@ -173,4 +173,5 @@ export const article: Article = {
     { q: "Can I bill hourly and productised at the same time?", a: "During the transition, yes, and it is advisable. Longer term the hourly option should carry a clearly higher price so it does not compete with the fixed one." },
     { q: "When should I automate?", a: "Once you have delivered the same process several times without changes and know exactly which steps require no judgement. Automating earlier multiplies errors instead of margin." },
   ],
+  hero: { file: "/blog/producto-cerrado.svg", alt: "Diagram: scattered hours of varying length compacted into a single closed block." },
 };

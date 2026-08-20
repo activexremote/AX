@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "La entrevista remota se gana antes de encender la cámara",
   ogDescription:
     "Vídeo grabado, ronda escrita y prueba con plazo evalúan cosas distintas que una conversación.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-05-05",
+  updated: "2026-05-05",
   readingMinutes: 11,
   author: "Equipo ActiveXRemote",
   course: "remote-professional",
   terms: ["trabajo-asincrono", "onboarding-distribuido", "portfolio-internacional", "documentacion-asincrona"],
-  related: ["cv-internacional-ats", "portfolio-para-recruiters-internacionales", "negociar-salario-remoto-internacional"],
+  related: ["primeros-90-dias-equipo-distribuido", "solapamiento-horario-ofertas-remotas", "trabajo-asincrono-guia", "cv-internacional-ats"],
   external: [
     { label: "AEPD · Protección de datos en procesos de selección", url: "https://www.aepd.es" },
     { label: "Comisión Europea · Reglamento de Inteligencia Artificial", url: "https://digital-strategy.ec.europa.eu" },
@@ -164,4 +164,5 @@ export const article: Article = {
     { q: "¿Qué equipo necesito para grabar?", a: "Cámara a la altura de los ojos, luz de frente y no a la espalda, y un micrófono más cercano que el del portátil. Diez minutos de preparación mejoran todas las respuestas que grabes." },
     { q: "¿Conviene hacer seguimiento tras una fase asíncrona?", a: "Un mensaje corto confirmando el envío y ofreciéndote a ampliar cualquier punto está bien. Los seguimientos largos que repiten tus respuestas no ayudan y pueden leerse como desconfianza en el proceso." },
   ],
+  hero: { file: "/blog/pantalla-voz.svg", alt: "Diagrama: una pantalla de vídeo junto a la onda de una respuesta grabada." },
 };

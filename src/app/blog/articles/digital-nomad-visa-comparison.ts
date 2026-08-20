@@ -22,12 +22,12 @@ export const article: Article = {
   ogTitle: "Digital Nomad Visas Compared",
   ogDescription:
     "Income proof, insurance, local-client rules and the tax question nobody reads until later.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-06-09",
+  updated: "2026-08-18",
   readingMinutes: 11,
   author: "ActiveXRemote Team",
   terms: ["visado-nomada-digital", "nomada-digital", "residencia-fiscal", "regla-183-dias", "trabajo-remoto"],
-  related: ["tax-residency-remote-workers", "international-remote-jobs-from-europe", "employer-of-record-vs-contractor"],
+  related: ["tax-residency-remote-workers", "what-is-activexremote", "international-remote-jobs-from-europe", "getting-paid-internationally"],
   external: [
     { label: "European Commission · Immigration portal", url: "https://immigration-portal.ec.europa.eu" },
     { label: "European Commission · Your Europe: residence rights", url: "https://europa.eu/youreurope/citizens/residence/index_en.htm" },
@@ -169,4 +169,5 @@ export const article: Article = {
     { q: "What happens when the visa expires?", a: "It depends on renewability, which varies. Some renew straightforwardly if you still meet the conditions, others are single-term and require leaving or switching to a different permit." },
     { q: "Do I need health insurance even with public coverage at home?", a: "Almost always yes. These permits require private cover valid locally for the full duration, and policies that exclude the destination or expire mid-term are a common rejection reason." },
   ],
+  hero: { file: "/blog/requisitos.svg", alt: "Diagram: five income bars against the minimum threshold a visa requires." },
 };

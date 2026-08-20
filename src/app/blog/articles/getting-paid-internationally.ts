@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "Getting Paid by International Clients",
   ogDescription:
     "The exchange rate margin costs more than the visible fees. How to pick method, currency and invoice format.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-06-16",
+  updated: "2026-06-16",
   readingMinutes: 11,
   author: "ActiveXRemote Team",
   course: "remote-founder",
   terms: ["facturacion-internacional", "multidivisa", "contractor-internacional", "negocio-borderless"],
-  related: ["b2b-clients-without-network", "employer-of-record-vs-contractor", "productised-service-business"],
+  related: ["negotiating-remote-salary", "b2b-clients-without-network", "productised-service-business", "employer-of-record-vs-contractor"],
   external: [
     { label: "European Commission · VAT rules on cross-border services", url: "https://taxation-customs.ec.europa.eu" },
     { label: "European Central Bank · Euro reference exchange rates", url: "https://www.ecb.europa.eu" },
@@ -175,4 +175,5 @@ export const article: Article = {
     { q: "Do payment platforms withhold tax?", a: "Some apply withholding or require tax documentation depending on your country and theirs. Check when signing up rather than when the first payout arrives smaller than expected." },
     { q: "How long does an international transfer take?", a: "One to five business days depending on route and currency. Payments made to local banking details usually settle like a domestic transfer, same day or next." },
   ],
+  hero: { file: "/blog/fuga-cobro.svg", alt: "Diagram: a payment channel with a portion diverting away before it arrives." },
 };

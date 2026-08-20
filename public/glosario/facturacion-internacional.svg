@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320" role="img" aria-label="Facturación internacional — ActiveXRemote">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3D7BFF"/>
+      <stop offset="1" stop-color="#6D5CFF"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" fill="#F4F3FB"/>
+  <g transform="translate(160 160)">
+    <g fill="none" stroke="#161326" stroke-width="7" stroke-linejoin="miter" stroke-linecap="butt"><rect x="-88" y="-70" width="106" height="140" rx="10"/></g>    <g fill="none" stroke="#161326" stroke-width="6" stroke-linejoin="miter" stroke-linecap="butt"><path d="M-64 -34 h58 M-64 -6 h58 M-64 22 h34"/></g>    <g fill="url(#g)" stroke="none"><path d="M34 0 h40 l-22 -30 h34 l40 42 l-40 42 h-34 l22 -30 h-40 z" transform="translate(-16 0)"/></g>
+  </g>
+</svg>

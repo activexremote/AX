@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "Time Zone Overlap Explained",
   ogDescription:
     "One line in the job post decides which countries can apply. Here is how to read it and when to push back.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-04-14",
+  updated: "2026-04-14",
   readingMinutes: 10,
   author: "ActiveXRemote Team",
   course: "remote-professional",
   terms: ["solapamiento-horario", "trabajo-asincrono", "burnout-remoto", "onboarding-distribuido"],
-  related: ["international-remote-jobs-from-europe", "async-work-guide", "remote-burnout-signals"],
+  related: ["remote-burnout-signals", "async-interview-and-video-screening", "first-90-days-remote-team", "async-work-guide"],
   external: [
     { label: "Eurofound · Working time and telework research", url: "https://www.eurofound.europa.eu" },
     { label: "ILO · Working time arrangements", url: "https://www.ilo.org" },
@@ -168,4 +168,5 @@ export const article: Article = {
     { q: "What if the post does not mention overlap at all?", a: "Ask. Its absence more often means nobody wrote it down than that no expectation exists. The answer will also tell you how much the company has thought about distribution." },
     { q: "Do overlap requirements change once you are hired?", a: "They can drift, usually upwards, as meetings accumulate. Agreeing a review point at ninety days gives you a legitimate moment to reset it before it becomes the norm." },
   ],
+  hero: { file: "/blog/solapamiento.svg", alt: "Diagram: two working days and the narrow band where they actually overlap." },
 };

@@ -17,12 +17,23 @@ export const blogCopy: Record<Locale, {
   ctaBody: string;
   ctaButton: string;
   emptyLabel: string;
+  /** Textos de la sección de blog que aparece en las landings. */
+  sectionTitle: string;
+  sectionLead: string;
+  sectionCta: string;
+  featuredLabel: string;
+  featuredCta: string;
   clusters: Record<string, string>;
 }> = {
   es: {
     eyebrow: "Blog",
     title: "Trabajo remoto internacional, explicado sin humo",
     lead: "Guías sobre contratación, fiscalidad, candidaturas y negocio remoto. Escritas para resolver una duda concreta, no para rellenar.",
+    sectionTitle: "Lo que enseñamos, por escrito y en abierto.",
+    sectionLead: "Antes de pagar nada puedes leer cómo pensamos. Estas guías salen del mismo material del programa.",
+    sectionCta: "Ver todas las guías",
+    featuredLabel: "Empieza por aquí",
+    featuredCta: "Leer el artículo",
     readingLabel: (n) => `${n} min de lectura`,
     updatedLabel: "Actualizado",
     tocLabel: "En esta guía",
@@ -49,6 +60,11 @@ export const blogCopy: Record<Locale, {
     eyebrow: "Blog",
     title: "International remote work, explained without the hype",
     lead: "Guides on hiring, tax, applications and remote business. Written to answer one concrete question, not to fill a page.",
+    sectionTitle: "What we teach, written down and in the open.",
+    sectionLead: "You can read how we think before paying for anything. These guides come from the program's own material.",
+    sectionCta: "See all the guides",
+    featuredLabel: "Start here",
+    featuredCta: "Read the article",
     readingLabel: (n) => `${n} min read`,
     updatedLabel: "Updated",
     tocLabel: "In this guide",

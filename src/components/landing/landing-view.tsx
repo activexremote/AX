@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink } from "@/components/locale-link";
 
 import { BrandMark } from "@/components/brand-mark";
 import { SlackLogo } from "@/components/slack-logo";
@@ -10,15 +10,17 @@ import { LeadForm } from "@/components/landing/lead-form";
 import { ToolsSection } from "@/components/landing/tools-section";
 import { Roadmap } from "@/components/landing/roadmap";
 import { GlossarySection } from "@/components/landing/glossary-section";
+import { BlogSection } from "@/components/landing/blog-section";
 import { HeroBackdrop } from "@/components/landing/hero-backdrop";
 import { FacultySection } from "@/components/landing/faculty-section";
 import { getLocale } from "@/lib/i18n/server";
-import { landingCopy } from "@/app/bienvenida/copy";
+import { landingCopy, type LandingCopy } from "@/app/bienvenida/copy";
+import { PROTOTYPE_ALUMNI } from "@/app/bienvenida/flags";
 import "@/app/bienvenida/landing.scss";
 
 // Mockups brutalistas del campus — hacen de "captura de producto" sin
 // depender de fotos externas. Uno por feature (índice 0-2).
-function FeatureMockup({ index }: { index: number }) {
+function FeatureMockup({ index, copy }: { index: number; copy: LandingCopy["mock"] }) {
   if (index === 0) {
     // Rejilla de módulos
     return (
@@ -38,16 +40,18 @@ function FeatureMockup({ index }: { index: number }) {
     return (
       <div className="axr-mock axr-mock--progress" aria-hidden>
         <div className="axr-mock__row">
-          <span className="axr-mock__badge">RUTA 02 · 3/5</span>
+          <span className="axr-mock__badge">{copy.trackBadge}</span>
           <span className="axr-mock__pct">62%</span>
         </div>
         <div className="axr-mock__bar">
           <span style={{ width: "62%" }} />
         </div>
         <ul className="axr-mock__steps">
-          <li data-done="true">Comunicar en asíncrono</li>
-          <li data-done="true">Escribir para decidir</li>
-          <li data-done="false">Proteger tu foco</li>
+          {copy.steps.map((step, i) => (
+            <li key={step} data-done={String(i < 2)}>
+              {step}
+            </li>
+          ))}
         </ul>
       </div>
     );
@@ -63,8 +67,8 @@ function FeatureMockup({ index }: { index: number }) {
           <span className="axr-mock__msg-head">
             ActiveXRemote <em>APP</em>
           </span>
-          <p>Nueva lección disponible en tu ruta · Ruta 03</p>
-          <span className="axr-mock__msg-cta">Abrir en el campus →</span>
+          <p>{copy.slackMsg}</p>
+          <span className="axr-mock__msg-cta">{copy.slackCta} →</span>
         </div>
       </div>
     </div>
@@ -76,7 +80,7 @@ export async function LandingView() {
   const c = landingCopy[locale];
 
   return (
-    <main className="axr-lp">
+    <main className="axr-lp" data-snap>
       <LandingNav />
 
       {/* ── Hero ────────────────────────────────────── */}
@@ -99,6 +103,24 @@ export async function LandingView() {
             <span>{c.hero.titleBottom}</span>
           </h1>
           <p className="axr-lp__hero-lead">{c.hero.lead}</p>
+
+          {/* Dos puertas, una por público. Es la primera decisión que tiene
+              que tomar quien llega y ahora se puede tomar sin scroll: cada
+              tarjeta lleva directa a la landing de su curso. */}
+          <div className="axr-lp__hero-choose">
+            <span className="axr-lp__hero-choose-label">{c.hero.chooseLabel}</span>
+            <div className="axr-lp__hero-choose-opts">
+              {c.hero.choose.map((opt) => (
+                <LocaleLink key={opt.href} href={opt.href} className="axr-lp__hero-choice">
+                  <strong>{opt.title}</strong>
+                  <span>
+                    {opt.name}
+                    <span aria-hidden> →</span>
+                  </span>
+                </LocaleLink>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Formulario de captación — primer punto de conversión de la página. */}
@@ -131,99 +153,27 @@ export async function LandingView() {
       {/* ── Proof strip ─────────────────────────────── */}
       <section className="axr-lp__proof">
         <p className="axr-lp__proof-title">{c.proof.title}</p>
+        {/* La marquesina necesita la lista dos veces para que el bucle no dé
+            un salto. La copia es decorativa: se oculta a lectores de pantalla
+            y desaparece cuando el sistema pide menos movimiento (entonces los
+            chips se reparten en varias filas y una sola lista basta). */}
         <div className="axr-lp__proof-track">
-          {[...c.proof.chips, ...c.proof.chips].map((chip, i) => (
-            <span key={i} className="axr-lp__chip">
+          {c.proof.chips.map((chip) => (
+            <span key={chip} className="axr-lp__chip">
+              {chip}
+            </span>
+          ))}
+          {c.proof.chips.map((chip) => (
+            <span key={`dup-${chip}`} className="axr-lp__chip" data-dup aria-hidden>
               {chip}
             </span>
           ))}
         </div>
       </section>
 
-      {/* ── Statement ───────────────────────────────── */}
-      <section className="axr-lp__statement">
-        <h2>
-          {c.statement.top}
-          <br />
-          <em>{c.statement.bottom}</em>
-        </h2>
-      </section>
-
-      {/* ── Features ────────────────────────────────── */}
-      <section id="metodo" className="axr-lp__features">
-        {c.features.map((f, i) => (
-          <article key={f.title} className="axr-lp__feature" data-flip={i % 2 === 1}>
-            <div className="axr-lp__feature-text">
-              <span className="axr-lp__eyebrow">{f.eyebrow}</span>
-              <h3>{f.title}</h3>
-              <p>{f.body}</p>
-              <ul className="axr-lp__feature-points">
-                {f.points.map((p) => (
-                  <li key={p}>{p}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="axr-lp__feature-visual">
-              <span className="axr-lp__feature-index">{String(i + 1).padStart(2, "0")}</span>
-              <FeatureMockup index={i} />
-            </div>
-          </article>
-        ))}
-      </section>
-
-      {/* ── Integración Slack ───────────────────────── */}
-      <section className="axr-lp__integration">
-        <div className="axr-lp__integration-inner">
-          <SlackLogo size={40} />
-          <div>
-            <span className="axr-lp__eyebrow">{c.integration.eyebrow}</span>
-            <h3>{c.integration.title}</h3>
-            <p>{c.integration.body}</p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── El stack (va detrás del bloque de Slack: misma idea) ─ */}
-      <ToolsSection />
-
-      {/* ── Diccionario ─────────────────────────────── */}
-      {/* En la portada, una selección: los doce términos que más deciden en un
-          proceso remoto internacional. Los 34 están en /glosario, y así la
-          portada no duplica el hub entero. */}
-      <GlossarySection
-        only={[
-          "employer-of-record",
-          "contractor-internacional",
-          "residencia-fiscal",
-          "visado-nomada-digital",
-          "solapamiento-horario",
-          "trabajo-asincrono",
-          "ats",
-          "compensacion-global",
-          "geo-pay",
-          "negocio-borderless",
-          "oferta-productizada",
-          "stack-remoto",
-        ]}
-      />
-
-      {/* ── Bento stats ─────────────────────────────── */}
-      <section className="axr-lp__bento">
-        <div className="axr-lp__bento-num">
-          <strong>{c.bento.stat1.value}</strong>
-          <span>{c.bento.stat1.label}</span>
-        </div>
-        <blockquote className="axr-lp__bento-quote">
-          <p>{c.bento.quote}</p>
-          <cite>{c.bento.quoteBy}</cite>
-        </blockquote>
-        <div className="axr-lp__bento-num axr-lp__bento-num--dark">
-          <strong>{c.bento.stat2.value}</strong>
-          <span>{c.bento.stat2.label}</span>
-        </div>
-      </section>
-
       {/* ── Caminos ─────────────────────────────────── */}
+      {/* Tercera sección, no novena: refuerza el selector del héroe con el
+          detalle de cada camino y su enlace a la landing dedicada. */}
       <section id="caminos" className="axr-lp__paths">
         <header className="axr-lp__paths-head">
           <span className="axr-lp__eyebrow">{c.paths.eyebrow}</span>
@@ -253,13 +203,84 @@ export async function LandingView() {
                   {c.paths.cta}
                   <span aria-hidden>→</span>
                 </a>
-                <Link href={p.href} className="axr-lp__path-detail">
+                <LocaleLink href={p.href} className="axr-lp__path-detail">
                   {c.paths.detail}
                   <span aria-hidden>→</span>
-                </Link>
+                </LocaleLink>
               </div>
             </article>
           ))}
+        </div>
+      </section>
+
+      {/* ── Statement ───────────────────────────────── */}
+      <section className="axr-lp__statement">
+        <h2>
+          {c.statement.top}
+          <br />
+          <em>{c.statement.bottom}</em>
+        </h2>
+      </section>
+
+      {/* ── Features ────────────────────────────────── */}
+      <section id="metodo" className="axr-lp__features">
+        {c.features.map((f, i) => (
+          <article key={f.title} className="axr-lp__feature" data-flip={i % 2 === 1}>
+            <div className="axr-lp__feature-text">
+              <span className="axr-lp__eyebrow">{f.eyebrow}</span>
+              <h3>{f.title}</h3>
+              <p>{f.body}</p>
+              <ul className="axr-lp__feature-points">
+                {f.points.map((p) => (
+                  <li key={p}>{p}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="axr-lp__feature-visual">
+              <span className="axr-lp__feature-index">{String(i + 1).padStart(2, "0")}</span>
+              <FeatureMockup index={i} copy={c.mock} />
+            </div>
+          </article>
+        ))}
+      </section>
+
+      {/* ── Acceso / plan ───────────────────────────── */}
+      {/* El precio, antes de pedir nada. Vivía en la sección 14 y dentro de
+          una pregunta del FAQ: esconderlo en un producto de pago genera más
+          fricción de la que evita. */}
+      <section id="acceso" className="axr-lp__access">
+        <div className="axr-lp__access-inner">
+          <div className="axr-lp__access-text">
+            <span className="axr-lp__eyebrow">{c.access.eyebrow}</span>
+            <h2>{c.access.title}</h2>
+            <p>{c.access.lead}</p>
+          </div>
+          <div className="axr-lp__plan">
+            <div className="axr-lp__plan-head">
+              <span className="axr-lp__plan-name">{c.access.planName}</span>
+              <div className="axr-lp__plan-price">
+                <strong>{c.access.planPrice}</strong>
+                <span>{c.access.planNote}</span>
+              </div>
+            </div>
+            <p className="axr-lp__plan-start">{c.access.planStart}</p>
+            <ul className="axr-lp__plan-features">
+              {c.access.features.map((f) => (
+                <li key={f}>{f}</li>
+              ))}
+            </ul>
+            <p className="axr-lp__plan-bundle">{c.access.planBundle}</p>
+            <LocaleLink
+              href="/matricula"
+              className="axr-lp__btn axr-lp__btn--solid axr-lp__btn--lg axr-lp__plan-cta"
+            >
+              {c.access.buyCta}
+              <span aria-hidden>→</span>
+            </LocaleLink>
+            <a href="#solicitar" className="axr-lp__plan-alt">
+              {c.access.infoCta}
+            </a>
+          </div>
         </div>
       </section>
 
@@ -270,21 +291,35 @@ export async function LandingView() {
           <h2>{c.curriculum.title}</h2>
           <p>{c.curriculum.lead}</p>
         </header>
-        <div className="axr-lp__curriculum-phase">
-          <span className="axr-lp__phase-tag">{c.curriculum.coreTag}</span>
-          <h3>{c.curriculum.coreName}</h3>
-        </div>
-        <ol className="axr-lp__curriculum-grid">
-          {c.curriculum.modules.map((m) => (
-            <li key={m.n} className="axr-lp__module">
-              <span className="axr-lp__module-n">{m.n}</span>
-              <div>
-                <strong>{m.title}</strong>
-                <p>{m.desc}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
+        {/* Los 14 módulos desplegados eran varias pantallas de scroll en
+            mitad del embudo. Se ve la estructura —dos fases, siete y siete— y
+            el detalle se despliega quien lo quiera. <details> lo resuelve sin
+            JavaScript, y el contenido sigue estando en el HTML para quien lo
+            lee sin abrirlo: un buscador o un lector de pantalla. */}
+        <details className="axr-lp__curriculum-fold">
+          {/* <summary> sólo admite contenido de frase y un encabezado: de ahí
+              que el tag y el enlace sean <span> y el título un <h3> suelto,
+              en vez de envolverlo todo en un <div>. */}
+          <summary>
+            <span className="axr-lp__phase-tag">{c.curriculum.coreTag}</span>
+            <h3>{c.curriculum.coreName}</h3>
+            <span className="axr-lp__curriculum-more">
+              {c.curriculum.coreToggle}
+              <span className="axr-lp__faq-sign" aria-hidden />
+            </span>
+          </summary>
+          <ol className="axr-lp__curriculum-grid">
+            {c.curriculum.modules.map((m) => (
+              <li key={m.n} className="axr-lp__module">
+                <span className="axr-lp__module-n">{m.n}</span>
+                <div>
+                  <strong>{m.title}</strong>
+                  <p>{m.desc}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </details>
 
         {/* Fase 2: los 7 módulos propios de cada curso. */}
         <div className="axr-lp__curriculum-phase axr-lp__curriculum-phase--tracks">
@@ -298,21 +333,29 @@ export async function LandingView() {
                 <span className="axr-lp__track-tag">{track.tag}</span>
                 <h4>{track.name}</h4>
               </header>
-              <ol className="axr-lp__track-modules">
-                {track.modules.map((m) => (
-                  <li key={m.n}>
-                    <span className="axr-lp__track-n">{m.n}</span>
-                    <div>
-                      <strong>{m.title}</strong>
-                      <p>{m.desc}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-              <Link href={track.href} className="axr-lp__track-cta">
+              <details className="axr-lp__curriculum-fold">
+                <summary>
+                  <span className="axr-lp__curriculum-more">
+                    {c.curriculum.trackToggle}
+                    <span className="axr-lp__faq-sign" aria-hidden />
+                  </span>
+                </summary>
+                <ol className="axr-lp__track-modules">
+                  {track.modules.map((m) => (
+                    <li key={m.n}>
+                      <span className="axr-lp__track-n">{m.n}</span>
+                      <div>
+                        <strong>{m.title}</strong>
+                        <p>{m.desc}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </details>
+              <LocaleLink href={track.href} className="axr-lp__track-cta">
                 {c.curriculum.trackCta}
                 <span aria-hidden>→</span>
-              </Link>
+              </LocaleLink>
             </article>
           ))}
         </div>
@@ -321,7 +364,35 @@ export async function LandingView() {
       {/* ── Acreditación ────────────────────────────── */}
       <AccreditationSection copy={c.accreditation} />
 
-      {/* ── Alumni (placeholder: ver nota en copy.ts) ─── */}
+      {/* ── Integración Slack ───────────────────────── */}
+      <section className="axr-lp__integration">
+        <div className="axr-lp__integration-inner">
+          <SlackLogo size={40} />
+          <div>
+            <span className="axr-lp__eyebrow">{c.integration.eyebrow}</span>
+            <h3>{c.integration.title}</h3>
+            <p>{c.integration.body}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── El stack (va detrás del bloque de Slack: misma idea) ─ */}
+      <ToolsSection />
+
+      {/* ── Cómo funciona: cronograma de la convocatoria ─ */}
+      <section id="como" className="axr-lp__steps">
+        <header className="axr-lp__steps-head">
+          <span className="axr-lp__eyebrow">{c.steps.eyebrow}</span>
+          <h2>{c.steps.title}</h2>
+          <p>{c.steps.lead}</p>
+        </header>
+        <Roadmap copy={c.steps} />
+      </section>
+
+      {/* ── Alumni ──────────────────────────────────── */}
+      {/* Cifras, testimonios y logos son de maqueta: la sección entera vive
+          tras PROTOTYPE_ALUMNI y no se pinta hasta que los datos sean reales. */}
+      {PROTOTYPE_ALUMNI && (
       <section id="alumni" className="axr-lp__social">
         <header className="axr-lp__social-head">
           <span className="axr-lp__eyebrow">{c.social.eyebrow}</span>
@@ -362,50 +433,10 @@ export async function LandingView() {
           ))}
         </div>
       </section>
+      )}
 
       {/* ── Equipo docente ──────────────────────────── */}
       <FacultySection />
-
-      {/* ── Acceso / plan ───────────────────────────── */}
-      <section id="acceso" className="axr-lp__access">
-        <div className="axr-lp__access-inner">
-          <div className="axr-lp__access-text">
-            <span className="axr-lp__eyebrow">{c.access.eyebrow}</span>
-            <h2>{c.access.title}</h2>
-            <p>{c.access.lead}</p>
-          </div>
-          <div className="axr-lp__plan">
-            <div className="axr-lp__plan-head">
-              <span className="axr-lp__plan-name">{c.access.planName}</span>
-              <div className="axr-lp__plan-price">
-                <strong>{c.access.planPrice}</strong>
-                <span>{c.access.planNote}</span>
-              </div>
-            </div>
-            <p className="axr-lp__plan-start">{c.access.planStart}</p>
-            <ul className="axr-lp__plan-features">
-              {c.access.features.map((f) => (
-                <li key={f}>{f}</li>
-              ))}
-            </ul>
-            <p className="axr-lp__plan-bundle">{c.access.planBundle}</p>
-            <a href="#solicitar" className="axr-lp__btn axr-lp__btn--solid axr-lp__btn--lg axr-lp__plan-cta">
-              {c.access.cta}
-              <span aria-hidden>→</span>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Cómo funciona: cronograma de la convocatoria ─ */}
-      <section id="como" className="axr-lp__steps">
-        <header className="axr-lp__steps-head">
-          <span className="axr-lp__eyebrow">{c.steps.eyebrow}</span>
-          <h2>{c.steps.title}</h2>
-          <p>{c.steps.lead}</p>
-        </header>
-        <Roadmap copy={c.steps} />
-      </section>
 
       {/* ── FAQ ─────────────────────────────────────── */}
       <section id="faq" className="axr-lp__faq">
@@ -425,6 +456,55 @@ export async function LandingView() {
           ))}
         </div>
       </section>
+
+      {/* ── Fuera del embudo ────────────────────────── */}
+      {/* Manifiesto, blog y diccionario van después del FAQ y antes del cierre:
+          son contenido de marca y posicionamiento, no de venta, así que no
+          interrumpen el camino hacia el CTA. Pero la página no termina en
+          ellos — termina siempre en el formulario. */}
+      {/* ── Bento stats ─────────────────────────────── */}
+      <section className="axr-lp__bento">
+        {/* "+320 profesionales formados" es la misma cifra inventada de la
+            sección de alumni: mismo interruptor. */}
+        {PROTOTYPE_ALUMNI && (
+          <div className="axr-lp__bento-num">
+            <strong>{c.bento.stat1.value}</strong>
+            <span>{c.bento.stat1.label}</span>
+          </div>
+        )}
+        <blockquote className="axr-lp__bento-quote">
+          <p>{c.bento.quote}</p>
+          <cite>{c.bento.quoteBy}</cite>
+        </blockquote>
+        <div className="axr-lp__bento-num axr-lp__bento-num--dark">
+          <strong>{c.bento.stat2.value}</strong>
+          <span>{c.bento.stat2.label}</span>
+        </div>
+      </section>
+
+      {/* ── Blog ────────────────────────────────────── */}
+      <BlogSection />
+
+      {/* ── Diccionario ─────────────────────────────── */}
+      {/* En la portada, una selección: los doce términos que más deciden en un
+          proceso remoto internacional. Los 34 están en /glosario, y así la
+          portada no duplica el hub entero. */}
+      <GlossarySection
+        only={[
+          "employer-of-record",
+          "contractor-internacional",
+          "residencia-fiscal",
+          "visado-nomada-digital",
+          "solapamiento-horario",
+          "trabajo-asincrono",
+          "ats",
+          "compensacion-global",
+          "geo-pay",
+          "negocio-borderless",
+          "oferta-productizada",
+          "stack-remoto",
+        ]}
+      />
 
       {/* ── Formulario final (destino de todos los CTA) ─ */}
       <section id="solicitar" className="axr-lp__final">

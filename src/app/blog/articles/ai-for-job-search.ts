@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "AI for the Job Search",
   ogDescription:
     "It accelerates preparation, it does not replace judgement. The uses that work and the tells that give generated text away.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-06-30",
+  updated: "2026-06-30",
   readingMinutes: 11,
   author: "ActiveXRemote Team",
   course: "remote-professional",
   terms: ["prompt-engineering", "agente-ia", "ats", "cv-internacional", "portfolio-internacional"],
-  related: ["ats-friendly-resume", "international-remote-jobs-from-europe", "negotiating-remote-salary"],
+  related: ["ats-friendly-resume", "proof-of-work-portfolio", "no-code-automation-for-solopreneurs", "async-interview-and-video-screening"],
   external: [
     { label: "European Commission · Artificial Intelligence Act", url: "https://digital-strategy.ec.europa.eu" },
     { label: "European Data Protection Board · Guidance on personal data", url: "https://www.edpb.europa.eu" },
@@ -164,4 +164,5 @@ export const article: Article = {
     { q: "Can AI fill in application forms for me?", a: "Tools exist, but review every submission. Mass-submitted forms produce errors that do get you rejected, and some employers detect the pattern." },
     { q: "Is a paid AI tool worth it for job hunting?", a: "It depends on volume. If you are preparing many applications, paid tiers usually let you disable training on your data, which is the meaningful difference beyond model quality." },
   ],
+  hero: { file: "/blog/amplificador.svg", alt: "Diagram: one signal enters a triangular amplifier and five come out." },
 };

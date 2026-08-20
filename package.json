@@ -7,7 +7,14 @@
     "build": "next build",
     "start": "next start",
     "tools:icons": "node scripts/build-tool-icons.mjs",
-    "tools:logos": "node scripts/fetch-logos.mjs --write"
+    "tools:logos": "node scripts/fetch-logos.mjs --write",
+    "blog:art": "node scripts/build-blog-art.mjs && node scripts/attach-blog-art.mjs",
+    "stripe:setup": "node scripts/stripe-setup.mjs",
+    "check:links": "node scripts/check-links.mjs",
+    "blog:schedule": "node scripts/blog-schedule.mjs",
+    "blog:links": "node scripts/blog-links.mjs",
+    "glossary:art": "node --experimental-strip-types scripts/build-glossary-art.mjs",
+    "tools:payment": "node scripts/build-payment-icons.mjs"
   },
   "dependencies": {
     "@carbon/grid": "^11.56.0",
@@ -21,12 +28,14 @@
     "react-dom": "19.2.4",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
-    "sass": "^1.99.0"
+    "sass": "^1.99.0",
+    "stripe": "^22.5.0"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "payment-icons": "^1.2.1",
     "simple-icons": "^16.28.0",
     "typescript": "^5"
   }

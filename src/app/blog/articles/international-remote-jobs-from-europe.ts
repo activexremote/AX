@@ -25,13 +25,13 @@ export const article: Article = {
   ogTitle: "International Remote Jobs From Europe",
   ogDescription:
     "Contract structure, tax, overlap hours and pay bands: the four decisions behind every international remote hire.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-03-31",
+  updated: "2026-03-31",
   readingMinutes: 13,
   author: "ActiveXRemote Team",
   course: "remote-professional",
   terms: ["trabajo-remoto", "solapamiento-horario", "employer-of-record", "contractor-internacional", "compensacion-global", "geo-pay"],
-  related: ["employer-of-record-vs-contractor", "ats-friendly-resume", "negotiating-remote-salary"],
+  related: ["negotiating-remote-salary", "employer-of-record-vs-contractor", "time-zone-overlap-explained", "worker-misclassification-risk"],
   external: [
     { label: "European Commission · Working in another EU country", url: "https://europa.eu/youreurope/citizens/work/index_en.htm" },
     { label: "OECD · Model Tax Convention", url: "https://www.oecd.org/tax/treaties/" },
@@ -183,4 +183,5 @@ export const article: Article = {
     { q: "Which job boards actually list international remote roles?", a: "Specialist remote boards and company career pages both work, but the first forty-eight hours of a posting absorb most of the applications that get read carefully. Speed matters more than the source." },
     { q: "Can I keep the job if I move to another country?", a: "Sometimes, but check first. Many companies cap days and countries in their work-from-anywhere policy, because your prolonged presence elsewhere can create tax obligations for them." },
   ],
+  hero: { file: "/blog/mercado-global.svg", alt: "Diagram: two time zones joined by an arc of work spanning the distance." },
 };

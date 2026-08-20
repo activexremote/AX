@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "Landing International B2B Clients With No Network",
   ogDescription:
     "Niche, list, message, follow-up. The four decisions behind outbound that actually converts.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-07-28",
+  updated: "2026-07-28",
   readingMinutes: 12,
   author: "ActiveXRemote Team",
   course: "remote-founder",
   terms: ["negocio-borderless", "oferta-productizada", "marca-personal", "solopreneur"],
-  related: ["productised-service-business", "getting-paid-internationally", "no-code-automation-for-solopreneurs"],
+  related: ["productised-service-business", "writing-sops-to-delegate", "what-is-activexremote", "no-code-automation-for-solopreneurs"],
   external: [
     { label: "European Data Protection Board · Direct marketing guidance", url: "https://www.edpb.europa.eu" },
     { label: "European Commission · Commercial communications rules", url: "https://commission.europa.eu" },
@@ -170,4 +170,5 @@ export const article: Article = {
     { q: "Which language should I write in?", a: "The one of the market you are targeting, written well. A message in English with obvious errors costs more credibility than a simple, correct one." },
     { q: "Is LinkedIn useful for international prospecting?", a: "It is useful for verifying roles, spotting signals that a problem is live and warming a contact. As a direct-message channel its reply rate is more erratic than well-targeted email." },
   ],
+  hero: { file: "/blog/convergencia.svg", alt: "Diagram: five scattered contacts whose lines converge on a single client." },
 };

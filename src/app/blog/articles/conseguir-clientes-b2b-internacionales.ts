@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "Conseguir clientes B2B internacionales",
   ogDescription:
     "Sin red de contactos, la captación se construye: nicho, lista, mensaje y seguimiento. El método completo.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-07-28",
+  updated: "2026-07-28",
   readingMinutes: 12,
   author: "Equipo ActiveXRemote",
   course: "remote-founder",
   terms: ["negocio-borderless", "oferta-productizada", "marca-personal", "solopreneur"],
-  related: ["de-freelance-a-negocio-productizado", "cobrar-clientes-extranjero", "automatizar-negocio-sin-codigo"],
+  related: ["de-freelance-a-negocio-productizado", "sop-documentar-procesos", "curso-trabajo-remoto-cual-elegir", "que-es-activexremote"],
   external: [
     { label: "Comisión Europea · Reglas de comunicaciones comerciales", url: "https://commission.europa.eu" },
     { label: "Comité Europeo de Protección de Datos · Directrices sobre marketing directo", url: "https://www.edpb.europa.eu" },
@@ -170,4 +170,5 @@ export const article: Article = {
     { q: "¿En qué idioma escribo?", a: "En el del mercado al que te diriges, y bien escrito. Un mensaje en inglés con errores evidentes resta más credibilidad que uno correcto y sencillo." },
     { q: "¿Sirve LinkedIn para prospección internacional?", a: "Sirve para verificar cargos, detectar señales de que el problema está activo y calentar el contacto. Como canal de mensajes directos su tasa de respuesta es más irregular que la del correo bien dirigido." },
   ],
+  hero: { file: "/blog/convergencia.svg", alt: "Diagrama: cinco contactos dispersos cuyas líneas convergen en un solo cliente." },
 };

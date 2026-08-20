@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "Negociar un salario remoto internacional",
   ogDescription:
     "Pago por mercado o por ubicación, paquete completo y la pregunta que hay que hacer antes de decir una cifra.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-05-12",
+  updated: "2026-05-12",
   readingMinutes: 11,
   author: "Equipo ActiveXRemote",
   course: "remote-professional",
   terms: ["compensacion-global", "geo-pay", "multidivisa", "contractor-internacional", "employer-of-record"],
-  related: ["trabajo-remoto-internacional-desde-espana", "cv-internacional-ats", "como-trabajar-para-empresa-extranjera-legalmente"],
+  related: ["trabajo-remoto-internacional-desde-espana", "como-trabajar-para-empresa-extranjera-legalmente", "cobrar-clientes-extranjero", "curso-trabajo-remoto-cual-elegir"],
   external: [
     { label: "Eurostat · Estadísticas de salarios y coste laboral", url: "https://ec.europa.eu/eurostat" },
     { label: "OCDE · Estadísticas de remuneración media", url: "https://data.oecd.org" },
@@ -166,4 +166,5 @@ export const article: Article = {
     { q: "¿Debo mencionar otras ofertas que tengo?", a: "Sólo si son reales y estás dispuesto a aceptarlas. Como dato objetivo funciona; como farol es fácil de detectar y quema la relación." },
     { q: "¿Cada cuánto se revisan los salarios en empresas remotas?", a: "Lo habitual es una revisión anual, a veces ligada a un ciclo de evaluación. Preguntarlo en la negociación evita descubrir a los dos años que no hay ningún mecanismo." },
   ],
+  hero: { file: "/blog/balanza.svg", alt: "Diagrama: una balanza desequilibrada entre lo que se ofrece y lo que se pide." },
 };

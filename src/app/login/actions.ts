@@ -23,7 +23,12 @@ export async function signInWithPassword(formData: FormData) {
     return { error: translateAuthError(error.message, t) };
   }
 
-  redirect(redirectTo || "/");
+  // No se redirige desde el servidor a propósito. `redirect()` en una Server
+  // Action navega en cliente sin recargar, y los gestores de contraseñas
+  // (Chrome, Safari, 1Password) sólo ofrecen guardar las credenciales cuando
+  // ven una navegación de verdad después de enviar el formulario. Devolvemos
+  // el destino y el cliente hace la navegación dura.
+  return { ok: true, redirect: redirectTo || "/" };
 }
 
 export async function signUpWithPassword(formData: FormData) {
@@ -67,7 +72,8 @@ export async function signUpWithPassword(formData: FormData) {
   // Si la confirmación por email está desactivada, signUp ya devuelve sesión:
   // entramos directos al campus. Si no, mostramos el aviso de "revisa tu correo".
   if (data.session) {
-    redirect(redirectTo || "/");
+    // Mismo motivo que en signInWithPassword: la navegación la hace el cliente.
+    return { ok: true, redirect: redirectTo || "/" };
   }
 
   return { ok: true, message: t.login.signupOk };

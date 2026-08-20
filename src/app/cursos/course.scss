@@ -49,13 +49,29 @@
   }
 
   // ── Hero ──────────────────────────────────────────────
+  // La columna del texto es más ancha que en la home (1,12 contra 1,02) y no
+  // es un capricho: aquí lleva titular, subtítulo, entradilla y tres o cuatro
+  // párrafos, y a 580 px todo eso se partía en el doble de renglones. El
+  // formulario se queda en ~490 px, que sigue siendo cómodo para dos campos
+  // por fila.
+  @media (min-width: 981px) {
+    .axr-lp__hero { grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr); }
+    .axr-lp__hero-inner,
+    .axr-lp__hero-proof { max-width: none; }
+    .axr-lp__hero-lead { max-width: 60ch; }
+  }
+
+  // Los aires del héroe del curso siguen el criterio de landing.scss: se miden
+  // contra la altura de la ventana para que la columna izquierda —que aquí es
+  // larga: titular, subtítulo, entradilla, tres párrafos, cifras, CTA y sellos—
+  // quepa en la pantalla de un portátil en vez de nacer cortada.
   &__title {
     font-size: clamp(1.95rem, 8.6vw, 3.35rem);
     font-weight: 700;
     line-height: 1.05;
     letter-spacing: -0.035em;
     text-wrap: balance;
-    margin: 0 0 0.5rem;
+    margin: 0 0 clamp(0.3rem, 0.8vh, 0.5rem);
   }
 
   &__subtitle {
@@ -64,20 +80,29 @@
     line-height: 1.3;
     letter-spacing: -0.01em;
     text-wrap: balance;
-    margin: 0 0 1rem;
+    margin: 0 0 clamp(0.5rem, 1.5vh, 1rem);
     color: rgba(255, 255, 255, 0.82);
   }
 
   &__hero-body {
-    margin: 0 0 1.75rem;
+    margin: 0 0 clamp(0.85rem, 2.4vh, 1.75rem);
     display: grid;
-    gap: 0.7rem;
+    gap: clamp(0.4rem, 1.1vh, 0.7rem);
 
     p {
       margin: 0 auto;
-      max-width: 54ch;
+      // 60ch y no 54: ensanchar la medida quita una línea por párrafo, y con
+      // cuatro párrafos eso son ~25 px de héroe. Sigue por debajo de los 75
+      // caracteres a partir de los cuales el ojo pierde el renglón.
+      max-width: 60ch;
       font-size: 0.9375rem;
       line-height: 1.6;
+      // `clamp()` no sirve para el interlineado: mezclar un número con una
+      // longitud es sintaxis inválida y el navegador tira la declaración
+      // entera. Aquí va una consulta de altura, que además es honesta —el
+      // cambio ocurre en un punto concreto y sabido, no interpolando.
+      // Cuatro párrafos a 1,6 son 25 px más de héroe; 1,5 se lee igual de bien.
+      @media (max-height: 860px) { line-height: 1.5; }
       color: rgba(255, 255, 255, 0.72);
       @media (min-width: 981px) { margin-inline: 0; }
     }
@@ -86,9 +111,16 @@
   // Barra de cifras del hero: mismos estilos que la landing, más compacta
   // porque aquí conviven con el CTA y el texto largo del curso.
   &__facts {
-    margin-bottom: 1.75rem;
+    margin-bottom: clamp(0.85rem, 2.4vh, 1.75rem);
     @media (min-width: 700px) {
-      div { padding: 0.6rem 1.35rem; strong { font-size: 1.35rem; } }
+      // 1,1rem y no 1,35: con el padding anterior la fila de cifras medía
+      // 581 px en una columna de 580 y se partía en dos, y una píldora con
+      // separadores partida deja rayas sueltas dentro del óvalo. Ese píxel
+      // costaba 55 px de alto en el héroe.
+      div {
+        padding: clamp(0.35rem, 1vh, 0.6rem) 1.1rem;
+        strong { font-size: clamp(1.15rem, 2.1vh, 1.35rem); }
+      }
     }
   }
 
@@ -935,4 +967,14 @@
     line-height: 1.6;
     color: var(--lp-ink);
   }
+}
+
+// ── Programa plegable ───────────────────────────────────
+// Reutiliza el acordeón de la home (.axr-lp__curriculum-fold); aquí sólo se
+// ajusta el aire, porque la cabecera de fase va fuera del <summary>.
+.axr-cp__fold {
+  max-width: none;
+
+  > summary { min-height: 44px; padding: 0 0 0.9rem; }
+  > ol { margin-bottom: 0; }
 }

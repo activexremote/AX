@@ -27,6 +27,15 @@ export type TermCategory =
   | "stack";
 
 export type Term = {
+  /**
+   * Ruta en inglés, cuando el identificador está en español.
+   *
+   * El `id` es el dato: lo usan los enlaces internos, `related` y la lista de
+   * términos de cada artículo, así que no se toca. Lo que cambia es sólo la
+   * dirección que se enseña: /glosario/residencia-fiscal en español y
+   * /en/glossary/tax-residence en inglés. Si falta, se usa el `id`.
+   */
+  slugEn?: string;
   /** Se usa como slug de la URL en los dos idiomas. */
   id: string;
   category: TermCategory;
@@ -51,6 +60,7 @@ export type TermCopy = {
 export const TERMS: readonly Term[] = [
   {
     id: "trabajo-remoto",
+    slugEn: "remote-work",
     category: "modalidad",
     related: ["trabajo-asincrono", "solapamiento-horario", "nomada-digital"],
     es: {
@@ -72,6 +82,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "trabajo-asincrono",
+    slugEn: "asynchronous-work",
     category: "modalidad",
     related: ["trabajo-remoto", "documentacion-asincrona", "solapamiento-horario"],
     es: {
@@ -93,6 +104,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "solapamiento-horario",
+    slugEn: "time-zone-overlap",
     category: "modalidad",
     related: ["trabajo-asincrono", "onboarding-distribuido"],
     es: {
@@ -115,6 +127,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "nomada-digital",
+    slugEn: "digital-nomad",
     category: "modalidad",
     related: ["visado-nomada-digital", "residencia-fiscal", "trabajo-remoto"],
     es: {
@@ -159,6 +172,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "contractor-internacional",
+    slugEn: "international-contractor",
     category: "legal",
     related: ["employer-of-record", "facturacion-internacional", "falso-autonomo"],
     es: {
@@ -180,6 +194,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "falso-autonomo",
+    slugEn: "worker-misclassification",
     category: "legal",
     related: ["contractor-internacional", "employer-of-record"],
     es: {
@@ -201,6 +216,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "visado-nomada-digital",
+    slugEn: "digital-nomad-visa",
     category: "legal",
     related: ["nomada-digital", "residencia-fiscal", "trabajo-remoto"],
     es: {
@@ -222,6 +238,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "residencia-fiscal",
+    slugEn: "tax-residence",
     category: "fiscal",
     related: ["doble-imposicion", "regla-183-dias", "nomada-digital"],
     es: {
@@ -243,6 +260,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "regla-183-dias",
+    slugEn: "183-day-rule",
     category: "fiscal",
     related: ["residencia-fiscal", "doble-imposicion"],
     es: {
@@ -264,6 +282,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "doble-imposicion",
+    slugEn: "double-taxation-treaty",
     category: "fiscal",
     related: ["residencia-fiscal", "regla-183-dias", "establecimiento-permanente"],
     es: {
@@ -287,6 +306,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "establecimiento-permanente",
+    slugEn: "permanent-establishment",
     category: "fiscal",
     related: ["employer-of-record", "doble-imposicion"],
     es: {
@@ -310,6 +330,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "facturacion-internacional",
+    slugEn: "cross-border-invoicing",
     category: "fiscal",
     related: ["contractor-internacional", "multidivisa"],
     es: {
@@ -331,6 +352,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "multidivisa",
+    slugEn: "multi-currency-account",
     category: "fiscal",
     related: ["facturacion-internacional", "compensacion-global"],
     es: {
@@ -396,6 +418,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "cv-internacional",
+    slugEn: "international-resume",
     category: "empleo",
     related: ["ats", "portfolio-internacional", "compensacion-global"],
     es: {
@@ -417,6 +440,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "portfolio-internacional",
+    slugEn: "international-portfolio",
     category: "empleo",
     related: ["cv-internacional", "marca-personal", "job-hacking"],
     es: {
@@ -438,6 +462,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "marca-personal",
+    slugEn: "personal-brand",
     category: "empleo",
     related: ["portfolio-internacional", "job-hacking"],
     es: {
@@ -459,6 +484,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "compensacion-global",
+    slugEn: "total-compensation",
     category: "empleo",
     related: ["geo-pay", "rol-fraccional", "multidivisa"],
     es: {
@@ -480,6 +506,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "geo-pay",
+    slugEn: "location-based-pay",
     category: "empleo",
     related: ["compensacion-global", "trabajo-remoto"],
     es: {
@@ -503,6 +530,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "rol-fraccional",
+    slugEn: "fractional-role",
     category: "empleo",
     related: ["contractor-internacional", "compensacion-global", "negocio-borderless"],
     es: {
@@ -524,6 +552,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "negocio-borderless",
+    slugEn: "borderless-business",
     category: "negocio",
     related: ["solopreneur", "oferta-productizada", "sop"],
     es: {
@@ -566,6 +595,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "oferta-productizada",
+    slugEn: "productised-offer",
     category: "negocio",
     related: ["solopreneur", "negocio-borderless", "sop"],
     es: {
@@ -610,6 +640,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "documentacion-asincrona",
+    slugEn: "async-documentation",
     category: "stack",
     related: ["trabajo-asincrono", "sop", "onboarding-distribuido"],
     es: {
@@ -631,6 +662,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "automatizacion-no-code",
+    slugEn: "no-code-automation",
     category: "stack",
     related: ["agente-ia", "sop", "solopreneur"],
     es: {
@@ -652,6 +684,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "agente-ia",
+    slugEn: "ai-agent",
     category: "stack",
     related: ["automatizacion-no-code", "prompt-engineering", "stack-remoto"],
     es: {
@@ -694,6 +727,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "stack-remoto",
+    slugEn: "remote-stack",
     category: "stack",
     related: ["automatizacion-no-code", "documentacion-asincrona", "agente-ia"],
     es: {
@@ -715,6 +749,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "onboarding-distribuido",
+    slugEn: "distributed-onboarding",
     category: "modalidad",
     related: ["documentacion-asincrona", "trabajo-asincrono", "solapamiento-horario"],
     es: {
@@ -736,6 +771,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "burnout-remoto",
+    slugEn: "remote-burnout",
     category: "modalidad",
     related: ["trabajo-asincrono", "solapamiento-horario", "onboarding-distribuido"],
     es: {
@@ -757,6 +793,7 @@ export const TERMS: readonly Term[] = [
   },
   {
     id: "nomina-internacional",
+    slugEn: "international-payroll",
     category: "legal",
     related: ["employer-of-record", "compensacion-global", "multidivisa"],
     es: {
@@ -806,8 +843,15 @@ export const TERM_CATEGORIES: readonly TermCategory[] = [
   "stack",
 ];
 
-export function getTerm(id: string): Term | undefined {
-  return TERMS.find((t) => t.id === id);
+/** Busca por identificador o por su ruta inglesa: las dos direcciones
+ *  tienen que resolver a la misma ficha. */
+export function getTerm(idOrSlug: string): Term | undefined {
+  return TERMS.find((t) => t.id === idOrSlug || t.slugEn === idOrSlug);
+}
+
+/** La ruta de un término en el idioma pedido. */
+export function termPath(term: Term, locale: Locale): string {
+  return `/glosario/${locale === "en" ? term.slugEn ?? term.id : term.id}`;
 }
 
 // ── Copy de la sección y de las páginas del glosario ─────
@@ -826,6 +870,16 @@ export const glossaryCopy: Record<Locale, {
   backToHub: string;
   inProgram: string;
   countLabel: (n: number) => string;
+  /** Wiki A–Z. */
+  azLabel: string;
+  searchLabel: string;
+  searchPlaceholder: string;
+  noResults: string;
+  clearSearch: string;
+  categoryLabel: string;
+  letterEmpty: string;
+  /** Con «{n}» donde va el número. El wiki lo rellena en cliente. */
+  countTemplate: string;
 }> = {
   es: {
     eyebrow: "Diccionario",
@@ -844,6 +898,14 @@ export const glossaryCopy: Record<Locale, {
     backToHub: "Volver al diccionario",
     inProgram: "Este término se trabaja en el programa",
     countLabel: (n) => `${n} términos`,
+    azLabel: "Ir a la letra",
+    searchLabel: "Buscar un término",
+    searchPlaceholder: "Escribe un término o un sinónimo…",
+    noResults: "Ningún término coincide. Prueba con otra palabra o baja a la letra que buscabas.",
+    clearSearch: "Limpiar",
+    categoryLabel: "Filtrar por área",
+    letterEmpty: "Todavía no hay términos con esta letra.",
+    countTemplate: "{n} términos",
   },
   en: {
     eyebrow: "Dictionary",
@@ -862,5 +924,13 @@ export const glossaryCopy: Record<Locale, {
     backToHub: "Back to the dictionary",
     inProgram: "This term is covered in the program",
     countLabel: (n) => `${n} terms`,
+    azLabel: "Jump to letter",
+    searchLabel: "Search for a term",
+    searchPlaceholder: "Type a term or a synonym…",
+    noResults: "No term matches. Try another word, or scroll to the letter you were after.",
+    clearSearch: "Clear",
+    categoryLabel: "Filter by area",
+    letterEmpty: "No terms under this letter yet.",
+    countTemplate: "{n} terms",
   },
 };

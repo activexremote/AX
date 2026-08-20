@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import Link from "next/link";
+import { LocaleLink } from "@/components/locale-link";
 
 import { BrandMark } from "@/components/brand-mark";
 import { LocaleToggle } from "@/components/locale-toggle";
@@ -100,10 +100,10 @@ export function LandingMenu({ copy, base = "" }: { copy: NavCopy; base?: string 
       onClick={handleClick}
     >
       <div className="axr-lp__menu-head">
-        <Link href="/" className="axr-lp__brand" aria-label="ActiveXRemote">
+        <LocaleLink href="/" className="axr-lp__brand" aria-label="ActiveXRemote">
           <BrandMark size={22} />
           <span>ActiveXRemote</span>
-        </Link>
+        </LocaleLink>
         <button
           type="button"
           className="axr-lp__menu-close"
@@ -118,25 +118,32 @@ export function LandingMenu({ copy, base = "" }: { copy: NavCopy; base?: string 
         <div className="axr-lp__menu-group">
           <span className="axr-lp__eyebrow">{copy.courses.label}</span>
           {copy.courses.items.map((l) => (
-            <Link key={l.href} href={l.href} className="axr-lp__menu-link">
+            <LocaleLink key={l.href} href={l.href} className="axr-lp__menu-link">
               {l.label}
               <span aria-hidden>→</span>
-            </Link>
+            </LocaleLink>
           ))}
         </div>
 
         <div className="axr-lp__menu-group">
           <span className="axr-lp__eyebrow">{copy.menuExplore}</span>
-          {copy.links.map((l) => (
-            <a key={l.href} href={anchor(l.href)} className="axr-lp__menu-link">
-              {l.label}
-              <span aria-hidden>→</span>
-            </a>
-          ))}
-          <Link href="/login" className="axr-lp__menu-link">
+          {copy.links.map((l) =>
+            l.href.startsWith("#") ? (
+              <a key={l.href} href={anchor(l.href)} className="axr-lp__menu-link">
+                {l.label}
+                <span aria-hidden>→</span>
+              </a>
+            ) : (
+              <LocaleLink key={l.href} href={l.href} className="axr-lp__menu-link">
+                {l.label}
+                <span aria-hidden>→</span>
+              </LocaleLink>
+            ),
+          )}
+          <LocaleLink href="/login" className="axr-lp__menu-link">
             {copy.campus}
             <span aria-hidden>→</span>
-          </Link>
+          </LocaleLink>
         </div>
 
         <div className="axr-lp__menu-locale">

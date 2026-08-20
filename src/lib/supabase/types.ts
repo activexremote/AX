@@ -2,6 +2,16 @@
 // For now we type the parts we use manually.
 
 export type UserRole = "alumno" | "profesor" | "administrador";
+export type CourseKey = "core" | "remote-professional" | "remote-founder";
+export type OrderStatus =
+  | "iniciado"
+  | "pagado"
+  | "en_plazos"
+  | "completado"
+  | "fallido"
+  | "expirado"
+  | "reembolsado";
+export type OrderPlan = "unico" | "plazos" | "anticipada";
 export type LessonStatus = "no_iniciada" | "en_curso" | "completada";
 export type AssignmentStatus = "pendiente" | "en_curso" | "completada" | "vencida";
 
@@ -28,6 +38,37 @@ export interface Profile {
   created_at: string;
 }
 
+export interface Order {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  locale: string | null;
+  courses: CourseKey[];
+  plan: OrderPlan;
+  offer: string;
+  status: OrderStatus;
+  amount_total: number | null;
+  currency: string | null;
+  instalments_paid: number;
+  stripe_session_id: string | null;
+  stripe_customer_id: string | null;
+  stripe_payment_intent_id: string | null;
+  stripe_subscription_id: string | null;
+  user_id: string | null;
+  notes: string | null;
+}
+
+export interface Enrollment {
+  user_id: string;
+  course: Exclude<CourseKey, "core">;
+  order_id: string | null;
+  granted_at: string;
+  active: boolean;
+}
+
 export interface Module {
   id: string;
   slug: string;
@@ -39,6 +80,8 @@ export interface Module {
   accent: string | null;
   available: boolean;
   estimated_minutes: number | null;
+  /** A qué curso pertenece. "core" es el núcleo compartido. */
+  course: CourseKey;
   created_at: string;
 }
 
@@ -124,12 +167,17 @@ export interface Database {
       quiz_attempts: TableDef<QuizAttempt, Partial<QuizAttempt> & { user_id: string; quiz_id: string }, Partial<QuizAttempt>>;
       learning_path_steps: TableDef<LearningPathStep, Partial<LearningPathStep> & { label: string }, Partial<LearningPathStep>>;
       activity_log: TableDef<ActivityLog, Partial<ActivityLog> & { user_id: string; kind: string }, Partial<ActivityLog>>;
+      orders: TableDef<Order, Partial<Order> & { email: string; courses: CourseKey[]; plan: OrderPlan; offer: string }, Partial<Order>>;
+      enrollments: TableDef<Enrollment, Partial<Enrollment> & { user_id: string; course: Exclude<CourseKey, "core"> }, Partial<Enrollment>>;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
     Enums: {
       user_role: UserRole;
       lesson_status: LessonStatus;
+      course_key: CourseKey;
+      order_status: OrderStatus;
+      order_plan: OrderPlan;
     };
     CompositeTypes: Record<string, never>;
   };

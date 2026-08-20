@@ -22,13 +22,13 @@ export const article: Article = {
   ogTitle: "Automatizar sin código: qué automatizar primero",
   ogDescription:
     "Documentar, estabilizar y sólo entonces automatizar. El orden importa más que la herramienta.",
-  published: "2026-08-19",
-  updated: "2026-08-19",
+  published: "2026-08-11",
+  updated: "2026-08-11",
   readingMinutes: 11,
   author: "Equipo ActiveXRemote",
   course: "remote-founder",
   terms: ["automatizacion-no-code", "sop", "agente-ia", "solopreneur", "stack-remoto"],
-  related: ["sop-documentar-procesos", "de-freelance-a-negocio-productizado", "stack-remoto-imprescindible"],
+  related: ["de-freelance-a-negocio-productizado", "sop-documentar-procesos", "stack-remoto-imprescindible", "conseguir-clientes-b2b-internacionales"],
   external: [
     { label: "AEPD · Tratamientos automatizados y protección de datos", url: "https://www.aepd.es" },
     { label: "Comisión Europea · Digitalización de pymes", url: "https://single-market-economy.ec.europa.eu" },
@@ -176,4 +176,5 @@ export const article: Article = {
     { q: "¿Tiene implicaciones de protección de datos?", a: "Sí, si los flujos manejan datos personales. Dónde se tratan y quién accede son cuestiones que puede que tengas que declarar, y es una de las razones por las que el autoalojamiento a veces compensa el mantenimiento." },
     { q: "¿Cuánto tiempo ahorra realmente?", a: "Depende por completo de la frecuencia. Un paso de cinco minutos diez veces por semana devuelve horas reales; el mismo paso una vez al mes rara vez compensa el coste de construirlo y mantenerlo." },
   ],
+  hero: { file: "/blog/automatismo.svg", alt: "Diagrama: un disparador que encadena una tarea y ésta, dos más en paralelo." },
 };
