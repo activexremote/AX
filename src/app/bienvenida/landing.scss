@@ -4203,3 +4203,176 @@ $axr-tool-cats:
     img { display: block; height: 14px; width: auto; }
   }
 }
+
+// ══════════════════════════════════════════════════════════
+//  La banda del stack
+//
+//  Une lo que antes eran tres secciones repartidas por la home —los temas,
+//  el aviso de stack real y la rejilla de 75 herramientas— en un bloque
+//  compacto justo detrás del héroe.
+//
+//  Dos cintas en direcciones opuestas: en la misma dirección se leerían como
+//  una sola cosa moviéndose y el efecto se pierde. Cuatro renglones de alto
+//  para transmitir «esto no se acaba», que es el argumento entero.
+// ══════════════════════════════════════════════════════════
+.axr-stack {
+  padding: calc(var(--lp-section) * 0.85) 0;
+  background: var(--lp-soft);
+  border-block: 1px solid var(--lp-border);
+  // Las cintas se salen por los lados a propósito: el corte es lo que dice
+  // que la lista sigue más allá de la pantalla.
+  overflow: hidden;
+
+  &__head {
+    max-width: var(--lp-max);
+    margin: 0 auto 1.1rem;
+    padding-inline: var(--lp-pad-l) var(--lp-pad-r);
+    text-align: center;
+
+    h2 {
+      margin: 0.3rem 0 0;
+      font-size: clamp(1.35rem, 4.6vw, 1.9rem);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      text-wrap: balance;
+    }
+  }
+
+  // ── Las cintas ──
+  &__rail {
+    // La máscara desvanece los extremos: sin ella la cinta parece cortada
+    // con tijera contra el borde de la pantalla.
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    & + & { margin-top: 0.6rem; }
+
+    &[data-dir="right"] .axr-stack__track { animation-direction: reverse; }
+  }
+
+  &__track {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    // El doble de ancho porque la lista va dos veces: la animación recorre
+    // exactamente la mitad y al reiniciar cae en un punto idéntico.
+    width: max-content;
+    animation: axr-stack-run 64s linear infinite;
+  }
+
+  // Los temas.
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    border: 1px solid var(--lp-border);
+    background: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--lp-ink);
+    white-space: nowrap;
+
+    &::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--lp-accent);
+    }
+  }
+
+  // Las herramientas.
+  &__tool {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    border: 1px solid var(--lp-border);
+    border-radius: var(--lp-radius-sm);
+    background: #fff;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+
+    @media (hover: hover) {
+      &:hover { transform: translateY(-2px); border-color: var(--lp-accent); }
+    }
+    // La copia decorativa no se puede pulsar ni tabular.
+    &[data-dup] { pointer-events: none; }
+
+    img, svg { max-width: 24px; max-height: 24px; }
+  }
+
+  // El aviso del stack real, en una línea.
+  &__note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    max-width: 780px;
+    margin: 1.1rem auto 0;
+    padding-inline: var(--lp-pad-l) var(--lp-pad-r);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--lp-body);
+    text-align: left;
+
+    svg { flex: none; }
+  }
+
+  // ── La rejilla completa, plegada ──
+  &__all {
+    max-width: var(--lp-max);
+    margin: 1.25rem auto 0;
+    padding-inline: var(--lp-pad-l) var(--lp-pad-r);
+
+    > summary {
+      width: fit-content;
+      margin: 0 auto;
+      padding: 0.5rem 1.1rem;
+      border: 1px solid var(--lp-border);
+      border-radius: 999px;
+      background: #fff;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--lp-accent);
+      cursor: pointer;
+      list-style: none;
+      &::-webkit-details-marker { display: none; }
+      &::after { content: " ↓"; }
+      &:hover { border-color: var(--lp-accent); }
+    }
+    &[open] > summary { margin-bottom: 1.5rem; &::after { content: " ↑"; } }
+  }
+
+  &__filters {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-bottom: 1.25rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    // Sin movimiento las cintas no se leerían enteras nunca: se convierten en
+    // filas normales que envuelven, y la copia decorativa sobra.
+    .axr-stack__rail { mask-image: none; }
+    .axr-stack__track {
+      animation: none;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: auto;
+      padding-inline: var(--lp-pad-l) var(--lp-pad-r);
+    }
+    [data-dup] { display: none; }
+  }
+}
+
+// Recorre exactamente la mitad: como la lista está duplicada, el fotograma
+// final es idéntico al inicial y el bucle no da ningún salto.
+@keyframes axr-stack-run {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}

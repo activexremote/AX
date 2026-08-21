@@ -101,6 +101,12 @@ const UNLOCKS: FlashUnlock[] = [
     description:
       "El template oficial con la estructura base, los componentes, la configuración y la documentación. Tu punto de partida para el siguiente proyecto.",
     icon: "template",
+    kind: "Template",
+    contains: [
+      "Los tres clientes de datos, con la clave privada donde tiene que estar",
+      "La migración inicial con RLS y las cuatro policies puestas",
+      "README y .env.example para no volver a empezar de cero",
+    ],
   },
   {
     key: "web-abc-research-hack",
@@ -108,6 +114,12 @@ const UNLOCKS: FlashUnlock[] = [
     description:
       "El flujo para investigar un producto, sus competidores y su documentación desde el navegador, y convertir lo que encuentras en contexto accionable para Claude Code.",
     icon: "search",
+    kind: "Método",
+    contains: [
+      "Las cuatro pasadas: producto, documentación, problemas y comprobación",
+      "Qué anotar de cada competidor y qué ignorar",
+      "La plantilla que convierte tus notas en contexto que la IA sí usa",
+    ],
   },
   {
     key: "web-abc-prompt-pack",
@@ -115,6 +127,12 @@ const UNLOCKS: FlashUnlock[] = [
     description:
       "Prompts para arquitectura, planificación de features, UI, Supabase, depuración, revisión de diffs, QA, SEO y deploy.",
     icon: "sparkles",
+    kind: "9 prompts",
+    contains: [
+      "Arquitectura, plan de feature, esquema de datos y policies de RLS",
+      "Depuración, revisión de diffs, QA y despliegue",
+      "La estructura que hay detrás: contexto → objetivo → restricciones",
+    ],
   },
   {
     key: "web-abc-tool-perks",
@@ -122,6 +140,12 @@ const UNLOCKS: FlashUnlock[] = [
     description:
       "Descuentos, créditos y códigos preferenciales negociados con las herramientas del stack. Se actualiza con el tiempo.",
     icon: "gift",
+    kind: "Ahorro",
+    contains: [
+      "Qué cubre el plan gratuito de cada herramienta del curso",
+      "Programas de estudiante y de startup a los que puedes optar",
+      "Las tres preguntas que hay que hacerse antes de pagar por nada",
+    ],
   },
   {
     key: "web-abc-ship-checklist",
@@ -129,6 +153,12 @@ const UNLOCKS: FlashUnlock[] = [
     description:
       "La lista de lanzamiento: repo → env → base de datos → auth → build → deploy → dominio → DNS → SSL → QA → launch.",
     icon: "check",
+    kind: "Checklist",
+    contains: [
+      "Ocho bloques: código, configuración, datos, auth, build, dominio y estados",
+      "El comando que busca claves coladas en el historial de Git",
+      "La comprobación con dos cuentas que casi nadie hace",
+    ],
   },
 ];
 

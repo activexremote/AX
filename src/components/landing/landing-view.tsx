@@ -7,7 +7,7 @@ import { LandingNav } from "@/components/landing/landing-nav";
 import { RatingBadges } from "@/components/landing/rating-badges";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LeadForm } from "@/components/landing/lead-form";
-import { ToolsSection } from "@/components/landing/tools-section";
+import { StackBand } from "@/components/landing/stack-band";
 import { Roadmap } from "@/components/landing/roadmap";
 import { GlossarySection } from "@/components/landing/glossary-section";
 import { BlogSection } from "@/components/landing/blog-section";
@@ -161,29 +161,14 @@ export async function LandingView() {
       </section>
 
       {/* ── Proof strip ─────────────────────────────── */}
-      <section className="axr-lp__proof">
-        <p className="axr-lp__proof-title">{c.proof.title}</p>
-        {/* La marquesina necesita la lista dos veces para que el bucle no dé
-            un salto. La copia es decorativa: se oculta a lectores de pantalla
-            y desaparece cuando el sistema pide menos movimiento (entonces los
-            chips se reparten en varias filas y una sola lista basta). */}
-        <div className="axr-lp__proof-track">
-          {c.proof.chips.map((chip) => (
-            <span key={chip} className="axr-lp__chip">
-              {chip}
-            </span>
-          ))}
-          {c.proof.chips.map((chip) => (
-            <span key={`dup-${chip}`} className="axr-lp__chip" data-dup aria-hidden>
-              {chip}
-            </span>
-          ))}
-        </div>
-      </section>
+      {/* ── Todo lo que cubre el programa ─────────────── */}
+      {/* Los temas, las herramientas y el aviso del stack real iban en tres
+          secciones repartidas por la página y decían lo mismo. Aquí van
+          juntas y justo detrás del héroe, que es donde esa idea sirve: acaba
+          de leer la promesa y lo siguiente que necesita es saber de qué
+          tamaño es lo que se le ofrece. */}
+      <StackBand />
 
-      {/* ── Caminos ─────────────────────────────────── */}
-      {/* Tercera sección, no novena: refuerza el selector del héroe con el
-          detalle de cada camino y su enlace a la landing dedicada. */}
       <section id="caminos" className="axr-lp__paths">
         <header className="axr-lp__paths-head">
           <span className="axr-lp__eyebrow">{c.paths.eyebrow}</span>
@@ -413,20 +398,6 @@ export async function LandingView() {
       <AccreditationSection copy={c.accreditation} />
 
       {/* ── Integración Slack ───────────────────────── */}
-      <section className="axr-lp__integration">
-        <div className="axr-lp__integration-inner">
-          <SlackLogo size={40} />
-          <div>
-            <span className="axr-lp__eyebrow">{c.integration.eyebrow}</span>
-            <h3>{c.integration.title}</h3>
-            <p>{c.integration.body}</p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── El stack (va detrás del bloque de Slack: misma idea) ─ */}
-      <ToolsSection />
-
       {/* ── Cómo funciona: cronograma de la convocatoria ─ */}
       <section id="como" className="axr-lp__steps">
         <header className="axr-lp__steps-head">

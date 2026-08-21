@@ -109,6 +109,14 @@ export type FlashCopy = {
 
     faqTitle: string;
     faq: { q: string; a: string }[];
+    /** El cierre, debajo de las preguntas. */
+    afterFaq: {
+      title: string;
+      buy: string;
+      or: string;
+      professional: string;
+      founder: string;
+    };
   };
 };
 
@@ -246,6 +254,13 @@ const es: FlashCopy = {
       "Has vuelto sin terminar el pago. No se ha cobrado nada y tu sitio sigue aquí.",
 
     faqTitle: "Preguntas",
+    afterFaq: {
+      title: "¿Resuelto? Pues ya está.",
+      buy: "Empezar el curso",
+      or: "¿O buscabas algo más grande? Mira los dos programas de 14 semanas:",
+      professional: "Remote Professional",
+      founder: "Remote Founder",
+    },
     faq: [
       {
         q: "¿Cuándo empieza?",
@@ -413,6 +428,13 @@ const en: FlashCopy = {
     cancelled: "You came back without finishing the payment. Nothing was charged and your spot is still here.",
 
     faqTitle: "Questions",
+    afterFaq: {
+      title: "All clear? Then that's it.",
+      buy: "Start the course",
+      or: "Or were you after something bigger? Here are the two 14-week programmes:",
+      professional: "Remote Professional",
+      founder: "Remote Founder",
+    },
     faq: [
       {
         q: "When does it start?",

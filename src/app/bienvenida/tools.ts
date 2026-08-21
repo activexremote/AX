@@ -183,6 +183,8 @@ export const toolsCopy: Record<Locale, {
   lead: string;
   all: string;
   hint: string;
+  /** Abre la rejilla completa dentro de la banda del stack. */
+  seeAll: string;
   categories: Record<CategoryKey, string>;
   desc: Record<string, string>;
 }> = {
@@ -192,6 +194,7 @@ export const toolsCopy: Record<Locale, {
     lead: "75 herramientas reales, agrupadas por función. Señala cualquiera para ver para qué sirve.",
     all: "Todas",
     hint: "Pasa por encima de un logo —o tócalo— para ver para qué sirve",
+    seeAll: "Ver las 75 herramientas, agrupadas por función",
     categories: {
       ai: "IA y agentes",
       comms: "Comunicación",
@@ -294,6 +297,7 @@ export const toolsCopy: Record<Locale, {
     title: "The tools you'll master.",
     lead: "75 real tools, grouped by function. Point at any of them to see what it's for.",
     all: "All",
+    seeAll: "See all 75 tools, grouped by function",
     hint: "Hover a logo —or tap it— to see what it's for",
     categories: {
       ai: "AI & agents",

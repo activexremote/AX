@@ -100,6 +100,16 @@ export type FlashUnlock = {
   title: string;
   description: string;
   icon: string;
+  /** Qué clase de cosa es, en dos palabras. Va como etiqueta. */
+  kind: string;
+  /**
+   * Lo que trae dentro, en tres puntos.
+   *
+   * Sin esto la tarjeta era un título y una línea, y cinco títulos seguidos
+   * no dicen si lo que hay dentro vale algo. Es la diferencia entre «Prompt
+   * Pack» y «nueve prompts para arquitectura, RLS, depuración y deploy».
+   */
+  contains: string[];
 };
 
 /**

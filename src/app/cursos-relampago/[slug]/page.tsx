@@ -8,6 +8,7 @@ import { FlashBuy } from "@/components/landing/flash-buy";
 import { FlashVideo } from "@/components/landing/flash-video";
 import { GiftIcon, NinjaIcon } from "@/components/landing/flash-icons";
 import { BuildChain, LoopRing } from "@/components/landing/flash-diagrams";
+import { UNLOCK_ART } from "@/components/landing/unlock-art";
 import { FlashBuyButton } from "@/components/landing/flash-buy-button";
 import { flashCopy } from "@/app/cursos-relampago/copy";
 import { checkoutCopy } from "@/app/matricula/copy";
@@ -322,19 +323,36 @@ export default async function FlashCoursePage({
       </section>
 
       {/* ══ 7. Los cinco desbloqueos ═════════════════════ */}
+      {/* Cada uno con su dibujo y con lo que trae dentro. Cinco títulos
+          seguidos no dicen si lo que hay vale algo: la diferencia está entre
+          «Prompt Pack» y «nueve prompts para arquitectura, RLS y deploy». */}
       <section className="axr-flash__unlocks">
         <header className="axr-flash__head">
           <h2>{cc.unlockTitle}</h2>
           <p>{cc.unlockLead}</p>
         </header>
-        <ul className="axr-flash__unlock-list">
-          {course.unlocks.map((u, i) => (
-            <li key={u.key}>
-              <span className="axr-flash__unlock-n">{String(i + 1).padStart(2, "0")}</span>
-              <strong>{u.title}</strong>
-            </li>
-          ))}
-        </ul>
+
+        <div className="axr-gifts">
+          {course.unlocks.map((u, i) => {
+            const Art = UNLOCK_ART[u.key];
+            return (
+              <article key={u.key} className="axr-gift">
+                <div className="axr-gift__top">
+                  {Art ? <Art /> : null}
+                  <span className="axr-gift__n">{String(i + 1).padStart(2, "0")}</span>
+                </div>
+                <span className="axr-gift__kind">{u.kind}</span>
+                <h3>{u.title}</h3>
+                <p>{u.description}</p>
+                <ul className="axr-gift__list">
+                  {u.contains.map((x) => <li key={x}>{x}</li>)}
+                </ul>
+              </article>
+            );
+          })}
+        </div>
+
+        <p className="axr-flash__extras-note">{cc.extrasNote}</p>
       </section>
 
       {/* ══ 8. Precio y compra ═══════════════════════════ */}
@@ -395,6 +413,35 @@ export default async function FlashCoursePage({
               <p>{f.a}</p>
             </details>
           ))}
+        </div>
+
+        {/* Quien termina de leer las preguntas ya ha resuelto sus dudas: o
+            compra, o lo que buscaba era otra cosa. Las dos salidas, aquí. */}
+        <div className="axr-flash__afterfaq">
+          <h3>{cc.afterFaq.title}</h3>
+          {ready ? (
+            <FlashBuyButton
+              offerKey={`relampago-${course.key}`}
+              label={`${cc.afterFaq.buy} · ${price}`}
+              sending={chk.sending}
+              errorLabel={chk.errors.stripe}
+              className="axr-lp__btn axr-lp__btn--solid axr-lp__btn--lg"
+            />
+          ) : (
+            <a href="#comprar" className="axr-lp__btn axr-lp__btn--solid axr-lp__btn--lg">
+              {cc.afterFaq.buy} · {price} <span aria-hidden>→</span>
+            </a>
+          )}
+
+          <p className="axr-flash__afterfaq-or">{cc.afterFaq.or}</p>
+          <div className="axr-flash__afterfaq-alt">
+            <LocaleLink href="/cursos/remote-professional" className="axr-lp__btn axr-lp__btn--ghost">
+              {cc.afterFaq.professional} <span aria-hidden>→</span>
+            </LocaleLink>
+            <LocaleLink href="/cursos/remote-founder" className="axr-lp__btn axr-lp__btn--ghost">
+              {cc.afterFaq.founder} <span aria-hidden>→</span>
+            </LocaleLink>
+          </div>
         </div>
       </section>
 

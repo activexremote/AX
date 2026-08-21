@@ -10,7 +10,10 @@ import {
   type Tool,
 } from "@/app/bienvenida/tools";
 
-function ToolLogo({ tool }: { tool: Tool }) {
+// Se exporta porque la banda del stack (stack-band.tsx) pinta los mismos
+// logos en su marquesina: un segundo dibujante para los mismos logotipos
+// acabaría divergiendo en tamaños y en el trato de los casos raros.
+export function ToolLogo({ tool }: { tool: Tool }) {
   // Slack ya venía como componente en el repo.
   if (tool.logo === "slack") return <SlackLogo size={22} />;
 
