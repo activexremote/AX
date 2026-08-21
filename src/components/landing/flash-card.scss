@@ -16,10 +16,19 @@
 .axr-fcard,
 .axr-fthumb,
 .axr-buybtn {
-  --fl: #ff6a3d;
-  --fl-deep: #e2451a;
-  --fl-soft: #fff3ee;
-  --fl-border: #ffd9cb;
+  // ── Sin paleta propia ─────────────────────────────────
+  // Antes esto era naranja. Se hizo así para separar los relámpago del
+  // programa, pero el resultado fue una familia de páginas que no parecía del
+  // mismo sitio: otro acento, otros fondos, otros bordes.
+  //
+  // Lo que distingue a un relámpago del programa no tiene que ser el color:
+  // es el precio, la duración y que no hay convocatoria, y eso ya lo dice la
+  // página con todas las letras. Los tokens son los mismos que el resto de la
+  // web; `--fl` se mantiene como nombre para no reescribir 200 usos.
+  --fl: var(--lp-accent);
+  --fl-deep: var(--lp-accent-strong);
+  --fl-soft: var(--lp-soft);
+  --fl-border: var(--lp-border);
 }
 
 .axr-fcard {
@@ -44,8 +53,13 @@
   }
 
   // Sobre el fondo oscuro de la home la tarjeta blanca cantaría demasiado:
-  // allí va oscura, con el mismo esqueleto y los colores invertidos.
+  // allí va oscura, con el mismo esqueleto y los colores invertidos. Y el
+  // morado de marca se apaga sobre tinta, así que la variante oscura usa el
+  // claro de la misma familia, que es lo que la web ya hace en el pie.
   &[data-tone="dark"] {
+    --fl: #a99bff;
+    --fl-deep: #c4baff;
+
     border-color: rgba(255, 255, 255, 0.14);
     background: rgba(255, 255, 255, 0.05);
     color: #fff;
@@ -261,9 +275,9 @@
 //  larga donde esto es una salida lateral y no el producto principal.
 // ══════════════════════════════════════════════════════════
 .axr-fstrip {
-  --fl: #ff6a3d;
-  --fl-deep: #e2451a;
-  --fl-soft: #fff3ee;
+  --fl: var(--lp-accent);
+  --fl-deep: var(--lp-accent-strong);
+  --fl-soft: var(--lp-soft);
 
   display: grid;
   grid-template-columns: 1fr;
@@ -282,6 +296,8 @@
   }
 
   &[data-tone="dark"] {
+    --fl: #a99bff;
+    --fl-deep: #c4baff;
     border-color: rgba(255, 255, 255, 0.14);
     background: rgba(255, 255, 255, 0.05);
     color: #fff;

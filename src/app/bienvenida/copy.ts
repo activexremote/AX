@@ -314,36 +314,6 @@ export const landingCopy = {
     // puede sostener. Ahora se describen como lo que son —las herramientas que
     // se estudian— y la nota final incluye el descargo de marcas. Si algún día
     // hay acuerdo por escrito, se podrá volver a hablar de certificación.
-    accreditation: {
-      heroLabel: "Colaboradores premium",
-      eyebrow: "Colaboradores",
-      title: "Trabajamos con las plataformas que marcan el estándar del trabajo remoto.",
-      lead: "No acreditan el programa ni emiten el diploma: son las herramientas y las prácticas que se usan de verdad en el mercado remoto internacional, y con las que vas a trabajar durante el curso.",
-      partners: [
-        {
-          key: "deel" as const,
-          name: "Deel",
-          area: "Contratación y pagos internacionales",
-          desc: "La referencia para contratar y cobrar entre países. Sus modelos de contrato, la distinción entre contractor y empleado y la operativa de Employer of Record son el material sobre el que se trabajan los módulos de fundamentos legales y compliance internacional.",
-          modules: "Se estudia en los módulos 2, 3 y 7",
-        },
-        {
-          key: "remoteandtalent" as const,
-          name: "Remoteandtalent.com",
-          area: "Empleo remoto internacional",
-          desc: "Bolsa y comunidad de empleo remoto. Sus ofertas reales son las que se analizan en la ruta de carrera: qué se pide de verdad, cómo se filtra una candidatura y qué distingue a la que pasa de la que se queda fuera.",
-          modules: "Se estudia en los módulos 8 a 12 · Camino Professional",
-        },
-        {
-          key: "slack" as const,
-          name: "Slack",
-          area: "Comunicación y trabajo distribuido",
-          desc: "El estándar de facto de la comunicación asíncrona. Los módulos de equipos distribuidos se apoyan en su manual público de trabajo remoto —cómo se documenta, se decide y se genera confianza sin compartir oficina— y el campus te avisa por Slack de cada avance.",
-          modules: "Se estudia en los módulos 1, 4 y 13",
-        },
-      ],
-      note: "ActiveXRemote no está afiliada a Deel, Remoteandtalent.com ni Slack, ni cuenta con su patrocinio o su respaldo; sus marcas se citan sólo para identificar las herramientas que se estudian en el programa. El diploma lo emite ActiveXRemote y detalla los módulos superados: es una certificación privada de empresa, no un título oficial ni un grado universitario.",
-    },
     // ⚠︎ PLACEHOLDER — cifras, valoraciones, testimonios y marcas son
     // ejemplos de maquetación. Sustituir por datos reales antes de publicar:
     // un testimonio inventado atribuido a una persona es publicidad engañosa.
@@ -838,36 +808,6 @@ export const landingCopy = {
       { mark: "g2" as const, score: "4.8/5", label: "120+ reviews" },
       { mark: "trustpilot" as const, score: "4.7/5", label: "90+ reviews" },
     ],
-    accreditation: {
-      heroLabel: "Premium partners",
-      eyebrow: "Partners",
-      title: "We work with the platforms that set the standard for remote work.",
-      lead: "They neither accredit the program nor issue the diploma: they are the tools and the practices actually used across the international remote market, and the ones you will work with during the course.",
-      partners: [
-        {
-          key: "deel" as const,
-          name: "Deel",
-          area: "International hiring and payments",
-          desc: "The reference for hiring and getting paid across borders. Their contract models, the contractor-versus-employee distinction and how Employer of Record works in practice are the material the legal and compliance modules are built on.",
-          modules: "Studied in modules 2, 3 and 7",
-        },
-        {
-          key: "remoteandtalent" as const,
-          name: "Remoteandtalent.com",
-          area: "International remote jobs",
-          desc: "A remote job board and community. Their live listings are what the career track works from: what employers actually ask for, how a application gets filtered, and what separates the one that makes it from the one that does not.",
-          modules: "Studied in modules 8 to 12 · Professional path",
-        },
-        {
-          key: "slack" as const,
-          name: "Slack",
-          area: "Communication and distributed work",
-          desc: "The de facto standard for asynchronous communication. The distributed-team modules build on their public remote work playbook —how you document, decide and build trust without sharing an office— and the campus notifies you of every step in Slack.",
-          modules: "Studied in modules 1, 4 and 13",
-        },
-      ],
-      note: "ActiveXRemote is not affiliated with, sponsored by or endorsed by Deel, Remoteandtalent.com or Slack; their trademarks are named only to identify the tools studied in the program. The diploma is issued by ActiveXRemote and lists the modules you completed: it is a private corporate certification, not an official or university degree.",
-    },
     // ⚠︎ PLACEHOLDER — see the note on the Spanish block above.
     social: {
       eyebrow: "Alumni",

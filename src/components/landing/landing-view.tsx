@@ -2,7 +2,7 @@ import { LocaleLink } from "@/components/locale-link";
 
 import { BrandMark } from "@/components/brand-mark";
 import { SlackLogo } from "@/components/slack-logo";
-import { AccreditationRow, AccreditationSection } from "@/components/landing/accreditation";
+import { PartnerSection, PartnerStrip } from "@/components/landing/partners";
 import { LandingNav } from "@/components/landing/landing-nav";
 import { RatingBadges } from "@/components/landing/rating-badges";
 import { LandingFooter } from "@/components/landing/landing-footer";
@@ -152,11 +152,7 @@ export async function LandingView() {
 
           <RatingBadges items={c.ratings} />
 
-          <AccreditationRow
-            label={c.accreditation.heroLabel}
-            partners={c.accreditation.partners}
-            tone="dark"
-          />
+          <PartnerStrip tone="dark" />
         </div>
       </section>
 
@@ -395,7 +391,7 @@ export async function LandingView() {
       </section>
 
       {/* ── Acreditación ────────────────────────────── */}
-      <AccreditationSection copy={c.accreditation} />
+      <PartnerSection />
 
       {/* ── Integración Slack ───────────────────────── */}
       {/* ── Cómo funciona: cronograma de la convocatoria ─ */}

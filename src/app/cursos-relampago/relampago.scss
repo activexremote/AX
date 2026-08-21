@@ -15,16 +15,31 @@
 .axr-fhero,
 .axr-fcard,
 .axr-xcard {
-  --fl: #ff6a3d;
-  --fl-deep: #e2451a;
-  --fl-soft: #fff3ee;
-  --fl-border: #ffd9cb;
+  // ── Sin paleta propia ─────────────────────────────────
+  // Antes esto era naranja. Se hizo así para separar los relámpago del
+  // programa, pero el resultado fue una familia de páginas que no parecía del
+  // mismo sitio: otro acento, otros fondos, otros bordes.
+  //
+  // Lo que distingue a un relámpago del programa no tiene que ser el color:
+  // es el precio, la duración y que no hay convocatoria, y eso ya lo dice la
+  // página con todas las letras. Los tokens son los mismos que el resto de la
+  // web; `--fl` se mantiene como nombre para no reescribir 200 usos.
+  --fl: var(--lp-accent);
+  --fl-deep: var(--lp-accent-strong);
+  --fl-soft: var(--lp-soft);
+  --fl-border: var(--lp-border);
 }
 
 // ══════════════════════════════════════════════════════════
 //  Cabecera de la página de curso: el vídeo manda
 // ══════════════════════════════════════════════════════════
 .axr-fhero {
+  // El héroe va sobre el mesh: el morado de marca se pierde ahí, así que el
+  // acento es el claro de la misma familia (el mismo que usan la banda de la
+  // home y el pie sobre fondos oscuros).
+  --fl: #a99bff;
+  --fl-deep: #c4baff;
+
   position: relative;
   margin-top: calc(-1 * var(--lp-nav-h) - 4px);
   padding:
@@ -688,6 +703,8 @@
 
   // ── Precio y compra ──
   &__buy {
+    --fl: #a99bff;
+    --fl-deep: #c4baff;
     padding: var(--lp-section) var(--lp-pad-r) calc(var(--lp-section) * 1.3) var(--lp-pad-l);
     background: var(--lp-mesh);
     color: #fff;
@@ -1284,6 +1301,8 @@
   // Fondo de tinta y naranja, el mismo registro que la banda de la home: son
   // el mismo producto y tienen que reconocerse como tal.
   &__final {
+    --fl: #a99bff;
+    --fl-deep: #c4baff;
     padding: calc(var(--lp-section) * 1.2) var(--lp-pad-r) calc(var(--lp-section) * 1.2) var(--lp-pad-l);
     background: var(--lp-ink);
     color: #fff;

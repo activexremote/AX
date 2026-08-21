@@ -1,5 +1,5 @@
 import { BrandMark } from "@/components/brand-mark";
-import { AccreditationRow, AccreditationSection } from "@/components/landing/accreditation";
+import { PartnerSection, PartnerStrip } from "@/components/landing/partners";
 import { LandingNav } from "@/components/landing/landing-nav";
 import { LocaleLink } from "@/components/locale-link";
 import { RatingBadges } from "@/components/landing/rating-badges";
@@ -30,7 +30,6 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
   // que un anuncio que apunta aquí no se confunda con el otro.
   const funnel = funnelCopy[locale];
   const model = modelCopy[locale];
-  const accreditation = landingCopy[locale].accreditation;
 
   return (
     <main className="axr-lp axr-cp" data-course={slug} data-snap>
@@ -72,11 +71,7 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
 
           <RatingBadges items={landingCopy[locale].ratings} />
 
-          <AccreditationRow
-            label={accreditation.heroLabel}
-            partners={accreditation.partners}
-            tone="dark"
-          />
+          <PartnerStrip tone="dark" />
         </div>
 
         {/* Formulario de captación — primer punto de conversión de la página. */}
@@ -287,7 +282,7 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
       </section>
 
       {/* ── Acreditación ────────────────────────────── */}
-      <AccreditationSection copy={accreditation} />
+      <PartnerSection />
 
       {/* ── Convocatoria y precio ───────────────────── */}
       <section id="convocatoria" className="axr-cp__enroll">

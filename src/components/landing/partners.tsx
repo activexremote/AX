@@ -1,0 +1,113 @@
+import { PARTNERS, partnerCopy, partnerLogo, type Partner } from "@/app/bienvenida/partners";
+import { getLocale } from "@/lib/i18n/server";
+
+// ══════════════════════════════════════════════════════════
+//  Partners
+//
+//  Dos piezas: la tira del héroe —sólo marcas, para decir «no estamos solos»
+//  antes de que nadie lea nada— y la sección de detalle, con el beneficio de
+//  cada uno.
+//
+//  Los logos van todos a la MISMA ALTURA y nunca al mismo ancho: es como se
+//  unifica una fila de logotipos. Igualarlos por ancho hace que un wordmark
+//  largo (SafetyWing, Factorial) aplaste a un monograma (Stripe, Vercel).
+// ══════════════════════════════════════════════════════════
+
+/**
+ * La marca de un partner.
+ *
+ * Cuando no hay archivo se compone el nombre en la tipografía de la casa.
+ * No es un hueco: en una fila donde todo está a la misma altura, un nombre
+ * bien compuesto pasa por un wordmark más. Es lo que evita que falten dos
+ * marcas de la fila por no tener su SVG.
+ */
+function PartnerMark({ p, size }: { p: Partner; size: number }) {
+  const src = partnerLogo(p);
+
+  if (!src) {
+    return (
+      <span className="axr-pmark axr-pmark--text" style={{ fontSize: size * 0.52 }}>
+        {p.name}
+      </span>
+    );
+  }
+
+  // El ancho sale de la altura y de la proporción real del archivo: así
+  // ninguno se deforma y todos ocupan el mismo alto óptico.
+  const w = Math.round(size * (p.ratio ?? 1));
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={p.name}
+      width={w}
+      height={size}
+      loading="lazy"
+      decoding="async"
+      className="axr-pmark"
+      data-dark={p.dark ? "" : undefined}
+      style={{ height: size, width: w }}
+    />
+  );
+}
+
+/** Tira del héroe: sólo las marcas. */
+export async function PartnerStrip({ tone = "dark" }: { tone?: "dark" | "light" }) {
+  const locale = await getLocale();
+  const c = partnerCopy[locale];
+
+  return (
+    <div className="axr-pstrip" data-tone={tone}>
+      <span className="axr-pstrip__label">{c.heroLabel}</span>
+      {/* La lista va dos veces: la cinta se mueve la mitad exacta y al
+          reiniciar cae en un fotograma idéntico, sin salto. Once marcas no
+          caben en una fila de móvil sin encogerlas hasta lo ilegible. */}
+      <div className="axr-pstrip__rail">
+        <div className="axr-pstrip__track">
+          {PARTNERS.map((p) => (
+            <span key={p.key} className="axr-pstrip__item"><PartnerMark p={p} size={22} /></span>
+          ))}
+          {PARTNERS.map((p) => (
+            <span key={`d-${p.key}`} className="axr-pstrip__item" data-dup aria-hidden>
+              <PartnerMark p={p} size={22} />
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** La sección: cada partner con su categoría y su beneficio. */
+export async function PartnerSection() {
+  const locale = await getLocale();
+  const c = partnerCopy[locale];
+
+  return (
+    <section id="partners" className="axr-partners">
+      <header className="axr-partners__head">
+        <span className="axr-lp__eyebrow">{c.eyebrow}</span>
+        <h2>{c.title}</h2>
+        <p>{c.lead}</p>
+      </header>
+
+      <ul className="axr-partners__grid">
+        {PARTNERS.map((p) => {
+          const item = c.items[p.key];
+          return (
+            <li key={p.key} className="axr-pcard">
+              <a href={p.url} target="_blank" rel="noopener noreferrer nofollow">
+                <span className="axr-pcard__mark"><PartnerMark p={p} size={26} /></span>
+                <span className="axr-pcard__area">{item?.area}</span>
+                <span className="axr-pcard__name">{p.name}</span>
+                <span className="axr-pcard__desc">{item?.desc}</span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+
+      <p className="axr-partners__note">{c.note}</p>
+    </section>
+  );
+}

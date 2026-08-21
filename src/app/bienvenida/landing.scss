@@ -1194,14 +1194,20 @@
 // no puede ocupar una pantalla entera en medio del recorrido.
 //
 // De ahí que sea la mitad de alta que una sección normal, con el texto en una
-// fila y el curso en una tira debajo. El naranja la separa del morado del
-// programa: si fueran del mismo color se leería como "otro plan del curso".
+// fila y el curso en una tira debajo.
+//
+// Lo que la separa del resto es el FONDO de tinta, no un color de acento
+// propio: el acento es el morado de la marca, como en todas partes. Antes
+// esto iba en naranja y la familia entera de páginas de relámpago acababa
+// pareciendo de otro sitio.
 .axr-lp__flash {
   padding: calc(var(--lp-section) * 0.72) var(--lp-pad-r) calc(var(--lp-section) * 0.72) var(--lp-pad-l);
   background: var(--lp-ink);
   color: #fff;
-  --fl: #ff6a3d;
-  --fl-deep: #e2451a;
+  // Sobre tinta, el morado de marca se apaga: aquí se usa el claro de la
+  // misma familia, que es el que la web ya utiliza sobre fondos oscuros.
+  --fl: #a99bff;
+  --fl-deep: #c4baff;
 
   &-inner {
     max-width: var(--lp-max);
@@ -2157,19 +2163,6 @@
 }
 
 // ── Acreditación ────────────────────────────────────────
-// Logos originales, sin recolorear (brand guidelines de cada compañía).
-// El icono de Remote&Talent es blanco: necesita su propio chip oscuro.
-.axr-lp__partner-logo {
-  display: block;
-  width: auto;
-
-  &[data-partner="remoteandtalent"] {
-    box-sizing: content-box;
-    padding: 0.28em;
-    border-radius: 7px;
-    background: #161326;
-  }
-}
 
 // Valoraciones del héroe
 .axr-lp__ratings {
@@ -4375,4 +4368,206 @@ $axr-tool-cats:
 @keyframes axr-stack-run {
   from { transform: translate3d(0, 0, 0); }
   to { transform: translate3d(-50%, 0, 0); }
+}
+
+// ══════════════════════════════════════════════════════════
+//  Partners
+//
+//  Los logos van todos a la misma ALTURA y nunca al mismo ancho: es como se
+//  unifica una fila de logotipos. Igualarlos por ancho hace que un wordmark
+//  largo aplaste a un monograma.
+//
+//  Y no se recolorean: un logo con otro color deja de ser ese logo, y casi
+//  todas las guías de marca lo prohíben expresamente.
+// ══════════════════════════════════════════════════════════
+.axr-pmark {
+  display: block;
+  width: auto;
+  object-fit: contain;
+
+  // Remote & Talent es blanco: sobre fondo claro desaparecería, así que
+  // lleva su propia pastilla oscura. Es lo que su guía permite.
+  &[data-dark] {
+    box-sizing: content-box;
+    padding: 0.24em;
+    border-radius: 6px;
+    background: var(--lp-ink);
+  }
+
+  // Sin archivo de marca, el nombre en nuestra tipografía. En una fila donde
+  // todo está a la misma altura pasa por un wordmark más.
+  &--text {
+    font-family: var(--axr-display);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    color: inherit;
+  }
+}
+
+// ── La tira del héroe ──
+.axr-pstrip {
+  margin-top: clamp(0.7rem, 2vh, 1.5rem);
+  padding-top: clamp(0.6rem, 1.7vh, 1.25rem);
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+
+  &[data-tone="light"] { border-top-color: var(--lp-border); }
+
+  &__label {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-family: var(--axr-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.7);
+
+    [data-tone="light"] & { color: var(--lp-muted); }
+  }
+
+  // Once marcas no caben en una fila de móvil sin encogerlas hasta lo
+  // ilegible, así que la fila se mueve. La máscara desvanece los extremos
+  // para que no parezca cortada contra el borde.
+  &__rail {
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+  }
+  &__track {
+    display: flex;
+    align-items: center;
+    gap: 2.25rem;
+    width: max-content;
+    animation: axr-pstrip-run 46s linear infinite;
+  }
+  &__item {
+    display: grid;
+    place-items: center;
+    height: 26px;
+    // Los logos de marca sobre el mesh oscuro necesitan una pastilla clara:
+    // muchos son de tinta y sobre morado no se leerían.
+    padding: 0.3rem 0.55rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.94);
+    color: var(--lp-ink);
+
+    [data-tone="light"] & { background: transparent; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .axr-pstrip__rail { mask-image: none; }
+    .axr-pstrip__track {
+      animation: none;
+      flex-wrap: wrap;
+      gap: 0.6rem 1.25rem;
+      width: auto;
+    }
+    [data-dup] { display: none; }
+  }
+}
+
+@keyframes axr-pstrip-run {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+// ── La sección ──
+.axr-partners {
+  padding: var(--lp-section) var(--lp-pad-r) var(--lp-section) var(--lp-pad-l);
+  background: var(--lp-soft);
+
+  &__head {
+    max-width: 760px;
+    margin: 0 auto var(--lp-head-gap);
+    text-align: center;
+
+    h2 {
+      margin: 0.35rem 0 0.7rem;
+      font-size: clamp(1.6rem, 6vw, 2.4rem);
+      font-weight: 700;
+      line-height: 1.12;
+      letter-spacing: -0.03em;
+      text-wrap: balance;
+    }
+    p { margin: 0; color: var(--lp-body); line-height: 1.6; text-wrap: pretty; }
+  }
+
+  &__grid {
+    max-width: var(--lp-max);
+    margin: 0 auto;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+
+    @media (min-width: 561px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    @media (min-width: 861px) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    @media (min-width: 1141px) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
+  &__note {
+    max-width: 760px;
+    margin: 1.75rem auto 0;
+    padding: 1rem 1.15rem;
+    border: 1px solid var(--lp-border);
+    border-radius: var(--lp-radius-md);
+    background: #fff;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--lp-muted);
+    text-align: center;
+  }
+}
+
+.axr-pcard {
+  a {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1.25rem 1.15rem;
+    border: 1px solid var(--lp-border);
+    border-radius: var(--lp-radius-md);
+    background: #fff;
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+
+    @media (hover: hover) {
+      &:hover {
+        border-color: var(--lp-accent);
+        transform: translateY(-2px);
+        box-shadow: 0 14px 34px rgba(20, 16, 40, 0.08);
+      }
+    }
+  }
+
+  // Alto fijo para la marca: es lo que alinea los once logos entre tarjetas
+  // aunque cada uno tenga una proporción distinta.
+  &__mark {
+    display: flex;
+    align-items: center;
+    height: 30px;
+    margin-bottom: 0.9rem;
+  }
+
+  &__area {
+    font-family: var(--axr-mono);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--lp-accent);
+  }
+  &__name {
+    margin: 0.2rem 0 0.35rem;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+  &__desc {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--lp-body);
+  }
 }
