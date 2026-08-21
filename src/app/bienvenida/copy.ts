@@ -28,6 +28,7 @@ export const landingCopy = {
         items: [
           { href: "/cursos/remote-professional", label: "Curso Remote Professional" },
           { href: "/cursos/remote-founder", label: "Curso Remote Founder" },
+          { href: "/cursos-relampago", label: "Cursos relámpago · 75 €" },
         ],
       },
       links: [
@@ -133,6 +134,29 @@ export const landingCopy = {
         "Negociación salarial",
         "Automatización",
       ],
+    },
+    flash: {
+      eyebrow: "CURSOS RELÁMPAGO",
+      title: "¿Todavía no para un programa entero?",
+      lead: "Un curso relámpago son cuatro horas en vídeo con misiones reales y corrección de tus ejercicios, a precio cerrado. Entras hoy, construyes una cosa concreta y la terminas.",
+      traits: [
+        { title: "4 h en microlecciones", body: "Ninguna pasa de doce minutos." },
+        { title: "Se construye, no se mira", body: "Cada lección acaba en una misión." },
+        { title: "Te lo corrigen", body: "Nota sobre 100 y feedback concreto." },
+        { title: "Precio cerrado", body: "Un pago. Acceso para siempre." },
+      ],
+      allCta: "Ver todos los cursos relámpago",
+      card: {
+        hours: "de vídeo",
+        lessons: "lecciones",
+        missions: "misiones",
+        cta: "Ver el curso",
+        buy: "Comprar",
+        sending: "Abriendo el pago…",
+        buyError: "No hemos podido abrir el pago. Inténtalo otra vez.",
+        gift: "Regalo:",
+        ninja: "Truco:",
+      },
     },
     statement: {
       top: "El trabajo en remoto se aprende",
@@ -549,6 +573,7 @@ export const landingCopy = {
         items: [
           { href: "/cursos/remote-professional", label: "Remote Professional Course" },
           { href: "/cursos/remote-founder", label: "Remote Founder Course" },
+          { href: "/cursos-relampago", label: "Flash courses · €75" },
         ],
       },
       links: [
@@ -647,6 +672,29 @@ export const landingCopy = {
         "Salary negotiation",
         "Automation",
       ],
+    },
+    flash: {
+      eyebrow: "FLASH COURSES",
+      title: "Not ready for a whole programme?",
+      lead: "A flash course is four hours of video with real missions and graded exercises, at one closed price. You start today, you build one concrete thing and you finish it.",
+      traits: [
+        { title: "4 h in micro-lessons", body: "None runs past twelve minutes." },
+        { title: "You build it", body: "Every lesson ends in a mission." },
+        { title: "It gets graded", body: "A score out of 100 and real feedback." },
+        { title: "Closed price", body: "One payment. Access forever." },
+      ],
+      allCta: "See all flash courses",
+      card: {
+        hours: "of video",
+        lessons: "lessons",
+        missions: "missions",
+        cta: "See the course",
+        buy: "Buy",
+        sending: "Opening payment…",
+        buyError: "We couldn't open the payment. Try again.",
+        gift: "Gift:",
+        ninja: "Hack:",
+      },
     },
     statement: {
       top: "Remote work is learned",

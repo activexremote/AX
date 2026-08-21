@@ -1,6 +1,7 @@
 import { ALL_ARTICLES } from "@/app/blog/registry";
 import { TERMS, termPath } from "@/app/glosario/terms";
 import { ENTITY } from "@/app/legal/entity";
+import { FLASH_COURSES, flashStats } from "@/lib/relampago/catalog";
 import { LOCALES, type Locale } from "@/lib/i18n/config";
 import { withLocale } from "@/lib/i18n/routing";
 import { SITE_URL } from "@/lib/seo";
@@ -46,6 +47,19 @@ function bloqueIdioma(locale: Locale): string {
       ? "camino de negocio sin fronteras. 14 módulos."
       : "the borderless business path. 14 modules."
   }`);
+  lineas.push(`- [${es ? "Cursos relámpago" : "Flash courses"}](${url("/cursos-relampago")}): ${
+    es
+      ? "formaciones sueltas de ~4 h en vídeo, con misiones y corrección, a precio cerrado. No dan acceso al programa largo."
+      : "standalone ~4 h video courses with graded missions, at one closed price. They do not grant access to the long programme."
+  }`);
+  for (const f of FLASH_COURSES) {
+    const st = flashStats(f);
+    lineas.push(`- [${f.title}](${url(`/cursos-relampago/${f.slug}`)}): ${
+      es
+        ? `${f.claim} ${st.hours} h de vídeo, ${st.lessons} lecciones, ${st.missions} misiones corregidas. ${(f.priceCents / 100).toFixed(0)} €, pago único. Se imparte en español.`
+        : `${f.claim} ${st.hours} h of video, ${st.lessons} lessons, ${st.missions} graded missions. €${(f.priceCents / 100).toFixed(0)}, single payment. Taught in Spanish.`
+    }`);
+  }
   lineas.push(`- [${es ? "Matrícula" : "Enrolment"}](${url("/matricula")}): ${
     es
       ? "precios y formas de pago."

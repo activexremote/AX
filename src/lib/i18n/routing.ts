@@ -30,6 +30,7 @@ export const LOCALIZED_ROOTS = [
   // El checkout también existe en los dos idiomas: sin esto, "Enrol now"
   // desde la web en inglés llevaba a la pantalla de pago en español.
   "matricula",
+  "cursos-relampago",
 ] as const;
 
 /** Cabecera con la que el proxy le cuenta a la app qué idioma pide la URL. */
@@ -52,6 +53,7 @@ const SEGMENTS: Record<string, string> = {
   cursos: "courses",
   glosario: "glossary",
   matricula: "enrolment",
+  "cursos-relampago": "flash-courses",
   gracias: "thank-you",
   "aviso-legal": "legal-notice",
   privacidad: "privacy",

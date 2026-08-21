@@ -4,6 +4,8 @@ import { LandingNav } from "@/components/landing/landing-nav";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LocaleLink } from "@/components/locale-link";
 import { checkoutCopy } from "@/app/matricula/copy";
+import { flashCopy } from "@/app/cursos-relampago/copy";
+import { flashBySlug } from "@/lib/relampago/catalog";
 import { getLocale } from "@/lib/i18n/server";
 import { getOrderBySession } from "@/lib/data/orders";
 import "@/app/bienvenida/landing.scss";
@@ -34,11 +36,19 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ThanksPage({
   searchParams,
 }: {
-  searchParams: Promise<{ session_id?: string }>;
+  searchParams: Promise<{ session_id?: string; relampago?: string }>;
 }) {
-  const { session_id: sessionId } = await searchParams;
+  const { session_id: sessionId, relampago } = await searchParams;
   const locale = await getLocale();
-  const c = checkoutCopy[locale].thanks;
+  const base = checkoutCopy[locale].thanks;
+
+  // Un relámpago no da «plaza en la convocatoria»: no hay convocatoria, y esa
+  // frase le haría pensar que ha comprado el programa. El resto de la página
+  // —el aviso del email, los botones— vale igual para los dos.
+  const flash = relampago ? flashBySlug(relampago) : undefined;
+  const c = flash
+    ? { ...base, title: flashCopy[locale].thanks.title, body: flashCopy[locale].thanks.body }
+    : base;
 
   const order = sessionId ? await getOrderBySession(sessionId) : null;
   const confirmed =

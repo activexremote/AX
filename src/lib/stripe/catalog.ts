@@ -1,4 +1,5 @@
 import { COHORT_START } from "@/app/bienvenida/cohort";
+import { FLASH_COURSES } from "@/lib/relampago/catalog";
 
 // ══════════════════════════════════════════════════════════
 //  Catálogo comercial. Es la única fuente de verdad de qué se vende y a qué
@@ -21,7 +22,19 @@ export function isCourseKey(v: unknown): v is CourseKey {
   return typeof v === "string" && (COURSE_KEYS as readonly string[]).includes(v);
 }
 
-export type OfferKey = "curso-unico" | "curso-plazos" | "curso-anticipada" | "pack-dos";
+/**
+ * Clave de oferta.
+ *
+ * Las cuatro primeras son el programa largo. `relampago-…` es un curso
+ * relámpago suelto, y hay una por curso porque cada uno puede tener su precio
+ * y necesita su propio price_… en Stripe.
+ */
+export type OfferKey =
+  | "curso-unico"
+  | "curso-plazos"
+  | "curso-anticipada"
+  | "pack-dos"
+  | `relampago-${string}`;
 
 export type Offer = {
   key: OfferKey;
@@ -91,8 +104,45 @@ export const OFFERS: Record<OfferKey, Offer> = {
   },
 };
 
+// ── Cursos relámpago ──────────────────────────────────────
+// Se generan desde el registro de cursos en vez de escribirse a mano: así el
+// precio que se cobra y el precio que anuncia la landing salen del MISMO
+// sitio. Escribirlo dos veces es cómo se acaba cobrando 75 € por algo que la
+// página anuncia a 65.
+
+/** Nombre de la variable de entorno con el price_… de un relámpago. */
+export function flashPriceEnv(courseKey: string): string {
+  return `STRIPE_PRICE_RELAMPAGO_${courseKey.toUpperCase().replace(/-/g, "_")}`;
+}
+
+export const FLASH_OFFERS: Record<string, Offer> = Object.fromEntries(
+  FLASH_COURSES.map((c) => [
+    `relampago-${c.key}`,
+    {
+      key: `relampago-${c.key}` as OfferKey,
+      courses: 1,
+      mode: "payment",
+      // Precio cerrado: sin plazos, sin matrícula anticipada y sin
+      // convocatoria. Ése es medio producto.
+      plan: "unico",
+      unitAmount: c.priceCents,
+      charges: 1,
+      currency: "eur",
+      priceEnv: flashPriceEnv(c.key),
+    } satisfies Offer,
+  ]),
+);
+
+/** La oferta de un relámpago a partir de su clave de curso. */
+export function flashOffer(courseKey: string): Offer | undefined {
+  return FLASH_OFFERS[`relampago-${courseKey}`];
+}
+
+/** Todas las ofertas que existen, del tipo que sean. */
+export const ALL_OFFERS: Record<string, Offer> = { ...OFFERS, ...FLASH_OFFERS };
+
 export function isOfferKey(v: unknown): v is OfferKey {
-  return typeof v === "string" && v in OFFERS;
+  return typeof v === "string" && v in ALL_OFFERS;
 }
 
 /** ¿Sigue viva la matrícula anticipada? Se comprueba en el servidor: que la
@@ -118,6 +168,11 @@ export function availableOffers(now: Date = new Date()): Offer[] {
   ];
 }
 
+/**
+ * Ofertas del programa largo. `availableOffers()` NO las incluye a propósito:
+ * la pantalla de matrícula vende el programa, y colar ahí un curso de 75 €
+ * junto a uno de 2.400 € sólo consigue que nadie entienda qué está comprando.
+ */
 export function totalAmount(offer: Offer): number {
   return offer.unitAmount * offer.charges;
 }

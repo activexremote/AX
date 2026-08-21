@@ -4,12 +4,14 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import { CampusHeader } from "@/components/campus-header";
+import { LessonMission } from "@/components/lesson/mission";
 import { LessonAudioPlayer } from "@/components/lesson/audio-player";
 import { LessonQuiz } from "@/components/lesson/quiz";
 import { MarkCompleteButton } from "@/components/lesson/mark-complete-button";
 import { VisitTracker } from "@/components/lesson/visit-tracker";
 import { getLessonForView } from "@/lib/data/modules";
 import { getProgressForCurrentUser } from "@/lib/data/progress";
+import { getSubmission } from "@/lib/data/relampago";
 import { getI18n } from "@/lib/i18n/server";
 import { fmt } from "@/lib/i18n/dictionaries";
 import "@/app/(campus)/lecciones/lesson.scss";
@@ -19,7 +21,14 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
   const data = await getLessonForView(id);
   if (!data) notFound();
   const { lesson, module, siblings, quiz, questions } = data;
-  const [progress, { t }] = await Promise.all([getProgressForCurrentUser(), getI18n()]);
+  // Una lección relámpago se distingue por tener misión: el resto de la
+  // pantalla es la misma y no hace falta un tipo de lección aparte.
+  const esRelampago = Boolean(lesson.mission_md);
+  const [progress, { t }, submission] = await Promise.all([
+    getProgressForCurrentUser(),
+    getI18n(),
+    esRelampago ? getSubmission(lesson.id) : Promise.resolve(null),
+  ]);
   const completedSet = new Set(progress.filter((p) => p.status === "completada").map((p) => p.lesson_id));
   const moduleHref = `/modulos/${module.slug}`;
   const totalModuleLessons = siblings.length;
@@ -93,10 +102,62 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
           <h1>{lesson.title}</h1>
           <div className="axr-lesson__meta">
             {lesson.duration_min ? <span>~{lesson.duration_min} {t.lesson.min}</span> : null}
-            <span className="axr-lesson__badge">
-              {lesson.audio_url ? `🔊 ${t.lesson.audioNarrated}` : t.lesson.audioSoon}
-            </span>
+            {esRelampago ? (
+              lesson.mission_minutes ? (
+                <span className="axr-lesson__badge">
+                  + {lesson.mission_minutes} {t.lesson.min} · {t.mission.title}
+                </span>
+              ) : null
+            ) : (
+              <span className="axr-lesson__badge">
+                {lesson.audio_url ? `🔊 ${t.lesson.audioNarrated}` : t.lesson.audioSoon}
+              </span>
+            )}
           </div>
+
+          {/* ── Cabecera de una lección relámpago ── */}
+          {/* El gancho va ANTES que nada: la regla de comunicación del curso
+              es problema humano → concepto técnico, y ése es el problema. */}
+          {lesson.hook && <p className="axr-lesson__hook">«{lesson.hook}»</p>}
+
+          {esRelampago && (
+            <div className="axr-lesson__video">
+              {lesson.video_url ? (
+                <>
+                  {/* `preload="metadata"`: trae la duración y el primer
+                      fotograma sin descargar el vídeo entero a quien sólo
+                      pasaba por aquí. */}
+                  <video controls preload="metadata" playsInline src={lesson.video_url} />
+                  {/* Marcado como muestra en el seed. Se dice aquí también y
+                      no sólo en la landing: quien ya ha pagado y está dentro
+                      merece saber por qué ve el mismo clip en cada lección. */}
+                  {lesson.video_provider === "demo" && (
+                    <p className="axr-lesson__video-demo">{t.lesson.videoDemo}</p>
+                  )}
+                </>
+              ) : (
+                <p className="axr-lesson__video-soon">{t.lesson.videoSoon}</p>
+              )}
+            </div>
+          )}
+
+          {lesson.outcome && (
+            <div className="axr-lesson__outcome">
+              <span className="axr-section-tag">{t.lesson.outcomeLabel}</span>
+              <p>{lesson.outcome}</p>
+            </div>
+          )}
+
+          {lesson.terms?.length ? (
+            <div className="axr-lesson__terms">
+              <span className="axr-section-tag">{t.lesson.termsLabel}</span>
+              <ul>
+                {lesson.terms.map((term) => (
+                  <li key={term}>{term}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
 
           {lesson.toc?.length ? (
             <div className="axr-lesson__toc">
@@ -118,7 +179,7 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
 
           {quiz && questions.length > 0 ? (
             <section className="axr-lesson__quiz-section">
-              <h2>{t.lesson.examTitle}</h2>
+              <h2>{esRelampago ? t.lesson.checkTitle : t.lesson.examTitle}</h2>
               <LessonQuiz
                 quizId={quiz.id}
                 lessonId={lesson.id}
@@ -138,15 +199,37 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
         </main>
       </div>
 
-      <div className="axr-audio-bar">
-        <div className="axr-audio-bar__inner">
-          <LessonAudioPlayer
-            src={lesson.audio_url}
-            lessonId={lesson.id}
-            lessonTitle={lesson.title}
-          />
+      {esRelampago && lesson.mission_md && (
+        <div className="axr-lesson axr-lesson--mission">
+          <div className="axr-lesson__sidebar" aria-hidden />
+          <main className="axr-lesson__main">
+            <LessonMission
+              lessonId={lesson.id}
+              mission={lesson.mission_md}
+              minutes={lesson.mission_minutes}
+              criterion={lesson.mission_criterion}
+              evidenceHint={lesson.evidence_hint}
+              submission={submission}
+              copy={t.mission}
+            />
+          </main>
         </div>
-      </div>
+      )}
+
+      {/* La barra de audio es del programa largo, donde cada lección se
+          narra. En un relámpago el medio es el vídeo y una barra fija vacía
+          sólo roba sitio en pantalla. */}
+      {!esRelampago && (
+        <div className="axr-audio-bar">
+          <div className="axr-audio-bar__inner">
+            <LessonAudioPlayer
+              src={lesson.audio_url}
+              lessonId={lesson.id}
+              lessonTitle={lesson.title}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 }

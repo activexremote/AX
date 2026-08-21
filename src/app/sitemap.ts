@@ -3,6 +3,7 @@ import type { MetadataRoute } from "next";
 import { TERMS } from "@/app/glosario/terms";
 import { ALL_ARTICLES } from "@/app/blog/registry";
 import { HREFLANG_PAIRS } from "@/app/blog/content-map";
+import { FLASH_COURSES } from "@/lib/relampago/catalog";
 import { LOCALES, type Locale } from "@/lib/i18n/config";
 import { withLocale } from "@/lib/i18n/routing";
 import { SITE_URL } from "@/lib/seo";
@@ -47,6 +48,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...bilingual("/bienvenida", { lastModified: now, changeFrequency: "weekly", priority: 1 }),
     ...bilingual("/cursos/remote-professional", { lastModified: now, changeFrequency: "weekly", priority: 0.9 }),
     ...bilingual("/cursos/remote-founder", { lastModified: now, changeFrequency: "weekly", priority: 0.9 }),
+    ...bilingual("/cursos-relampago", { lastModified: now, changeFrequency: "weekly", priority: 0.9 }),
+    // Un relámpago es una página de producto con precio: misma prioridad que
+    // las landings de curso, porque capta exactamente igual.
+    ...FLASH_COURSES.flatMap((f) =>
+      bilingual(`/cursos-relampago/${f.slug}`, {
+        lastModified: now,
+        changeFrequency: "monthly",
+        priority: 0.9,
+      }),
+    ),
     ...bilingual("/blog", { lastModified: now, changeFrequency: "weekly", priority: 0.8 }),
     ...bilingual("/glosario", { lastModified: now, changeFrequency: "monthly", priority: 0.7 }),
   ];

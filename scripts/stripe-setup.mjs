@@ -2,8 +2,8 @@
 // Crea en Stripe los productos y precios del catálogo e imprime las líneas
 // que hay que pegar en .env.local.
 //
-//   node scripts/stripe-setup.mjs            # muestra lo que haría
-//   node scripts/stripe-setup.mjs --write    # lo crea de verdad
+//   npm run stripe:setup             # muestra lo que haría
+//   npm run stripe:setup -- --write  # lo crea de verdad
 //
 // Es idempotente: cada precio lleva una clave en sus metadatos (axr_offer), y
 // si ya existe uno con esa clave y ese importe, se reutiliza en vez de crear
@@ -12,6 +12,7 @@
 
 import Stripe from "stripe";
 import { readFileSync } from "node:fs";
+import { FLASH_COURSES } from "@/lib/relampago/catalog.ts";
 
 const WRITE = process.argv.includes("--write");
 
@@ -42,8 +43,11 @@ if (WRITE && !key.startsWith("sk_test_")) {
 
 const stripe = new Stripe(key);
 
-// Espejo de src/lib/stripe/catalog.ts. Se repite porque este script corre en
-// Node pelado, sin el alias @/ ni TypeScript.
+// ⚠︎ Los cuatro precios del programa largo se repiten aquí a mano: son fijos,
+// llevan meses sin moverse y duplicarlos cuesta menos que lo que costaría
+// desmontarlos. Los relámpago NO: se leen del registro real (ver más abajo),
+// porque su precio también lo anuncia la landing y tener dos copias de un
+// precio es cómo se acaba cobrando 75 € por algo anunciado a 65.
 const CATALOG = [
   {
     offer: "curso-unico",
@@ -80,6 +84,18 @@ const CATALOG = [
     recurring: null,
   },
 ];
+
+// ── Cursos relámpago, desde el registro de verdad ──
+for (const c of FLASH_COURSES) {
+  CATALOG.push({
+    offer: `relampago-${c.key}`,
+    env: `STRIPE_PRICE_RELAMPAGO_${c.key.toUpperCase().replace(/-/g, "_")}`,
+    product: `Curso relámpago · ${c.title}`,
+    description: `${c.claim} · ${c.lessons.length} lecciones, ${c.modules.length} módulos, precio cerrado.`,
+    unitAmount: c.priceCents,
+    recurring: null,
+  });
+}
 
 async function findProduct(name) {
   const found = await stripe.products.search({ query: `name:'${name}'`, limit: 1 });

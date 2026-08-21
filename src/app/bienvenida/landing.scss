@@ -1111,6 +1111,95 @@
   }
 }
 
+// ── Cursos relámpago en la home ─────────────────────────
+// Naranja, no morado. El programa de 2.400 € y un curso de 75 € tienen que
+// distinguirse de un vistazo cuando comparten página; si los dos van del
+// mismo color, el bloque se lee como "otro plan del mismo curso".
+//
+// Es un ADELANTO: dos columnas, texto a la izquierda y la tarjeta a la
+// derecha. Ocupa lo que ocupa una sección normal y no una pantalla entera,
+// porque la home vende el programa y esto es una salida lateral para quien
+// no está listo, no un segundo escaparate.
+.axr-lp__flash {
+  padding: var(--lp-section) var(--lp-pad-r) var(--lp-section) var(--lp-pad-l);
+  background: var(--lp-ink);
+  color: #fff;
+  --fl: #ff6a3d;
+  --fl-deep: #e2451a;
+
+  &-inner {
+    max-width: var(--lp-max);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    align-items: center;
+
+    @media (min-width: 901px) {
+      grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+      gap: 3rem;
+    }
+  }
+
+  &-text {
+    .axr-lp__eyebrow { color: var(--fl); margin-bottom: 0.5rem; }
+    h2 {
+      margin: 0 0 0.6rem;
+      font-size: clamp(1.5rem, 5.4vw, 2.1rem);
+      font-weight: 700;
+      line-height: 1.12;
+      letter-spacing: -0.03em;
+      text-wrap: balance;
+    }
+    p {
+      margin: 0 0 1.1rem;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.78);
+      text-wrap: pretty;
+    }
+  }
+
+  // Los cuatro rasgos en una línea de píldoras: dicen qué es un relámpago sin
+  // gastar cuatro cajas de texto. El desarrollo está en /cursos-relampago.
+  &-traits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0 0 1.25rem;
+    padding: 0;
+    list-style: none;
+
+    li {
+      padding: 0.35rem 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 999px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.88);
+    }
+  }
+
+  &-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    // Con más de un curso se apilan; la home nunca enseña más de dos.
+    @media (min-width: 1101px) {
+      grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    }
+  }
+
+  &-all {
+    display: inline-block;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--fl);
+    text-decoration: none;
+    &:hover { color: #fff; }
+  }
+}
+
 // ── Piezas de la esfera ─────────────────────────────────
 // Blanco con muy poca alfa: sobre el mesh oscuro dan relieve sin llegar a
 // dibujar. Los grosores van en píxeles de pantalla —borde CSS de 1 px en los

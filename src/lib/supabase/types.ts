@@ -2,7 +2,16 @@
 // For now we type the parts we use manually.
 
 export type UserRole = "alumno" | "profesor" | "administrador";
-export type CourseKey = "core" | "remote-professional" | "remote-founder";
+/**
+ * Cursos del catálogo.
+ *
+ * "core" es el núcleo compartido por los dos caminos del programa largo.
+ * "web-abc" es el primer curso relámpago; los siguientes se añaden aquí y al
+ * enum `course_key` de Supabase. Ojo: el núcleo lo abre SÓLO una matrícula de
+ * programa, nunca un relámpago (ver `course_kind` en la migración 0007).
+ */
+export type CourseKey = "core" | "remote-professional" | "remote-founder" | "web-abc";
+export type SubmissionStatus = "enviada" | "corregida" | "revision_manual";
 export type OrderStatus =
   | "iniciado"
   | "pagado"
@@ -42,7 +51,8 @@ export interface Order {
   id: string;
   created_at: string;
   updated_at: string;
-  email: string;
+  /** Nulo mientras dura una compra directa: lo rellena el webhook. */
+  email: string | null;
   first_name: string | null;
   last_name: string | null;
   locale: string | null;
@@ -97,6 +107,64 @@ export interface Lesson {
   content_md: string;
   toc: { id: string; title: string }[] | null;
   created_at: string;
+
+  // ── Sólo en los cursos relámpago ──
+  // Nulas en las lecciones del programa largo, que no tienen vídeo ni misión.
+  video_url: string | null;
+  video_provider: string | null;
+  /** El gancho humano con el que abre el instructor. */
+  hook: string | null;
+  /** Qué sabrá hacer al terminar. */
+  outcome: string | null;
+  /** Vocabulario técnico que se introduce. */
+  terms: string[] | null;
+  /** Qué hay que construir. */
+  mission_md: string | null;
+  mission_minutes: number | null;
+  /** El mínimo para dar la misión por buena. */
+  mission_criterion: string | null;
+  evidence_hint: string | null;
+}
+
+/** El feedback de la corrección, con la forma que pide el máster plan. */
+export interface SubmissionFeedback {
+  clavado: string[];
+  ojo: string[];
+  mejora: string[];
+  next: string;
+}
+
+export interface Submission {
+  id: string;
+  user_id: string;
+  lesson_id: string;
+  evidence_url: string | null;
+  explanation: string;
+  status: SubmissionStatus;
+  /** 0–100 según la rúbrica: funcionalidad 35, comprensión 25, implementación 20, evidencia 10, autonomía 10. */
+  score: number | null;
+  feedback: SubmissionFeedback | null;
+  reviewer: string | null;
+  created_at: string;
+  updated_at: string;
+  reviewed_at: string | null;
+}
+
+export interface Unlock {
+  key: string;
+  course: CourseKey;
+  order_index: number;
+  title: string;
+  description: string | null;
+  /** Sólo viaja al navegador si está ganado. */
+  url: string | null;
+  icon: string | null;
+}
+
+export interface UserUnlock {
+  user_id: string;
+  unlock_key: string;
+  granted_at: string;
 }
 
 export interface Quiz {
@@ -167,8 +235,11 @@ export interface Database {
       quiz_attempts: TableDef<QuizAttempt, Partial<QuizAttempt> & { user_id: string; quiz_id: string }, Partial<QuizAttempt>>;
       learning_path_steps: TableDef<LearningPathStep, Partial<LearningPathStep> & { label: string }, Partial<LearningPathStep>>;
       activity_log: TableDef<ActivityLog, Partial<ActivityLog> & { user_id: string; kind: string }, Partial<ActivityLog>>;
-      orders: TableDef<Order, Partial<Order> & { email: string; courses: CourseKey[]; plan: OrderPlan; offer: string }, Partial<Order>>;
+      orders: TableDef<Order, Partial<Order> & { courses: CourseKey[]; plan: OrderPlan; offer: string }, Partial<Order>>;
       enrollments: TableDef<Enrollment, Partial<Enrollment> & { user_id: string; course: Exclude<CourseKey, "core"> }, Partial<Enrollment>>;
+      submissions: TableDef<Submission, Partial<Submission> & { user_id: string; lesson_id: string }, Partial<Submission>>;
+      unlocks: TableDef<Unlock, Partial<Unlock> & { key: string; course: CourseKey; title: string }, Partial<Unlock>>;
+      user_unlocks: TableDef<UserUnlock, Partial<UserUnlock> & { user_id: string; unlock_key: string }, Partial<UserUnlock>>;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -178,6 +249,7 @@ export interface Database {
       course_key: CourseKey;
       order_status: OrderStatus;
       order_plan: OrderPlan;
+      submission_status: SubmissionStatus;
     };
     CompositeTypes: Record<string, never>;
   };

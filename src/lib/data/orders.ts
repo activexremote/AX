@@ -10,9 +10,10 @@ import type { CourseKey, Order, OrderPlan } from "@/lib/supabase/types";
 // confirma, nunca a partir de lo que llega en un formulario.
 
 type NewOrder = {
-  email: string;
-  firstName: string;
-  lastName: string;
+  /** Nulo en la compra directa: lo recoge Stripe y lo escribe el webhook. */
+  email: string | null;
+  firstName: string | null;
+  lastName: string | null;
   locale: string;
   courses: CourseKey[];
   plan: OrderPlan;
@@ -34,7 +35,9 @@ export async function createPendingOrder(input: NewOrder): Promise<string | null
   const { data, error } = await admin
     .from("orders")
     .insert({
-      email: input.email,
+      // Puede ir vacío en una compra directa: lo rellena el webhook con el
+      // correo que recoge Stripe (ver la migración 0009).
+      email: input.email ?? null,
       first_name: input.firstName,
       last_name: input.lastName,
       locale: input.locale,
@@ -48,7 +51,14 @@ export async function createPendingOrder(input: NewOrder): Promise<string | null
     .select("id")
     .single();
 
-  if (error) return null;
+  // El error se registra: antes se devolvía null a secas y desde fuera un
+  // fallo de la base de datos era indistinguible de cualquier otro, así que
+  // el motivo real —una columna, un permiso, una restricción— no aparecía en
+  // ningún sitio.
+  if (error) {
+    console.error(`[orders] no se pudo crear el pedido: ${error.message}`);
+    return null;
+  }
   return data.id;
 }
 

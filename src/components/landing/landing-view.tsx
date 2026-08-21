@@ -16,7 +16,13 @@ import { FacultySection } from "@/components/landing/faculty-section";
 import { getLocale } from "@/lib/i18n/server";
 import { landingCopy, type LandingCopy } from "@/app/bienvenida/copy";
 import { PROTOTYPE_ALUMNI } from "@/app/bienvenida/flags";
+import { FlashCard } from "@/components/landing/flash-card";
+import { FLASH_COURSES } from "@/lib/relampago/catalog";
 import "@/app/bienvenida/landing.scss";
+// La tarjeta de curso relámpago se usa aquí y en /cursos-relampago, y sus
+// estilos viven en su propio archivo justo por eso (ver la cabecera de esa
+// hoja): sin este import salía sin formato en la home.
+import "@/components/landing/flash-card.scss";
 
 // Mockups brutalistas del campus — hacen de "captura de producto" sin
 // depender de fotos externas. Uno por feature (índice 0-2).
@@ -78,6 +84,7 @@ function FeatureMockup({ index, copy }: { index: number; copy: LandingCopy["mock
 export async function LandingView() {
   const locale = await getLocale();
   const c = landingCopy[locale];
+
 
   return (
     <main className="axr-lp" data-snap>
@@ -210,6 +217,41 @@ export async function LandingView() {
               </div>
             </article>
           ))}
+        </div>
+      </section>
+
+      {/* ── Cursos relámpago ────────────────────────── */}
+      {/* Va justo detrás de los dos caminos y antes del manifiesto: es la
+          respuesta a la objeción que aparece exactamente ahí —«esto es mucho
+          para mí ahora»— y sin ella esa persona se va de la página.
+
+          Es un ADELANTO, no la sección entera: dos frases, los cuatro rasgos
+          en una línea y la tarjeta del curso. Todo lo demás está en
+          /cursos-relampago, que es a donde lleva. Una home no puede pararse
+          a explicar un segundo producto: sólo tiene que hacer que se pulse. */}
+      <section id="relampago" className="axr-lp__flash">
+        <div className="axr-lp__flash-inner">
+          <div className="axr-lp__flash-text">
+            <span className="axr-lp__eyebrow">{c.flash.eyebrow}</span>
+            <h2>{c.flash.title}</h2>
+            <p>{c.flash.lead}</p>
+
+            <ul className="axr-lp__flash-traits">
+              {c.flash.traits.map((t) => (
+                <li key={t.title}>{t.title}</li>
+              ))}
+            </ul>
+
+            <LocaleLink href="/cursos-relampago" className="axr-lp__flash-all">
+              {c.flash.allCta} →
+            </LocaleLink>
+          </div>
+
+          <div className="axr-lp__flash-cards">
+            {FLASH_COURSES.map((f) => (
+              <FlashCard key={f.slug} course={f} locale={locale} copy={c.flash.card} tone="dark" />
+            ))}
+          </div>
         </div>
       </section>
 

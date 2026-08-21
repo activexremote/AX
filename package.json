@@ -9,12 +9,13 @@
     "tools:icons": "node scripts/build-tool-icons.mjs",
     "tools:logos": "node scripts/fetch-logos.mjs --write",
     "blog:art": "node scripts/build-blog-art.mjs && node scripts/attach-blog-art.mjs",
-    "stripe:setup": "node scripts/stripe-setup.mjs",
+    "stripe:setup": "node --experimental-strip-types --import ./scripts/alias-loader.mjs scripts/stripe-setup.mjs",
     "check:links": "node scripts/check-links.mjs",
     "blog:schedule": "node scripts/blog-schedule.mjs",
     "blog:links": "node scripts/blog-links.mjs",
     "glossary:art": "node --experimental-strip-types scripts/build-glossary-art.mjs",
-    "tools:payment": "node scripts/build-payment-icons.mjs"
+    "tools:payment": "node scripts/build-payment-icons.mjs",
+    "relampago:seed": "node --experimental-strip-types --import ./scripts/alias-loader.mjs scripts/build-relampago-seed.mjs"
   },
   "dependencies": {
     "@carbon/grid": "^11.56.0",
@@ -24,6 +25,7 @@
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.1",
     "next": "16.2.6",
+    "openai": "^7.5.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-markdown": "^10.1.0",

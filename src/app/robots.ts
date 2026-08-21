@@ -19,6 +19,10 @@ export default function robots(): MetadataRoute.Robots {
     "/admin",
     "/lecciones/",
     "/modulos/",
+    // Los materiales que se ganan terminando un curso relámpago. La página ya
+    // comprueba sesión y desbloqueo, así que un rastreador sólo recibiría una
+    // redirección al login: gastar presupuesto de rastreo en eso no aporta.
+    "/desbloqueos/",
     "/mi-progreso",
     "/mis-tareas",
     "/es/",

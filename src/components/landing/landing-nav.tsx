@@ -12,7 +12,17 @@ import { getLocale } from "@/lib/i18n/server";
 // Nav compartido por la landing y las páginas de curso. Los enlaces con "#"
 // apuntan a secciones que existen en todas ellas (#metodo, #faq, #solicitar).
 // Por debajo de 981px los enlaces se pliegan en <LandingMenu>.
-export async function LandingNav({ base = "" }: { base?: string } = {}) {
+/**
+ * @param base   Página contra la que resuelven las anclas (#faq, #metodo).
+ * @param ticker Cuenta atrás de la convocatoria. Se apaga en los cursos
+ *   relámpago: ahí no hay convocatoria —se empieza el día que se paga, y la
+ *   página lo dice tres veces—, así que una cuenta atrás a una fecha de
+ *   inicio arriba del todo contradice justo lo que se está vendiendo.
+ */
+export async function LandingNav({
+  base = "",
+  ticker: conTicker = true,
+}: { base?: string; ticker?: boolean } = {}) {
   const locale = await getLocale();
   const c = landingCopy[locale].nav;
   const ticker = landingCopy[locale].ticker;
@@ -21,7 +31,7 @@ export async function LandingNav({ base = "" }: { base?: string } = {}) {
 
   return (
     <>
-    <CohortTicker copy={landingCopy[locale].ticker} target={COHORT_START} />
+    {conTicker && <CohortTicker copy={landingCopy[locale].ticker} target={COHORT_START} />}
     <header className="axr-lp__nav">
       <div className="axr-lp__nav-inner">
         <LocaleLink href="/" className="axr-lp__brand" aria-label="ActiveXRemote">

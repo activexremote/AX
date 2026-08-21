@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type Stripe from "stripe";
 
 import { stripe } from "@/lib/stripe/client";
-import { OFFERS, isOfferKey } from "@/lib/stripe/catalog";
+import { ALL_OFFERS, OFFERS, isOfferKey } from "@/lib/stripe/catalog";
 import {
   ensureUser,
   getOrderBySession,
@@ -111,15 +111,29 @@ async function onCheckoutCompleted(session: Stripe.Checkout.Session) {
   // aquí sin arreglar nada. Con user_id, el reintento vuelve a entrar.
   if (order.user_id) return;
 
+  // En una compra directa el pedido nació sin email: aquí es donde llega, y
+  // sin él no hay cuenta que crear. Se prefiere el de Stripe al del pedido
+  // porque es el que la persona acaba de teclear en la pasarela — si el del
+  // formulario tenía una errata, el bueno es éste.
   const email = session.customer_details?.email ?? order.email;
-  const fullName = [order.first_name, order.last_name].filter(Boolean).join(" ") || email;
+  if (!email) {
+    // Que Stripe cobre y no mande correo no debería pasar nunca. Si pasa, se
+    // lanza para que Stripe reintente y quede el aviso, en vez de dar el
+    // pedido por atendido y dejar a alguien pagando sin acceso.
+    throw new Error(`pedido ${order.id}: pago cobrado sin ningún email al que dar acceso`);
+  }
+  const nombre = [order.first_name, order.last_name].filter(Boolean).join(" ");
+  const fullName = nombre || email;
 
-  const offer = isOfferKey(order.offer) ? OFFERS[order.offer] : null;
+  const offer = isOfferKey(order.offer) ? ALL_OFFERS[order.offer] : null;
   const isInstalments = offer?.mode === "subscription";
 
   const user = await ensureUser(email, fullName);
 
   await updateOrder(order.id, {
+    // El email se guarda en el pedido: en una compra directa es la única vez
+    // que pasa por aquí, y sin esto el histórico quedaría con la columna vacía.
+    email,
     status: isInstalments ? "en_plazos" : "pagado",
     amount_total: session.amount_total ?? order.amount_total,
     currency: session.currency ?? order.currency,
@@ -185,7 +199,7 @@ async function onSubscriptionEnded(subscription: Stripe.Subscription) {
   const order = await getOrderBySubscription(subscription.id);
   if (!order) return;
 
-  const offer = isOfferKey(order.offer) ? OFFERS[order.offer] : null;
+  const offer = isOfferKey(order.offer) ? ALL_OFFERS[order.offer] : null;
   const total = offer?.charges ?? 3;
 
   // Terminar los tres plazos también cierra la suscripción: eso es el final
@@ -214,17 +228,26 @@ async function onCheckoutExpired(session: Stripe.Checkout.Session) {
   const order = await getOrderBySession(session.id);
   if (!order || order.status !== "iniciado") return;
 
-  await updateOrder(order.id, { status: "expirado" });
+  // En una compra directa el email lo escribió en la pasarela, no aquí:
+  // Stripe rellena `customer_details` en cuanto lo teclea, aunque después
+  // abandone. Ése es el contacto que hay que recuperar, así que se guarda.
+  const email = session.customer_details?.email ?? order.email;
+  await updateOrder(order.id, { status: "expirado", ...(email ? { email } : {}) });
 
-  // Esto es el motivo de crear el pedido antes de pagar: aquí hay un email,
-  // un nombre y un curso concreto que le interesaba.
+  const nombre =
+    [order.first_name, order.last_name].filter(Boolean).join(" ") ||
+    session.customer_details?.name ||
+    "";
+
   await notifySafely({
     event: "order_abandoned",
     title: "Checkout abandonado",
     lines: [
-      `*Contacto:* ${[order.first_name, order.last_name].filter(Boolean).join(" ")} (${order.email})`,
+      `*Contacto:* ${[nombre, email].filter(Boolean).join(" ") || "sin datos"}`,
       `*Quería:* ${order.courses.join(" + ")} · ${order.offer}`,
-      "Dejó los datos y no completó el pago.",
+      email
+        ? "Dejó el correo y no completó el pago."
+        : "Abandonó antes de dejar ningún dato.",
     ],
   });
 }
@@ -238,7 +261,7 @@ async function onInvoicePaid(invoice: Stripe.Invoice) {
   if (!order) return;
 
   const paid = order.instalments_paid + 1;
-  const offer = isOfferKey(order.offer) ? OFFERS[order.offer] : null;
+  const offer = isOfferKey(order.offer) ? ALL_OFFERS[order.offer] : null;
   const total = offer?.charges ?? 3;
 
   // Un impago anterior pudo suspender el acceso: al ponerse al día se

@@ -171,6 +171,11 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // ⚠︎ Los vídeos también quedan fuera. Un mp4 se sirve por rangos (el
+  // navegador pide trozos con `Range` para poder buscar dentro del vídeo) y
+  // hacer pasar cada uno de esos trozos por la negociación de idioma y por
+  // `updateSession` es trabajo tirado en cada segundo de reproducción.
+  //
   // ⚠︎ "api/" queda fuera a propósito. Antes no lo estaba, y como /api no
   // figura entre las rutas públicas, updateSession redirigía cada llamada al
   // login: los tres crons de Vercel (recordatorios y los dos resúmenes)
@@ -178,6 +183,6 @@ export const config = {
   // habría corrido la misma suerte. Cada endpoint de /api se autentica solo:
   // los crons con CRON_SECRET y Stripe con la firma del webhook.
   matcher: [
-    "/((?!api/|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp3|wav)$).*)",
+    "/((?!api/|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp3|wav|mp4|webm|m4v)$).*)",
   ],
 };

@@ -496,3 +496,290 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+// ══════════════════════════════════════════════════════════
+//  Lecciones de curso relámpago
+//
+//  El campus es monocromo y de esquinas rectas (ver globals.scss) y esto no
+//  lo rompe: el único color es el naranja de los relámpago, y sólo donde hay
+//  que separar una cosa de otra —la misión y la nota—. Todo lo demás sigue
+//  siendo tinta sobre blanco.
+// ══════════════════════════════════════════════════════════
+
+.axr-lesson {
+  // El gancho: lo primero que se lee, antes del vídeo. Es la frase que el
+  // alumno ya se ha dicho a sí mismo.
+  &__hook {
+    margin: 0 0 1.5rem;
+    padding-left: 1rem;
+    border-left: 3px solid var(--axr-flash, #ff6a3d);
+    font-size: 1.0625rem;
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--axr-text-secondary);
+  }
+
+  &__video {
+    margin: 0 0 1.75rem;
+    background: var(--axr-text);
+
+    video {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+    }
+  }
+  &__video-demo {
+    margin: 0;
+    padding: 0.65rem 0.9rem;
+    background: #fff4ef;
+    border: 1px solid #ffd9cb;
+    border-top: 0;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: #8a3a1c;
+  }
+
+  &__video-soon {
+    margin: 0;
+    padding: 2rem 1.5rem;
+    color: #fff;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  &__outcome {
+    margin: 0 0 1.5rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--axr-border-ink);
+
+    p { margin: 0.4rem 0 0; font-weight: 600; line-height: 1.5; }
+  }
+
+  &__terms {
+    margin: 0 0 1.75rem;
+
+    ul {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin: 0.5rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    li {
+      padding: 0.2rem 0.55rem;
+      border: 1px solid var(--axr-border);
+      background: var(--axr-gray-10);
+      font-family: var(--axr-code);
+      font-size: 0.75rem;
+      color: var(--axr-text-secondary);
+    }
+  }
+
+  // La misión va en su propia rejilla, alineada con la columna de la lección:
+  // la barra lateral se repite vacía para que el texto no se desplace.
+  &--mission {
+    padding-top: 0;
+    .axr-lesson__sidebar { border-right-color: transparent; }
+    @media (max-width: 899px) { .axr-lesson__sidebar { display: none; } }
+  }
+}
+
+// ── La misión ─────────────────────────────────────────────
+.axr-mission {
+  --flash: #ff6a3d;
+  --flash-deep: #c93b12;
+  --flash-soft: #fff4ef;
+
+  margin: 0 0 3rem;
+  padding: 1.5rem;
+  border: 2px solid var(--axr-border-ink);
+  background: #fff;
+
+  &__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+
+    h2 { margin: 0; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; }
+  }
+  &__time {
+    font-family: var(--axr-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--axr-text-helper);
+  }
+
+  &__brief {
+    margin: 0 0 1.25rem;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+
+  &__specs {
+    margin: 0 0 1.5rem;
+    padding: 1rem 1.15rem;
+    background: var(--axr-gray-10);
+
+    dt {
+      font-family: var(--axr-mono);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--axr-text-helper);
+    }
+    dd {
+      margin: 0.2rem 0 0.85rem;
+      font-size: 0.9375rem;
+      line-height: 1.55;
+      &:last-child { margin-bottom: 0; }
+    }
+  }
+
+  // ── La corrección ──
+  &__review {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    margin: 0 0 1.5rem;
+    padding: 1.25rem;
+    border: 1px solid var(--axr-border-ink);
+    background: var(--flash-soft);
+
+    @media (min-width: 641px) { grid-template-columns: auto 1fr; align-items: start; }
+
+    // El color de la nota separa aprobado (80, el umbral del curso) de lo
+    // demás sin decir "suspenso": aquí se repite hasta que sale.
+    &[data-score="alto"] { --nota: #1a7f4b; }
+    &[data-score="medio"] { --nota: var(--flash-deep); }
+    &[data-score="bajo"] { --nota: #b4234c; }
+  }
+
+  &__score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 110px;
+    padding: 0.85rem 1.25rem;
+    border: 2px solid var(--nota, var(--flash-deep));
+    background: #fff;
+
+    strong {
+      font-family: var(--axr-display);
+      font-size: 2.75rem;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--nota, var(--flash-deep));
+    }
+    span {
+      font-family: var(--axr-mono);
+      font-size: 0.6875rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--axr-text-helper);
+    }
+  }
+
+  &__feedback {
+    display: grid;
+    gap: 0.9rem;
+
+    h3 {
+      margin: 0 0 0.3rem;
+      font-family: var(--axr-mono);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.25rem; }
+    li { font-size: 0.9375rem; line-height: 1.5; }
+
+    [data-kind="good"] h3 { color: #1a7f4b; }
+    [data-kind="watch"] h3 { color: #b4234c; }
+    [data-kind="improve"] h3 { color: var(--flash-deep); }
+  }
+
+  &__next {
+    margin: 0;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--axr-border);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  &__pending {
+    margin: 0 0 1.5rem;
+    padding: 1.15rem 1.25rem;
+    border: 1px dashed var(--axr-border-strong);
+    background: var(--axr-gray-10);
+
+    h3 { margin: 0 0 0.35rem; font-size: 1rem; font-weight: 700; }
+    p { margin: 0; font-size: 0.9375rem; line-height: 1.55; color: var(--axr-text-secondary); }
+    ul { margin: 0.6rem 0 0; padding-left: 1.1rem; font-size: 0.9375rem; }
+  }
+
+  &__done {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.85rem;
+  }
+  &__sent {
+    margin: 0;
+    font-family: var(--axr-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    color: var(--axr-text-helper);
+  }
+
+  // ── El formulario ──
+  &__form { display: grid; gap: 1.1rem; }
+
+  &__field {
+    display: grid;
+    gap: 0.35rem;
+
+    label { font-size: 0.9375rem; font-weight: 600; }
+    small { font-size: 0.8125rem; line-height: 1.45; color: var(--axr-text-helper); }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 0.7rem 0.85rem;
+      font: inherit;
+      // 16px exactos: por debajo, Safari en iOS hace zoom al enfocar.
+      font-size: 16px;
+      color: var(--axr-text);
+      background: #fff;
+      border: 1px solid var(--axr-border-strong);
+      border-radius: 0;
+
+      &:focus {
+        outline: none;
+        border-color: var(--axr-border-ink);
+        box-shadow: inset 0 0 0 1px var(--axr-border-ink);
+      }
+    }
+    textarea { resize: vertical; min-height: 8rem; line-height: 1.55; }
+    input { min-height: 46px; }
+  }
+
+  &__error {
+    margin: 0;
+    padding: 0.7rem 0.85rem;
+    font-size: 0.875rem;
+    color: #b4234c;
+    background: #fdeef2;
+    border: 1px solid #f6c9d5;
+  }
+}

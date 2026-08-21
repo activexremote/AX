@@ -6,6 +6,7 @@ import { getLearningPath, listModulesWithCounts } from "@/lib/data/modules";
 import { getProgressForCurrentUser } from "@/lib/data/progress";
 import { getCurrentProfile } from "@/lib/data/profile";
 import { CampusHeader } from "@/components/campus-header";
+import { FlashPanel } from "@/components/campus/flash-panel";
 import { getI18n } from "@/lib/i18n/server";
 import { SITE_URL } from "@/lib/seo";
 import "@/app/(campus)/home.scss";
@@ -81,6 +82,12 @@ export default async function CampusHome() {
             <p>{t.home.calloutDesc}</p>
           </div>
         </div>
+
+        {/* Los relámpago van antes que la rejilla de módulos del programa:
+            son cursos cerrados con su propio progreso y su propio final, y
+            mezclarlos con los módulos sueltos del programa largo hace que no
+            se entienda dónde empieza y acaba cada cosa. */}
+        <FlashPanel copy={t.unlocks} />
 
         <section className="axr-modules">
           <header className="axr-modules__header">

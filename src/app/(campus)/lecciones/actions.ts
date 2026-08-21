@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
 import { onLessonCompleted, onQuizResult } from "@/lib/slack/lesson-hooks";
+import { grantUnlocksIfComplete, saveReview, saveSubmission } from "@/lib/data/relampago";
+import { reviewSubmission } from "@/lib/relampago/review";
 
 export async function recordLessonVisit(lessonId: string) {
   const supabase = await createClient();
@@ -145,4 +147,90 @@ export async function addLessonTime(lessonId: string, seconds: number) {
     time_spent_s: (existing?.time_spent_s ?? 0) + seconds,
     last_visit: new Date().toISOString(),
   });
+}
+
+// ══════════════════════════════════════════════════════════
+//  Misiones de los cursos relámpago
+// ══════════════════════════════════════════════════════════
+
+/**
+ * Entrega (o rehace) la misión de una lección y la manda a corregir.
+ *
+ * La corrección va EN LÍNEA, no en segundo plano, y es a propósito: el alumno
+ * acaba de pulsar "entregar" y está mirando la pantalla. Diez segundos
+ * esperando una nota son diez segundos de tensión útil; un "ya te avisaremos"
+ * rompe el ciclo de la lección y casi nadie vuelve a mirarlo.
+ */
+export async function submitMission(input: {
+  lessonId: string;
+  evidenceUrl: string;
+  explanation: string;
+}): Promise<{ ok: true } | { error: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "no-auth" };
+
+  const explanation = input.explanation.trim();
+  const evidenceUrl = input.evidenceUrl.trim();
+  // Sin explicación no hay nada que corregir: la comprensión es el 25 % de la
+  // rúbrica y la autonomía otro 10 %, y las dos se juzgan justo aquí.
+  if (explanation.length < 40) return { error: "explicacion-corta" };
+  if (explanation.length > 6000) return { error: "explicacion-larga" };
+  if (evidenceUrl && !/^https?:\/\/\S+$/i.test(evidenceUrl)) return { error: "url-mala" };
+
+  // La lección tiene que existir, tener misión y ser visible para este alumno:
+  // el `select` pasa por RLS, así que si no tiene el curso comprado no la ve.
+  const { data: lesson } = await supabase
+    .from("lessons")
+    .select(
+      "id, title, outcome, terms, mission_md, mission_criterion, evidence_hint, module_id, content_md",
+    )
+    .eq("id", input.lessonId)
+    .maybeSingle();
+  if (!lesson) return { error: "no-acceso" };
+  if (!lesson.mission_md) return { error: "sin-mision" };
+
+  const submissionId = await saveSubmission({
+    userId: user.id,
+    lessonId: lesson.id,
+    evidenceUrl: evidenceUrl || null,
+    explanation,
+  });
+  if (!submissionId) return { error: "db" };
+
+  const review = await reviewSubmission(
+    {
+      lessonTitle: lesson.title,
+      outcome: lesson.outcome,
+      terms: lesson.terms,
+      mission: lesson.mission_md,
+      criterion: lesson.mission_criterion,
+      evidenceHint: lesson.evidence_hint,
+      // La lectura técnica, para que se corrija contra lo que enseña la
+      // lección y no contra lo que opine el modelo.
+      reading: lesson.content_md,
+    },
+    { evidenceUrl: evidenceUrl || null, explanation },
+  );
+  await saveReview(submissionId, review);
+
+  // Entregar la misión es el último paso de la lección: darla por completada
+  // aquí evita el paso administrativo de pulsar además "marcar como hecha".
+  await markLessonComplete(lesson.id);
+
+  // ¿Se acaba de cerrar el curso entero? Entonces se abren los desbloqueos.
+  const { data: mod } = await supabase
+    .from("modules")
+    .select("course")
+    .eq("id", lesson.module_id)
+    .maybeSingle();
+  if (mod?.course && mod.course !== "core") {
+    await grantUnlocksIfComplete(mod.course, user.id);
+  }
+
+  revalidatePath(`/lecciones/${lesson.id}`);
+  revalidatePath("/");
+  return { ok: true };
 }
