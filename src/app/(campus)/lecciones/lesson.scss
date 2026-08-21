@@ -270,19 +270,24 @@
   cursor: pointer;
   font-family: inherit;
 
+  // Verde de acción, el mismo que en la web pública. El campus sigue siendo
+  // monocromo: éste es el único color que tiene, y por eso funciona como
+  // señal —lo que se puede pulsar, y sólo eso, es verde—.
   &--primary {
-    background: #161616;
+    background: var(--axr-go);
     color: #ffffff;
-    border-color: #161616;
-    &:hover { background: #000000; }
+    border-color: var(--axr-go);
+    &:hover { background: var(--axr-go-deep); border-color: var(--axr-go-deep); }
     &:disabled { opacity: 0.4; cursor: not-allowed; }
   }
 
+  // Ya hecho: mismo verde pero apagado, para que se distinga de lo que
+  // todavía se puede pulsar sin salirse de la paleta.
   &--success {
-    background: #161616;
+    background: var(--axr-go-deep);
     color: #ffffff;
-    border-color: #161616;
-    &:hover { background: #000000; }
+    border-color: var(--axr-go-deep);
+    &:hover { background: var(--axr-go-deep); }
     &:disabled { opacity: 0.45; cursor: default; }
   }
 

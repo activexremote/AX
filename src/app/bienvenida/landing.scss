@@ -31,22 +31,32 @@
   --lp-muted: #8a86a0;
 
   // ── Verde de acción ───────────────────────────────────
-  // El color de TODOS los botones de conversión del sitio: comprar y pedir
-  // información. Muestreado del botón de referencia.
+  // El color de TODO lo pulsable del producto: comprar, pedir información,
+  // enviar un formulario, entrar. Landing, checkout, campus y panel.
   //
   // Uno solo para todo, y a propósito. El morado es la marca y el naranja son
   // los relámpago, pero un botón no está ahí para decir de qué producto es:
-  // está para que se pulse. Con un único color de acción, cualquiera que haya
-  // pulsado uno ya sabe dónde están todos los demás.
+  // está para que se pulse. Con un único color de acción, quien ha pulsado
+  // uno ya sabe dónde están los demás.
   //
-  // ⚠︎ Contraste con blanco: 3,63:1. Por debajo del 4,5 que pide la WCAG para
-  // texto de 14 px —el del botón—, aunque por encima del naranja que había
-  // antes (2,85). El estado de foco/hover baja a --lp-go-deep, que sí pasa
-  // (4,73:1), así que quien navega con teclado siempre ve el estado bueno.
-  --lp-go: #5a9532;
-  --lp-go-deep: #4d802b;
-  /** Componentes del halo, para el zumbido (ver --btn-glow). */
-  --lp-go-rgb: 90, 149, 50;
+  // ── Por qué ESTE verde ────────────────────────────────
+  // El de la referencia (#5A9532) es un verde hierba amarillento: junto al
+  // morado y al magenta de la marca se apaga y tira a caqui, y encima se
+  // queda en 3,63:1 con texto blanco, por debajo de AA.
+  //
+  // Éste mantiene el gesto —verde de «adelante», inconfundible— pero con el
+  // tono girado hacia el 140°, que es el punto donde deja de pelearse con el
+  // morado y empieza a hacer pareja con el magenta (son casi complementarios).
+  //
+  // Y pasa AA: 4,71:1 con blanco, el mismo nivel que el magenta de la marca.
+  // Es el verde más vivo que existe cumpliendo esa condición; cualquier cosa
+  // más clara deja de ser legible en un botón de 14 px.
+  // Apuntan al token global (globals.scss) y NO repiten el hex: el mismo
+  // verde escrito en dos sitios es cómo acaban siendo dos verdes distintos.
+  --lp-go: var(--axr-go);
+  --lp-go-deep: var(--axr-go-deep);
+  /** Componentes del halo del zumbido (ver --btn-glow). */
+  --lp-go-rgb: var(--axr-go-rgb);
 
   --lp-accent: #5b4bf5;
   --lp-accent-strong: #4632e6;
@@ -572,9 +582,9 @@
   --lp-muted: #8a86a0;
   --lp-accent: #5b4bf5;
   --lp-accent-strong: #4632e6;
-  --lp-go: #5a9532;
-  --lp-go-deep: #4d802b;
-  --lp-go-rgb: 90, 149, 50;
+  --lp-go: var(--axr-go);
+  --lp-go-deep: var(--axr-go-deep);
+  --lp-go-rgb: var(--axr-go-rgb);
   --lp-soft: #f4f3fb;
   --lp-border: #e7e4f5;
 
@@ -701,9 +711,9 @@
   --lp-accent: #5b4bf5;
   --lp-accent-strong: #4632e6;
   --lp-border: #e7e4f5;
-  --lp-go: #5a9532;
-  --lp-go-deep: #4d802b;
-  --lp-go-rgb: 90, 149, 50;
+  --lp-go: var(--axr-go);
+  --lp-go-deep: var(--axr-go-deep);
+  --lp-go-rgb: var(--axr-go-rgb);
 
   position: fixed;
   left: 0;
@@ -1348,18 +1358,18 @@
 @keyframes axr-btn-zumbido {
   0%, 88%, 100% {
     transform: translate3d(0, 0, 0) rotate(0deg);
-    box-shadow: 0 10px 26px rgba(var(--btn-glow, 90, 149, 50), 0.36);
+    box-shadow: 0 10px 26px rgba(var(--btn-glow, 3, 134, 50), 0.36);
   }
   89% { transform: translate3d(-1px, 0, 0) rotate(-0.25deg); }
   91% {
     transform: translate3d(1px, 0, 0) rotate(0.25deg);
-    box-shadow: 0 14px 34px rgba(var(--btn-glow, 90, 149, 50), 0.52);
+    box-shadow: 0 14px 34px rgba(var(--btn-glow, 3, 134, 50), 0.52);
   }
   93% { transform: translate3d(-1px, 0, 0) rotate(-0.25deg); }
   95% { transform: translate3d(1px, 0, 0) rotate(0.25deg); }
   97% {
     transform: translate3d(0, 0, 0) rotate(0deg);
-    box-shadow: 0 10px 26px rgba(var(--btn-glow, 90, 149, 50), 0.36);
+    box-shadow: 0 10px 26px rgba(var(--btn-glow, 3, 134, 50), 0.36);
   }
 }
 
@@ -3103,13 +3113,16 @@
     font-size: 0.9375rem;
     font-weight: 600;
     color: #fff;
-    background: var(--lp-accent);
+    // El verde de acción, como todo lo pulsable. Este botón tiene clase
+    // propia (`axr-lead__submit`) en vez de `axr-lp__btn`, así que se quedaba
+    // morado cuando el resto ya era verde.
+    background: var(--lp-go);
     border: 0;
     border-radius: 999px;
     cursor: pointer;
     transition: background 0.15s ease, transform 0.15s ease;
 
-    &:hover:not(:disabled) { background: var(--lp-accent-strong); transform: translateY(-1px); }
+    &:hover:not(:disabled) { background: var(--lp-go-deep); transform: translateY(-1px); }
     &:disabled { opacity: 0.6; cursor: progress; }
   }
 

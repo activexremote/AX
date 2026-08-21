@@ -241,7 +241,8 @@
     width: 100%;
     margin-top: 0.5rem;
     padding: 0.9375rem 1rem;
-    background: #161616;
+    // Verde de acción: entrar es la acción de esta pantalla.
+    background: var(--axr-go);
     color: #ffffff;
     border: 0;
     font-size: 0.9375rem;
@@ -258,7 +259,7 @@
       font-family: var(--axr-mono);
     }
 
-    &:hover { background: #000000; }
+    &:hover { background: var(--axr-go-deep); }
     &:disabled { background: #8d8d8d; cursor: not-allowed; }
   }
 

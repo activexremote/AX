@@ -49,6 +49,23 @@
   --axr-border-strong: #c6c6c6;
   --axr-border-ink: #161616;
 
+  /* ── Verde de acción ──────────────────────────────────────
+     El color de TODO lo pulsable del producto: comprar, pedir información,
+     enviar un formulario, entrar, marcar como completada.
+
+     Vive en :root y no en la landing porque lo usan las dos mitades del
+     producto —la web pública y el campus— y tener el mismo verde escrito en
+     dos sitios es cómo acaban siendo dos verdes distintos.
+
+     El campus sigue siendo monocromo: éste es el ÚNICO color que tiene, y
+     justo por eso funciona como señal. Lo que se puede pulsar, y sólo eso,
+     es verde. Lo peligroso sigue en rojo y lo secundario en blanco y negro.
+
+     4,71:1 con texto blanco: pasa AA incluso a 14 px. */
+  --axr-go: #038632;
+  --axr-go-deep: #06702b;
+  --axr-go-rgb: 3, 134, 50;
+
   /* Marca propia: esquinas rectas en todo el campus */
   --axr-radius-sm: 0px;
   --axr-radius-md: 0px;
