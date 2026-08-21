@@ -1,4 +1,12 @@
-import { PARTNERS, partnerCopy, partnerLogo, type Partner } from "@/app/bienvenida/partners";
+import {
+  PARTNERS,
+  familyColor,
+  familyInk,
+  partnerCopy,
+  partnerLogo,
+  type Partner,
+} from "@/app/bienvenida/partners";
+import { ToolTooltip } from "@/components/landing/tool-tooltip";
 import { getLocale } from "@/lib/i18n/server";
 
 // ══════════════════════════════════════════════════════════
@@ -51,29 +59,77 @@ function PartnerMark({ p, size }: { p: Partner; size: number }) {
   );
 }
 
-/** Tira del héroe: sólo las marcas. */
-export async function PartnerStrip({ tone = "dark" }: { tone?: "dark" | "light" }) {
+/**
+ * Tira del héroe.
+ *
+ * Rejilla fija, sin movimiento y con CINCO marcas, no las once.
+ *
+ * Once obligaban a encogerlas hasta que no se leía ni el nombre ni la
+ * categoría, y una fila de logotipos ilegibles no genera confianza: genera
+ * ruido. Con cinco cabe el logo grande, el nombre y su categoría, que es lo
+ * que hace que se entienda qué son. La lista completa está más abajo.
+ *
+ * Los logos van a UN SOLO COLOR. Es la versión de una tinta que casi todas
+ * las guías de marca contemplan, y es lo que hace que once logotipos de once
+ * empresas distintas se lean como una fila y no como un muestrario. El truco
+ * es `brightness(0) invert(1)`: funciona igual sobre SVG y PNG, así que no
+ * hay que preparar una versión monocroma de cada archivo.
+ */
+export async function PartnerStrip({
+  tone = "dark",
+  full = false,
+}: {
+  tone?: "dark" | "light";
+  /**
+   * A todo el ancho del héroe en vez de dentro de la columna del texto.
+   *
+   * Cuál conviene depende de qué columna sea la más alta, y no es la misma en
+   * las dos plantillas:
+   *
+   *  · En la home manda el formulario (518 px) y la columna del texto va
+   *    holgada, así que la tira cabe dentro sin que el héroe crezca.
+   *  · En una página de curso manda el texto (624 px), así que meterla ahí le
+   *    suma 113 px. A todo el ancho entra en una sola fila —66 px— y encima
+   *    deja de empujar la columna alta.
+   */
+  full?: boolean;
+}) {
   const locale = await getLocale();
   const c = partnerCopy[locale];
 
   return (
-    <div className="axr-pstrip" data-tone={tone}>
+    <div className="axr-pstrip" data-tone={tone} data-full={full ? "" : undefined}>
       <span className="axr-pstrip__label">{c.heroLabel}</span>
-      {/* La lista va dos veces: la cinta se mueve la mitad exacta y al
-          reiniciar cae en un fotograma idéntico, sin salto. Once marcas no
-          caben en una fila de móvil sin encogerlas hasta lo ilegible. */}
-      <div className="axr-pstrip__rail">
-        <div className="axr-pstrip__track">
-          {PARTNERS.map((p) => (
-            <span key={p.key} className="axr-pstrip__item"><PartnerMark p={p} size={22} /></span>
-          ))}
-          {PARTNERS.map((p) => (
-            <span key={`d-${p.key}`} className="axr-pstrip__item" data-dup aria-hidden>
-              <PartnerMark p={p} size={22} />
-            </span>
-          ))}
-        </div>
-      </div>
+
+      <ul className="axr-pstrip__grid">
+        {PARTNERS.filter((p) => p.hero).map((p) => {
+          const item = c.items[p.key];
+          return (
+            <li key={p.key}>
+              <span
+                className="axr-pstrip__item"
+                style={{
+                  ["--fam" as string]: familyColor(p.key),
+                  ["--fam-ink" as string]: familyInk(p.key),
+                }}
+                data-name={p.name}
+                data-desc={item?.desc ?? ""}
+                tabIndex={0}
+                role="button"
+                aria-label={`${p.name}. ${item?.area}. ${item?.desc ?? ""}`}
+              >
+                <span className="axr-pstrip__mark"><PartnerMark p={p} size={26} /></span>
+                <span className="axr-pstrip__text">
+                  <span className="axr-pstrip__name">{p.name}</span>
+                  <span className="axr-pstrip__tag">{item?.area}</span>
+                </span>
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+
+      <ToolTooltip scope=".axr-pstrip" />
     </div>
   );
 }

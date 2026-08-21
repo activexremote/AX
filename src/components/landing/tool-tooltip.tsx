@@ -16,16 +16,20 @@ type Bubble = {
 const W = 248;
 const GAP = 10;
 
-// La nube de la sección de herramientas. Es la única parte con JavaScript:
+// La nube que se abre al pasar por encima. Es la única parte con JavaScript:
 // una nube en CSS puro se sale de pantalla en las fichas de los extremos, y
 // .axr-lp recorta el desbordamiento horizontal, así que se quedaría invisible.
 // Se posiciona en el viewport y se recorta a los bordes.
-export function ToolTooltip() {
+//
+// `scope` es el selector del bloque al que se engancha: la sección de
+// herramientas o la tira de partners del héroe. Se delega en un ancestro y no
+// se ata un listener por ficha, así que da igual que sean 11 o 75.
+export function ToolTooltip({ scope = ".axr-tools" }: { scope?: string } = {}) {
   const anchorRef = useRef<HTMLSpanElement>(null);
   const [bubble, setBubble] = useState<Bubble | null>(null);
 
   useEffect(() => {
-    const section = anchorRef.current?.closest(".axr-tools");
+    const section = anchorRef.current?.closest(scope);
     if (!section) return;
 
     const open = (el: HTMLElement) => {
@@ -82,7 +86,7 @@ export function ToolTooltip() {
       window.removeEventListener("scroll", close);
       window.removeEventListener("resize", close);
     };
-  }, []);
+  }, [scope]);
 
   return (
     <span ref={anchorRef} className="axr-tools__anchor" aria-hidden>

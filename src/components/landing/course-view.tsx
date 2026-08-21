@@ -32,7 +32,7 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
   const model = modelCopy[locale];
 
   return (
-    <main className="axr-lp axr-cp" data-course={slug} data-snap>
+    <main className="axr-lp axr-cp" data-course={slug}>
       <LandingNav />
 
       {/* ── Hero ────────────────────────────────────── */}
@@ -40,10 +40,6 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
         <HeroBackdrop />
 
         <div className="axr-lp__hero-inner">
-          <div className="axr-lp__hero-brand">
-            <BrandMark size={26} className="axr-lp__hero-mark" />
-            <span className="axr-lp__hero-brand-name">{c.hero.eyebrow}</span>
-          </div>
 
           <h1 className="axr-cp__title">{c.hero.title}</h1>
           <p className="axr-cp__subtitle">{c.hero.subtitle}</p>
@@ -71,7 +67,7 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
 
           <RatingBadges items={landingCopy[locale].ratings} />
 
-          <PartnerStrip tone="dark" />
+
         </div>
 
         {/* Formulario de captación — primer punto de conversión de la página. */}
@@ -80,6 +76,10 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
           <h2 className="axr-lp__hero-form-title">{c.hero.formTitle}</h2>
           <LeadForm copy={form} variant="hero" preselect={[slug]} />
         </div>
+      
+        {/* A todo el ancho: aquí la columna alta es la del texto, así que
+            meter la tira dentro le sumaría 113 px. Ver PartnerStrip. */}
+        <PartnerStrip tone="dark" full />
       </section>
 
       {/* ── Bloque firma del curso ──────────────────── */}

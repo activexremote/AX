@@ -55,7 +55,15 @@
   // formulario se queda en ~490 px, que sigue siendo cómodo para dos campos
   // por fila.
   @media (min-width: 981px) {
-    .axr-lp__hero { grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr); }
+    .axr-lp__hero {
+      grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+      // Tercera fila a todo el ancho para la tira de partners (ver
+      // PartnerStrip): aquí la columna alta es la del texto.
+      grid-template-areas:
+        "inner form"
+        "partners partners";
+    }
+    .axr-pstrip[data-full] { grid-area: partners; }
     .axr-lp__hero-inner,
     .axr-lp__hero-proof { max-width: none; }
     .axr-lp__hero-lead { max-width: 60ch; }

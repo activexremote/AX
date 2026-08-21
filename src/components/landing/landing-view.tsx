@@ -90,7 +90,7 @@ export async function LandingView() {
 
 
   return (
-    <main className="axr-lp" data-snap>
+    <main className="axr-lp">
       <LandingNav />
 
       {/* ── Hero ────────────────────────────────────── */}
@@ -102,11 +102,6 @@ export async function LandingView() {
         <HeroBackdrop />
 
         <div className="axr-lp__hero-inner">
-          <div className="axr-lp__hero-brand">
-            <BrandMark size={30} className="axr-lp__hero-mark" />
-            <span className="axr-lp__hero-brand-name">{c.hero.brand}</span>
-            <span className="axr-lp__hero-brand-sub">{c.hero.tagline}</span>
-          </div>
 
           <h1 className="axr-lp__hero-title">
             <span className="axr-lp__hero-q">{c.hero.titleTop}</span>
@@ -131,6 +126,11 @@ export async function LandingView() {
               ))}
             </div>
           </div>
+
+          {/* Dentro de la columna del texto y no a todo el ancho del héroe:
+              la columna del formulario es más alta, así que aquí hay hueco
+              de sobra y la tira no le suma ni un píxel al alto del héroe. */}
+          <PartnerStrip tone="dark" />
         </div>
 
         {/* Formulario de captación — primer punto de conversión de la página. */}
@@ -152,7 +152,6 @@ export async function LandingView() {
 
           <RatingBadges items={c.ratings} />
 
-          <PartnerStrip tone="dark" />
         </div>
       </section>
 

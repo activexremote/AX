@@ -97,28 +97,13 @@
   // El nav pegajoso tapaba el inicio de la sección al saltar a un ancla.
   [id] { scroll-margin-top: calc(var(--lp-nav-h) + 0.75rem); }
 
-  // ── Salto de sección en escritorio ──────────────────────
-  //
-  // El scroll se engancha al principio de cada sección, así la página avanza
-  // de bloque en bloque en vez de dejar medio titular arriba y medio
-  // formulario abajo.
-  //
-  // ⚠︎ `proximity` y NUNCA `mandatory`, y no es una preferencia estética.
-  // Con `mandatory` una sección más alta que la ventana se convierte en una
-  // trampa: el navegador te devuelve a su principio en cuanto sueltas y el
-  // final de esa sección deja de ser alcanzable. Y aquí hay secciones de dos
-  // y tres pantallas —«cómo funciona» mide 2.084 px en un MacBook Pro—, así
-  // que sería contenido perdido. Con `proximity` el enganche sólo ocurre
-  // cuando ya has parado cerca de un principio de sección: se nota el orden y
-  // no se pierde nada.
-  //
-  // Va en `:root` porque quien scrollea es el documento, no `.axr-lp`; y con
-  // `:has([data-snap])` para que sólo lo hagan las landings. El blog, el
-  // glosario y las legales comparten esta hoja y son páginas de leer seguido:
-  // engancharlas por secciones sería pelearse con el lector.
-  @media (min-width: 981px) {
-    &[data-snap] > section { scroll-snap-align: start; scroll-margin-top: var(--lp-nav-h); }
-  }
+  // ⚠︎ Aquí hubo `scroll-snap`. Se ha quitado, y conviene que quede escrito
+  // para que no vuelva: aunque fuera `proximity` —el modo suave— el navegador
+  // reposiciona el scroll al terminar cada gesto, y con secciones más altas
+  // que la ventana eso se siente como un tirón hacia arriba a mitad de
+  // recorrido. En una página larga y de lectura continua, un scroll que
+  // corrige por su cuenta se percibe como que la página va mal, no como que
+  // está ordenada.
 
   // Sólo con teclado: el toque y el clic no dejan el anillo puesto.
   a:focus-visible,
@@ -836,7 +821,7 @@
 
   @media (min-width: 981px) {
     padding-top: calc(var(--lp-nav-h) + 4px + clamp(0.55rem, 2.6vh, 3rem));
-    padding-bottom: clamp(1.5rem, 4.2vh, 4.5rem);
+    padding-bottom: clamp(1.15rem, 3.15vh, 4.5rem);
     border-radius: 0 0 40px 40px;
     grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
     grid-template-areas:
@@ -866,33 +851,9 @@
     @media (min-width: 981px) { margin: 0; }
   }
 
-  &-brand {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 0.4rem 0.55rem;
-    margin-bottom: clamp(0.45rem, 1.8vh, 1.25rem);
-    @media (min-width: 981px) { justify-content: flex-start; margin-bottom: clamp(0.7rem, 2vh, 1.5rem); }
-  }
-  &-brand-name {
-    font-family: var(--axr-display);
-    font-size: 0.9rem;
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: #fff;
-    @media (min-width: 481px) { font-size: 1.05rem; letter-spacing: 0.22em; }
-  }
-  &-brand-sub {
-    flex-basis: 100%;
-    font-family: var(--axr-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.7);
-    @media (min-width: 481px) { letter-spacing: 0.22em; }
-  }
+  // ⚠︎ `&-brand*` se quitó del héroe: el lockup ΔX ACTIVEXREMOTE ya estaba
+  // en la barra de navegación, cuatro centímetros más arriba, y repetirlo
+  // gastaba 48 px del alto del héroe para no decir nada nuevo.
 
   // Tipografía fluida: una sola curva en vez de tres saltos por breakpoint.
   &-title {
@@ -998,16 +959,6 @@
   }
 }
 
-
-// El tipo de enganche va en el elemento que scrollea —el documento— y sólo en
-// las páginas que llevan una landing. Ver el comentario largo en `.axr-lp`.
-@media (min-width: 981px) {
-  :root:has(.axr-lp[data-snap]) { scroll-snap-type: y proximity; }
-}
-// En modo reposo no se mueve nada por su cuenta, tampoco el scroll.
-@media (prefers-reduced-motion: reduce) {
-  :root:has(.axr-lp[data-snap]) { scroll-snap-type: none; }
-}
 
 // ── Textura y luz del héroe ─────────────────────────────
 // ── Selector de camino (dentro del héroe) ───────────────
@@ -4406,69 +4357,160 @@ $axr-tool-cats:
 }
 
 // ── La tira del héroe ──
+//
+// Cinco marcas, no once. Con once había que encogerlas hasta que no se leía
+// ni el nombre ni la categoría, y una fila de logotipos ilegibles no genera
+// confianza: genera ruido.
+//
+// ── Por qué pastillas blancas ────────────────────────────
+// Antes iban a una tinta —todos en blanco— directamente sobre el mesh. Sobre
+// un fondo que va del morado al magenta y al naranja, un logotipo blanco de
+// 24 px no se lee: no tiene un fondo estable contra el que recortarse, y a
+// ese tamaño el trazo fino de un wordmark desaparece.
+//
+// Cada marca va sobre su propia pastilla blanca y en SUS COLORES. Es lo que
+// hacen todas las páginas serias con una fila de partners, y resuelve tres
+// cosas de golpe: el logotipo se reconoce, el fondo deja de importar, y el
+// blanco de las pastillas ordena la fila sin necesidad de recolorear nada.
 .axr-pstrip {
-  margin-top: clamp(0.7rem, 2vh, 1.5rem);
-  padding-top: clamp(0.6rem, 1.7vh, 1.25rem);
-  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  margin-top: clamp(0.5rem, 1.6vh, 1.2rem);
+  padding-top: clamp(0.5rem, 1.5vh, 1rem);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 
   &[data-tone="light"] { border-top-color: var(--lp-border); }
 
   &__label {
     display: block;
-    margin-bottom: 0.6rem;
+    margin-bottom: clamp(0.35rem, 1vh, 0.6rem);
     font-family: var(--axr-mono);
     font-size: 0.6875rem;
     font-weight: 700;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.6);
 
     [data-tone="light"] & { color: var(--lp-muted); }
   }
 
-  // Once marcas no caben en una fila de móvil sin encogerlas hasta lo
-  // ilegible, así que la fila se mueve. La máscara desvanece los extremos
-  // para que no parezca cortada contra el borde.
-  &__rail {
-    overflow: hidden;
-    mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+  // Fila que envuelve, no rejilla: cada pastilla mide lo que mide su nombre,
+  // que es como se reparte una fila de marcas sin dejar huecos raros.
+  &__grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
-  &__track {
+
+  &__item {
     display: flex;
     align-items: center;
-    gap: 2.25rem;
-    width: max-content;
-    animation: axr-pstrip-run 46s linear infinite;
+    gap: 0.5rem;
+    padding: 0.34rem 0.7rem 0.34rem 0.4rem;
+    border-radius: 999px;
+    background: #fff;
+    // El borde en el color de la familia: el único punto de color de la
+    // pastilla, y el que la relaciona con su categoría.
+    border: 1px solid var(--lp-border);
+    box-shadow: 0 4px 14px rgba(11, 8, 24, 0.16);
+    cursor: default;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+
+    &:hover,
+    &:focus-visible {
+      border-color: var(--fam);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 22px rgba(11, 8, 24, 0.24);
+    }
+    &:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   }
-  &__item {
+
+  // El logo, en sus colores. Ancho fijo y alto libre: así los cinco quedan
+  // alineados por su eje aunque uno sea un monograma cuadrado (Revolut) y
+  // otro un wordmark cinco veces más ancho (SafetyWing).
+  &__mark {
+    flex: none;
     display: grid;
     place-items: center;
-    height: 26px;
-    // Los logos de marca sobre el mesh oscuro necesitan una pastilla clara:
-    // muchos son de tinta y sobre morado no se leerían.
-    padding: 0.3rem 0.55rem;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.94);
-    color: var(--lp-ink);
+    width: 30px;
+    height: 22px;
 
-    [data-tone="light"] & { background: transparent; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .axr-pstrip__rail { mask-image: none; }
-    .axr-pstrip__track {
-      animation: none;
-      flex-wrap: wrap;
-      gap: 0.6rem 1.25rem;
+    .axr-pmark {
+      max-width: 30px;
+      max-height: 20px;
       width: auto;
+      height: auto;
     }
-    [data-dup] { display: none; }
+    // Sobre la pastilla blanca sí hace falta el chip oscuro de los logos
+    // claros: es el caso para el que se hizo.
+    .axr-pmark--text {
+      font-size: 0.5625rem !important;
+      line-height: 1.05;
+      text-align: center;
+      color: var(--lp-ink);
+    }
   }
-}
 
-@keyframes axr-pstrip-run {
-  from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(-50%, 0, 0); }
+  &__text { min-width: 0; line-height: 1.15; }
+  &__name {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--lp-ink);
+    white-space: nowrap;
+  }
+
+  // La categoría, con el color de su familia. Cuatro colores y no once:
+  // once colores distintos no son un código, son ruido.
+  &__tag {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-family: var(--axr-mono);
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--fam-ink);
+    white-space: nowrap;
+
+    &::before {
+      content: "";
+      flex: none;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--fam-ink);
+    }
+  }
+
+  .axr-tools__anchor { position: static; }
+
+  // ── Pantallas bajas ──
+  // En un portátil de 720 px de alto cada renglón del héroe cuenta. La
+  // etiqueta pasa a la misma línea que las pastillas —dice lo mismo y ahorra
+  // una fila entera— y las pastillas se ciñen. Por debajo de 640 px de ancho
+  // no se aplica: ahí la etiqueta y cinco pastillas en una línea no caben.
+  //
+  // ⚠︎ Sólo la variante a todo el ancho. Dentro de la columna del texto (580
+  // px) la etiqueta se come 200 px de esa línea y las pastillas caen en MÁS
+  // filas de las que había: probado, el héroe de la home pasaba de 659 a 765.
+  @media (max-height: 800px) and (min-width: 641px) {
+    &[data-full] {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.9rem;
+
+    .axr-pstrip__label { margin-bottom: 0; }
+    .axr-pstrip__grid { flex: 1; }
+    .axr-pstrip__item { padding: 0.28rem 0.6rem 0.28rem 0.34rem; }
+    .axr-pstrip__mark { width: 26px; height: 19px; }
+    .axr-pstrip__mark .axr-pmark { max-width: 26px; max-height: 17px; }
+    }
+  }
 }
 
 // ── La sección ──
