@@ -108,6 +108,7 @@
     margin-bottom: 1.5rem;
 
     .axr-lp__btn--solid {
+      --btn-glow: 255, 106, 61;
       background: var(--fl);
       &:hover { background: var(--fl-deep); }
     }
@@ -823,7 +824,15 @@
     border-radius: var(--lp-radius-sm);
   }
 
-  .axr-lp__btn--solid {
+  // Todos los botones de conversión de estas páginas van en naranja…
+  //
+  // …menos los del nav y el pie: ésos son el CTA del PROGRAMA («Solicita
+  // información»), llevan a otro producto y tienen que seguir siendo morados
+  // como en el resto del sitio. Sin esta exclusión el de la barra salía
+  // naranja y el del pie morado, los dos con el mismo texto y el mismo
+  // destino.
+  .axr-lp__btn--solid:not(.axr-lp__nav *):not(.axr-lp__footer *) {
+    --btn-glow: 255, 106, 61;
     background: var(--fl);
     &:hover { background: var(--fl-deep); }
   }
@@ -1005,7 +1014,12 @@
     align-items: center;
     gap: 0.85rem 1.25rem;
 
-    .axr-lp__btn--solid { background: var(--fl); &:hover { background: var(--fl-deep); } }
+    .axr-lp__btn--solid {
+      // El halo del latido, en el naranja del botón (ver --btn-glow).
+      --btn-glow: 255, 106, 61;
+      background: var(--fl);
+      &:hover { background: var(--fl-deep); }
+    }
   }
   &__detail {
     font-size: 0.9375rem;
@@ -1251,4 +1265,103 @@
     text-align: center;
   }
   strong { color: var(--lp-ink); }
+}
+
+// ══════════════════════════════════════════════════════════
+//  CTA repartidos y cierre
+//
+//  La página no tenía ni un botón hasta el destacado: quien llegaba
+//  convencido desde un anuncio no tenía dónde pulsar. Ahora hay uno en la
+//  cabecera, uno tras el ciclo, uno tras el comparador y el cierre.
+//
+//  No es martilleo: cada uno aparece justo después del bloque que resuelve
+//  una duda concreta, que es cuando alguien decide.
+// ══════════════════════════════════════════════════════════
+.axr-flash {
+  &__hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1.5rem 0 0;
+
+    .axr-lp__btn--solid {
+      // El halo del latido, en el naranja del botón (ver --btn-glow).
+      --btn-glow: 255, 106, 61;
+      background: var(--fl);
+      &:hover { background: var(--fl-deep); }
+    }
+  }
+
+  &__section-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
+    margin-top: var(--lp-head-gap);
+    text-align: center;
+
+    .axr-lp__btn--solid {
+      // El halo del latido, en el naranja del botón (ver --btn-glow).
+      --btn-glow: 255, 106, 61;
+      background: var(--fl);
+      &:hover { background: var(--fl-deep); }
+    }
+  }
+  &__cta-alt {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--lp-accent);
+    text-decoration: none;
+  }
+
+  // ── El cierre ──
+  // Fondo de tinta y naranja, el mismo registro que la banda de la home: son
+  // el mismo producto y tienen que reconocerse como tal.
+  &__final {
+    padding: calc(var(--lp-section) * 1.2) var(--lp-pad-r) calc(var(--lp-section) * 1.2) var(--lp-pad-l);
+    background: var(--lp-ink);
+    color: #fff;
+  }
+  &__final-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    text-align: center;
+
+    .axr-lp__eyebrow { color: var(--fl); }
+    h2 {
+      margin: 0.35rem 0 0.6rem;
+      font-size: clamp(1.75rem, 6.4vw, 2.6rem);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.035em;
+      text-wrap: balance;
+    }
+    p {
+      margin: 0 0 1.5rem;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.8);
+      text-wrap: pretty;
+    }
+  }
+  &__final-cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.85rem;
+
+    .axr-lp__btn--solid {
+      // El halo del latido, en el naranja del botón (ver --btn-glow).
+      --btn-glow: 255, 106, 61;
+      background: var(--fl);
+      &:hover { background: var(--fl-deep); }
+    }
+  }
+  &__final-note {
+    margin: 1.25rem 0 0 !important;
+    font-size: 0.8125rem !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
 }

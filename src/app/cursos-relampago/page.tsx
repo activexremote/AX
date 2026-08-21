@@ -74,6 +74,26 @@ export default async function FlashIndexPage() {
           <p className="axr-lp__hero-lead">{c.lead}</p>
           {c.languageNote && <p className="axr-flash__lang">{c.languageNote}</p>}
 
+          {/* La cabecera tenía cuatro cajas de texto y ni un botón: quien
+              llegaba convencido no tenía dónde pulsar y se iba a buscarlo. */}
+          <div className="axr-flash__hero-cta">
+            {ready && (
+              <FlashBuyButton
+                offerKey={`relampago-${destacado.key}`}
+                label={`${c.cta.heroBuy} · ${formatAmount(destacado.priceCents, locale)}`}
+                sending={c.card.sending}
+                errorLabel={c.card.buyError}
+                className="axr-lp__btn axr-lp__btn--solid axr-lp__btn--lg"
+              />
+            )}
+            <LocaleLink
+              href={`/cursos-relampago/${destacado.slug}`}
+              className="axr-lp__btn axr-lp__btn--invert"
+            >
+              {c.cta.heroSee} <span aria-hidden>→</span>
+            </LocaleLink>
+          </div>
+
           <ul className="axr-flash__traits">
             {c.traits.map((t, i) => (
               <li key={t.title}>
@@ -189,6 +209,21 @@ export default async function FlashIndexPage() {
             ))}
           </ol>
         </div>
+
+        <div className="axr-flash__section-cta">
+          {ready ? (
+            <FlashBuyButton
+              offerKey={`relampago-${destacado.key}`}
+              label={`${c.cta.afterLoop} · ${formatAmount(destacado.priceCents, locale)}`}
+              sending={c.card.sending}
+              errorLabel={c.card.buyError}
+              className="axr-lp__btn axr-lp__btn--solid axr-lp__btn--lg"
+            />
+          ) : null}
+          <LocaleLink href={`/cursos-relampago/${destacado.slug}#temario`} className="axr-flash__cta-alt">
+            {c.cta.orSee} →
+          </LocaleLink>
+        </div>
       </section>
 
       {/* ── Relámpago o programa ── */}
@@ -217,6 +252,56 @@ export default async function FlashIndexPage() {
               {locale === "en" ? "See the programme" : "Ver el programa"} →
             </LocaleLink>
           </div>
+        </div>
+
+        <div className="axr-flash__section-cta">
+          {ready && (
+            <FlashBuyButton
+              offerKey={`relampago-${destacado.key}`}
+              label={`${c.cta.afterVs} · ${formatAmount(destacado.priceCents, locale)}`}
+              sending={c.card.sending}
+              errorLabel={c.card.buyError}
+              className="axr-lp__btn axr-lp__btn--solid axr-lp__btn--lg"
+            />
+          )}
+        </div>
+      </section>
+
+      {/* ── El cierre ──
+          Una landing sin CTA final deja ir a quien ha leído hasta abajo, que
+          es justo el que estaba más cerca de comprar. */}
+      <section id="empezar" className="axr-flash__final">
+        <div className="axr-flash__final-inner">
+          <span className="axr-lp__eyebrow">{c.cta.finalEyebrow}</span>
+          <h2>{c.cta.finalTitle}</h2>
+          <p>{c.cta.finalLead}</p>
+
+          <div className="axr-flash__final-cta">
+            {ready ? (
+              <FlashBuyButton
+                offerKey={`relampago-${destacado.key}`}
+                label={`${c.cta.heroBuy} · ${formatAmount(destacado.priceCents, locale)}`}
+                sending={c.card.sending}
+                errorLabel={c.card.buyError}
+                className="axr-lp__btn axr-lp__btn--solid axr-lp__btn--lg"
+              />
+            ) : (
+              <LocaleLink
+                href={`/cursos-relampago/${destacado.slug}#comprar`}
+                className="axr-lp__btn axr-lp__btn--solid axr-lp__btn--lg"
+              >
+                {c.cta.heroBuy} <span aria-hidden>→</span>
+              </LocaleLink>
+            )}
+            <LocaleLink
+              href={`/cursos-relampago/${destacado.slug}`}
+              className="axr-lp__btn axr-lp__btn--invert axr-lp__btn--lg"
+            >
+              {c.cta.heroSee} <span aria-hidden>→</span>
+            </LocaleLink>
+          </div>
+
+          <p className="axr-flash__final-note">{c.cta.finalNote}</p>
         </div>
       </section>
 

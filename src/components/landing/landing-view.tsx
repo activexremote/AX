@@ -18,6 +18,7 @@ import { landingCopy, type LandingCopy } from "@/app/bienvenida/copy";
 import { PROTOTYPE_ALUMNI } from "@/app/bienvenida/flags";
 import { FlashCard } from "@/components/landing/flash-card";
 import { FLASH_COURSES } from "@/lib/relampago/catalog";
+import { stripeConfigured } from "@/lib/stripe/client";
 import "@/app/bienvenida/landing.scss";
 // La tarjeta de curso relámpago se usa aquí y en /cursos-relampago, y sus
 // estilos viven en su propio archivo justo por eso (ver la cabecera de esa
@@ -84,6 +85,8 @@ function FeatureMockup({ index, copy }: { index: number; copy: LandingCopy["mock
 export async function LandingView() {
   const locale = await getLocale();
   const c = landingCopy[locale];
+  // Sin claves de Stripe no se pinta un botón de compra que va a reventar.
+  const puedeComprar = stripeConfigured();
 
 
   return (
@@ -221,37 +224,40 @@ export async function LandingView() {
       </section>
 
       {/* ── Cursos relámpago ────────────────────────── */}
-      {/* Va justo detrás de los dos caminos y antes del manifiesto: es la
-          respuesta a la objeción que aparece exactamente ahí —«esto es mucho
-          para mí ahora»— y sin ella esa persona se va de la página.
+      {/* Una banda, no una sección: dos líneas de texto y una tira con el
+          curso debajo. Es una salida lateral para quien no está listo para
+          un programa de 14 semanas, y una salida lateral no puede ocupar
+          una pantalla entera en medio de la página que vende el programa.
 
-          Es un ADELANTO, no la sección entera: dos frases, los cuatro rasgos
-          en una línea y la tarjeta del curso. Todo lo demás está en
-          /cursos-relampago, que es a donde lleva. Una home no puede pararse
-          a explicar un segundo producto: sólo tiene que hacer que se pulse. */}
+          Todo lo demás —qué es un relámpago, el ciclo, la comparación— está
+          en /cursos-relampago, que es a donde lleva. */}
       <section id="relampago" className="axr-lp__flash">
         <div className="axr-lp__flash-inner">
-          <div className="axr-lp__flash-text">
-            <span className="axr-lp__eyebrow">{c.flash.eyebrow}</span>
-            <h2>{c.flash.title}</h2>
+          <div className="axr-lp__flash-head">
+            <div>
+              <span className="axr-lp__eyebrow">{c.flash.eyebrow}</span>
+              <h2>{c.flash.title}</h2>
+            </div>
             <p>{c.flash.lead}</p>
-
-            <ul className="axr-lp__flash-traits">
-              {c.flash.traits.map((t) => (
-                <li key={t.title}>{t.title}</li>
-              ))}
-            </ul>
-
-            <LocaleLink href="/cursos-relampago" className="axr-lp__flash-all">
-              {c.flash.allCta} →
-            </LocaleLink>
           </div>
 
           <div className="axr-lp__flash-cards">
             {FLASH_COURSES.map((f) => (
-              <FlashCard key={f.slug} course={f} locale={locale} copy={c.flash.card} tone="dark" />
+              <FlashCard
+                key={f.slug}
+                course={f}
+                locale={locale}
+                copy={c.flash.card}
+                tone="dark"
+                variant="strip"
+                canBuy={puedeComprar}
+              />
             ))}
           </div>
+
+          <LocaleLink href="/cursos-relampago" className="axr-lp__flash-all">
+            {c.flash.allCta} →
+          </LocaleLink>
         </div>
       </section>
 

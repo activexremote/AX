@@ -162,7 +162,12 @@
     gap: 0.75rem 1rem;
     margin-top: auto;
 
-    .axr-lp__btn--solid { background: var(--fl); &:hover { background: var(--fl-deep); } }
+    .axr-lp__btn--solid {
+      // El halo del latido, en el naranja del botón (ver --btn-glow).
+      --btn-glow: 255, 106, 61;
+      background: var(--fl);
+      &:hover { background: var(--fl-deep); }
+    }
   }
   &__detail {
     font-size: 0.875rem;
@@ -253,3 +258,115 @@
   }
 }
 
+
+// ══════════════════════════════════════════════════════════
+//  Tira: la versión de una fila, para la home
+//
+//  Miniatura pequeña, lo justo de texto y el precio con su botón. Ocupa un
+//  tercio de alto que la tarjeta completa, que es lo que necesita una home
+//  larga donde esto es una salida lateral y no el producto principal.
+// ══════════════════════════════════════════════════════════
+.axr-fstrip {
+  --fl: #ff6a3d;
+  --fl-deep: #e2451a;
+  --fl-soft: #fff3ee;
+
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+  align-items: center;
+  padding: 0.85rem;
+  border: 1px solid var(--lp-border);
+  border-radius: var(--lp-radius-md);
+  background: #fff;
+
+  // La miniatura fija a 168 px: lo justo para reconocer que hay vídeo sin
+  // convertirse en la protagonista de la fila.
+  @media (min-width: 641px) {
+    grid-template-columns: 168px minmax(0, 1fr) auto;
+    gap: 1.15rem;
+  }
+
+  &[data-tone="dark"] {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+
+    h3 a { color: #fff; }
+    .axr-fstrip__meta { color: rgba(255, 255, 255, 0.6); }
+  }
+
+  &__media {
+    display: block;
+    border-radius: var(--lp-radius-sm);
+    overflow: hidden;
+    line-height: 0;
+  }
+
+  &__body { min-width: 0; }
+
+  &__code {
+    font-family: var(--axr-mono);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--fl);
+  }
+  h3 {
+    margin: 0.15rem 0 0.1rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+
+    a { color: inherit; text-decoration: none; }
+    a:hover { color: var(--fl); }
+  }
+  &__claim {
+    margin: 0 0 0.3rem;
+    font-family: var(--axr-display);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fl);
+  }
+  // Las cifras en una línea de texto y no en tres cajas: dicen lo mismo y
+  // ahorran el alto que costaba la rejilla de estadísticas.
+  &__meta {
+    margin: 0;
+    font-family: var(--axr-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+    color: var(--lp-muted);
+  }
+
+  &__buy {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    @media (min-width: 641px) { flex-direction: column; align-items: stretch; gap: 0.45rem; }
+  }
+  &__price {
+    font-family: var(--axr-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+  }
+  &__detail {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+    color: var(--lp-muted);
+    text-decoration: none;
+    &:hover { color: var(--fl); }
+
+    [data-tone="dark"] & { color: rgba(255, 255, 255, 0.6); }
+    [data-tone="dark"] &:hover { color: #fff; }
+  }
+
+  .axr-lp__btn--solid {
+    --btn-glow: 255, 106, 61;
+    background: var(--fl);
+    &:hover { background: var(--fl-deep); }
+  }
+}

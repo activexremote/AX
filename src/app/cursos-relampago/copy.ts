@@ -39,6 +39,18 @@ export type FlashCopy = {
 
   featuredLabel: string;
   featuredCta: string;
+  /** Los CTA repartidos por la página. */
+  cta: {
+    heroBuy: string;
+    heroSee: string;
+    afterLoop: string;
+    afterVs: string;
+    finalEyebrow: string;
+    finalTitle: string;
+    finalLead: string;
+    finalNote: string;
+    orSee: string;
+  };
   listTitle: string;
   listLead: string;
   scale: { flash: string; flashValue: string; program: string; programValue: string; note: string };
@@ -148,6 +160,18 @@ const es: FlashCopy = {
 
   featuredLabel: "EMPIEZA POR ESTE",
   featuredCta: "Ver el curso entero",
+  cta: {
+    heroBuy: "Empezar hoy",
+    heroSee: "Ver el curso",
+    afterLoop: "Empezar el curso hoy",
+    afterVs: "Quiero el relámpago",
+    finalEyebrow: "SIN CONVOCATORIA, SIN ESPERA",
+    finalTitle: "Cuatro horas y una cosa terminada.",
+    finalLead:
+      "Pagas, recibes el acceso al campus por correo y empiezas cuando quieras. El acceso no caduca.",
+    finalNote: "Pago único de 75 €. Sin suscripción, sin plazos y sin letra pequeña.",
+    orSee: "o mira antes el temario completo",
+  },
   listTitle: "Todos los cursos",
   listLead: "Salen de uno en uno y no se retiran.",
   scale: {
@@ -303,6 +327,18 @@ const en: FlashCopy = {
 
   featuredLabel: "START WITH THIS ONE",
   featuredCta: "See the whole course",
+  cta: {
+    heroBuy: "Start today",
+    heroSee: "See the course",
+    afterLoop: "Start the course today",
+    afterVs: "I want the flash course",
+    finalEyebrow: "NO INTAKE, NO WAITING",
+    finalTitle: "Four hours and one finished thing.",
+    finalLead:
+      "You pay, you get campus access by email and you start whenever you want. Access doesn't expire.",
+    finalNote: "One payment of €75. No subscription, no instalments, no small print.",
+    orSee: "or look at the full syllabus first",
+  },
   listTitle: "All courses",
   listLead: "They ship one at a time and never get pulled.",
   scale: {

@@ -35,18 +35,79 @@ export function FlashCard({
   copy,
   tone = "light",
   canBuy = false,
+  variant = "full",
 }: {
   course: FlashCourse;
   locale: Locale;
   copy: FlashCardCopy;
-  /** "dark" para cuando va sobre el mesh de la home. */
+  /** "dark" para cuando va sobre fondo de tinta. */
   tone?: "light" | "dark";
   /** Sin Stripe configurado, el botón de compra no se pinta. */
   canBuy?: boolean;
+  /**
+   * "strip" es la versión de una sola fila para la home: miniatura pequeña,
+   * lo justo de texto y el precio con su botón. Ocupa un tercio de alto que
+   * la completa, que es lo que necesita una home que ya es larga y donde
+   * esto es una salida lateral, no el producto principal.
+   */
+  variant?: "full" | "strip";
 }) {
   const s = flashStats(course);
   const price = formatAmount(course.priceCents, locale);
   const href = `/cursos-relampago/${course.slug}`;
+
+  if (variant === "strip") {
+    return (
+      <article className="axr-fstrip" data-tone={tone}>
+        {course.poster && (
+          <LocaleLink href={href} className="axr-fstrip__media" aria-label={course.title}>
+            <FlashThumb
+              poster={course.poster}
+              video={course.demoVideo}
+              alt={course.title}
+              badge={`${s.hours} h`}
+            />
+          </LocaleLink>
+        )}
+
+        <div className="axr-fstrip__body">
+          <span className="axr-fstrip__code">{course.code}</span>
+          <h3>
+            <LocaleLink href={href}>{course.title}</LocaleLink>
+          </h3>
+          <p className="axr-fstrip__claim">{course.claim}</p>
+          <p className="axr-fstrip__meta">
+            {s.lessons} {copy.lessons} · {s.hours} h {copy.hours} · {s.missions} {copy.missions}
+          </p>
+        </div>
+
+        <div className="axr-fstrip__buy">
+          <span className="axr-fstrip__price">{price}</span>
+          {canBuy ? (
+            <>
+              <FlashBuyButton
+                offerKey={`relampago-${course.key}`}
+                label={copy.buy}
+                sending={copy.sending}
+                errorLabel={copy.buyError}
+                className="axr-lp__btn axr-lp__btn--solid"
+              />
+              {/* Comprar directo es para quien ya lo tiene claro. El resto
+                  necesita ver el curso antes, y sin este enlace sólo se
+                  llegaba al detalle pulsando el título. */}
+              <LocaleLink href={href} className="axr-fstrip__detail">
+                {copy.cta} →
+              </LocaleLink>
+            </>
+          ) : (
+            <LocaleLink href={href} className="axr-lp__btn axr-lp__btn--solid">
+              {copy.cta} <span aria-hidden>→</span>
+            </LocaleLink>
+          )}
+        </div>
+      </article>
+    );
+  }
 
   return (
     <article className="axr-fcard" data-tone={tone}>

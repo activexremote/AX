@@ -161,8 +161,38 @@
     }
 
     &--solid {
-      box-shadow: 0 10px 26px rgba(91, 75, 245, 0.38);
-      &:hover { background: var(--lp-accent-strong); box-shadow: 0 14px 32px rgba(91, 75, 245, 0.46); }
+      // El color del halo se declara aquí y NO dentro de los keyframes: los
+      // botones de los cursos relámpago son naranjas y necesitan su propio
+      // halo. Con el color escrito en la animación, un botón naranja latía
+      // con un resplandor morado.
+      --btn-glow: 91, 75, 245;
+
+      box-shadow: 0 10px 26px rgba(var(--btn-glow), 0.38);
+      &:hover { background: var(--lp-accent-strong); box-shadow: 0 14px 32px rgba(var(--btn-glow), 0.46); }
+
+      // ── Latido ──────────────────────────────────────────
+      // Sólo los botones SÓLIDOS, que son los de conversión: comprar y pedir
+      // información. Si latieran todos, no destacaría ninguno.
+      //
+      // El ciclo es largo (4,2 s) y el gesto pequeño (2 px y un halo que
+      // crece): la idea es que el ojo lo pille de reojo al pasar por encima
+      // de la página, no que el botón pida atención a gritos. Un parpadeo
+      // rápido en un botón de compra se lee como anuncio de saldo, y esto
+      // vende un curso.
+      //
+      // Se anima `transform` y `box-shadow`, así que no obliga a recalcular
+      // el layout de nada de alrededor.
+      animation: axr-btn-latido 4.2s ease-in-out infinite;
+      // El `will-change` no se pone a propósito: son botones que viven toda
+      // la página y promocionar cada uno a su propia capa cuesta más memoria
+      // de la que ahorra en un gesto tan pequeño.
+
+      // Al pasar por encima manda el hover, no el latido: si no, el botón se
+      // sigue moviendo bajo el cursor y se falla el clic.
+      &:hover,
+      &:focus-visible,
+      &:active,
+      &:disabled { animation: none; }
     }
 
     &--ghost {
@@ -1112,16 +1142,15 @@
 }
 
 // ── Cursos relámpago en la home ─────────────────────────
-// Naranja, no morado. El programa de 2.400 € y un curso de 75 € tienen que
-// distinguirse de un vistazo cuando comparten página; si los dos van del
-// mismo color, el bloque se lee como "otro plan del mismo curso".
+// Una banda, no una sección. El programa de 2.400 € es lo que vende esta
+// página; esto es la salida para quien no está listo, y una salida lateral
+// no puede ocupar una pantalla entera en medio del recorrido.
 //
-// Es un ADELANTO: dos columnas, texto a la izquierda y la tarjeta a la
-// derecha. Ocupa lo que ocupa una sección normal y no una pantalla entera,
-// porque la home vende el programa y esto es una salida lateral para quien
-// no está listo, no un segundo escaparate.
+// De ahí que sea la mitad de alta que una sección normal, con el texto en una
+// fila y el curso en una tira debajo. El naranja la separa del morado del
+// programa: si fueran del mismo color se leería como "otro plan del curso".
 .axr-lp__flash {
-  padding: var(--lp-section) var(--lp-pad-r) var(--lp-section) var(--lp-pad-l);
+  padding: calc(var(--lp-section) * 0.72) var(--lp-pad-r) calc(var(--lp-section) * 0.72) var(--lp-pad-l);
   background: var(--lp-ink);
   color: #fff;
   --fl: #ff6a3d;
@@ -1130,69 +1159,48 @@
   &-inner {
     max-width: var(--lp-max);
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    align-items: center;
-
-    @media (min-width: 901px) {
-      grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
-      gap: 3rem;
-    }
   }
 
-  &-text {
-    .axr-lp__eyebrow { color: var(--fl); margin-bottom: 0.5rem; }
+  // Titular y frase en la MISMA fila en escritorio: dos renglones apilados
+  // ya serían más alto que la tira que va debajo.
+  &-head {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem 2.5rem;
+    margin-bottom: 1rem;
+
+    @media (min-width: 861px) {
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+      align-items: end;
+    }
+
+    .axr-lp__eyebrow { color: var(--fl); margin-bottom: 0.3rem; }
     h2 {
-      margin: 0 0 0.6rem;
-      font-size: clamp(1.5rem, 5.4vw, 2.1rem);
+      margin: 0;
+      font-size: clamp(1.35rem, 4.4vw, 1.8rem);
       font-weight: 700;
-      line-height: 1.12;
+      line-height: 1.15;
       letter-spacing: -0.03em;
       text-wrap: balance;
     }
     p {
-      margin: 0 0 1.1rem;
+      margin: 0;
       font-size: 0.9375rem;
-      line-height: 1.6;
-      color: rgba(255, 255, 255, 0.78);
+      line-height: 1.55;
+      color: rgba(255, 255, 255, 0.72);
       text-wrap: pretty;
-    }
-  }
-
-  // Los cuatro rasgos en una línea de píldoras: dicen qué es un relámpago sin
-  // gastar cuatro cajas de texto. El desarrollo está en /cursos-relampago.
-  &-traits {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin: 0 0 1.25rem;
-    padding: 0;
-    list-style: none;
-
-    li {
-      padding: 0.35rem 0.75rem;
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      border-radius: 999px;
-      font-size: 0.8125rem;
-      font-weight: 500;
-      color: rgba(255, 255, 255, 0.88);
     }
   }
 
   &-cards {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    // Con más de un curso se apilan; la home nunca enseña más de dos.
-    @media (min-width: 1101px) {
-      grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-    }
+    gap: 0.75rem;
   }
 
   &-all {
     display: inline-block;
-    font-size: 0.9375rem;
+    margin-top: 0.9rem;
+    font-size: 0.875rem;
     font-weight: 600;
     color: var(--fl);
     text-decoration: none;
@@ -1286,6 +1294,37 @@
 @keyframes axr-globe-spin {
   from { transform: rotate(-23deg) rotateX(-24deg) rotateY(0deg); }
   to   { transform: rotate(-23deg) rotateX(-24deg) rotateY(360deg); }
+}
+
+// El latido de los botones de conversión. Dos pulsos por ciclo y luego una
+// pausa larga: es el patrón que el ojo registra sin que llegue a molestar.
+@keyframes axr-btn-latido {
+  0%, 62%, 100% {
+    transform: translateY(0);
+    box-shadow: 0 10px 26px rgba(var(--btn-glow, 91, 75, 245), 0.38);
+  }
+  68% {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 34px rgba(var(--btn-glow, 91, 75, 245), 0.5);
+  }
+  74% {
+    transform: translateY(0);
+    box-shadow: 0 10px 26px rgba(var(--btn-glow, 91, 75, 245), 0.38);
+  }
+  80% {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 34px rgba(var(--btn-glow, 91, 75, 245), 0.5);
+  }
+  86% {
+    transform: translateY(0);
+    box-shadow: 0 10px 26px rgba(var(--btn-glow, 91, 75, 245), 0.38);
+  }
+}
+
+// Quien pide menos movimiento no recibe un botón que se mueve solo. El botón
+// sigue estando igual de visible: el latido nunca es lo que lo hace legible.
+@media (prefers-reduced-motion: reduce) {
+  .axr-lp__btn--solid { animation: none; }
 }
 
 @keyframes axr-fx-drift-a {
