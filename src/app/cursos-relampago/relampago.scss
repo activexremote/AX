@@ -107,11 +107,6 @@
     gap: 0.75rem 1rem;
     margin-bottom: 1.5rem;
 
-    .axr-lp__btn--solid {
-      --btn-glow: 255, 106, 61;
-      background: var(--fl);
-      &:hover { background: var(--fl-deep); }
-    }
   }
   &__cta-note {
     font-size: 0.8125rem;
@@ -824,18 +819,6 @@
     border-radius: var(--lp-radius-sm);
   }
 
-  // Todos los botones de conversión de estas páginas van en naranja…
-  //
-  // …menos los del nav y el pie: ésos son el CTA del PROGRAMA («Solicita
-  // información»), llevan a otro producto y tienen que seguir siendo morados
-  // como en el resto del sitio. Sin esta exclusión el de la barra salía
-  // naranja y el del pie morado, los dos con el mismo texto y el mismo
-  // destino.
-  .axr-lp__btn--solid:not(.axr-lp__nav *):not(.axr-lp__footer *) {
-    --btn-glow: 255, 106, 61;
-    background: var(--fl);
-    &:hover { background: var(--fl-deep); }
-  }
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1014,12 +997,6 @@
     align-items: center;
     gap: 0.85rem 1.25rem;
 
-    .axr-lp__btn--solid {
-      // El halo del latido, en el naranja del botón (ver --btn-glow).
-      --btn-glow: 255, 106, 61;
-      background: var(--fl);
-      &:hover { background: var(--fl-deep); }
-    }
   }
   &__detail {
     font-size: 0.9375rem;
@@ -1285,12 +1262,6 @@
     gap: 0.75rem;
     margin: 1.5rem 0 0;
 
-    .axr-lp__btn--solid {
-      // El halo del latido, en el naranja del botón (ver --btn-glow).
-      --btn-glow: 255, 106, 61;
-      background: var(--fl);
-      &:hover { background: var(--fl-deep); }
-    }
   }
 
   &__section-cta {
@@ -1301,12 +1272,6 @@
     margin-top: var(--lp-head-gap);
     text-align: center;
 
-    .axr-lp__btn--solid {
-      // El halo del latido, en el naranja del botón (ver --btn-glow).
-      --btn-glow: 255, 106, 61;
-      background: var(--fl);
-      &:hover { background: var(--fl-deep); }
-    }
   }
   &__cta-alt {
     font-size: 0.875rem;
@@ -1352,12 +1317,6 @@
     justify-content: center;
     gap: 0.85rem;
 
-    .axr-lp__btn--solid {
-      // El halo del latido, en el naranja del botón (ver --btn-glow).
-      --btn-glow: 255, 106, 61;
-      background: var(--fl);
-      &:hover { background: var(--fl-deep); }
-    }
   }
   &__final-note {
     margin: 1.25rem 0 0 !important;

@@ -30,6 +30,24 @@
   --lp-body: #514d69;
   --lp-muted: #8a86a0;
 
+  // ── Verde de acción ───────────────────────────────────
+  // El color de TODOS los botones de conversión del sitio: comprar y pedir
+  // información. Muestreado del botón de referencia.
+  //
+  // Uno solo para todo, y a propósito. El morado es la marca y el naranja son
+  // los relámpago, pero un botón no está ahí para decir de qué producto es:
+  // está para que se pulse. Con un único color de acción, cualquiera que haya
+  // pulsado uno ya sabe dónde están todos los demás.
+  //
+  // ⚠︎ Contraste con blanco: 3,63:1. Por debajo del 4,5 que pide la WCAG para
+  // texto de 14 px —el del botón—, aunque por encima del naranja que había
+  // antes (2,85). El estado de foco/hover baja a --lp-go-deep, que sí pasa
+  // (4,73:1), así que quien navega con teclado siempre ve el estado bueno.
+  --lp-go: #5a9532;
+  --lp-go-deep: #4d802b;
+  /** Componentes del halo, para el zumbido (ver --btn-glow). */
+  --lp-go-rgb: 90, 149, 50;
+
   --lp-accent: #5b4bf5;
   --lp-accent-strong: #4632e6;
   --lp-soft: #f4f3fb;
@@ -161,33 +179,38 @@
     }
 
     &--solid {
-      // El color del halo se declara aquí y NO dentro de los keyframes: los
-      // botones de los cursos relámpago son naranjas y necesitan su propio
-      // halo. Con el color escrito en la animación, un botón naranja latía
-      // con un resplandor morado.
-      --btn-glow: 91, 75, 245;
+      // El halo se declara aquí y NO dentro de los keyframes, para que
+      // cualquier sitio que cambie el color del botón pueda cambiar el suyo.
+      --btn-glow: var(--lp-go-rgb);
 
-      box-shadow: 0 10px 26px rgba(var(--btn-glow), 0.38);
-      &:hover { background: var(--lp-accent-strong); box-shadow: 0 14px 32px rgba(var(--btn-glow), 0.46); }
+      background: var(--lp-go);
+      box-shadow: 0 10px 26px rgba(var(--btn-glow), 0.36);
+      &:hover {
+        background: var(--lp-go-deep);
+        box-shadow: 0 14px 32px rgba(var(--btn-glow), 0.46);
+      }
 
-      // ── Latido ──────────────────────────────────────────
-      // Sólo los botones SÓLIDOS, que son los de conversión: comprar y pedir
-      // información. Si latieran todos, no destacaría ninguno.
+      // ── Zumbido ─────────────────────────────────────────
+      // Sólo los botones SÓLIDOS, que son los de conversión. Si zumbaran
+      // todos, no destacaría ninguno.
       //
-      // El ciclo es largo (4,2 s) y el gesto pequeño (2 px y un halo que
-      // crece): la idea es que el ojo lo pille de reojo al pasar por encima
-      // de la página, no que el botón pida atención a gritos. Un parpadeo
-      // rápido en un botón de compra se lee como anuncio de saldo, y esto
-      // vende un curso.
+      // Es un zumbido de verdad y no un latido: cuatro oscilaciones de 1 px
+      // en 0,3 s y después cinco segundos y medio quietos. El movimiento
+      // corto y rápido es lo que el ojo periférico detecta —así vibra un
+      // móvil sobre la mesa—; un movimiento lento se percibe como parte del
+      // diseño y deja de llamar la atención a los dos minutos.
       //
-      // Se anima `transform` y `box-shadow`, así que no obliga a recalcular
-      // el layout de nada de alrededor.
-      animation: axr-btn-latido 4.2s ease-in-out infinite;
+      // 1 px, no más: el zumbido tiene que notarse sin que el texto del botón
+      // llegue a leerse borroso.
+      //
+      // Se animan `transform` y `box-shadow`: ninguno obliga a recalcular el
+      // layout de lo que hay alrededor.
+      animation: axr-btn-zumbido 5.8s ease-in-out infinite;
       // El `will-change` no se pone a propósito: son botones que viven toda
       // la página y promocionar cada uno a su propia capa cuesta más memoria
       // de la que ahorra en un gesto tan pequeño.
 
-      // Al pasar por encima manda el hover, no el latido: si no, el botón se
+      // Al pasar por encima manda el hover, no el zumbido: si no, el botón se
       // sigue moviendo bajo el cursor y se falla el clic.
       &:hover,
       &:focus-visible,
@@ -540,6 +563,7 @@
 
 .axr-lp__menu {
   // La hoja se monta en <body>, fuera de .axr-lp: se trae sus propios tokens.
+  // Lleva un CTA sólido dentro, así que también los del verde de acción.
   --lp-gutter: 1.25rem;
   --lp-pad-l: max(var(--lp-gutter), env(safe-area-inset-left));
   --lp-pad-r: max(var(--lp-gutter), env(safe-area-inset-right));
@@ -548,6 +572,9 @@
   --lp-muted: #8a86a0;
   --lp-accent: #5b4bf5;
   --lp-accent-strong: #4632e6;
+  --lp-go: #5a9532;
+  --lp-go-deep: #4d802b;
+  --lp-go-rgb: 90, 149, 50;
   --lp-soft: #f4f3fb;
   --lp-border: #e7e4f5;
 
@@ -658,6 +685,13 @@
 // ── Barra de conversión fija (sólo móvil) ───────────────
 // Se monta en <body> como el menú: así ni el sticky del nav ni el
 // backdrop-filter de la píldora le afectan.
+// ⚠︎ Esta barra se pinta con un portal, o sea FUERA de `.axr-lp`, así que no
+// hereda ni uno de sus tokens y tiene que redeclararlos todos. Cada vez que se
+// añada una variable que use un botón hay que añadirla también aquí.
+//
+// Pasó con el verde de acción: sin `--lp-go`, `background: var(--lp-go)` se
+// quedaba sin valor y el botón salía TRANSPARENTE. Y es el CTA principal del
+// móvil, así que no era un detalle.
 .axr-lp__cta-bar {
   --lp-gutter: 1rem;
   --lp-pad-l: max(var(--lp-gutter), env(safe-area-inset-left));
@@ -667,6 +701,9 @@
   --lp-accent: #5b4bf5;
   --lp-accent-strong: #4632e6;
   --lp-border: #e7e4f5;
+  --lp-go: #5a9532;
+  --lp-go-deep: #4d802b;
+  --lp-go-rgb: 90, 149, 50;
 
   position: fixed;
   left: 0;
@@ -1296,33 +1333,38 @@
   to   { transform: rotate(-23deg) rotateX(-24deg) rotateY(360deg); }
 }
 
-// El latido de los botones de conversión. Dos pulsos por ciclo y luego una
-// pausa larga: es el patrón que el ojo registra sin que llegue a molestar.
-@keyframes axr-btn-latido {
-  0%, 62%, 100% {
-    transform: translateY(0);
-    box-shadow: 0 10px 26px rgba(var(--btn-glow, 91, 75, 245), 0.38);
+// El zumbido de los botones de conversión.
+//
+// Cuatro oscilaciones de 1 px en 0,3 s y luego cinco segundos y medio
+// quietos. Es cómo vibra un móvil sobre la mesa: corto, rápido y espaciado.
+//
+// Se combina `translateX` con una rotación mínima porque un desplazamiento
+// puro se lee como que el botón se desliza; con el giro de 0,25° se lee como
+// que vibra, que es lo que se busca.
+//
+// El halo crece un instante en el mismo momento: es lo que hace que el gesto
+// se note también de reojo, cuando el movimiento de 1 px por sí solo no
+// llegaría al ojo periférico.
+@keyframes axr-btn-zumbido {
+  0%, 88%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    box-shadow: 0 10px 26px rgba(var(--btn-glow, 90, 149, 50), 0.36);
   }
-  68% {
-    transform: translateY(-2px);
-    box-shadow: 0 16px 34px rgba(var(--btn-glow, 91, 75, 245), 0.5);
+  89% { transform: translate3d(-1px, 0, 0) rotate(-0.25deg); }
+  91% {
+    transform: translate3d(1px, 0, 0) rotate(0.25deg);
+    box-shadow: 0 14px 34px rgba(var(--btn-glow, 90, 149, 50), 0.52);
   }
-  74% {
-    transform: translateY(0);
-    box-shadow: 0 10px 26px rgba(var(--btn-glow, 91, 75, 245), 0.38);
-  }
-  80% {
-    transform: translateY(-2px);
-    box-shadow: 0 16px 34px rgba(var(--btn-glow, 91, 75, 245), 0.5);
-  }
-  86% {
-    transform: translateY(0);
-    box-shadow: 0 10px 26px rgba(var(--btn-glow, 91, 75, 245), 0.38);
+  93% { transform: translate3d(-1px, 0, 0) rotate(-0.25deg); }
+  95% { transform: translate3d(1px, 0, 0) rotate(0.25deg); }
+  97% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    box-shadow: 0 10px 26px rgba(var(--btn-glow, 90, 149, 50), 0.36);
   }
 }
 
-// Quien pide menos movimiento no recibe un botón que se mueve solo. El botón
-// sigue estando igual de visible: el latido nunca es lo que lo hace legible.
+// Quien pide menos movimiento no recibe un botón que vibra solo. El botón
+// sigue estando igual de visible: el zumbido nunca es lo que lo hace legible.
 @media (prefers-reduced-motion: reduce) {
   .axr-lp__btn--solid { animation: none; }
 }

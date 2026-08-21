@@ -162,12 +162,6 @@
     gap: 0.75rem 1rem;
     margin-top: auto;
 
-    .axr-lp__btn--solid {
-      // El halo del latido, en el naranja del botón (ver --btn-glow).
-      --btn-glow: 255, 106, 61;
-      background: var(--fl);
-      &:hover { background: var(--fl-deep); }
-    }
   }
   &__detail {
     font-size: 0.875rem;
@@ -364,9 +358,4 @@
     [data-tone="dark"] &:hover { color: #fff; }
   }
 
-  .axr-lp__btn--solid {
-    --btn-glow: 255, 106, 61;
-    background: var(--fl);
-    &:hover { background: var(--fl-deep); }
-  }
 }
