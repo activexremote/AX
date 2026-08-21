@@ -157,6 +157,7 @@ const es = {
     progress: "{done} de {total} lecciones · {passed} controles · {submitted} misiones",
     download: "Descargar en Markdown",
     backToCampus: "Volver al campus",
+    staffPreview: "Vista de revisión · claustro",
   },
   progress: {
     logout: "Cerrar sesión",
@@ -554,6 +555,7 @@ const en: Dictionary = {
     progress: "{done} of {total} lessons · {passed} checks · {submitted} missions",
     download: "Download as Markdown",
     backToCampus: "Back to the campus",
+    staffPreview: "Review view · faculty",
   },
   progress: {
     logout: "Sign out",

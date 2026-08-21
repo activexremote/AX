@@ -28,11 +28,11 @@ export default async function UnlockPage({ params }: { params: Promise<{ key: st
   } = await supabase.auth.getUser();
   if (!user) notFound();
 
-  // Dos consultas y las dos tienen que decir que sí:
-  //  · que el desbloqueo exista y el alumno tenga acceso al curso (RLS de
-  //    `unlocks` filtra por has_course_access),
+  // Tres consultas. Para un alumno tienen que decir que sí las dos primeras:
+  //  · que el desbloqueo exista y tenga acceso al curso (la RLS de `unlocks`
+  //    filtra por has_course_access),
   //  · y que se lo haya ganado de verdad.
-  const [{ data: unlock }, { data: ganado }] = await Promise.all([
+  const [{ data: unlock }, { data: ganado }, { data: perfil }] = await Promise.all([
     supabase.from("unlocks").select("key, title, description, course").eq("key", key).maybeSingle(),
     supabase
       .from("user_unlocks")
@@ -40,9 +40,17 @@ export default async function UnlockPage({ params }: { params: Promise<{ key: st
       .eq("user_id", user.id)
       .eq("unlock_key", key)
       .maybeSingle(),
+    supabase.from("profiles").select("role").eq("id", user.id).maybeSingle(),
   ]);
 
-  if (!unlock || !ganado) notFound();
+  // El claustro entra sin haberlo ganado. No es un agujero: quien enseña el
+  // curso tiene que poder revisar el material que se entrega al terminarlo,
+  // y encerrarlo obligaría a un profesor a hacerse las 24 misiones para leer
+  // su propio temario. Se marca como revisión para que no se confunda con
+  // haberlo ganado.
+  const revisando = perfil?.role === "profesor" || perfil?.role === "administrador";
+
+  if (!unlock || (!ganado && !revisando)) notFound();
 
   const { t } = await getI18n();
 
@@ -62,7 +70,9 @@ export default async function UnlockPage({ params }: { params: Promise<{ key: st
 
       <div className="axr-lesson axr-lesson--unlock">
         <main className="axr-lesson__main">
-          <span className="axr-section-tag">{t.unlocks.earned}</span>
+          <span className="axr-section-tag">
+            {ganado ? t.unlocks.earned : t.unlocks.staffPreview}
+          </span>
           <h1>{unlock.title}</h1>
           {unlock.description && <p className="axr-unlock__lead">{unlock.description}</p>}
 

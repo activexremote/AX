@@ -4,7 +4,15 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getLocale } from "@/lib/i18n/server";
 import { notify } from "@/lib/slack/notify";
 
-export const COURSE_KEYS = ["remote-professional", "remote-founder"] as const;
+// ⚠︎ SIN `export`. Un archivo con "use server" sólo puede exportar funciones
+// async: cualquier otra cosa hace que Next tire el módulo entero en tiempo de
+// ejecución con «A "use server" file can only export async functions, found
+// object», y el formulario reventaba la página al enviarlo.
+//
+// No lo importa nadie de fuera —sólo se usa aquí para validar—, así que
+// dejarlo local no rompe nada. El tipo sí puede exportarse: se borra al
+// compilar y no llega a existir en tiempo de ejecución.
+const COURSE_KEYS = ["remote-professional", "remote-founder"] as const;
 export type CourseKey = (typeof COURSE_KEYS)[number];
 
 const COURSE_LABELS: Record<CourseKey, string> = {
