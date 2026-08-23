@@ -10,6 +10,22 @@ export type LensFixedCost = { id: string; name: string; amount: number };
 export type LensPartner = { id: string; name: string; sharePct: number };
 
 /**
+ * Un profesor, cobrado como se cobra de verdad: por convocatoria, a un precio
+ * por hora, sobre un número de horas ya cerrado de antemano.
+ *
+ * Por eso no vive en los costes fijos: un coste fijo mensual no sabe nada de
+ * convocatorias, y una convocatoria de 12 semanas no cae en tres meses justos.
+ */
+export type LensTeacher = {
+  id: string;
+  name: string;
+  /** Horas cerradas para toda la convocatoria. */
+  hours: number;
+  /** Precio por hora. */
+  hourlyRate: number;
+};
+
+/**
  * Equipo comercial.
  *
  * Se separa de los costes fijos genéricos porque tiene dos mitades que se
@@ -56,14 +72,23 @@ export type LensScenarioData = {
   /** Valor medio de ese upsell. */
   upsellValue: number;
   /**
-   * Cuántos meses representan los números de este escenario.
+   * Cuánto tiempo cubren los números de este escenario.
    *
    * Sin esto no se puede hablar de "cada cuánto se reparte": un escenario de
-   * 25 alumnos no dice por sí solo si son de un mes o de una convocatoria de
-   * cuatro, y un dividendo trimestral significa una cosa muy distinta en cada
-   * caso.
+   * 25 alumnos no dice por sí solo si son de un mes o de una convocatoria, y
+   * un dividendo trimestral significa una cosa muy distinta en cada caso.
+   *
+   * Se declara de dos maneras porque el negocio funciona por convocatorias
+   * pero los dividendos se piensan en meses: o el escenario es UNA
+   * convocatoria (dure lo que dure), o son N meses de calendario.
    */
+  periodMode: "convocatoria" | "months";
+  /** Sólo cuenta con periodMode "months". */
   periodMonths: number;
+  /** Lo que dura una convocatoria. Doce semanas, salvo que cambie. */
+  convocatoriaWeeks: number;
+  /** Profesorado, cobrado por convocatoria. */
+  teachers: LensTeacher[];
   salesTeam: LensSalesTeam;
   /** Impuesto de sociedades, en %. A 0 el escenario se comporta como antes. */
   corporateTaxPct: number;
@@ -85,16 +110,23 @@ export function defaultLensScenario(): LensScenarioData {
       { id: "google", name: "Google Ads", spend: 2000, students: 7 },
       { id: "organico", name: "Orgánico / referidos", spend: 500, students: 6 },
     ],
+    // Sin "equipo docente": la docencia tiene su propio bloque, con horas y
+    // precio/hora. Dejarla también aquí sería contarla dos veces.
     fixedCosts: [
-      { id: "docencia", name: "Equipo docente", amount: 4000 },
       { id: "herramientas", name: "Herramientas y software", amount: 300 },
       { id: "soporte", name: "Soporte y comunidad", amount: 600 },
+    ],
+    teachers: [
+      { id: "docente-1", name: "Profesor principal", hours: 60, hourlyRate: 60 },
+      { id: "docente-2", name: "Profesor invitado", hours: 12, hourlyRate: 80 },
     ],
     variableCostPerStudent: 40,
     gatewayFeePct: 1.9,
     repeatPurchaseRate: 15,
     upsellValue: 300,
+    periodMode: "convocatoria",
     periodMonths: 1,
+    convocatoriaWeeks: 12,
     salesTeam: { reps: 1, salaryPerRep: 1800, bonusPerEnrollment: 150 },
     corporateTaxPct: 0,
     dividends: { enabled: true, payoutPct: 60, revenueThreshold: 60000, everyMonths: 3 },
@@ -121,7 +153,13 @@ export function normalizeScenario(raw: Partial<LensScenarioData> | null | undefi
     plans: raw.plans ?? base.plans,
     channels: raw.channels ?? base.channels,
     fixedCosts: raw.fixedCosts ?? base.fixedCosts,
+    // Un escenario guardado antes de esto hablaba en meses: se respeta tal
+    // cual. Y NO se le inventa profesorado, porque su coste docente ya está
+    // metido a mano en los costes fijos y aparecería dos veces.
+    periodMode: raw.periodMode ?? (raw.periodMonths ? "months" : base.periodMode),
     periodMonths: raw.periodMonths ?? base.periodMonths,
+    convocatoriaWeeks: raw.convocatoriaWeeks ?? base.convocatoriaWeeks,
+    teachers: raw.teachers ?? (raw.periodMonths ? [] : base.teachers),
     salesTeam: { ...base.salesTeam, ...(raw.salesTeam ?? {}) },
     corporateTaxPct: raw.corporateTaxPct ?? 0,
     // Un escenario guardado antes de que existiera el reparto NO empieza a
@@ -133,6 +171,22 @@ export function normalizeScenario(raw: Partial<LensScenarioData> | null | undefi
       : { ...base.dividends, enabled: false },
     partners: raw.partners ?? base.partners,
   };
+}
+
+/** 52/12. Un mes no son cuatro semanas, y con convocatorias de 12 el error se nota. */
+export const WEEKS_PER_MONTH = 52 / 12;
+
+/** Lo que dura una convocatoria, en meses. */
+export function convocatoriaMonths(d: Pick<LensScenarioData, "convocatoriaWeeks">): number {
+  return Math.max(0.25, (d.convocatoriaWeeks || 12) / WEEKS_PER_MONTH);
+}
+
+/**
+ * Meses que cubre el escenario, se haya declarado como se haya declarado.
+ * Es el número con el que se compara todo lo demás.
+ */
+export function effectivePeriodMonths(d: LensScenarioData): number {
+  return d.periodMode === "convocatoria" ? convocatoriaMonths(d) : Math.max(0.25, d.periodMonths || 1);
 }
 
 export type LensChannelStats = LensChannel & { cac: number; share: number };
@@ -182,6 +236,12 @@ export type LensMetrics = {
   gatewayFees: number;
   variableCostsTotal: number;
   totalFixedCosts: number;
+  /** Horas de docencia contratadas para una convocatoria. */
+  teachingHours: number;
+  /** Coste del profesorado de UNA convocatoria entera. */
+  teachingCostPerConvocatoria: number;
+  /** Ese coste llevado al periodo del escenario. */
+  teachingCostTotal: number;
   /** Sueldos del equipo comercial: reps × sueldo. */
   salesFixedTotal: number;
   /** Variable comercial: pago por matrícula × alumnos. */
@@ -218,6 +278,20 @@ export function computeLensMetrics(data: LensScenarioData): LensMetrics {
   const variableCostsTotal = data.variableCostPerStudent * totalStudents;
   const totalFixedCosts = data.fixedCosts.reduce((sum, c) => sum + (c.amount || 0), 0);
 
+  // ── Profesorado ──
+  // Se contrata por convocatoria y por horas cerradas, así que primero se
+  // calcula lo que cuesta una convocatoria entera y luego se lleva al periodo
+  // del escenario. Si el escenario ES una convocatoria, el factor es 1 y no
+  // se toca nada; si es un mes, se reparte lo que toque de esas 12 semanas.
+  const teachers = data.teachers ?? [];
+  const teachingHours = teachers.reduce((sum, t) => sum + (t.hours || 0), 0);
+  const teachingCostPerConvocatoria = teachers.reduce(
+    (sum, t) => sum + (t.hours || 0) * (t.hourlyRate || 0),
+    0,
+  );
+  const periodMonths = effectivePeriodMonths(data);
+  const teachingCostTotal = teachingCostPerConvocatoria * (periodMonths / convocatoriaMonths(data));
+
   // El equipo comercial, partido en sus dos mitades: la que se paga pase lo
   // que pase y la que sólo se paga si se cierra la matrícula.
   const salesFixedTotal = (data.salesTeam.reps || 0) * (data.salesTeam.salaryPerRep || 0);
@@ -225,7 +299,12 @@ export function computeLensMetrics(data: LensScenarioData): LensMetrics {
   const salesCostTotal = salesFixedTotal + salesBonusTotal;
 
   const totalCosts =
-    totalMarketingSpend + variableCostsTotal + gatewayFees + totalFixedCosts + salesCostTotal;
+    totalMarketingSpend +
+    variableCostsTotal +
+    gatewayFees +
+    totalFixedCosts +
+    teachingCostTotal +
+    salesCostTotal;
 
   const profitBeforeTax = totalRevenue - totalCosts;
   // Sobre pérdidas no se paga impuesto: con BAI negativo la cuota es 0, no un
@@ -243,7 +322,8 @@ export function computeLensMetrics(data: LensScenarioData): LensMetrics {
     avgTicket * (data.gatewayFeePct / 100);
   const breakEvenStudents =
     contributionPerStudent > 0
-      ? (totalFixedCosts + salesFixedTotal + totalMarketingSpend) / contributionPerStudent
+      ? (totalFixedCosts + teachingCostTotal + salesFixedTotal + totalMarketingSpend) /
+        contributionPerStudent
       : null;
 
   const channelStats: LensChannelStats[] = data.channels.map((c) => ({
@@ -266,6 +346,9 @@ export function computeLensMetrics(data: LensScenarioData): LensMetrics {
     gatewayFees,
     variableCostsTotal,
     totalFixedCosts,
+    teachingHours,
+    teachingCostPerConvocatoria,
+    teachingCostTotal,
     salesFixedTotal,
     salesBonusTotal,
     salesCostTotal,
@@ -294,7 +377,7 @@ function computeDividendPlan(
   totalRevenue: number,
   netProfit: number,
 ): LensDividendPlan {
-  const periodMonths = Math.max(1, data.periodMonths || 1);
+  const periodMonths = effectivePeriodMonths(data);
   const windowMonths = Math.max(1, data.dividends?.everyMonths || 1);
   const factor = windowMonths / periodMonths;
 
@@ -352,13 +435,28 @@ export function payoutCadenceLabel(everyMonths: number): string {
   return `cada ${everyMonths} meses`;
 }
 
-/** Qué representan los números del escenario. */
+/** Qué representan los números del escenario, en meses de calendario. */
 export function periodLabel(periodMonths: number): string {
   if (periodMonths === 1) return "1 mes";
   if (periodMonths === 3) return "1 trimestre";
   if (periodMonths === 6) return "1 semestre";
   if (periodMonths === 12) return "1 año";
   return `${periodMonths} meses`;
+}
+
+/** El periodo del escenario, dicho entero. */
+export function scenarioPeriodLabel(d: LensScenarioData): string {
+  if (d.periodMode === "convocatoria") {
+    const semanas = d.convocatoriaWeeks || 12;
+    return `1 convocatoria (${semanas} ${semanas === 1 ? "semana" : "semanas"})`;
+  }
+  return periodLabel(d.periodMonths);
+}
+
+/** Y en corto, para meterlo en una frase: "cada convocatoria", "cada mes"… */
+export function scenarioPeriodShort(d: LensScenarioData): string {
+  if (d.periodMode === "convocatoria") return "convocatoria";
+  return periodLabel(d.periodMonths).replace("1 ", "");
 }
 
 export function formatEUR(value: number, maximumFractionDigits = 0): string {
@@ -474,6 +572,12 @@ export const METRIC_INFO: Record<string, { label: string; formula: string; expla
     formula: "(Costes fijos + inversión en captación) ÷ margen de contribución por alumno",
     explanation:
       "El número mínimo de alumnos matriculados para cubrir todos los costes. A partir de ahí, cada matrícula extra es beneficio.",
+  },
+  teachingCostTotal: {
+    label: "Coste del profesorado",
+    formula: "Suma de (horas × precio/hora) de cada profesor, llevada al periodo del escenario",
+    explanation:
+      "Lo que cuesta dar las clases de una convocatoria. Se contrata por horas cerradas, así que no depende de cuántos alumnos entren.",
   },
   salesCostTotal: {
     label: "Coste del equipo comercial",

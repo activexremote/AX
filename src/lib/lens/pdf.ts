@@ -6,7 +6,7 @@ import {
   formatPct,
   formatRatio,
   payoutCadenceLabel,
-  periodLabel,
+  scenarioPeriodLabel,
   LENS_DISCLAIMER,
   type LensScenarioData,
 } from "@/lib/lens/calculadora";
@@ -168,7 +168,7 @@ function header(doc: PDFKit.PDFDocument, name: string, d: LensScenarioData, y: n
   doc.font("Helvetica-Bold").fontSize(17).fillColor(INK).text(wa(name), M, y, { width: W });
   y = doc.y + 3;
 
-  const periodo = `Los números corresponden a ${periodLabel(d.periodMonths)} · Generado el ${new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" })}`;
+  const periodo = `Los números corresponden a ${scenarioPeriodLabel(d)} · Generado el ${new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" })}`;
   doc.font("Helvetica").fontSize(8.5).fillColor(HELPER).text(wa(periodo), M, y, { width: W });
   y = doc.y + 10;
 
@@ -215,6 +215,7 @@ function profitAndLoss(
     ["= Margen de contribución", m.totalRevenue - m.gatewayFees - m.variableCostsTotal - m.salesBonusTotal, "sub"],
     ["- Inversión en captación", -m.totalMarketingSpend],
     ["- Sueldos del equipo comercial", -m.salesFixedTotal],
+    ["- Profesorado (horas de convocatoria)", -m.teachingCostTotal],
     ["- Costes fijos de estructura", -m.totalFixedCosts],
     ["= Beneficio antes de impuestos", m.profitBeforeTax, "sub"],
     [`- Impuesto de sociedades (${formatPct(d.corporateTaxPct, 2)})`, -m.corporateTax],
@@ -338,9 +339,20 @@ function assumptions(
     .map((c) => `${c.name} ${c.students} al. por ${formatEUR(c.spend)}`)
     .join(" · ");
   const fijos = d.fixedCosts.map((c) => `${c.name} ${formatEUR(c.amount)}`).join(" · ");
+  const docentes = d.teachers
+    .map((t) => `${t.name}: ${t.hours} h x ${formatEUR(t.hourlyRate)}`)
+    .join(" · ");
 
   y = wrapRow(doc, "Planes y mezcla", planes, x, y, w);
   y = wrapRow(doc, "Canales de captación", canales, x, y, w);
+  y = wrapRow(
+    doc,
+    `Profesorado por convocatoria (${m.teachingHours} h, ${formatEUR(m.teachingCostPerConvocatoria)})`,
+    docentes,
+    x,
+    y,
+    w,
+  );
   y = wrapRow(doc, "Costes fijos", fijos, x, y, w);
   y = wrapRow(
     doc,

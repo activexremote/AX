@@ -15,6 +15,8 @@ import {
   normalizeScenario,
   payoutCadenceLabel,
   periodLabel,
+  scenarioPeriodLabel,
+  scenarioPeriodShort,
   LENS_DISCLAIMER,
   type LensScenarioData,
 } from "@/lib/lens/calculadora";
@@ -166,6 +168,9 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
   function updatePartner(id: string, p: Partial<LensScenarioData["partners"][number]>) {
     patch((s) => ({ ...s, partners: s.partners.map((x) => (x.id === id ? { ...x, ...p } : x)) }));
   }
+  function updateTeacher(id: string, p: Partial<LensScenarioData["teachers"][number]>) {
+    patch((s) => ({ ...s, teachers: s.teachers.map((x) => (x.id === id ? { ...x, ...p } : x)) }));
+  }
 
   const div = metrics.dividendPlan;
   const barMax = Math.max(
@@ -174,6 +179,7 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
     metrics.variableCostsTotal,
     metrics.gatewayFees,
     metrics.totalFixedCosts,
+    metrics.teachingCostTotal,
     metrics.salesCostTotal,
     Math.abs(metrics.netProfit),
     1,
@@ -373,16 +379,23 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
         <div className="axr-calc__pane" data-pane="config" data-active={pane === "config" ? "" : undefined}>
           <Section
             title="Periodo"
-            hint="Todo lo que rellenes debajo —alumnos, inversión, sueldos, costes— es lo de UN periodo. Aquí eliges de cuánto tiempo hablamos."
+            hint="Todo lo que rellenes debajo —alumnos, inversión, costes— es lo de UN periodo. Aquí eliges de cuánto tiempo hablamos."
           >
             <div className="axr-calc__assumptions">
               <div className="axr-calc__field axr-calc__field--labelled">
-                <label htmlFor="period">Los números de abajo son de</label>
+                <label htmlFor="period-mode">Los números de abajo son de</label>
                 <select
-                  id="period"
-                  value={scenario.periodMonths}
-                  onChange={(e) => patch((s) => ({ ...s, periodMonths: Number(e.target.value) }))}
+                  id="period-mode"
+                  value={scenario.periodMode === "convocatoria" ? "convocatoria" : String(scenario.periodMonths)}
+                  onChange={(e) =>
+                    patch((s) =>
+                      e.target.value === "convocatoria"
+                        ? { ...s, periodMode: "convocatoria" }
+                        : { ...s, periodMode: "months", periodMonths: Number(e.target.value) },
+                    )
+                  }
                 >
+                  <option value="convocatoria">1 convocatoria</option>
                   {PERIOD_OPTIONS.map((m) => (
                     <option key={m} value={m}>
                       {periodLabel(m)}
@@ -390,15 +403,24 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
                   ))}
                 </select>
               </div>
+              {/* Hace falta siempre, no sólo en modo convocatoria: aunque el
+                  escenario se declare en meses, el profesorado se contrata por
+                  convocatoria y hay que saber cuánto dura para repartir su coste. */}
+              <Num
+                label="Semanas que dura una convocatoria"
+                value={scenario.convocatoriaWeeks}
+                onChange={(v) => patch((s) => ({ ...s, convocatoriaWeeks: v }))}
+                always
+              />
             </div>
             <p className="axr-calc__inline-total">
-              Estás diciendo: cada {periodLabel(scenario.periodMonths).replace("1 ", "")} entran{" "}
+              Estás diciendo: cada {scenarioPeriodShort(scenario)} entran{" "}
               <strong>{metrics.totalStudents} alumnos</strong> y se facturan{" "}
               <strong>{formatEUR(metrics.totalRevenue)}</strong>.
             </p>
             <p className="axr-calc__section-hint" style={{ margin: "0.5rem 0 0" }}>
-              No cambia ningún cálculo de la cuenta de resultados: sirve para saber cuánto se acumula entre un
-              reparto de dividendos y el siguiente, y con qué facturación se compara el umbral.
+              El periodo no cambia la cuenta de resultados: decide cuánto se acumula entre un reparto de dividendos
+              y el siguiente, y cómo se reparte el coste del profesorado, que se contrata por convocatoria.
             </p>
           </Section>
 
@@ -448,6 +470,51 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
           </Section>
 
           <Section
+            title="Profesorado"
+            hint={`Horas cerradas por convocatoria y precio por hora. No depende de cuántos alumnos entren: si la convocatoria se da, las horas se pagan.`}
+          >
+            <Head cols={2} labels={["Profesor", "Horas / convocatoria", "€ por hora"]} />
+            {scenario.teachers.map((t) => (
+              <Row
+                key={t.id}
+                cols={2}
+                onRemove={() => patch((s) => ({ ...s, teachers: s.teachers.filter((x) => x.id !== t.id) }))}
+              >
+                <Txt label="Profesor" value={t.name} onChange={(v) => updateTeacher(t.id, { name: v })} />
+                <Num label="Horas / convocatoria" value={t.hours} onChange={(v) => updateTeacher(t.id, { hours: v })} />
+                <Num label="€ por hora" value={t.hourlyRate} onChange={(v) => updateTeacher(t.id, { hourlyRate: v })} />
+              </Row>
+            ))}
+            <AddBtn
+              label="Añadir profesor"
+              onClick={() =>
+                patch((s) => ({
+                  ...s,
+                  teachers: [...s.teachers, { id: newId(), name: "Nuevo profesor", hours: 0, hourlyRate: 0 }],
+                }))
+              }
+            />
+            <p className="axr-calc__inline-total">
+              {metrics.teachingHours} h por convocatoria ={" "}
+              <strong>{formatEUR(metrics.teachingCostPerConvocatoria)}</strong> por convocatoria
+              {scenario.periodMode === "convocatoria" ? (
+                "."
+              ) : (
+                <>
+                  , que en {scenarioPeriodShort(scenario)} son{" "}
+                  <strong>{formatEUR(metrics.teachingCostTotal)}</strong>.
+                </>
+              )}
+            </p>
+            {scenario.teachers.length === 0 ? (
+              <p className="axr-calc__section-hint" style={{ margin: "0.5rem 0 0" }}>
+                Este escenario no tiene profesorado aquí. Si su coste docente está metido como coste fijo, déjalo
+                así: repetirlo en los dos sitios lo contaría dos veces.
+              </p>
+            ) : null}
+          </Section>
+
+          <Section
             title="Equipo comercial"
             hint="El sueldo se paga entren los alumnos que entren; el variable, sólo por matrícula cerrada. Por eso el variable entra en el punto de equilibrio y el sueldo no."
           >
@@ -459,7 +526,7 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
                 always
               />
               <Num
-                label={`Sueldo fijo por comercial (€ / ${periodLabel(scenario.periodMonths)})`}
+                label={`Sueldo fijo por comercial (€ / ${scenarioPeriodShort(scenario)})`}
                 value={scenario.salesTeam.salaryPerRep}
                 onChange={(v) => patch((s) => ({ ...s, salesTeam: { ...s.salesTeam, salaryPerRep: v } }))}
                 always
@@ -477,7 +544,7 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
             </p>
           </Section>
 
-          <Section title="Costes fijos" hint="Lo que cuesta dar el curso entren los alumnos que entren: docencia, herramientas, soporte…">
+          <Section title="Costes fijos" hint="Estructura que se paga entren los alumnos que entren: herramientas, soporte, alquiler… La docencia NO va aquí: tiene su propio bloque, con horas y precio por hora.">
             <Head cols={1} labels={["Coste", "Importe (€)"]} />
             {scenario.fixedCosts.map((c) => (
               <Row
@@ -630,6 +697,7 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
                 <BarRow label="- Inversión en captación" value={metrics.totalMarketingSpend} max={barMax} />
                 <BarRow label="- Costes variables" value={metrics.variableCostsTotal} max={barMax} />
                 <BarRow label="- Comisión de pasarela" value={metrics.gatewayFees} max={barMax} />
+                <BarRow label="- Profesorado" value={metrics.teachingCostTotal} max={barMax} />
                 <BarRow label="- Equipo comercial" value={metrics.salesCostTotal} max={barMax} />
                 <BarRow label="- Costes fijos" value={metrics.totalFixedCosts} max={barMax} />
                 {scenario.corporateTaxPct > 0 ? (
