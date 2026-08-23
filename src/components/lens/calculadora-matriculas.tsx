@@ -371,10 +371,13 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
       <div className="axr-calc__split">
         {/* ── Configuración ── */}
         <div className="axr-calc__pane" data-pane="config" data-active={pane === "config" ? "" : undefined}>
-          <Section title="Periodo" hint="Qué representan los números de este escenario. De aquí sale cada cuánto se puede repartir.">
+          <Section
+            title="Periodo"
+            hint="Todo lo que rellenes debajo —alumnos, inversión, sueldos, costes— es lo de UN periodo. Aquí eliges de cuánto tiempo hablamos."
+          >
             <div className="axr-calc__assumptions">
-              <div className="axr-calc__field">
-                <label htmlFor="period">El escenario cubre</label>
+              <div className="axr-calc__field axr-calc__field--labelled">
+                <label htmlFor="period">Los números de abajo son de</label>
                 <select
                   id="period"
                   value={scenario.periodMonths}
@@ -388,6 +391,15 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
                 </select>
               </div>
             </div>
+            <p className="axr-calc__inline-total">
+              Estás diciendo: cada {periodLabel(scenario.periodMonths).replace("1 ", "")} entran{" "}
+              <strong>{metrics.totalStudents} alumnos</strong> y se facturan{" "}
+              <strong>{formatEUR(metrics.totalRevenue)}</strong>.
+            </p>
+            <p className="axr-calc__section-hint" style={{ margin: "0.5rem 0 0" }}>
+              No cambia ningún cálculo de la cuenta de resultados: sirve para saber cuánto se acumula entre un
+              reparto de dividendos y el siguiente, y con qué facturación se compara el umbral.
+            </p>
           </Section>
 
           <Section
