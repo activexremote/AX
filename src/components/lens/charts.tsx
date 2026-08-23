@@ -42,6 +42,26 @@ const GO = "#038632";
 /** El rojo de la paleta, no el de los errores: aquí un pago no es un fallo. */
 const COST = "#E4462F";
 
+/**
+ * Cifras cortas para poner ENCIMA de las columnas.
+ *
+ * Un "47.375 €" encima de una columna de 26 px de ancho no se lee: se
+ * amontona con el de al lado y acaban siendo doce manchas. En miles se lee
+ * cada uno, y para eso están: para saber de qué orden es cada mes sin tener
+ * que pasar el dedo por encima. La cifra exacta sigue estando, en el título
+ * emergente de cada columna.
+ */
+export function shortEUR(value: number): string {
+  const v = Math.abs(value);
+  if (v >= 1000) {
+    const miles = v / 1000;
+    // 47,4k por debajo de diez mil; 47k por encima. Dos cifras significativas
+    // son las que caben y las que hacen falta.
+    return `${new Intl.NumberFormat("es-ES", { maximumFractionDigits: miles < 10 ? 1 : 0 }).format(miles)}k`;
+  }
+  return new Intl.NumberFormat("es-ES", { maximumFractionDigits: 0 }).format(v);
+}
+
 export type Slice = { key: string; label: string; value: number; color: string };
 
 // ── Barra 100 % apilada ───────────────────────────────────
@@ -186,21 +206,28 @@ export function MonthlyPL({
   openingCash?: number;
 }) {
   const W = 340;
-  const BARS = 74; // alto de la banda de columnas (mitad arriba, mitad abajo)
-  const LINE = 30; // alto de la banda del acumulado
+  const ETIQ = 9; // sitio para la cifra encima y debajo de las columnas
+  const BARS = 88; // alto de la banda de columnas, etiquetas incluidas
+  const LINE = 32; // alto de la banda del acumulado
   const GAP = 13; // sitio para las letras de los meses
   const H = BARS + GAP + LINE;
 
   // 13 huecos: la inversión inicial y los doce meses.
   const slots = 13;
   const slot = W / slots;
-  const barW = Math.min(9, slot * 0.34);
+  const barW = Math.min(10, slot * 0.4);
 
   const maxUp = Math.max(...months.map((m) => m.revenue), 1);
   const maxDown = Math.max(...months.map((m) => m.costs), initialInvestment, 1);
-  const escala = Math.max(maxUp, maxDown);
-  const cero = BARS / 2;
-  const alto = (v: number) => (v / escala) * (BARS / 2);
+
+  // Una sola escala para arriba y para abajo —los mismos euros por píxel—,
+  // pero repartiendo el alto según lo que hay a cada lado. Con mitad y mitad,
+  // unos pagos cinco veces menores que los cobros dejaban media gráfica en
+  // blanco y las columnas rojas convertidas en rayas.
+  const util = BARS - ETIQ * 2;
+  const px = util / (maxUp + maxDown);
+  const cero = ETIQ + maxUp * px;
+  const alto = (v: number) => v * px;
 
   // Banda del acumulado, con su propia escala y el cero siempre dentro.
   const caja = [openingCash, ...months.map((m) => m.cash)];
@@ -238,6 +265,15 @@ export function MonthlyPL({
             >
               <title>{`Inversión inicial: ${formatEUR(-initialInvestment)}`}</title>
             </rect>
+            <text
+              x={slot / 2}
+              y={cero + alto(initialInvestment) + 7}
+              textAnchor="middle"
+              className="axr-pl__value"
+              fill={COST}
+            >
+              −{shortEUR(initialInvestment)}
+            </text>
             <text x={slot / 2} y={BARS + 11} textAnchor="middle" className="axr-pl__month">
               INV
             </text>
@@ -253,9 +289,20 @@ export function MonthlyPL({
               <rect x={x - barW / 2} y={cero - hUp} width={barW} height={Math.max(1, hUp)} fill={GO} rx={1.5}>
                 <title>{`${m.label}: cobros ${formatEUR(m.revenue)}`}</title>
               </rect>
+              {m.revenue > 0 ? (
+                <text x={x} y={cero - hUp - 3} textAnchor="middle" className="axr-pl__value" fill={GO}>
+                  {shortEUR(m.revenue)}
+                </text>
+              ) : null}
+
               <rect x={x - barW / 2} y={cero} width={barW} height={Math.max(1, hDown)} fill={COST} rx={1.5}>
                 <title>{`${m.label}: pagos ${formatEUR(-m.costs)}`}</title>
               </rect>
+              {m.costs > 0 ? (
+                <text x={x} y={cero + hDown + 7} textAnchor="middle" className="axr-pl__value" fill={COST}>
+                  {shortEUR(m.costs)}
+                </text>
+              ) : null}
               <text
                 x={x}
                 y={BARS + 11}
@@ -285,6 +332,15 @@ export function MonthlyPL({
             <title>{`${i === 0 ? "Al empezar" : months[i - 1].label}: caja ${formatEUR(v)}`}</title>
           </circle>
         ))}
+
+        {/* Sólo dos cifras en la línea: de dónde sale y a dónde llega. Doce
+            números pegados a una línea que sube son doce estorbos. */}
+        <text x={xCaja(0) + 3} y={yCaja(caja[0]) - 5} className="axr-pl__value" textAnchor="start" fill={INK}>
+          {shortEUR(caja[0])}
+        </text>
+        <text x={W} y={yCaja(caja[caja.length - 1]) - 5} className="axr-pl__value" textAnchor="end" fill={INK}>
+          {shortEUR(caja[caja.length - 1])}
+        </text>
       </svg>
 
       <figcaption className="axr-pl__legend">

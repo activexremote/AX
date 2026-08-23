@@ -1251,6 +1251,15 @@
     &[data-start] { fill: #161616; font-weight: 700; }
   }
 
+  // Las cifras encima de las columnas: pequeñas, tabulares y del color de su
+  // barra, para que se lean como parte de ella y no como texto suelto.
+  &__value {
+    font-family: var(--axr-mono);
+    font-size: 7.5px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
   &__start {
     font-family: var(--axr-mono);
     font-size: 0.6875rem;
