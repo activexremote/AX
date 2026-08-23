@@ -38,6 +38,7 @@ export const CAT_ORDER = Object.values(CAT);
 
 const INK = "#161616";
 const LOSS = "#a32020";
+const GO = "#038632";
 
 export type Slice = { key: string; label: string; value: number; color: string };
 
@@ -140,31 +141,118 @@ export function MiniBars({
   );
 }
 
+// ── El año, mes a mes ─────────────────────────────────────
 /**
- * Las 52 semanas del año y cuántas ocupan las convocatorias.
+ * La imagen central: doce meses con lo que entra, lo que sale y si el mes
+ * acaba en verde o en rojo.
  *
- * Es la comprobación de realidad que ningún número da: cinco convocatorias de
- * doce semanas son sesenta, y sesenta semanas no caben en un año por mucho
- * que la hoja de cálculo sume.
+ * Es el único gráfico de la pantalla con columnas verticales, y tiene motivo:
+ * el eje es el tiempo, que se lee de izquierda a derecha en cualquier
+ * calendario del mundo. Ponerlo horizontal aquí sería el chiste privado.
+ *
+ * El acumulado NO va como línea encima. Llega a cifras seis veces mayores que
+ * las de un mes, y meterlo en el mismo dibujo obligaría a un segundo eje —el
+ * error más viejo de los gráficos— o a aplastar las columnas hasta que no se
+ * lea ninguna. Va como número, debajo, que es donde se consulta.
  */
-export function Capacity({ weeksBusy, weeksOver }: { weeksBusy: number; weeksOver: number }) {
-  const pct = Math.min(100, (weeksBusy / 52) * 100);
-  const over = weeksOver > 0;
+export function MonthlyPL({
+  months,
+  cumulative,
+}: {
+  months: {
+    index: number;
+    label: string;
+    revenue: number;
+    costs: number;
+    profit: number;
+    starts: number;
+    running: number;
+  }[];
+  cumulative: number;
+}) {
+  const W = 340;
+  const H = 64;
+  const PAD_TOP = 9;
+  const max = Math.max(...months.map((m) => Math.max(m.revenue, m.costs)), 1);
+  const slot = W / 12;
+  const barW = 5;
+  const gap = 2;
 
   return (
-    <div className="axr-mini axr-mini--capacity">
-      <div className="axr-mini__head">
-        <span>Semanas ocupadas</span>
-        <span style={over ? { color: LOSS } : undefined}>{Math.round(weeksBusy)} / 52</span>
-      </div>
-      <div className="axr-mini__track">
-        <div className="axr-mini__fill" style={{ width: `${pct}%`, background: over ? LOSS : INK }} />
-      </div>
-      <div className="axr-mini__meta" data-alert={over ? "" : undefined}>
-        {over
-          ? `Te pasas ${Math.round(weeksOver)} semanas: o solapas convocatorias, o quitas una.`
-          : `Quedan ${Math.round(52 - weeksBusy)} semanas libres.`}
-      </div>
-    </div>
+    <figure className="axr-chart axr-pl">
+      <svg viewBox={`0 0 ${W} ${PAD_TOP + H + 25}`} width="100%" role="img" aria-label="Ingresos y costes mes a mes">
+        {months.map((m) => {
+          const x = m.index * slot + slot / 2;
+          const hR = (m.revenue / max) * H;
+          const hC = (m.costs / max) * H;
+          return (
+            <g key={m.index}>
+              {/* Mes con convocatoria en marcha: fondo tenue, para ver de un
+                  vistazo cuándo hay clase y cuándo el negocio está parado. */}
+              {m.running > 0 ? (
+                <rect x={m.index * slot} y={0} width={slot} height={H + 4} fill="#f4f4f4" />
+              ) : null}
+
+              <rect
+                x={x - barW - gap / 2}
+                y={PAD_TOP + H - hR}
+                width={barW}
+                height={Math.max(1, hR)}
+                fill={INK}
+                rx={1.5}
+              >
+                <title>{`${m.label}: ingresos ${formatEUR(m.revenue)}`}</title>
+              </rect>
+              <rect
+                x={x + gap / 2}
+                y={PAD_TOP + H - hC}
+                width={barW}
+                height={Math.max(1, hC)}
+                fill="#E4462F"
+                rx={1.5}
+              >
+                <title>{`${m.label}: costes ${formatEUR(m.costs)}`}</title>
+              </rect>
+
+              {/* Banderita: aquí empieza un grupo. */}
+              {m.starts > 0 ? <circle cx={x} cy={4} r={2.5} fill={INK} /> : null}
+
+              {/* Resultado del mes: verde o rojo, sin cifras que no se leen. */}
+              <rect
+                x={m.index * slot + 2}
+                y={PAD_TOP + H + 5}
+                width={slot - 4}
+                height={4}
+                fill={m.profit >= 0 ? GO : LOSS}
+              >
+                <title>{`${m.label}: ${m.profit >= 0 ? "beneficio" : "pérdida"} ${formatEUR(m.profit)}`}</title>
+              </rect>
+
+              <text x={x} y={PAD_TOP + H + 21} textAnchor="middle" className="axr-pl__month">
+                {m.label}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+
+      <figcaption className="axr-pl__legend">
+        <span>
+          <span className="axr-chart__dot" style={{ background: INK }} aria-hidden />
+          Ingresos
+        </span>
+        <span>
+          <span className="axr-chart__dot" style={{ background: "#E4462F" }} aria-hidden />
+          Costes
+        </span>
+        <span>
+          <span className="axr-pl__flag" aria-hidden />
+          Arranca
+        </span>
+        <span>
+          Acumulado <strong>{formatEUR(cumulative)}</strong>
+        </span>
+      </figcaption>
+    </figure>
   );
 }

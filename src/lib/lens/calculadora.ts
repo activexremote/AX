@@ -4,7 +4,14 @@
 // cobra a nadie, es una hoja de cálculo para pensar en voz alta, así que
 // prima que sea fácil de teclear ("2400") sobre la precisión de céntimos.
 
-export type LensPlan = { id: string; name: string; price: number; mix: number };
+export type LensPlan = {
+  id: string;
+  name: string;
+  price: number;
+  mix: number;
+  /** En cuántos meses paga el alumno. 1 = de una vez; 3 = tres plazos. */
+  payMonths: number;
+};
 export type LensChannel = { id: string; name: string; spend: number; students: number };
 export type LensFixedCost = { id: string; name: string; amount: number };
 export type LensPartner = { id: string; name: string; sharePct: number };
@@ -17,6 +24,29 @@ export type LensPartner = { id: string; name: string; sharePct: number };
  * convocatoria suelta, que no es como se decide nada.
  */
 export type LensCourse = { id: string; name: string; intakesPerYear: number };
+
+/**
+ * El calendario del año.
+ *
+ * Es lo que convierte una lista de convocatorias en una previsión de
+ * ingresos: no es lo mismo abrir cinco convocatorias seguidas que abrirlas
+ * cada tres semanas y solaparlas. El dinero entra en meses distintos, y en
+ * una previsión eso es TODO.
+ */
+export type LensCalendar = {
+  /** Día del año en que arranca la primera (1 = 1 de enero). */
+  firstStartDay: number;
+  /**
+   * Cada cuántos días arranca la siguiente.
+   *
+   * Si es menor que lo que dura una convocatoria, se solapan: dos grupos en
+   * marcha a la vez. Eso no es un error, es una decisión, y la previsión lo
+   * refleja tal cual.
+   */
+  startEveryDays: number;
+  /** Con cuántos días de antelación se gasta la captación de cada una. */
+  marketingLeadDays: number;
+};
 
 /**
  * Un profesor, cobrado como se cobra de verdad: por convocatoria, a un precio
@@ -100,6 +130,8 @@ export type LensScenarioData = {
   teachers: LensTeacher[];
   /** Catálogo y ritmo: cuántas convocatorias de cada curso al año. */
   courses: LensCourse[];
+  /** Cuándo arranca cada convocatoria dentro del año. */
+  calendar: LensCalendar;
   salesTeam: LensSalesTeam;
   /** Impuesto de sociedades, en %. A 0 el escenario se comporta como antes. */
   corporateTaxPct: number;
@@ -112,9 +144,9 @@ export type LensScenarioData = {
 export function defaultLensScenario(): LensScenarioData {
   return {
     plans: [
-      { id: "unico", name: "Pago único", price: 2400, mix: 40 },
-      { id: "anticipada", name: "Matrícula anticipada", price: 2100, mix: 35 },
-      { id: "plazos", name: "Pago a plazos (3×)", price: 2400, mix: 25 },
+      { id: "unico", name: "Pago único", price: 2400, mix: 40, payMonths: 1 },
+      { id: "anticipada", name: "Matrícula anticipada", price: 2100, mix: 35, payMonths: 1 },
+      { id: "plazos", name: "Pago a plazos (3×)", price: 2400, mix: 25, payMonths: 3 },
     ],
     channels: [
       { id: "meta", name: "Meta Ads", spend: 3000, students: 12 },
@@ -135,6 +167,7 @@ export function defaultLensScenario(): LensScenarioData {
       { id: "professional", name: "Remote Professional", intakesPerYear: 3 },
       { id: "founder", name: "Remote Founder", intakesPerYear: 2 },
     ],
+    calendar: { firstStartDay: 15, startEveryDays: 70, marketingLeadDays: 30 },
     variableCostPerStudent: 40,
     gatewayFeePct: 1.9,
     repeatPurchaseRate: 15,
@@ -165,7 +198,9 @@ export function normalizeScenario(raw: Partial<LensScenarioData> | null | undefi
   return {
     ...base,
     ...raw,
-    plans: raw.plans ?? base.plans,
+    // Un plan guardado antes de los plazos cobra de una vez, que es lo que
+    // hacía la calculadora hasta ahora: no se le inventan tres meses.
+    plans: (raw.plans ?? base.plans).map((p) => ({ ...p, payMonths: p.payMonths ?? 1 })),
     channels: raw.channels ?? base.channels,
     fixedCosts: raw.fixedCosts ?? base.fixedCosts,
     // Un escenario guardado antes de esto hablaba en meses: se respeta tal
@@ -176,6 +211,7 @@ export function normalizeScenario(raw: Partial<LensScenarioData> | null | undefi
     convocatoriaWeeks: raw.convocatoriaWeeks ?? base.convocatoriaWeeks,
     teachers: raw.teachers ?? (raw.periodMonths ? [] : base.teachers),
     courses: raw.courses ?? base.courses,
+    calendar: { ...base.calendar, ...(raw.calendar ?? {}) },
     salesTeam: { ...base.salesTeam, ...(raw.salesTeam ?? {}) },
     corporateTaxPct: raw.corporateTaxPct ?? 0,
     // Un escenario guardado antes de que existiera el reparto NO empieza a
@@ -265,6 +301,21 @@ export type LensAnnual = {
   perCourse: { id: string; name: string; intakes: number; students: number; revenue: number }[];
 };
 
+/** Un mes del año, con lo que entra y lo que sale. */
+export type LensMonth = {
+  /** 0 = enero. */
+  index: number;
+  label: string;
+  revenue: number;
+  costs: number;
+  profit: number;
+  cumulative: number;
+  /** Convocatorias que arrancan este mes. */
+  starts: number;
+  /** Convocatorias en marcha algún día de este mes. */
+  running: number;
+};
+
 export type LensMetrics = {
   totalStudents: number;
   totalMarketingSpend: number;
@@ -300,6 +351,7 @@ export type LensMetrics = {
   channelStats: LensChannelStats[];
   dividendPlan: LensDividendPlan;
   annual: LensAnnual;
+  months: LensMonth[];
 };
 
 export function computeLensMetrics(data: LensScenarioData): LensMetrics {
@@ -410,8 +462,134 @@ export function computeLensMetrics(data: LensScenarioData): LensMetrics {
     channelStats,
     dividendPlan,
     annual,
+    months: computeMonths(data, {
+      students: totalStudents,
+      marketing: totalMarketingSpend,
+      variablePerStudent: data.variableCostPerStudent + (data.salesTeam.bonusPerEnrollment || 0),
+      teaching: teachingCostPerConvocatoria,
+      gatewayPct: data.gatewayFeePct,
+      monthlyOverheads: (totalFixedCosts + salesFixedTotal) / periodMonths,
+      avgTicket,
+    }),
   };
 }
+
+// ── El año, mes a mes ─────────────────────────────────────
+
+const MONTH_DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+const MONTH_LABELS = ["E", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
+const MONTH_NAMES = [
+  "enero", "febrero", "marzo", "abril", "mayo", "junio",
+  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+];
+
+/** En qué mes (0-11) cae un día del año. Los días fuera del año se recortan. */
+function monthOfDay(day: number): number {
+  let acc = 0;
+  for (let m = 0; m < 12; m++) {
+    acc += MONTH_DAYS[m];
+    if (day <= acc) return m;
+  }
+  return 11;
+}
+
+/**
+ * Reparte el año en doce meses.
+ *
+ * Cada convocatoria arranca un día concreto y desde ahí caen las cosas donde
+ * les toca: la captación ANTES (con los días de antelación que se digan), la
+ * matrícula al empezar —o en varios plazos, si el plan los tiene—, las horas
+ * de docencia repartidas por los días que dura, y la estructura todos los
+ * meses pase lo que pase.
+ *
+ * Ese desfase es justo lo que no se ve en un total anual: se puede cerrar un
+ * año estupendo y tener tres meses seguidos en rojo porque la captación se
+ * paga antes de que entre la primera matrícula.
+ */
+function computeMonths(
+  data: LensScenarioData,
+  v: {
+    students: number;
+    marketing: number;
+    variablePerStudent: number;
+    teaching: number;
+    gatewayPct: number;
+    monthlyOverheads: number;
+    avgTicket: number;
+  },
+): LensMonth[] {
+  const revenue = new Array(12).fill(0);
+  const costs = new Array(12).fill(0);
+  const starts = new Array(12).fill(0);
+  const running = new Array(12).fill(0);
+
+  const cal = data.calendar;
+  const intakes = (data.courses ?? []).reduce((sum, c) => sum + (c.intakesPerYear || 0), 0);
+  const durationDays = Math.max(1, (data.convocatoriaWeeks || 12) * 7);
+  const mixSum = data.plans.reduce((sum, p) => sum + (p.mix || 0), 0) || 1;
+
+  for (let i = 0; i < intakes; i++) {
+    const startDay = (cal.firstStartDay || 1) + i * Math.max(1, cal.startEveryDays || 1);
+    if (startDay > 365) break; // lo que no arranca dentro del año, no cuenta
+    const startMonth = monthOfDay(startDay);
+    starts[startMonth] += 1;
+
+    // Captación: se paga por delante, y puede caer en el año anterior. Si
+    // cae fuera, se imputa a enero: sacarla del cuadro haría que el año
+    // pareciera más barato de lo que es.
+    const capDay = startDay - (cal.marketingLeadDays || 0);
+    costs[capDay < 1 ? 0 : monthOfDay(capDay)] += v.marketing;
+
+    // Matrículas: cada plan cobra en los meses que tenga.
+    for (const p of data.plans) {
+      const share = (p.mix || 0) / mixSum;
+      const total = v.students * share * (p.price || 0);
+      const meses = Math.max(1, Math.round(p.payMonths || 1));
+      for (let k = 0; k < meses; k++) {
+        const m = monthOfDay(Math.min(365, startDay + k * 30));
+        revenue[m] += total / meses;
+        costs[m] += (total / meses) * (v.gatewayPct / 100);
+      }
+    }
+
+    // Variables y comisión comercial: al matricularse.
+    costs[startMonth] += v.variablePerStudent * v.students;
+
+    // Docencia: repartida por los días de clase que caen en cada mes.
+    const mesesEnMarcha = new Set<number>();
+    for (let d = 0; d < durationDays; d++) {
+      const day = startDay + d;
+      if (day > 365) break;
+      const m = monthOfDay(day);
+      costs[m] += v.teaching / durationDays;
+      mesesEnMarcha.add(m);
+    }
+    // Un grupo cuenta una vez por mes, aunque dure treinta días de ese mes:
+    // lo que se quiere saber es cuántos grupos hay a la vez.
+    for (const m of mesesEnMarcha) running[m] += 1;
+  }
+
+  // Estructura y sueldos: todos los meses, haya o no convocatoria.
+  for (let m = 0; m < 12; m++) costs[m] += v.monthlyOverheads;
+
+  let acc = 0;
+  return MONTH_LABELS.map((label, m) => {
+    const profit = revenue[m] - costs[m];
+    acc += profit;
+    return {
+      index: m,
+      label,
+      revenue: revenue[m],
+      costs: costs[m],
+      profit,
+      cumulative: acc,
+      starts: starts[m],
+      running: running[m],
+    };
+  });
+}
+
+export { MONTH_NAMES };
 
 function computeAnnual(
   data: LensScenarioData,

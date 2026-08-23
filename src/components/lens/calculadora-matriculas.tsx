@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { saveScenario, updateScenario, deleteScenario } from "@/app/lens/calculadora-matriculas/actions";
-import { CAT, CAT_ORDER, Capacity, MiniBars, StackedBar } from "@/components/lens/charts";
+import { CAT, CAT_ORDER, MiniBars, MonthlyPL, StackedBar } from "@/components/lens/charts";
 import {
   buildScenarioName,
   computeLensMetrics,
@@ -204,6 +204,12 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
   // De la tabla de canales sólo se mira esto: dónde sale barato el alumno y
   // dónde caro. Los canales sin alumnos quedan fuera, que su CAC es 0 y
   // saldrían siempre como "el más barato".
+  // ¿Se pisan las convocatorias? Si la siguiente arranca antes de que acabe
+  // la anterior, hay dos grupos a la vez, y eso cambia el profesorado que
+  // hace falta aunque la cuenta de resultados no se entere.
+  const solapan = scenario.calendar.startEveryDays < scenario.convocatoriaWeeks * 7;
+  const maxSolape = Math.max(...metrics.months.map((m) => m.running), 0);
+
   const conAlumnos = metrics.channelStats.filter((c) => c.students > 0);
   const bestChannel = conAlumnos.length ? conAlumnos.reduce((a, b) => (b.cac < a.cac ? b : a)) : null;
   const worstChannel = conAlumnos.length > 1 ? conAlumnos.reduce((a, b) => (b.cac > a.cac ? b : a)) : null;
@@ -446,6 +452,7 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
         <div className="axr-calc__pane" data-pane="config" data-active={pane === "config" ? "" : undefined}>
           <Section
             title="Convocatorias al año"
+            badge={`${metrics.annual.intakes} al año · ${Math.round(metrics.annual.students)} alumnos`}
             hint="Cuántas veces al año se abre cada curso. Es lo que convierte una convocatoria suelta en un año de negocio."
           >
             <Head cols={1} labels={["Curso", "Convocatorias / año"]} />
@@ -485,7 +492,48 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
           </Section>
 
           <Section
+            title="Calendario"
+            badge={`cada ${scenario.calendar.startEveryDays} días${solapan ? " · solapadas" : ""}`}
+            hint="Cuándo arranca cada convocatoria dentro del año. Es lo que decide en qué mes entra el dinero, y por tanto toda la previsión."
+          >
+            <div className="axr-calc__assumptions">
+              <Num
+                label="Primera arranca el día del año"
+                value={scenario.calendar.firstStartDay}
+                onChange={(v) => patch((s) => ({ ...s, calendar: { ...s.calendar, firstStartDay: v } }))}
+                always
+              />
+              <Num
+                label="Días entre convocatorias"
+                value={scenario.calendar.startEveryDays}
+                onChange={(v) => patch((s) => ({ ...s, calendar: { ...s.calendar, startEveryDays: v } }))}
+                always
+              />
+              <Num
+                label="Captación, días de antelación"
+                value={scenario.calendar.marketingLeadDays}
+                onChange={(v) => patch((s) => ({ ...s, calendar: { ...s.calendar, marketingLeadDays: v } }))}
+                always
+              />
+            </div>
+            <p className="axr-calc__inline-total">
+              {solapan ? (
+                <>
+                  Se <strong>solapan</strong>: cada {scenario.calendar.startEveryDays} días arranca una y duran{" "}
+                  {scenario.convocatoriaWeeks * 7}, así que llega a haber{" "}
+                  <strong>{maxSolape} grupos a la vez</strong>.
+                </>
+              ) : (
+                <>
+                  Van <strong>en fila</strong>, sin solaparse: cada una acaba antes de que empiece la siguiente.
+                </>
+              )}
+            </p>
+          </Section>
+
+          <Section
             title="Periodo"
+            badge={scenarioPeriodLabel(scenario)}
             hint="Todo lo que rellenes debajo —alumnos, inversión, costes— es lo de UN periodo. Aquí eliges de cuánto tiempo hablamos."
           >
             <div className="axr-calc__assumptions">
@@ -533,19 +581,21 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
 
           <Section
             title="Precios de planes"
-            hint="El precio de cada plan y qué % de los alumnos lo elige. El ticket medio sale de esta mezcla."
+            badge={`Ticket medio ${formatEUR(metrics.avgTicket)}`}
+            hint="Precio, qué % lo elige y en cuántos meses lo paga. Los meses de pago no cambian el total: cambian el mes en que entra el dinero."
           >
-            <Head cols={2} labels={["Plan", "Precio (€)", "Mezcla (%)"]} />
+            <Head cols={3} labels={["Plan", "Precio (€)", "Mezcla (%)", "Meses de pago"]} />
             {scenario.plans.map((p) => (
-              <Row key={p.id} cols={2} onRemove={() => patch((s) => ({ ...s, plans: s.plans.filter((x) => x.id !== p.id) }))}>
+              <Row key={p.id} cols={3} onRemove={() => patch((s) => ({ ...s, plans: s.plans.filter((x) => x.id !== p.id) }))}>
                 <Txt label="Plan" value={p.name} onChange={(v) => updatePlan(p.id, { name: v })} />
                 <Num label="Precio (€)" value={p.price} onChange={(v) => updatePlan(p.id, { price: v })} />
                 <Num label="Mezcla (%)" value={p.mix} onChange={(v) => updatePlan(p.id, { mix: v })} />
+                <Num label="Meses de pago" value={p.payMonths} onChange={(v) => updatePlan(p.id, { payMonths: v })} />
               </Row>
             ))}
             <AddBtn
               label="Añadir plan"
-              onClick={() => patch((s) => ({ ...s, plans: [...s.plans, { id: newId(), name: "Nuevo plan", price: 0, mix: 0 }] }))}
+              onClick={() => patch((s) => ({ ...s, plans: [...s.plans, { id: newId(), name: "Nuevo plan", price: 0, mix: 0, payMonths: 1 }] }))}
             />
             <div className="axr-calc__mix-total" data-off={mixSum !== 100}>
               Suma de mezcla: {mixSum}% {mixSum === 100 ? "✓" : "— debería sumar 100%"}
@@ -554,6 +604,7 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
 
           <Section
             title="Canales de captación"
+            badge={`${metrics.totalStudents} alumnos · ${formatEUR(metrics.totalMarketingSpend)}`}
             hint="Cuánto inviertes en cada canal y cuántos alumnos trae. El CAC de cada uno se calcula solo."
           >
             <Head cols={2} labels={["Canal", "Inversión (€)", "Alumnos"]} />
@@ -578,6 +629,7 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
 
           <Section
             title="Profesorado"
+            badge={`${metrics.teachingHours} h · ${formatEUR(metrics.teachingCostPerConvocatoria)}`}
             hint={`Horas cerradas por convocatoria y precio por hora. No depende de cuántos alumnos entren: si la convocatoria se da, las horas se pagan.`}
           >
             <Head cols={2} labels={["Profesor", "Horas / convocatoria", "€ por hora"]} />
@@ -623,6 +675,7 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
 
           <Section
             title="Equipo comercial"
+            badge={formatEUR(metrics.salesCostTotal)}
             hint="El sueldo se paga entren los alumnos que entren; el variable, sólo por matrícula cerrada. Por eso el variable entra en el punto de equilibrio y el sueldo no."
           >
             <div className="axr-calc__assumptions">
@@ -651,7 +704,10 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
             </p>
           </Section>
 
-          <Section title="Costes fijos" hint="Estructura que se paga entren los alumnos que entren: herramientas, soporte, alquiler… La docencia NO va aquí: tiene su propio bloque, con horas y precio por hora.">
+          <Section
+            title="Costes fijos"
+            badge={formatEUR(metrics.totalFixedCosts)}
+            hint="Estructura que se paga entren los alumnos que entren: herramientas, soporte, alquiler… La docencia NO va aquí: tiene su propio bloque, con horas y precio por hora.">
             <Head cols={1} labels={["Coste", "Importe (€)"]} />
             {scenario.fixedCosts.map((c) => (
               <Row
@@ -669,7 +725,11 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
             />
           </Section>
 
-          <Section title="Otros supuestos" hint="Coste variable por alumno, pasarela de pago, upsells e impuesto de sociedades.">
+          <Section
+            title="Otros supuestos"
+            badge={`Pasarela ${formatPct(scenario.gatewayFeePct, 1)} · Impuestos ${formatPct(scenario.corporateTaxPct, 0)}`}
+            hint="Coste variable por alumno, pasarela de pago, upsells e impuesto de sociedades."
+          >
             <div className="axr-calc__assumptions">
               <Num
                 label="Coste variable / alumno (€)"
@@ -706,6 +766,11 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
 
           <Section
             title="Dividendos"
+            badge={
+              scenario.dividends.enabled
+                ? `${formatPct(scenario.dividends.payoutPct, 0)} ${payoutCadenceLabel(scenario.dividends.everyMonths)}`
+                : "apagado"
+            }
             hint="Cuánto del beneficio sale hacia los socios, con qué condición y cada cuánto. Lo que no se reparte se queda como reservas."
           >
             <label className="axr-calc__check">
@@ -752,7 +817,11 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
             </p>
           </Section>
 
-          <Section title="Socios" hint="Quién es dueño de qué. Cada reparto se divide con estos porcentajes.">
+          <Section
+            title="Socios"
+            badge={`${scenario.partners.length} · ${formatPct(div.sharesSum, 0)}`}
+            hint="Quién es dueño de qué. Cada reparto se divide con estos porcentajes."
+          >
             <Head cols={1} labels={["Socio", "Participación (%)"]} />
             {scenario.partners.map((p) => (
               <Row
@@ -792,45 +861,42 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
               quedó en una línea con los dos extremos, que es lo único que se
               mira de ella: dónde sale barato y dónde caro. */}
           <div className="axr-report">
-            <div className="axr-report__kpis">
-              <Tile label="Alumnos" value={String(metrics.totalStudents)} metricKey="totalStudents" />
-              <Tile label="Facturación" value={formatEUR(metrics.totalRevenue)} metricKey="totalRevenue" />
-              <Tile
-                label="Beneficio"
-                value={formatEUR(metrics.netProfit)}
-                tone={metrics.netProfit >= 0 ? "up" : "down"}
-                metricKey="netProfit"
-              />
-              <Tile
-                label="Margen"
-                value={formatPct(metrics.netMarginPct, 0)}
-                tone={metrics.netMarginPct >= 0 ? "up" : "down"}
-                metricKey="netMarginPct"
-              />
-            </div>
-
-            {/* ── El año ── */}
+            {/* Sin tira de KPIs: alumnos, facturación, beneficio y margen del
+                periodo ya están arriba, en la barra de mando. Repetirlos aquí
+                costaba cincuenta píxeles de la única pantalla que hay. */}
+            {/* ── Los doce meses: la imagen central ── */}
             <section className="axr-report__block">
               <h3>
-                El año
-                <em>
-                  {metrics.annual.intakes} {metrics.annual.intakes === 1 ? "convocatoria" : "convocatorias"}
-                </em>
+                Los 12 meses
+                <em>{maxSolape > 1 ? `hasta ${maxSolape} grupos a la vez` : "sin solape"}</em>
               </h3>
+              <MonthlyPL months={metrics.months} cumulative={metrics.months[11]?.cumulative ?? 0} />
               <div className="axr-report__trio">
-                <Tile label="Facturación" value={formatEUR(metrics.annual.revenue)} />
+                <Tile label="Factura/año" value={formatEUR(metrics.annual.revenue)} />
                 <Tile
-                  label="Beneficio"
+                  label="Beneficio/año"
                   value={formatEUR(metrics.annual.netProfit)}
                   tone={metrics.annual.netProfit >= 0 ? "up" : "down"}
                 />
                 <Tile
-                  label="Dividendos"
+                  label="Dividendos/año"
                   value={formatEUR(metrics.annual.dividends)}
                   tone={metrics.annual.dividends > 0 ? "up" : undefined}
                 />
               </div>
+            </section>
 
+            {/* ── Por curso ── */}
+            <section className="axr-report__block">
+              <h3>
+                Por curso
+                <em>
+                  {metrics.annual.intakes} convocatorias ·{" "}
+                  <span data-alert={metrics.annual.weeksOver > 0 ? "" : undefined}>
+                    {Math.round(metrics.annual.weeksBusy)}/52 sem
+                  </span>
+                </em>
+              </h3>
               <MiniBars
                 rows={metrics.annual.perCourse.map((c, i) => ({
                   key: c.id,
@@ -840,8 +906,12 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
                   color: CAT_ORDER[i % CAT_ORDER.length],
                 }))}
               />
-
-              <Capacity weeksBusy={metrics.annual.weeksBusy} weeksOver={metrics.annual.weeksOver} />
+              {metrics.annual.weeksOver > 0 ? (
+                <p className="axr-report__note" data-alert="">
+                  Esas convocatorias ocupan {Math.round(metrics.annual.weeksBusy)} semanas:{" "}
+                  {Math.round(metrics.annual.weeksOver)} más de las que tiene un año.
+                </p>
+              ) : null}
             </section>
 
             {/* ── Cada euro ── */}
@@ -949,12 +1019,6 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
                 />
               </div>
 
-              {bestChannel && worstChannel ? (
-                <p className="axr-report__note">
-                  Más barato: <strong>{bestChannel.name}</strong> a {formatEUR(bestChannel.cac, 0)} · más caro:{" "}
-                  <strong>{worstChannel.name}</strong> a {formatEUR(worstChannel.cac, 0)}
-                </p>
-              ) : null}
             </section>
 
             <details className="axr-report__aviso">
@@ -1007,15 +1071,42 @@ function Tile({
   );
 }
 
-function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
+/**
+ * Un bloque de configuración, plegado por defecto.
+ *
+ * La lista entera son nueve bloques: desplegados son cuatro pantallas de
+ * móvil de scroll para cambiar un número. Plegados caben todos a la vez, y
+ * cada uno enseña en su cabecera el dato que resume lo que hay dentro —25
+ * alumnos, 4.560 €, 100 %—, así que se ve el escenario completo sin abrir
+ * nada y se abre sólo lo que se va a tocar.
+ *
+ * <details> nativo a propósito: el teclado, el buscador del navegador y los
+ * lectores de pantalla ya saben qué es esto. Un acordeón hecho a mano habría
+ * que enseñárselo a los tres.
+ */
+function Section({
+  title,
+  hint,
+  badge,
+  open,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  /** Lo que resume el bloque, visible con el bloque cerrado. */
+  badge?: React.ReactNode;
+  open?: boolean;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="axr-calc__section">
-      <div className="axr-calc__section-head">
+    <details className="axr-calc__section" open={open}>
+      <summary>
         <h2>{title}</h2>
-      </div>
+        {badge ? <span className="axr-calc__badge">{badge}</span> : null}
+      </summary>
       {hint ? <p className="axr-calc__section-hint">{hint}</p> : null}
       {children}
-    </div>
+    </details>
   );
 }
 
