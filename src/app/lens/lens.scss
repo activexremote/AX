@@ -219,29 +219,62 @@
     top: 0;
     z-index: 5;
     display: grid;
-    gap: 0.625rem;
+    gap: 0.5rem;
     background: #ffffff;
     border: 1px solid var(--axr-border-ink);
-    padding: 0.875rem 1rem;
+    padding: 0.5rem 0.75rem;
   }
 
-  &__topbar-row {
+  // ── Línea que no se va nunca ──
+  // Plegada, la barra entera es esto más las pestañas: unos 70 px. Antes
+  // ocupaba trescientos y tapaba el resultado, que es justo lo que se viene a
+  // mirar.
+  &__bar-main {
     display: flex;
-    gap: 0.5rem;
     align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
   }
 
-  &__search {
+  &__bar-name {
     flex: 1;
     min-width: 0;
-    padding: 0.625rem 0.75rem;
-    border: 0;
-    border-bottom: 1px solid #161616;
-    background: var(--axr-gray-10);
-    font-family: inherit;
-    font-size: 0.9375rem; // 16px reales: por debajo, iOS hace zoom al enfocar
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-    &:focus { outline: 2px solid #161616; outline-offset: -2px; background: #ffffff; }
+  &__bar-quick {
+    flex: none;
+    font-size: 0.875rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+
+    &[data-tone="up"] { color: var(--axr-go-deep); }
+    &[data-tone="down"] { color: #a32020; }
+  }
+
+  &__collapse {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--axr-border-strong);
+    background: #ffffff;
+    color: var(--axr-text);
+    font-size: 0.75rem;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover { background: var(--axr-gray-10); }
+  }
+
+  &__panel {
+    display: grid;
+    gap: 0.625rem;
+    border-top: 1px solid var(--axr-border);
+    padding-top: 0.625rem;
   }
 
   &__results {
@@ -284,12 +317,6 @@
     font-family: var(--axr-mono);
     font-size: 0.6875rem;
     color: var(--axr-text-helper);
-  }
-
-  // ── Nombre autogenerado ──
-  &__name {
-    display: grid;
-    gap: 0.5rem;
   }
 
   &__name-preview {
@@ -373,9 +400,9 @@
   &__ticker {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.375rem 1.25rem;
+    gap: 0.375rem 1.1rem;
     border-top: 1px solid var(--axr-border);
-    padding-top: 0.625rem;
+    padding-top: 0.5rem;
     font-size: 0.875rem;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
@@ -455,8 +482,9 @@
 
     @media (min-width: 1024px) {
       position: sticky;
-      top: 190px;
-      max-height: calc(100vh - 210px);
+      // Justo debajo de la barra desplegada; plegada sobra sitio y no molesta.
+      top: 150px;
+      max-height: calc(100vh - 175px);
       overflow: auto;
     }
   }
@@ -486,6 +514,40 @@
     border-left: 3px solid #a32020;
     font-size: 0.8125rem;
     color: var(--axr-text-secondary);
+  }
+
+  // ── Tres cifras del año, grandes ──
+  &__heroes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+
+    > div {
+      border: 1px solid var(--axr-border);
+      border-left: 3px solid #161616;
+      padding: 0.625rem 0.75rem;
+
+      span {
+        display: block;
+        font-family: var(--axr-mono);
+        font-size: 0.5625rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--axr-text-helper);
+      }
+
+      strong {
+        display: block;
+        margin-top: 0.2rem;
+        font-size: 1.0625rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+
+      &[data-tone="up"] { border-left-color: var(--axr-go); strong { color: var(--axr-go-deep); } }
+      &[data-tone="down"] { border-left-color: #a32020; strong { color: #a32020; } }
+    }
   }
 
   &__disclaimer {
@@ -811,5 +873,167 @@
       color: var(--axr-text-helper);
       font-weight: 500;
     }
+  }
+}
+
+// ── Gráficos ────────────────────────────────────────────────
+//
+// Todo horizontal a propósito: en un móvil, una barra vertical deja las
+// etiquetas de canto y aquí el nombre de cada bloque importa tanto como su
+// tamaño. Y el color nunca va solo: cada gráfico lleva su leyenda con el
+// nombre y la cifra, porque dos de los seis colores se quedan justo por
+// debajo del contraste mínimo sobre blanco.
+.axr-chart {
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+
+  // Dos gráficos seguidos dentro de la misma sección necesitan aire entre
+  // ellos: pegados, el pie de uno se confunde con el título del siguiente.
+  & + & { margin-top: 1.25rem; }
+
+  figcaption {
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--axr-text-helper);
+  }
+
+  &__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  // ── Barra apilada ──
+  &__stack {
+    display: flex;
+    height: 28px;
+    width: 100%;
+    overflow: hidden;
+
+    &-seg {
+      display: block;
+      height: 100%;
+      // Dos píxeles de papel entre tramos: sin ellos, dos colores contiguos
+      // se leen como uno solo cuando el tramo es fino.
+      box-shadow: inset -2px 0 0 #ffffff;
+
+      &:last-child { box-shadow: none; }
+    }
+  }
+
+  // ── Leyenda ──
+  &__legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.25rem;
+
+    li {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      align-items: baseline;
+      gap: 0.5rem;
+      font-size: 0.8125rem;
+    }
+  }
+
+  &__legend-label { color: var(--axr-text-secondary); }
+  &__legend-value { font-weight: 600; font-variant-numeric: tabular-nums; }
+  &__legend-pct {
+    min-width: 3.2em;
+    text-align: right;
+    font-family: var(--axr-mono);
+    font-size: 0.6875rem;
+    color: var(--axr-text-helper);
+  }
+
+  &__dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    flex: none;
+    margin-right: 0.4rem;
+    vertical-align: baseline;
+  }
+
+  // ── Cascada y barras ──
+  &__waterfall,
+  &__courses {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.625rem;
+  }
+
+  &__waterfall li[data-kind="result"] {
+    border-top: 1px solid var(--axr-border-ink);
+    padding-top: 0.625rem;
+  }
+
+  &__wf-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.75rem;
+    font-size: 0.8125rem;
+    margin-bottom: 0.25rem;
+
+    span:last-child {
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+  }
+
+  &__wf-track {
+    height: 10px;
+    background: var(--axr-gray-10);
+
+    &[data-tall] { height: 16px; }
+  }
+
+  &__wf-fill {
+    height: 100%;
+    // Punta redondeada de 4 px anclada a la base: la barra empieza a ras y
+    // sólo se redondea por donde termina el dato.
+    border-radius: 0 4px 4px 0;
+    transition: width 0.2s ease;
+  }
+
+  &__courses-meta {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--axr-text-helper);
+  }
+
+  // ── Anillo ──
+  &--donut {
+    justify-items: center;
+
+    svg { display: block; }
+  }
+
+  &__donut-value {
+    font-family: var(--axr-display);
+    font-size: 17px;
+    font-weight: 700;
+    fill: #161616;
+  }
+
+  &__donut-label {
+    font-family: var(--axr-mono);
+    font-size: 8px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    fill: #6f6f6f;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &__wf-fill { transition: none; }
   }
 }

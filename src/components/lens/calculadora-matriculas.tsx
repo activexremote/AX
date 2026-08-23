@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { saveScenario, updateScenario, deleteScenario } from "@/app/lens/calculadora-matriculas/actions";
 import { MetricCard } from "@/components/lens/metric-card";
+import { CAT, CAT_ORDER, CourseBars, Donut, StackedBar, Waterfall, YearCapacity } from "@/components/lens/charts";
 import {
   buildScenarioName,
   computeLensMetrics,
@@ -33,6 +34,7 @@ function fold(text: string): string {
 }
 
 const PERIOD_OPTIONS = [1, 3, 6, 12];
+const COLLAPSE_KEY = "axr-lens-calc-collapsed";
 const PAYOUT_OPTIONS = [1, 3, 6, 12];
 
 export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: SavedScenario[] }) {
@@ -53,10 +55,32 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
   // En móvil sólo cabe una de las dos mitades a la vez; en escritorio se ven
   // juntas y esta pestaña no pinta nada (la oculta el CSS).
   const [pane, setPane] = useState<"config" | "resultado">("config");
+  // La barra de mando ocupaba media pantalla. Ahora se pliega, y se recuerda
+  // plegada: quien la cierra es porque quiere el sitio para los números.
+  const [collapsed, setCollapsed] = useState(false);
+  const [panel, setPanel] = useState<"none" | "escenario" | "pdf">("none");
   const [query, setQuery] = useState("");
-  const [exportOpen, setExportOpen] = useState(false);
   const [pdfPassword, setPdfPassword] = useState("");
   const [exporting, setExporting] = useState(false);
+
+  useEffect(() => {
+    try {
+      setCollapsed(localStorage.getItem(COLLAPSE_KEY) === "1");
+    } catch {
+      /* modo privado o almacenamiento bloqueado: se queda desplegada */
+    }
+  }, []);
+
+  function toggleCollapsed() {
+    setCollapsed((v) => {
+      try {
+        localStorage.setItem(COLLAPSE_KEY, v ? "0" : "1");
+      } catch {
+        /* da igual: es una comodidad, no un dato */
+      }
+      return !v;
+    });
+  }
 
   const metrics = useMemo(() => computeLensMetrics(scenario), [scenario]);
   const scenarioName = manualName ?? buildScenarioName(metrics.totalStudents, keyword);
@@ -138,7 +162,7 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      setExportOpen(false);
+      setPanel("none");
       setMessage({
         kind: "ok",
         text: pdfPassword.trim() ? "PDF descargado, protegido con contraseña." : "PDF descargado.",
@@ -168,6 +192,9 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
   function updatePartner(id: string, p: Partial<LensScenarioData["partners"][number]>) {
     patch((s) => ({ ...s, partners: s.partners.map((x) => (x.id === id ? { ...x, ...p } : x)) }));
   }
+  function updateCourse(id: string, p: Partial<LensScenarioData["courses"][number]>) {
+    patch((s) => ({ ...s, courses: s.courses.map((x) => (x.id === id ? { ...x, ...p } : x)) }));
+  }
   function updateTeacher(id: string, p: Partial<LensScenarioData["teachers"][number]>) {
     patch((s) => ({ ...s, teachers: s.teachers.map((x) => (x.id === id ? { ...x, ...p } : x)) }));
   }
@@ -187,169 +214,202 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
 
   return (
     <div className="axr-calc">
-      {/* ══ Barra de escenario ══ */}
-      <div className="axr-calc__topbar">
-        <div className="axr-calc__topbar-row">
-          <input
-            type="search"
-            className="axr-calc__search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={`Buscar entre ${savedScenarios.length} escenarios…`}
-            aria-label="Buscar escenarios guardados"
-          />
-          <button type="button" className="axr-btn axr-btn--ghost" onClick={resetScenario} disabled={pending}>
-            Nuevo
-          </button>
-        </div>
-
-        {query.trim() ? (
-          <ul className="axr-calc__results">
-            {filtered.length === 0 ? (
-              <li className="axr-calc__results-empty">Ningún escenario contiene «{query.trim()}».</li>
-            ) : (
-              filtered.map((s) => (
-                <li key={s.id}>
-                  <button
-                    type="button"
-                    className="axr-calc__result"
-                    data-current={s.id === scenarioId ? "" : undefined}
-                    onClick={() => {
-                      loadScenario(s);
-                      setQuery("");
-                    }}
-                  >
-                    <span>{s.name}</span>
-                    <span className="axr-calc__result-date">
-                      {new Date(s.updated_at).toLocaleDateString("es-ES")}
-                    </span>
-                  </button>
-                </li>
-              ))
-            )}
-          </ul>
-        ) : null}
-
-        <div className="axr-calc__name">
-          <div className="axr-calc__field">
-            <label htmlFor="keyword">Palabra clave</label>
-            <input
-              id="keyword"
-              type="text"
-              value={keyword}
-              onChange={(e) => {
-                setKeyword(e.target.value);
-                setManualName(null);
-              }}
-              placeholder="agresivo, conservador, sin ads…"
-            />
-          </div>
-          <div className="axr-calc__name-preview">
-            <span className="axr-calc__name-label">Nombre</span>
-            <strong>{scenarioName}</strong>
-            {manualName ? (
-              <button
-                type="button"
-                className="axr-calc__linkbtn"
-                onClick={() => setManualName(null)}
-                title="Volver al nombre automático"
-              >
-                regenerar
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="axr-calc__linkbtn"
-                onClick={() => setManualName(scenarioName)}
-                title="Escribir el nombre a mano"
-              >
-                editar a mano
-              </button>
-            )}
-          </div>
-          {manualName !== null ? (
-            <div className="axr-calc__field">
-              <label htmlFor="manual-name">Nombre a mano</label>
-              <input
-                id="manual-name"
-                type="text"
-                value={manualName}
-                onChange={(e) => setManualName(e.target.value)}
-              />
-            </div>
-          ) : null}
-        </div>
-
-        <div className="axr-calc__actions">
-          {scenarioId ? (
-            <>
-              <button type="button" className="axr-btn axr-btn--primary" disabled={pending} onClick={handleUpdate}>
-                Guardar cambios
-              </button>
-              <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={handleSaveNew}>
-                Guardar como nuevo
-              </button>
-              <button type="button" className="axr-btn axr-btn--danger" disabled={pending} onClick={handleDelete}>
-                Eliminar
-              </button>
-            </>
-          ) : (
-            <button type="button" className="axr-btn axr-btn--primary" disabled={pending} onClick={handleSaveNew}>
-              Guardar escenario
-            </button>
-          )}
+      {/* ══ Barra de mando ══ */}
+      {/* Plegada deja una sola línea: el nombre y el beneficio, que es lo que
+          se mira de reojo. Todo lo demás vive en paneles que se abren cuando
+          hacen falta, no ocupando pantalla por si acaso. */}
+      <div className="axr-calc__topbar" data-collapsed={collapsed ? "" : undefined}>
+        <div className="axr-calc__bar-main">
           <button
             type="button"
-            className="axr-btn axr-btn--ghost"
-            onClick={() => setExportOpen((v) => !v)}
-            aria-expanded={exportOpen}
+            className="axr-calc__collapse"
+            onClick={toggleCollapsed}
+            aria-expanded={!collapsed}
+            aria-label={collapsed ? "Desplegar la barra" : "Plegar la barra"}
+            title={collapsed ? "Desplegar" : "Plegar"}
           >
-            Exportar PDF
+            {collapsed ? "▾" : "▴"}
           </button>
+          <span className="axr-calc__bar-name" title={scenarioName}>
+            {scenarioName}
+          </span>
+          <span className="axr-calc__bar-quick" data-tone={metrics.netProfit >= 0 ? "up" : "down"}>
+            {formatEUR(metrics.netProfit)}
+          </span>
         </div>
 
-        {exportOpen ? (
-          <div className="axr-calc__export">
-            <p>
-              Una página con la cuenta de resultados, el reparto entre socios y los supuestos. Si pones contraseña,
-              el PDF se cifra y no se abre sin ella.
-            </p>
-            <div className="axr-calc__export-row">
-              <div className="axr-calc__field">
-                <label htmlFor="pdf-pass">Contraseña (opcional)</label>
-                <input
-                  id="pdf-pass"
-                  type="text"
-                  value={pdfPassword}
-                  onChange={(e) => setPdfPassword(e.target.value)}
-                  placeholder="Dejar vacío = PDF sin contraseña"
-                  autoComplete="off"
-                />
-              </div>
-              <button type="button" className="axr-btn axr-btn--primary" onClick={handleExport} disabled={exporting}>
-                {exporting ? "Generando…" : "Descargar"}
+        {!collapsed ? (
+          <>
+            <div className="axr-calc__ticker">
+              <span>
+                <em>Alumnos</em> {metrics.totalStudents}
+              </span>
+              <span>
+                <em>Facturación</em> {formatEUR(metrics.totalRevenue)}
+              </span>
+              <span data-tone={metrics.netProfit >= 0 ? "up" : "down"}>
+                <em>Beneficio</em> {formatEUR(metrics.netProfit)}
+              </span>
+              <span data-tone={div.poolPerPayout > 0 ? "up" : undefined}>
+                <em>Dividendos</em> {formatEUR(div.poolPerPayout)}
+              </span>
+              <span>
+                <em>Al año</em> {formatEUR(metrics.annual.revenue)}
+              </span>
+            </div>
+
+            <div className="axr-calc__actions">
+              <button
+                type="button"
+                className="axr-btn axr-btn--ghost"
+                aria-expanded={panel === "escenario"}
+                onClick={() => setPanel((p) => (p === "escenario" ? "none" : "escenario"))}
+              >
+                Escenario ▾
+              </button>
+              <button
+                type="button"
+                className="axr-btn axr-btn--primary"
+                disabled={pending}
+                onClick={scenarioId ? handleUpdate : handleSaveNew}
+              >
+                {scenarioId ? "Guardar cambios" : "Guardar"}
+              </button>
+              <button
+                type="button"
+                className="axr-btn axr-btn--ghost"
+                aria-expanded={panel === "pdf"}
+                onClick={() => setPanel((p) => (p === "pdf" ? "none" : "pdf"))}
+              >
+                PDF
               </button>
             </div>
-          </div>
+
+            {panel === "escenario" ? (
+              <div className="axr-calc__panel">
+                <div className="axr-calc__field axr-calc__field--labelled">
+                  <label htmlFor="buscar">Buscar entre los guardados</label>
+                  <input
+                    id="buscar"
+                    type="search"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={`${savedScenarios.length} escenarios`}
+                  />
+                </div>
+
+                {query.trim() ? (
+                  <ul className="axr-calc__results">
+                    {filtered.length === 0 ? (
+                      <li className="axr-calc__results-empty">Ninguno contiene «{query.trim()}».</li>
+                    ) : (
+                      filtered.map((sc) => (
+                        <li key={sc.id}>
+                          <button
+                            type="button"
+                            className="axr-calc__result"
+                            data-current={sc.id === scenarioId ? "" : undefined}
+                            onClick={() => {
+                              loadScenario(sc);
+                              setQuery("");
+                              setPanel("none");
+                            }}
+                          >
+                            <span>{sc.name}</span>
+                            <span className="axr-calc__result-date">
+                              {new Date(sc.updated_at).toLocaleDateString("es-ES")}
+                            </span>
+                          </button>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                ) : null}
+
+                <div className="axr-calc__field axr-calc__field--labelled">
+                  <label htmlFor="keyword">Palabra clave del nombre</label>
+                  <input
+                    id="keyword"
+                    type="text"
+                    value={keyword}
+                    onChange={(e) => {
+                      setKeyword(e.target.value);
+                      setManualName(null);
+                    }}
+                    placeholder="agresivo, conservador, sin ads…"
+                  />
+                </div>
+
+                <div className="axr-calc__name-preview">
+                  <span className="axr-calc__name-label">Nombre</span>
+                  <strong>{scenarioName}</strong>
+                  <button
+                    type="button"
+                    className="axr-calc__linkbtn"
+                    onClick={() => setManualName(manualName === null ? scenarioName : null)}
+                  >
+                    {manualName === null ? "editar a mano" : "regenerar"}
+                  </button>
+                </div>
+
+                {manualName !== null ? (
+                  <div className="axr-calc__field axr-calc__field--labelled">
+                    <label htmlFor="manual-name">Nombre a mano</label>
+                    <input
+                      id="manual-name"
+                      type="text"
+                      value={manualName}
+                      onChange={(e) => setManualName(e.target.value)}
+                    />
+                  </div>
+                ) : null}
+
+                <div className="axr-calc__actions">
+                  <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={resetScenario}>
+                    Nuevo
+                  </button>
+                  {scenarioId ? (
+                    <>
+                      <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={handleSaveNew}>
+                        Guardar como nuevo
+                      </button>
+                      <button type="button" className="axr-btn axr-btn--danger" disabled={pending} onClick={handleDelete}>
+                        Eliminar
+                      </button>
+                    </>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
+
+            {panel === "pdf" ? (
+              <div className="axr-calc__panel">
+                <p className="axr-calc__section-hint" style={{ margin: 0 }}>
+                  Una página con la cuenta de resultados, el reparto entre socios y los supuestos. Con contraseña, el
+                  PDF se cifra y no se abre sin ella.
+                </p>
+                <div className="axr-calc__export-row">
+                  <div className="axr-calc__field axr-calc__field--labelled">
+                    <label htmlFor="pdf-pass">Contraseña (opcional)</label>
+                    <input
+                      id="pdf-pass"
+                      type="text"
+                      value={pdfPassword}
+                      onChange={(e) => setPdfPassword(e.target.value)}
+                      placeholder="Vacío = sin contraseña"
+                      autoComplete="off"
+                    />
+                  </div>
+                  <button type="button" className="axr-btn axr-btn--primary" onClick={handleExport} disabled={exporting}>
+                    {exporting ? "Generando…" : "Descargar"}
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            {message ? <div className={`axr-calc__msg axr-calc__msg--${message.kind}`}>{message.text}</div> : null}
+          </>
         ) : null}
-
-        {message ? <div className={`axr-calc__msg axr-calc__msg--${message.kind}`}>{message.text}</div> : null}
-
-        {/* Resumen que no se va nunca: en móvil se configura mirando esto. */}
-        <div className="axr-calc__ticker">
-          <span>
-            <em>Alumnos</em> {metrics.totalStudents}
-          </span>
-          <span>
-            <em>Facturación</em> {formatEUR(metrics.totalRevenue)}
-          </span>
-          <span data-tone={metrics.netProfit >= 0 ? "up" : "down"}>
-            <em>Beneficio</em> {formatEUR(metrics.netProfit)}
-          </span>
-          <span data-tone={div.poolPerPayout > 0 ? "up" : undefined}>
-            <em>Dividendos</em> {formatEUR(div.poolPerPayout)}
-          </span>
-        </div>
 
         <div className="axr-calc__tabs" role="tablist">
           <button
@@ -377,6 +437,46 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
       <div className="axr-calc__split">
         {/* ── Configuración ── */}
         <div className="axr-calc__pane" data-pane="config" data-active={pane === "config" ? "" : undefined}>
+          <Section
+            title="Convocatorias al año"
+            hint="Cuántas veces al año se abre cada curso. Es lo que convierte una convocatoria suelta en un año de negocio."
+          >
+            <Head cols={1} labels={["Curso", "Convocatorias / año"]} />
+            {scenario.courses.map((c) => (
+              <Row
+                key={c.id}
+                cols={1}
+                onRemove={() => patch((s) => ({ ...s, courses: s.courses.filter((x) => x.id !== c.id) }))}
+              >
+                <Txt label="Curso" value={c.name} onChange={(v) => updateCourse(c.id, { name: v })} />
+                <Num
+                  label="Convocatorias / año"
+                  value={c.intakesPerYear}
+                  onChange={(v) => updateCourse(c.id, { intakesPerYear: v })}
+                />
+              </Row>
+            ))}
+            <AddBtn
+              label="Añadir curso"
+              onClick={() =>
+                patch((s) => ({
+                  ...s,
+                  courses: [...s.courses, { id: newId(), name: "Nuevo curso", intakesPerYear: 1 }],
+                }))
+              }
+            />
+            <p className="axr-calc__inline-total">
+              <strong>{metrics.annual.intakes}</strong>{" "}
+              {metrics.annual.intakes === 1 ? "convocatoria" : "convocatorias"} al año ={" "}
+              <strong>{Math.round(metrics.annual.students)} alumnos</strong> y{" "}
+              <strong>{formatEUR(metrics.annual.revenue)}</strong> de facturación anual.
+            </p>
+            <p className="axr-calc__section-hint" style={{ margin: "0.5rem 0 0" }}>
+              Cada convocatoria se supone igual a la que estás configurando abajo. Es una hipótesis: si el Founder
+              tiene la mitad de alumnos que el Professional, esto se queda largo.
+            </p>
+          </Section>
+
           <Section
             title="Periodo"
             hint="Todo lo que rellenes debajo —alumnos, inversión, costes— es lo de UN periodo. Aquí eliges de cuánto tiempo hablamos."
@@ -691,25 +791,65 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
               />
             </div>
 
-            <Section title="De los ingresos al beneficio" hint="Cómo se reparte cada euro que entra por matrículas.">
-              <div className="axr-calc__bars">
-                <BarRow label="Ingresos totales" value={metrics.totalRevenue} max={barMax} variant="revenue" />
-                <BarRow label="- Inversión en captación" value={metrics.totalMarketingSpend} max={barMax} />
-                <BarRow label="- Costes variables" value={metrics.variableCostsTotal} max={barMax} />
-                <BarRow label="- Comisión de pasarela" value={metrics.gatewayFees} max={barMax} />
-                <BarRow label="- Profesorado" value={metrics.teachingCostTotal} max={barMax} />
-                <BarRow label="- Equipo comercial" value={metrics.salesCostTotal} max={barMax} />
-                <BarRow label="- Costes fijos" value={metrics.totalFixedCosts} max={barMax} />
-                {scenario.corporateTaxPct > 0 ? (
-                  <BarRow label="- Impuesto de sociedades" value={metrics.corporateTax} max={barMax} />
-                ) : null}
-                <BarRow
-                  label="= Beneficio neto"
-                  value={metrics.netProfit}
-                  max={barMax}
-                  variant={metrics.netProfit >= 0 ? "profit" : "loss"}
-                />
+            {/* ── El año ── */}
+            <Section
+              title="El año"
+              hint={`${metrics.annual.intakes} convocatorias repitiendo este escenario.`}
+            >
+              <div className="axr-calc__heroes">
+                <div>
+                  <span>Facturación anual</span>
+                  <strong>{formatEUR(metrics.annual.revenue)}</strong>
+                </div>
+                <div data-tone={metrics.annual.netProfit >= 0 ? "up" : "down"}>
+                  <span>Beneficio anual</span>
+                  <strong>{formatEUR(metrics.annual.netProfit)}</strong>
+                </div>
+                <div data-tone={metrics.annual.dividends > 0 ? "up" : undefined}>
+                  <span>Dividendos al año</span>
+                  <strong>{formatEUR(metrics.annual.dividends)}</strong>
+                </div>
               </div>
+
+              <CourseBars rows={metrics.annual.perCourse} />
+              <YearCapacity weeksBusy={metrics.annual.weeksBusy} weeksOver={metrics.annual.weeksOver} />
+            </Section>
+
+            {/* ── A dónde va cada euro ── */}
+            <Section title="A dónde va cada euro" hint="De la facturación de un periodo, qué se lleva cada cosa.">
+              <StackedBar
+                total={metrics.totalRevenue}
+                caption="Cada tramo es una parte de la facturación del periodo."
+                slices={[
+                  { key: "captacion", label: "Captación", value: metrics.totalMarketingSpend, color: CAT.captacion },
+                  { key: "variables", label: "Variables por alumno", value: metrics.variableCostsTotal, color: CAT.variables },
+                  { key: "pasarela", label: "Pasarela de pago", value: metrics.gatewayFees, color: CAT.pasarela },
+                  { key: "profesorado", label: "Profesorado", value: metrics.teachingCostTotal, color: CAT.profesorado },
+                  { key: "comercial", label: "Equipo comercial", value: metrics.salesCostTotal, color: CAT.comercial },
+                  { key: "estructura", label: "Estructura", value: metrics.totalFixedCosts, color: CAT.estructura },
+                  { key: "impuesto", label: "Impuesto de sociedades", value: metrics.corporateTax, color: "#525252" },
+                  { key: "beneficio", label: "Beneficio neto", value: Math.max(0, metrics.netProfit), color: "#038632" },
+                ]}
+              />
+            </Section>
+
+            {/* ── Cascada ── */}
+            <Section title="De la facturación al beneficio" hint="Restando por bloques, en el orden en que se paga.">
+              <Waterfall
+                rows={[
+                  { key: "rev", label: "Facturación", value: metrics.totalRevenue, kind: "total" },
+                  { key: "cap", label: "Captación", value: metrics.totalMarketingSpend, color: CAT.captacion },
+                  { key: "var", label: "Variables por alumno", value: metrics.variableCostsTotal, color: CAT.variables },
+                  { key: "pas", label: "Pasarela de pago", value: metrics.gatewayFees, color: CAT.pasarela },
+                  { key: "prof", label: "Profesorado", value: metrics.teachingCostTotal, color: CAT.profesorado },
+                  { key: "com", label: "Equipo comercial", value: metrics.salesCostTotal, color: CAT.comercial },
+                  { key: "fij", label: "Estructura", value: metrics.totalFixedCosts, color: CAT.estructura },
+                  ...(metrics.corporateTax > 0
+                    ? [{ key: "tax", label: "Impuesto de sociedades", value: metrics.corporateTax, color: "#525252" }]
+                    : []),
+                  { key: "net", label: "Beneficio neto", value: metrics.netProfit, kind: "result" as const },
+                ]}
+              />
             </Section>
 
             <Section
@@ -730,6 +870,19 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
                 <MetricCard metricKey="dividendPool" value={formatEUR(div.poolPerPayout)} tone={div.poolPerPayout > 0 ? "positive" : undefined} />
                 <MetricCard metricKey="retained" value={formatEUR(div.retainedPerPayout)} />
               </div>
+
+              {div.partners.length > 0 && div.poolPerPayout > 0 ? (
+                <Donut
+                  centerLabel="por reparto"
+                  centerValue={formatEUR(div.poolPerPayout)}
+                  slices={div.partners.map((p, i) => ({
+                    key: p.id,
+                    label: p.name,
+                    value: p.perPayout,
+                    color: CAT_ORDER[i % CAT_ORDER.length],
+                  }))}
+                />
+              ) : null}
 
               {div.partners.length > 0 ? (
                 <table className="axr-calc__channel-table" style={{ marginTop: "1rem" }}>

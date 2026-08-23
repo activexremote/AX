@@ -10,6 +10,15 @@ export type LensFixedCost = { id: string; name: string; amount: number };
 export type LensPartner = { id: string; name: string; sharePct: number };
 
 /**
+ * Un curso del catálogo y cuántas convocatorias suyas se hacen al año.
+ *
+ * Es la variable que convierte un escenario —que describe UNA convocatoria—
+ * en un año de negocio. Sin ella sólo se puede hablar de lo que da una
+ * convocatoria suelta, que no es como se decide nada.
+ */
+export type LensCourse = { id: string; name: string; intakesPerYear: number };
+
+/**
  * Un profesor, cobrado como se cobra de verdad: por convocatoria, a un precio
  * por hora, sobre un número de horas ya cerrado de antemano.
  *
@@ -89,6 +98,8 @@ export type LensScenarioData = {
   convocatoriaWeeks: number;
   /** Profesorado, cobrado por convocatoria. */
   teachers: LensTeacher[];
+  /** Catálogo y ritmo: cuántas convocatorias de cada curso al año. */
+  courses: LensCourse[];
   salesTeam: LensSalesTeam;
   /** Impuesto de sociedades, en %. A 0 el escenario se comporta como antes. */
   corporateTaxPct: number;
@@ -119,6 +130,10 @@ export function defaultLensScenario(): LensScenarioData {
     teachers: [
       { id: "docente-1", name: "Profesor principal", hours: 60, hourlyRate: 60 },
       { id: "docente-2", name: "Profesor invitado", hours: 12, hourlyRate: 80 },
+    ],
+    courses: [
+      { id: "professional", name: "Remote Professional", intakesPerYear: 3 },
+      { id: "founder", name: "Remote Founder", intakesPerYear: 2 },
     ],
     variableCostPerStudent: 40,
     gatewayFeePct: 1.9,
@@ -160,6 +175,7 @@ export function normalizeScenario(raw: Partial<LensScenarioData> | null | undefi
     periodMonths: raw.periodMonths ?? base.periodMonths,
     convocatoriaWeeks: raw.convocatoriaWeeks ?? base.convocatoriaWeeks,
     teachers: raw.teachers ?? (raw.periodMonths ? [] : base.teachers),
+    courses: raw.courses ?? base.courses,
     salesTeam: { ...base.salesTeam, ...(raw.salesTeam ?? {}) },
     corporateTaxPct: raw.corporateTaxPct ?? 0,
     // Un escenario guardado antes de que existiera el reparto NO empieza a
@@ -224,6 +240,31 @@ export type LensDividendPlan = {
   blockedReason: "disabled" | "below-threshold" | "no-profit" | null;
 };
 
+/**
+ * El año.
+ *
+ * Un escenario describe una convocatoria (o un periodo suelto). El año sale
+ * de repetirlo tantas veces como convocatorias se hagan, sumando las de todos
+ * los cursos. Cada convocatoria se da por igual a la del escenario: es una
+ * hipótesis, y está dicha en pantalla, pero es lo que permite pasar de "esta
+ * convocatoria deja X" a "el año deja Y" sin inventar un modelo entero.
+ */
+export type LensAnnual = {
+  /** Convocatorias al año, sumando todos los cursos. */
+  intakes: number;
+  /** Cuántas veces cabe el periodo del escenario en un año. */
+  factor: number;
+  students: number;
+  revenue: number;
+  netProfit: number;
+  dividends: number;
+  /** Semanas de calendario que ocupan esas convocatorias. */
+  weeksBusy: number;
+  /** Si no caben en 52 semanas, cuántas faltan. */
+  weeksOver: number;
+  perCourse: { id: string; name: string; intakes: number; students: number; revenue: number }[];
+};
+
 export type LensMetrics = {
   totalStudents: number;
   totalMarketingSpend: number;
@@ -258,6 +299,7 @@ export type LensMetrics = {
   breakEvenStudents: number | null;
   channelStats: LensChannelStats[];
   dividendPlan: LensDividendPlan;
+  annual: LensAnnual;
 };
 
 export function computeLensMetrics(data: LensScenarioData): LensMetrics {
@@ -333,6 +375,12 @@ export function computeLensMetrics(data: LensScenarioData): LensMetrics {
   }));
 
   const dividendPlan = computeDividendPlan(data, totalRevenue, netProfit);
+  const annual = computeAnnual(data, {
+    students: totalStudents,
+    revenue: totalRevenue,
+    netProfit,
+    dividendsPerYear: dividendPlan.poolPerYear,
+  });
 
   return {
     totalStudents,
@@ -361,6 +409,44 @@ export function computeLensMetrics(data: LensScenarioData): LensMetrics {
     breakEvenStudents,
     channelStats,
     dividendPlan,
+    annual,
+  };
+}
+
+function computeAnnual(
+  data: LensScenarioData,
+  base: { students: number; revenue: number; netProfit: number; dividendsPerYear: number },
+): LensAnnual {
+  const courses = data.courses ?? [];
+  const intakes = courses.reduce((sum, c) => sum + (c.intakesPerYear || 0), 0);
+
+  // Si el escenario ES una convocatoria, el año son tantas convocatorias como
+  // se hagan. Si se declaró en meses, el año son 12/meses, y las
+  // convocatorias sólo sirven para el reparto por curso.
+  const factor =
+    data.periodMode === "convocatoria" ? intakes : 12 / Math.max(0.25, data.periodMonths || 1);
+
+  const weeksBusy = intakes * (data.convocatoriaWeeks || 12);
+
+  return {
+    intakes,
+    factor,
+    students: base.students * factor,
+    revenue: base.revenue * factor,
+    netProfit: base.netProfit * factor,
+    // Los dividendos ya vienen anualizados por su propia cadencia: repartir
+    // cada trimestre son cuatro repartos al año, se hagan las convocatorias
+    // que se hagan.
+    dividends: base.dividendsPerYear,
+    weeksBusy,
+    weeksOver: Math.max(0, weeksBusy - 52),
+    perCourse: courses.map((c) => ({
+      id: c.id,
+      name: c.name,
+      intakes: c.intakesPerYear || 0,
+      students: base.students * (c.intakesPerYear || 0),
+      revenue: base.revenue * (c.intakesPerYear || 0),
+    })),
   };
 }
 

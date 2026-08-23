@@ -243,6 +243,40 @@ function profitAndLoss(
     w,
   );
 
+  // ── El año ──
+  // Un escenario describe una convocatoria; quien recibe el PDF quiere saber
+  // qué año sale de repetirla.
+  y += 8;
+  y = sectionTitle(doc, "El año", x, y, w);
+  y = plainRow(
+    doc,
+    "Convocatorias al año",
+    `${m.annual.intakes} (${Math.round(m.annual.weeksBusy)} de 52 semanas)`,
+    x,
+    y,
+    w,
+  );
+  y = plainRow(doc, "Alumnos al año", String(Math.round(m.annual.students)), x, y, w);
+  y = plainRow(doc, "Facturación anual", formatEUR(m.annual.revenue), x, y, w);
+  y = plainRow(doc, "Beneficio anual", formatEUR(m.annual.netProfit), x, y, w);
+  y = plainRow(doc, "Dividendos al año", formatEUR(m.annual.dividends), x, y, w);
+
+  if (m.annual.weeksOver > 0) {
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(7.5)
+      .fillColor(LOSS)
+      .text(
+        wa(
+          `Esas convocatorias ocupan ${Math.round(m.annual.weeksBusy)} semanas: ${Math.round(m.annual.weeksOver)} más de las que tiene un año.`,
+        ),
+        x,
+        y,
+        { width: w },
+      );
+    y = doc.y + 2;
+  }
+
   return y;
 }
 
@@ -339,10 +373,14 @@ function assumptions(
     .map((c) => `${c.name} ${c.students} al. por ${formatEUR(c.spend)}`)
     .join(" · ");
   const fijos = d.fixedCosts.map((c) => `${c.name} ${formatEUR(c.amount)}`).join(" · ");
+  const cursos = d.courses
+    .map((c) => `${c.name}: ${c.intakesPerYear} al año`)
+    .join(" · ");
   const docentes = d.teachers
     .map((t) => `${t.name}: ${t.hours} h x ${formatEUR(t.hourlyRate)}`)
     .join(" · ");
 
+  y = wrapRow(doc, "Cursos y convocatorias", cursos, x, y, w);
   y = wrapRow(doc, "Planes y mezcla", planes, x, y, w);
   y = wrapRow(doc, "Canales de captación", canales, x, y, w);
   y = wrapRow(
