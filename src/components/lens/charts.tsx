@@ -39,6 +39,8 @@ export const CAT_ORDER = Object.values(CAT);
 const INK = "#161616";
 const LOSS = "#a32020";
 const GO = "#038632";
+/** El rojo de la paleta, no el de los errores: aquí un pago no es un fallo. */
+const COST = "#E4462F";
 
 export type Slice = { key: string; label: string; value: number; color: string };
 
@@ -143,21 +145,29 @@ export function MiniBars({
 
 // ── El año, mes a mes ─────────────────────────────────────
 /**
- * La imagen central: doce meses con lo que entra, lo que sale y si el mes
- * acaba en verde o en rojo.
+ * La imagen central: el dinero entrando y saliendo cada mes, y la caja
+ * acumulándose debajo.
  *
- * Es el único gráfico de la pantalla con columnas verticales, y tiene motivo:
- * el eje es el tiempo, que se lee de izquierda a derecha en cualquier
- * calendario del mundo. Ponerlo horizontal aquí sería el chiste privado.
+ * ── Por qué arriba y abajo ──
+ * Los cobros suben desde el cero y los pagos bajan. Con las dos series
+ * apoyadas en la misma línea base se ve de un vistazo el mes que se come lo
+ * que ingresa, que en dos columnas pegadas del mismo lado hay que deducirlo
+ * comparando alturas. El primer palo es la inversión inicial, en negativo:
+ * es el agujero del que sale todo lo demás.
  *
- * El acumulado NO va como línea encima. Llega a cifras seis veces mayores que
- * las de un mes, y meterlo en el mismo dibujo obligaría a un segundo eje —el
- * error más viejo de los gráficos— o a aplastar las columnas hasta que no se
- * lea ninguna. Va como número, debajo, que es donde se consulta.
+ * ── Por qué el acumulado va en su propia banda ──
+ * Llega a cifras cinco veces mayores que las de un mes. Dibujarlo encima de
+ * las columnas obligaría a un segundo eje —dos escalas en un mismo cuadro,
+ * el error más viejo que hay en gráficos, y el que hace que dos series
+ * parezcan cruzarse cuando no se rozan— o a aplastar las columnas hasta que
+ * no se lea ninguna. Así que va debajo, en su banda, con el mismo eje de
+ * meses: se sigue leyendo mes a mes, y cada cuadro tiene una sola escala.
  */
 export function MonthlyPL({
   months,
   cumulative,
+  initialInvestment = 0,
+  openingCash = 0,
 }: {
   months: {
     index: number;
@@ -165,92 +175,136 @@ export function MonthlyPL({
     revenue: number;
     costs: number;
     profit: number;
+    cash: number;
     starts: number;
     running: number;
   }[];
   cumulative: number;
+  /** Desembolso del arranque, que se pinta como el primer palo en negativo. */
+  initialInvestment?: number;
+  /** Caja al empezar, ya con la inversión descontada. */
+  openingCash?: number;
 }) {
   const W = 340;
-  const H = 64;
-  const PAD_TOP = 9;
-  const max = Math.max(...months.map((m) => Math.max(m.revenue, m.costs)), 1);
-  const slot = W / 12;
-  const barW = 5;
-  const gap = 2;
+  const BARS = 74; // alto de la banda de columnas (mitad arriba, mitad abajo)
+  const LINE = 30; // alto de la banda del acumulado
+  const GAP = 13; // sitio para las letras de los meses
+  const H = BARS + GAP + LINE;
+
+  // 13 huecos: la inversión inicial y los doce meses.
+  const slots = 13;
+  const slot = W / slots;
+  const barW = Math.min(9, slot * 0.34);
+
+  const maxUp = Math.max(...months.map((m) => m.revenue), 1);
+  const maxDown = Math.max(...months.map((m) => m.costs), initialInvestment, 1);
+  const escala = Math.max(maxUp, maxDown);
+  const cero = BARS / 2;
+  const alto = (v: number) => (v / escala) * (BARS / 2);
+
+  // Banda del acumulado, con su propia escala y el cero siempre dentro.
+  const caja = [openingCash, ...months.map((m) => m.cash)];
+  const cMax = Math.max(...caja, 0);
+  const cMin = Math.min(...caja, 0);
+  const cSpan = cMax - cMin || 1;
+  const yCaja = (v: number) => BARS + GAP + LINE - ((v - cMin) / cSpan) * LINE;
+  const xCaja = (i: number) => i * slot + slot / 2;
+  const linea = caja.map((v, i) => `${i === 0 ? "M" : "L"} ${xCaja(i).toFixed(1)} ${yCaja(v).toFixed(1)}`).join(" ");
+  const bajoCero = caja.some((v) => v < 0);
 
   return (
     <figure className="axr-chart axr-pl">
-      <svg viewBox={`0 0 ${W} ${PAD_TOP + H + 25}`} width="100%" role="img" aria-label="Ingresos y costes mes a mes">
+      <svg viewBox={`0 0 ${W} ${H + 4}`} width="100%" role="img" aria-label="Cobros, pagos y caja mes a mes">
+        {/* Meses con clase en marcha: fondo tenue. */}
+        {months.map((m) =>
+          m.running > 0 ? (
+            <rect key={`bg${m.index}`} x={(m.index + 1) * slot} y={0} width={slot} height={BARS} fill="#f4f4f4" />
+          ) : null,
+        )}
+
+        {/* Línea del cero: es la referencia de todo el cuadro de arriba. */}
+        <line x1={0} y1={cero} x2={W} y2={cero} stroke="#c6c6c6" strokeWidth={1} />
+
+        {/* La inversión inicial, en negativo. */}
+        {initialInvestment > 0 ? (
+          <g>
+            <rect
+              x={slot / 2 - barW / 2}
+              y={cero}
+              width={barW}
+              height={Math.max(1, alto(initialInvestment))}
+              fill={COST}
+              rx={1.5}
+            >
+              <title>{`Inversión inicial: ${formatEUR(-initialInvestment)}`}</title>
+            </rect>
+            <text x={slot / 2} y={BARS + 11} textAnchor="middle" className="axr-pl__month">
+              INV
+            </text>
+          </g>
+        ) : null}
+
         {months.map((m) => {
-          const x = m.index * slot + slot / 2;
-          const hR = (m.revenue / max) * H;
-          const hC = (m.costs / max) * H;
+          const x = (m.index + 1) * slot + slot / 2;
+          const hUp = alto(m.revenue);
+          const hDown = alto(m.costs);
           return (
             <g key={m.index}>
-              {/* Mes con convocatoria en marcha: fondo tenue, para ver de un
-                  vistazo cuándo hay clase y cuándo el negocio está parado. */}
-              {m.running > 0 ? (
-                <rect x={m.index * slot} y={0} width={slot} height={H + 4} fill="#f4f4f4" />
-              ) : null}
-
-              <rect
-                x={x - barW - gap / 2}
-                y={PAD_TOP + H - hR}
-                width={barW}
-                height={Math.max(1, hR)}
-                fill={INK}
-                rx={1.5}
-              >
-                <title>{`${m.label}: ingresos ${formatEUR(m.revenue)}`}</title>
+              <rect x={x - barW / 2} y={cero - hUp} width={barW} height={Math.max(1, hUp)} fill={GO} rx={1.5}>
+                <title>{`${m.label}: cobros ${formatEUR(m.revenue)}`}</title>
               </rect>
-              <rect
-                x={x + gap / 2}
-                y={PAD_TOP + H - hC}
-                width={barW}
-                height={Math.max(1, hC)}
-                fill="#E4462F"
-                rx={1.5}
-              >
-                <title>{`${m.label}: costes ${formatEUR(m.costs)}`}</title>
+              <rect x={x - barW / 2} y={cero} width={barW} height={Math.max(1, hDown)} fill={COST} rx={1.5}>
+                <title>{`${m.label}: pagos ${formatEUR(-m.costs)}`}</title>
               </rect>
-
-              {/* Banderita: aquí empieza un grupo. */}
-              {m.starts > 0 ? <circle cx={x} cy={4} r={2.5} fill={INK} /> : null}
-
-              {/* Resultado del mes: verde o rojo, sin cifras que no se leen. */}
-              <rect
-                x={m.index * slot + 2}
-                y={PAD_TOP + H + 5}
-                width={slot - 4}
-                height={4}
-                fill={m.profit >= 0 ? GO : LOSS}
+              <text
+                x={x}
+                y={BARS + 11}
+                textAnchor="middle"
+                className="axr-pl__month"
+                data-start={m.starts > 0 ? "" : undefined}
               >
-                <title>{`${m.label}: ${m.profit >= 0 ? "beneficio" : "pérdida"} ${formatEUR(m.profit)}`}</title>
-              </rect>
-
-              <text x={x} y={PAD_TOP + H + 21} textAnchor="middle" className="axr-pl__month">
                 {m.label}
               </text>
             </g>
           );
         })}
+
+        {/* ── Banda del acumulado ── */}
+        <line
+          x1={0}
+          y1={yCaja(0)}
+          x2={W}
+          y2={yCaja(0)}
+          stroke="#c6c6c6"
+          strokeWidth={1}
+          strokeDasharray="3 3"
+        />
+        <path d={linea} fill="none" stroke={bajoCero ? LOSS : INK} strokeWidth={2} strokeLinejoin="round" />
+        {caja.map((v, i) => (
+          <circle key={i} cx={xCaja(i)} cy={yCaja(v)} r={2} fill={v < 0 ? LOSS : INK}>
+            <title>{`${i === 0 ? "Al empezar" : months[i - 1].label}: caja ${formatEUR(v)}`}</title>
+          </circle>
+        ))}
       </svg>
 
       <figcaption className="axr-pl__legend">
         <span>
-          <span className="axr-chart__dot" style={{ background: INK }} aria-hidden />
-          Ingresos
+          <span className="axr-chart__dot" style={{ background: GO }} aria-hidden />
+          Cobros
         </span>
         <span>
-          <span className="axr-chart__dot" style={{ background: "#E4462F" }} aria-hidden />
-          Costes
+          <span className="axr-chart__dot" style={{ background: COST }} aria-hidden />
+          Pagos
         </span>
         <span>
-          <span className="axr-pl__flag" aria-hidden />
-          Arranca
+          <span className="axr-pl__line" aria-hidden />
+          Caja acumulada
         </span>
         <span>
-          Acumulado <strong>{formatEUR(cumulative)}</strong>
+          <strong className="axr-pl__start">M</strong> arranca convocatoria
+        </span>
+        <span>
+          Diciembre <strong>{formatEUR(cumulative)}</strong>
         </span>
       </figcaption>
     </figure>

@@ -807,6 +807,12 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
                 always
               />
               <Num
+                label="Inversión inicial (€)"
+                value={scenario.initialInvestment}
+                onChange={(v) => patch((s) => ({ ...s, initialInvestment: v }))}
+                always
+              />
+              <Num
                 label="% que termina el curso"
                 value={scenario.completionRate}
                 onChange={(v) => patch((s) => ({ ...s, completionRate: v }))}
@@ -815,7 +821,9 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
             </div>
             <p className="axr-calc__inline-total">
               EBITDA <strong>{formatEUR(metrics.ebitda)}</strong> ({formatPct(k.ebitdaMarginPct, 0)}) · EBIT{" "}
-              <strong>{formatEUR(metrics.ebit)}</strong>. La amortización no sale de la caja; los financieros, sí.
+              <strong>{formatEUR(metrics.ebit)}</strong>. La amortización no sale de la caja; los financieros, sí. La
+              inversión inicial tampoco pasa por el resultado: sale de la caja y vuelve poco a poco por la
+              amortización.
             </p>
           </Section>
 
@@ -927,10 +935,15 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
             {/* ── Los doce meses: la imagen central ── */}
             <section className="axr-report__block">
               <h3>
-                Los 12 meses
+                Caja mes a mes
                 <em>{maxSolape > 1 ? `hasta ${maxSolape} grupos a la vez` : "sin solape"}</em>
               </h3>
-              <MonthlyPL months={metrics.months} cumulative={metrics.months[11]?.cumulative ?? 0} />
+              <MonthlyPL
+                months={metrics.months}
+                cumulative={metrics.months[11]?.cash ?? 0}
+                initialInvestment={scenario.initialInvestment}
+                openingCash={k.cashOnHand}
+              />
               <div className="axr-report__trio">
                 <Tile label="Factura/año" value={formatEUR(metrics.annual.revenue)} />
                 <Tile
@@ -954,6 +967,7 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
                   {metrics.annual.intakes} convocatorias ·{" "}
                   <span data-alert={metrics.annual.weeksOver > 0 ? "" : undefined}>
                     {Math.round(metrics.annual.weeksBusy)}/52 sem
+                    {metrics.annual.weeksOver > 0 ? ` (+${Math.round(metrics.annual.weeksOver)})` : ""}
                   </span>
                 </em>
               </h3>
@@ -966,12 +980,6 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
                   color: CAT_ORDER[i % CAT_ORDER.length],
                 }))}
               />
-              {metrics.annual.weeksOver > 0 ? (
-                <p className="axr-report__note" data-alert="">
-                  Esas convocatorias ocupan {Math.round(metrics.annual.weeksBusy)} semanas:{" "}
-                  {Math.round(metrics.annual.weeksOver)} más de las que tiene un año.
-                </p>
-              ) : null}
             </section>
 
             {/* ── Cada euro ── */}

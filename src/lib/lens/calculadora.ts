@@ -144,6 +144,16 @@ export type LensScenarioData = {
   financialCostsPerPeriod: number;
   /** Caja disponible hoy. De aquí sale el runway, que no es un KPI: es la vida. */
   cashOnHand: number;
+  /**
+   * Inversión inicial: el desembolso del arranque.
+   *
+   * Sale de la CAJA y no de la cuenta de resultados, que es lo que es: no se
+   * gasta un local o una plataforma, se compra. En el resultado entra poco a
+   * poco, por la amortización. Confundir las dos cosas es lo que hace que un
+   * año parezca ruinoso el día que se invierte y estupendo los tres
+   * siguientes.
+   */
+  initialInvestment: number;
   /** % de alumnos que termina el curso. Predice recompra, reseñas y churn. */
   completionRate: number;
   dividends: LensDividends;
@@ -191,6 +201,7 @@ export function defaultLensScenario(): LensScenarioData {
     amortizationPerPeriod: 0,
     financialCostsPerPeriod: 0,
     cashOnHand: 40000,
+    initialInvestment: 15000,
     completionRate: 70,
     dividends: { enabled: true, payoutPct: 60, revenueThreshold: 60000, everyMonths: 3 },
     partners: [
@@ -232,6 +243,7 @@ export function normalizeScenario(raw: Partial<LensScenarioData> | null | undefi
     amortizationPerPeriod: raw.amortizationPerPeriod ?? 0,
     financialCostsPerPeriod: raw.financialCostsPerPeriod ?? 0,
     cashOnHand: raw.cashOnHand ?? base.cashOnHand,
+    initialInvestment: raw.initialInvestment ?? 0,
     completionRate: raw.completionRate ?? base.completionRate,
     // Un escenario guardado antes de que existiera el reparto NO empieza a
     // repartir solo al abrirlo: sale con el reparto apagado y con dos socios
@@ -534,7 +546,9 @@ export function computeLensMetrics(data: LensScenarioData): LensMetrics {
     monthlyOverheads:
       (totalFixedCosts + salesFixedTotal + (data.financialCostsPerPeriod || 0)) / periodMonths,
     avgTicket,
-    cashOnHand: data.cashOnHand || 0,
+    // El año empieza con la inversión ya pagada: es el agujero del que hay
+    // que salir, y enseñarlo es justo el sentido de la gráfica.
+    cashOnHand: (data.cashOnHand || 0) - (data.initialInvestment || 0),
   });
   const annual = computeAnnual(data, {
     students: totalStudents,
@@ -800,7 +814,7 @@ function computeInvestorKpis(
   const ltvCacLoaded = cacLoaded > 0 ? ltvGross / cacLoaded : 0;
 
   // ── Caja ──
-  const cashOnHand = data.cashOnHand || 0;
+  const cashOnHand = (data.cashOnHand || 0) - (data.initialInvestment || 0);
   const flujos = v.months.map((m) => m.profit);
   const quema = flujos.filter((f) => f < 0);
   const quemaMedia = quema.length ? Math.abs(quema.reduce((a, b) => a + b, 0)) / quema.length : 0;
