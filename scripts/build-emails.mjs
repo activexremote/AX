@@ -32,7 +32,13 @@ const FONT =
 
 // El logo se sirve desde el dominio público: en el correo no hay build ni
 // rutas relativas que valgan.
-const LOGO = "https://activexremote.com/email/logo-axr.png";
+//
+// ⚠︎ Tiene que ser el dominio donde vive ESTE proyecto, no la marca a secas.
+// activexremote.com sirve todavía la web estática antigua y ahí el PNG da
+// 404: el correo se veía sin símbolo. Se puede apuntar a otro sitio el día
+// que cambie el dominio, con EMAIL_ORIGIN=https://… delante del comando.
+const ORIGIN = process.env.EMAIL_ORIGIN ?? "https://ax-red.vercel.app";
+const LOGO = `${ORIGIN}/email/logo-axr.png`;
 
 /**
  * @param {{ preheader: string, bar: string, title: string, lead: string,

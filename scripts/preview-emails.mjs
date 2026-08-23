@@ -33,7 +33,7 @@ function plantillas() {
 
 function servir(nombre) {
   let html = fs.readFileSync(new URL(nombre, DIR), "utf8");
-  html = html.replaceAll("https://activexremote.com/email/logo-axr.png", `${CAMPUS}/email/logo-axr.png`);
+  html = html.replace(/https?:\/\/[^"']+\/email\/logo-axr\.png/g, `${CAMPUS}/email/logo-axr.png`);
   for (const [marca, valor] of Object.entries(EJEMPLO)) html = html.replaceAll(marca, valor);
   return html;
 }

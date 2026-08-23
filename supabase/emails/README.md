@@ -26,10 +26,11 @@ Panel de Supabase → **Authentication → Emails** → pestaña Templates.
   `https://<dominio>/auth/callback` en la lista de *Redirect URLs* (más
   `http://localhost:3000/auth/callback` para desarrollo). Sin eso el enlace
   del correo vuelve a un sitio que Supabase rechaza.
-- El símbolo ΔX se sirve desde `https://activexremote.com/email/logo-axr.png`
-  (lo genera `node scripts/build-email-logo.mjs`). Hasta el primer despliegue
-  con ese archivo, el correo se ve bien igual: la marca escrita va en texto,
-  no en la imagen.
+- El símbolo ΔX se sirve desde `https://ax-red.vercel.app/email/logo-axr.png`,
+  que es donde vive este proyecto (lo genera `node scripts/build-email-logo.mjs`).
+  Ojo: **no** desde activexremote.com, que todavía sirve la web estática vieja
+  y ahí el archivo no existe. Si el dominio cambia:
+  `EMAIL_ORIGIN=https://nuevo-dominio node scripts/build-emails.mjs`.
 - Los clientes bloquean imágenes por defecto. Nada importante depende de la
   imagen: ni el botón, ni el enlace de repuesto, ni la letra pequeña.
 - Sólo están en español. Si algún día hace falta la versión inglesa, se añade
