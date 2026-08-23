@@ -4358,30 +4358,31 @@ $axr-tool-cats:
 
 // ── La tira del héroe ──
 //
-// Cinco marcas, no once. Con once había que encogerlas hasta que no se leía
-// ni el nombre ni la categoría, y una fila de logotipos ilegibles no genera
-// confianza: genera ruido.
+// DOS marcas, y sólo los logotipos.
 //
-// ── Por qué pastillas blancas ────────────────────────────
-// Antes iban a una tinta —todos en blanco— directamente sobre el mesh. Sobre
-// un fondo que va del morado al magenta y al naranja, un logotipo blanco de
-// 24 px no se lee: no tiene un fondo estable contra el que recortarse, y a
-// ese tamaño el trazo fino de un wordmark desaparece.
+// Antes eran cinco, cada una dentro de una pastilla blanca con su nombre y su
+// categoría. Aquello no era una tira de partners: era una fila de tarjetas
+// compitiendo con el titular del héroe, que es lo único que ahí tiene que
+// leerse. Ahora son dos logotipos sobre el fondo, sin caja, sin etiqueta y
+// sin sombra. Quien quiera saber qué hace cada uno lo tiene en la sección de
+// partners, entera y con su beneficio.
 //
-// Cada marca va sobre su propia pastilla blanca y en SUS COLORES. Es lo que
-// hacen todas las páginas serias con una fila de partners, y resuelve tres
-// cosas de golpe: el logotipo se reconoce, el fondo deja de importar, y el
-// blanco de las pastillas ordena la fila sin necesidad de recolorear nada.
+// Los dos van a UNA TINTA, en blanco sobre el mesh. Es la versión de una
+// tinta que contemplan casi todas las guías de marca, y es lo que hace que
+// dos logotipos de dos empresas distintas se lean como una fila y no como un
+// muestrario. `brightness(0) invert(1)` sirve igual para un SVG oscuro (Deel)
+// que para uno claro (Remote & Talent), así que no hay que preparar y
+// mantener una versión monocroma de cada archivo.
 .axr-pstrip {
-  margin-top: clamp(0.5rem, 1.6vh, 1.2rem);
-  padding-top: clamp(0.5rem, 1.5vh, 1rem);
+  margin-top: clamp(0.6rem, 1.8vh, 1.4rem);
+  padding-top: clamp(0.6rem, 1.6vh, 1.1rem);
   border-top: 1px solid rgba(255, 255, 255, 0.2);
 
   &[data-tone="light"] { border-top-color: var(--lp-border); }
 
   &__label {
     display: block;
-    margin-bottom: clamp(0.35rem, 1vh, 0.6rem);
+    margin-bottom: clamp(0.5rem, 1.2vh, 0.85rem);
     font-family: var(--axr-mono);
     font-size: 0.6875rem;
     font-weight: 700;
@@ -4392,124 +4393,65 @@ $axr-tool-cats:
     [data-tone="light"] & { color: var(--lp-muted); }
   }
 
-  // Fila que envuelve, no rejilla: cada pastilla mide lo que mide su nombre,
-  // que es como se reparte una fila de marcas sin dejar huecos raros.
-  &__grid {
+  // Fila simple. Los logos se alinean por su eje y a la misma ALTURA óptica,
+  // nunca al mismo ancho: igualar por ancho aplastaría el monograma de Remote
+  // & Talent contra el wordmark de Deel.
+  &__row {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem;
+    align-items: center;
+    gap: 0.9rem clamp(1.5rem, 4vw, 2.75rem);
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
-  &__item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.34rem 0.7rem 0.34rem 0.4rem;
-    border-radius: 999px;
-    background: #fff;
-    // El borde en el color de la familia: el único punto de color de la
-    // pastilla, y el que la relaciona con su categoría.
-    border: 1px solid var(--lp-border);
-    box-shadow: 0 4px 14px rgba(11, 8, 24, 0.16);
-    cursor: default;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  &__row li { display: flex; align-items: center; }
 
-    &:hover,
-    &:focus-visible {
-      border-color: var(--fam);
-      transform: translateY(-1px);
-      box-shadow: 0 8px 22px rgba(11, 8, 24, 0.24);
-    }
-    &:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-  }
+  .axr-pmark {
+    height: clamp(24px, 3.4vh, 30px);
+    width: auto;
+    // Una tinta. La opacidad justa para que acompañen al titular en vez de
+    // pelearse con él.
+    filter: brightness(0) invert(1);
+    opacity: 0.88;
 
-  // El logo, en sus colores. Ancho fijo y alto libre: así los cinco quedan
-  // alineados por su eje aunque uno sea un monograma cuadrado (Revolut) y
-  // otro un wordmark cinco veces más ancho (SafetyWing).
-  &__mark {
-    flex: none;
-    display: grid;
-    place-items: center;
-    width: 30px;
-    height: 22px;
-
-    .axr-pmark {
-      max-width: 30px;
-      max-height: 20px;
-      width: auto;
-      height: auto;
-    }
-    // Sobre la pastilla blanca sí hace falta el chip oscuro de los logos
-    // claros: es el caso para el que se hizo.
-    .axr-pmark--text {
-      font-size: 0.5625rem !important;
-      line-height: 1.05;
-      text-align: center;
-      color: var(--lp-ink);
+    [data-tone="light"] & {
+      filter: brightness(0);
+      opacity: 0.55;
     }
   }
 
-  &__text { min-width: 0; line-height: 1.15; }
-  &__name {
-    display: block;
-    font-size: 0.8125rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    color: var(--lp-ink);
-    white-space: nowrap;
+  // Sin logo no hay filtro que valga: el nombre se compone en la tipografía
+  // de la casa y hereda el color del héroe.
+  .axr-pmark--text {
+    filter: none;
+    opacity: 0.88;
+    color: #fff;
+
+    [data-tone="light"] & { color: var(--lp-ink); opacity: 0.7; }
   }
 
-  // La categoría, con el color de su familia. Cuatro colores y no once:
-  // once colores distintos no son un código, son ruido.
-  &__tag {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-family: var(--axr-mono);
-    font-size: 0.5625rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--fam-ink);
-    white-space: nowrap;
-
-    &::before {
-      content: "";
-      flex: none;
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: var(--fam-ink);
-    }
+  // La pastilla oscura de los logos claros sobra aquí: sobre el mesh y a una
+  // tinta, un recuadro negro detrás del logo es justo la caja que se quería
+  // quitar.
+  .axr-pmark[data-dark] {
+    padding: 0;
+    background: none;
+    border-radius: 0;
   }
-
-  .axr-tools__anchor { position: static; }
 
   // ── Pantallas bajas ──
-  // En un portátil de 720 px de alto cada renglón del héroe cuenta. La
-  // etiqueta pasa a la misma línea que las pastillas —dice lo mismo y ahorra
-  // una fila entera— y las pastillas se ciñen. Por debajo de 640 px de ancho
-  // no se aplica: ahí la etiqueta y cinco pastillas en una línea no caben.
-  //
-  // ⚠︎ Sólo la variante a todo el ancho. Dentro de la columna del texto (580
-  // px) la etiqueta se come 200 px de esa línea y las pastillas caen en MÁS
-  // filas de las que había: probado, el héroe de la home pasaba de 659 a 765.
+  // En un portátil de 720 px de alto cada renglón del héroe cuenta: la
+  // etiqueta pasa a la misma línea que los logos y se ahorra una fila entera.
+  // Por debajo de 640 px de ancho no se aplica, que ahí no caben en línea.
   @media (max-height: 800px) and (min-width: 641px) {
-    &[data-full] {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 0.5rem 0.9rem;
+    gap: 0.5rem clamp(1rem, 3vw, 1.75rem);
 
     .axr-pstrip__label { margin-bottom: 0; }
-    .axr-pstrip__grid { flex: 1; }
-    .axr-pstrip__item { padding: 0.28rem 0.6rem 0.28rem 0.34rem; }
-    .axr-pstrip__mark { width: 26px; height: 19px; }
-    .axr-pstrip__mark .axr-pmark { max-width: 26px; max-height: 17px; }
-    }
   }
 }
 

@@ -1,20 +1,17 @@
 import {
   PARTNERS,
-  familyColor,
-  familyInk,
   partnerCopy,
   partnerLogo,
   type Partner,
 } from "@/app/bienvenida/partners";
-import { ToolTooltip } from "@/components/landing/tool-tooltip";
 import { getLocale } from "@/lib/i18n/server";
 
 // ══════════════════════════════════════════════════════════
 //  Partners
 //
-//  Dos piezas: la tira del héroe —sólo marcas, para decir «no estamos solos»
-//  antes de que nadie lea nada— y la sección de detalle, con el beneficio de
-//  cada uno.
+//  Dos piezas: la tira del héroe —dos logotipos, sólo para decir «no estamos
+//  solos» antes de que nadie lea nada— y la sección de detalle, con los once
+//  y el beneficio de cada uno.
 //
 //  Los logos van todos a la MISMA ALTURA y nunca al mismo ancho: es como se
 //  unifica una fila de logotipos. Igualarlos por ancho hace que un wordmark
@@ -62,18 +59,17 @@ function PartnerMark({ p, size }: { p: Partner; size: number }) {
 /**
  * Tira del héroe.
  *
- * Rejilla fija, sin movimiento y con CINCO marcas, no las once.
+ * Dos logotipos y la etiqueta. Nada más.
  *
- * Once obligaban a encogerlas hasta que no se leía ni el nombre ni la
- * categoría, y una fila de logotipos ilegibles no genera confianza: genera
- * ruido. Con cinco cabe el logo grande, el nombre y su categoría, que es lo
- * que hace que se entienda qué son. La lista completa está más abajo.
+ * Antes eran cinco metidos en pastillas blancas con su nombre y su categoría,
+ * y el resultado era una fila de tarjetas peleándose con el titular, que es
+ * lo único que en un héroe tiene que leerse. Aquí el trabajo de la tira es
+ * respaldar, no explicar: quién quiera saber qué hace cada partner lo tiene
+ * en la sección de abajo, con los once y su beneficio.
  *
- * Los logos van a UN SOLO COLOR. Es la versión de una tinta que casi todas
- * las guías de marca contemplan, y es lo que hace que once logotipos de once
- * empresas distintas se lean como una fila y no como un muestrario. El truco
- * es `brightness(0) invert(1)`: funciona igual sobre SVG y PNG, así que no
- * hay que preparar una versión monocroma de cada archivo.
+ * Los logos van a una tinta (CSS: `brightness(0) invert(1)`) y a la misma
+ * ALTURA óptica, nunca al mismo ancho: igualar por ancho aplastaría el
+ * monograma de Remote & Talent contra el wordmark de Deel.
  */
 export async function PartnerStrip({
   tone = "dark",
@@ -89,8 +85,8 @@ export async function PartnerStrip({
    *  · En la home manda el formulario (518 px) y la columna del texto va
    *    holgada, así que la tira cabe dentro sin que el héroe crezca.
    *  · En una página de curso manda el texto (624 px), así que meterla ahí le
-   *    suma 113 px. A todo el ancho entra en una sola fila —66 px— y encima
-   *    deja de empujar la columna alta.
+   *    sumaría altura. A todo el ancho entra en una sola fila y deja de
+   *    empujar la columna alta.
    */
   full?: boolean;
 }) {
@@ -101,35 +97,15 @@ export async function PartnerStrip({
     <div className="axr-pstrip" data-tone={tone} data-full={full ? "" : undefined}>
       <span className="axr-pstrip__label">{c.heroLabel}</span>
 
-      <ul className="axr-pstrip__grid">
-        {PARTNERS.filter((p) => p.hero).map((p) => {
-          const item = c.items[p.key];
-          return (
-            <li key={p.key}>
-              <span
-                className="axr-pstrip__item"
-                style={{
-                  ["--fam" as string]: familyColor(p.key),
-                  ["--fam-ink" as string]: familyInk(p.key),
-                }}
-                data-name={p.name}
-                data-desc={item?.desc ?? ""}
-                tabIndex={0}
-                role="button"
-                aria-label={`${p.name}. ${item?.area}. ${item?.desc ?? ""}`}
-              >
-                <span className="axr-pstrip__mark"><PartnerMark p={p} size={26} /></span>
-                <span className="axr-pstrip__text">
-                  <span className="axr-pstrip__name">{p.name}</span>
-                  <span className="axr-pstrip__tag">{item?.area}</span>
-                </span>
-              </span>
-            </li>
-          );
-        })}
+      <ul className="axr-pstrip__row">
+        {PARTNERS.filter((p) => p.hero).map((p) => (
+          <li key={p.key}>
+            {/* Sin enlace a propósito: el héroe no está para mandar a nadie
+                fuera. El nombre viaja en el alt del logo. */}
+            <PartnerMark p={p} size={30} />
+          </li>
+        ))}
       </ul>
-
-      <ToolTooltip scope=".axr-pstrip" />
     </div>
   );
 }

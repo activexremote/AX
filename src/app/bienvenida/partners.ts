@@ -31,17 +31,17 @@ export type Partner = {
   /**
    * Sale en la tira del héroe.
    *
-   * Cinco, no once. En el héroe una fila de once marcas obliga a encogerlas
-   * hasta que no se lee ni el nombre ni la categoría, y una fila de logos
-   * ilegibles no genera confianza: genera ruido. Cinco caben grandes, se
-   * entiende qué son y la sección de más abajo enseña la lista completa.
+   * Dos, no once. El héroe no es el muestrario de partners —para eso está la
+   * sección de más abajo, con los once y su beneficio—: es la primera línea
+   * de confianza, y una fila larga de logos encogidos no da confianza, da
+   * ruido. Con dos, cada logotipo entra grande y se lee de verdad.
    */
   hero?: true;
 };
 
 export const PARTNERS: readonly Partner[] = [
   { key: "deel",       name: "Deel",             logo: "deel.svg",            ratio: 78 / 27,   url: "https://www.deel.com", hero: true },
-  { key: "remoteandtalent", name: "Remote & Talent", logo: "remoteandtalent.svg", ratio: 80 / 90, dark: true, url: "https://remoteandtalent.com" },
+  { key: "remoteandtalent", name: "Remote & Talent", logo: "remoteandtalent.svg", ratio: 80 / 90, dark: true, url: "https://remoteandtalent.com", hero: true },
   // ⚠︎ SIN LOGO, y por un motivo que conviene saber: hiremo.com NO es la web
   // de la empresa, es un dominio aparcado y en venta («This domain may be for
   // sale»). Tampoco resuelven hiremo.io, .ai, .app, .co, .es, .tech ni
@@ -49,59 +49,23 @@ export const PARTNERS: readonly Partner[] = [
   // en nuestra tipografía y el enlace se deja fuera para no mandar a nadie a
   // una página de venta de dominios.
   { key: "hiremo",     name: "Hiremo",                                                            url: "" },
-  { key: "safetywing", name: "SafetyWing",       logo: "safetywing.svg",      ratio: 120 / 24,  url: "https://safetywing.com", hero: true },
+  { key: "safetywing", name: "SafetyWing",       logo: "safetywing.svg",      ratio: 120 / 24,  url: "https://safetywing.com" },
   { key: "wio",        name: "Wio Business",     logo: "wio.png",             ratio: 1,         url: "https://wio.io" },
-  { key: "revolut",    name: "Revolut Business", logo: "revolut.svg",         ratio: 1,         url: "https://www.revolut.com/business", hero: true },
+  { key: "revolut",    name: "Revolut Business", logo: "revolut.svg",         ratio: 1,         url: "https://www.revolut.com/business" },
   { key: "factorial",  name: "Factorial",        logo: "factorial.svg",       ratio: 160 / 32,  url: "https://factorialhr.com" },
   { key: "vercel",     name: "Vercel",           logo: "vercel.svg",          ratio: 1,         url: "https://vercel.com" },
   { key: "stripe",     name: "Stripe",           logo: "stripe.svg",          ratio: 1,         url: "https://stripe.com" },
-  { key: "delvy",      name: "Delvy",            logo: "delvy.svg",           ratio: 211.5 / 68, url: "https://delvy.es", hero: true },
-  { key: "nomad",      name: "Nomad Capitalist", logo: "nomad.png",           ratio: 150 / 71,  url: "https://nomadcapitalist.com", hero: true },
+  { key: "delvy",      name: "Delvy",            logo: "delvy.svg",           ratio: 211.5 / 68, url: "https://delvy.es" },
+  { key: "nomad",      name: "Nomad Capitalist", logo: "nomad.png",           ratio: 150 / 71,  url: "https://nomadcapitalist.com" },
 ];
 
-/**
- * Familia de cada categoría, y su color.
- *
- * Cuatro familias y no once colores: once colores distintos no son un código
- * de color, son ruido. Agrupadas por lo que resuelven —quién trabaja contigo,
- * cómo cobras, qué te cubre legalmente y con qué construyes— el color pasa a
- * decir algo.
- *
- * Los tonos son los de la marca en su versión clara, que es la que se lee
- * sobre el mesh del héroe.
- */
-export const FAMILIES: Record<string, { color: string; ink: string }> = {
-  // `color` es la versión clara, para bordes y detalles sobre fondos oscuros.
-  // `ink` es la oscura, la que se lee sobre la pastilla blanca: el mismo tono
-  // en claro sobre blanco no llega ni de lejos al contraste mínimo.
-  talento:  { color: "#a99bff", ink: "#5b4bf5" },
-  dinero:   { color: "#5fd8e2", ink: "#0e7f88" },
-  legal:    { color: "#ff9ad4", ink: "#b3187f" },
-  producto: { color: "#8fb4ff", ink: "#2f6bff" },
-};
-
-export const FAMILY_OF: Record<string, keyof typeof FAMILIES> = {
-  deel: "talento",
-  remoteandtalent: "talento",
-  hiremo: "talento",
-  factorial: "talento",
-  wio: "dinero",
-  revolut: "dinero",
-  stripe: "dinero",
-  safetywing: "legal",
-  delvy: "legal",
-  nomad: "legal",
-  vercel: "producto",
-};
-
-export function familyColor(key: string): string {
-  return FAMILIES[FAMILY_OF[key] ?? "talento"].color;
-}
-
-/** La versión oscura, para leerse sobre fondo claro. */
-export function familyInk(key: string): string {
-  return FAMILIES[FAMILY_OF[key] ?? "talento"].ink;
-}
+// Aquí vivía un código de color por familia (talento / dinero / legal /
+// producto) que pintaba el borde y la categoría de cada pastilla del héroe.
+// Con la tira reducida a dos logotipos a una tinta ya no hay nada que
+// colorear, y un mapa de colores que no usa nadie sólo sirve para que dentro
+// de seis meses alguien lo dé por vivo. La categoría de cada partner sigue
+// estando donde importa: en `items[].area` de la copy, que es lo que lee la
+// sección de abajo.
 
 export function partnerLogo(p: Partner): string | null {
   return p.logo ? `/logos/partners/${p.logo}` : null;
