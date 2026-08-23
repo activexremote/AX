@@ -425,7 +425,7 @@
   // ── Pestañas (sólo móvil) ──
   &__tabs {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     border: 1px solid var(--axr-border-ink);
 
     button {
@@ -443,7 +443,13 @@
       &[data-active] { background: #161616; color: #ffffff; }
     }
 
-    @media (min-width: 1024px) { display: none; }
+    // En ancho sigue haciendo falta para cambiar la columna derecha, pero
+    // la pestaña de configuración sobra: está siempre visible.
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(2, 1fr);
+
+      button:first-child { display: none; }
+    }
   }
 
   // ── Las dos mitades ──
@@ -452,6 +458,9 @@
     gap: 0.5rem;
 
     @media (min-width: 1024px) {
+      // Dos columnas: la configuración fija a la izquierda y, a la derecha,
+      // el panel que esté elegido. Tres columnas serían tres cosas
+      // ilegibles.
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       // Sin `stretch` la columna del resultado mide lo que mide su contenido,
       // y entonces su interior pegajoso deja de pegarse en cuanto la
@@ -468,9 +477,14 @@
 
     &[data-active] { display: grid; }
 
-    // En pantalla ancha las dos se ven a la vez y las pestañas sobran.
+    // En pantalla ancha la configuración se queda fija a la izquierda y a la
+    // derecha va el panel elegido: informe o KPIs. Nunca los tres a la vez;
+    // tres columnas de números son tres columnas que no se leen.
     @media (min-width: 1024px) {
-      display: grid;
+      &[data-pane="config"] { display: grid; }
+      &[data-wide-active] { display: grid; }
+      &[data-pane="resultado"]:not([data-wide-active]),
+      &[data-pane="kpis"]:not([data-wide-active]) { display: none; }
     }
   }
 
@@ -1244,4 +1258,14 @@
   }
 
   .axr-mini { gap: 0.25rem; }
+
+  // La lista de bloques plegados también se ciñe: doce cabeceras a 0,625rem
+  // de aire son sesenta píxeles que en un móvil corto no hay.
+  .axr-calc__section {
+    padding: 0.45rem 0.6rem;
+
+    &:not([open]) > summary { padding: 0; }
+  }
+
+  .axr-calc__split { gap: 0.75rem; }
 }

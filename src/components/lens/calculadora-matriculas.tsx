@@ -4,13 +4,14 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { saveScenario, updateScenario, deleteScenario } from "@/app/lens/calculadora-matriculas/actions";
-import { CAT, CAT_ORDER, MiniBars, MonthlyPL, StackedBar } from "@/components/lens/charts";
+import { CAT, CAT_ORDER, CashLine, MiniBars, MonthlyPL, StackedBar, TrendBars } from "@/components/lens/charts";
 import {
   buildScenarioName,
   computeLensMetrics,
   defaultLensScenario,
   formatEUR,
   formatPct,
+  formatMonths,
   formatRatio,
   normalizeScenario,
   METRIC_INFO,
@@ -19,6 +20,7 @@ import {
   scenarioPeriodLabel,
   scenarioPeriodShort,
   LENS_DISCLAIMER,
+  MONTH_NAMES,
   type LensScenarioData,
 } from "@/lib/lens/calculadora";
 
@@ -54,7 +56,7 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
   // ── Pantalla ──
   // En móvil sólo cabe una de las dos mitades a la vez; en escritorio se ven
   // juntas y esta pestaña no pinta nada (la oculta el CSS).
-  const [pane, setPane] = useState<"config" | "resultado">("config");
+  const [pane, setPane] = useState<"config" | "resultado" | "kpis">("config");
   // La barra de mando ocupaba media pantalla. Ahora se pliega, y se recuerda
   // plegada: quien la cierra es porque quiere el sitio para los números.
   const [collapsed, setCollapsed] = useState(false);
@@ -200,6 +202,13 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
   }
 
   const div = metrics.dividendPlan;
+  const k = metrics.kpis;
+
+  // En pantalla ancha la configuración está SIEMPRE a la izquierda, así que
+  // la derecha necesita saber qué enseñar cuando la pestaña elegida es
+  // justamente la configuración: enseña el informe, que es lo que se estaba
+  // mirando antes de ir a tocar un número.
+  const rightPane = pane === "config" ? "resultado" : pane;
 
   // De la tabla de canales sólo se mira esto: dónde sale barato el alumno y
   // dónde caro. Los canales sin alumnos quedan fuera, que su CAC es 0 y
@@ -442,6 +451,15 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
             onClick={() => setPane("resultado")}
           >
             Resultado
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={pane === "kpis"}
+            data-active={pane === "kpis" ? "" : undefined}
+            onClick={() => setPane("kpis")}
+          >
+            KPIs
           </button>
         </div>
       </div>
@@ -765,6 +783,43 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
           </Section>
 
           <Section
+            title="Caja y contabilidad"
+            badge={`Caja ${formatEUR(scenario.cashOnHand)} · fin. ${formatPct(scenario.completionRate, 0)}`}
+            hint="Lo que hace falta para hablar de EBITDA y de runway: amortizaciones, gastos financieros, caja disponible y cuántos alumnos terminan."
+          >
+            <div className="axr-calc__assumptions">
+              <Num
+                label="Amortizaciones (€ / periodo)"
+                value={scenario.amortizationPerPeriod}
+                onChange={(v) => patch((s) => ({ ...s, amortizationPerPeriod: v }))}
+                always
+              />
+              <Num
+                label="Gastos financieros (€ / periodo)"
+                value={scenario.financialCostsPerPeriod}
+                onChange={(v) => patch((s) => ({ ...s, financialCostsPerPeriod: v }))}
+                always
+              />
+              <Num
+                label="Caja disponible hoy (€)"
+                value={scenario.cashOnHand}
+                onChange={(v) => patch((s) => ({ ...s, cashOnHand: v }))}
+                always
+              />
+              <Num
+                label="% que termina el curso"
+                value={scenario.completionRate}
+                onChange={(v) => patch((s) => ({ ...s, completionRate: v }))}
+                always
+              />
+            </div>
+            <p className="axr-calc__inline-total">
+              EBITDA <strong>{formatEUR(metrics.ebitda)}</strong> ({formatPct(k.ebitdaMarginPct, 0)}) · EBIT{" "}
+              <strong>{formatEUR(metrics.ebit)}</strong>. La amortización no sale de la caja; los financieros, sí.
+            </p>
+          </Section>
+
+          <Section
             title="Dividendos"
             badge={
               scenario.dividends.enabled
@@ -850,7 +905,12 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
         </div>
 
         {/* ── Resultado ── */}
-        <aside className="axr-calc__pane" data-pane="resultado" data-active={pane === "resultado" ? "" : undefined}>
+        <aside
+          className="axr-calc__pane"
+          data-pane="resultado"
+          data-active={pane === "resultado" ? "" : undefined}
+          data-wide-active={rightPane === "resultado" ? "" : undefined}
+        >
           {/* ══ El informe ══
               Cabe entero en una pantalla de móvil, sin scroll. Esa es la
               restricción que manda sobre todo lo demás: bloques pequeños,
@@ -1024,6 +1084,161 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
             <details className="axr-report__aviso">
               <summary>Aviso: hipótesis, no contabilidad oficial</summary>
               <p>{LENS_DISCLAIMER}</p>
+            </details>
+          </div>
+        </aside>
+
+        {/* ══ Las métricas que mira quien viene de fuera ══
+            En pestaña propia y no debajo del informe: son otra conversación
+            —la de si esto es invertible— y meterlas en la misma pantalla
+            obligaría a hacer scroll en las dos. */}
+        <aside
+          className="axr-calc__pane"
+          data-pane="kpis"
+          data-active={pane === "kpis" ? "" : undefined}
+          data-wide-active={rightPane === "kpis" ? "" : undefined}
+        >
+          <div className="axr-report">
+            {/* ── Recurrencia ── */}
+            <section className="axr-report__block">
+              <h3>
+                Ingresos normalizados
+                <em>{formatPct(k.deferredPct, 0)} diferido</em>
+              </h3>
+              <div className="axr-report__trio" style={{ marginTop: 0 }}>
+                <Tile label="MRR" value={formatEUR(k.mrr)} />
+                <Tile label="ARR" value={formatEUR(k.arr)} />
+                <Tile
+                  label="Crecim. mensual"
+                  value={formatPct(k.growthMoM, 0)}
+                  tone={k.growthMoM >= 10 ? "up" : k.growthMoM < 0 ? "down" : undefined}
+                />
+              </div>
+              <TrendBars months={metrics.months.map((m) => ({ index: m.index, label: m.label, value: m.recognized }))} />
+            </section>
+
+            {/* ── Márgenes ── */}
+            <section className="axr-report__block">
+              <h3>
+                Márgenes
+                <em data-alert={k.grossMarginPct < 60 ? "" : undefined}>
+                  bruto {formatPct(k.grossMarginPct, 0)} · EBITDA {formatPct(k.ebitdaMarginPct, 0)}
+                </em>
+              </h3>
+              <MiniBars
+                rows={[
+                  { key: "rev", label: "Ingresos", meta: "100 %", value: metrics.totalRevenue, color: "#161616" },
+                  {
+                    key: "bruto",
+                    label: "Margen bruto",
+                    meta: formatPct(k.grossMarginPct, 0),
+                    value: k.grossProfit,
+                    color: CAT.pasarela,
+                  },
+                  {
+                    key: "ebitda",
+                    label: "EBITDA",
+                    meta: formatPct(k.ebitdaMarginPct, 0),
+                    value: k.ebitda,
+                    color: CAT.captacion,
+                  },
+                  {
+                    key: "neto",
+                    label: "Beneficio neto",
+                    meta: formatPct(metrics.netMarginPct, 0),
+                    value: metrics.netProfit,
+                    color: "#038632",
+                  },
+                ]}
+              />
+            </section>
+
+            {/* ── Unidad ── */}
+            <section className="axr-report__block">
+              <h3>
+                Por alumno
+                <em>CAC con ventas dentro</em>
+              </h3>
+              <div className="axr-report__grid6">
+                <Tile label="CAC" value={formatEUR(k.cacLoaded, 0)} />
+                <Tile
+                  label="Payback"
+                  value={k.paybackMonths == null ? "nunca" : `${formatMonths(k.paybackMonths)} m`}
+                  tone={k.paybackMonths == null ? "down" : k.paybackMonths <= 12 ? "up" : k.paybackMonths > 18 ? "down" : undefined}
+                />
+                <Tile label="LTV bruto" value={formatEUR(k.ltvGross)} />
+                <Tile
+                  label="LTV : CAC"
+                  value={formatRatio(k.ltvCacLoaded)}
+                  tone={k.ltvCacLoaded >= 3 ? "up" : k.ltvCacLoaded < 2 ? "down" : undefined}
+                />
+                <Tile label="Recompra" value={formatPct(k.repurchasePct, 0)} />
+                <Tile
+                  label="Finalización"
+                  value={formatPct(k.completionPct, 0)}
+                  tone={k.completionPct >= 70 ? "up" : k.completionPct < 50 ? "down" : undefined}
+                />
+              </div>
+            </section>
+
+            {/* ── Caja ── */}
+            <section className="axr-report__block">
+              <h3>
+                Caja y runway
+                <em>
+                  {k.runwayMonths == null
+                    ? "no quema"
+                    : `${formatMonths(k.runwayMonths, 0)} meses de vida`}
+                </em>
+              </h3>
+              <div className="axr-report__trio" style={{ marginTop: 0 }}>
+                <Tile label="Caja hoy" value={formatEUR(k.cashOnHand)} />
+                <Tile
+                  label="Suelo del año"
+                  value={formatEUR(k.cashTrough)}
+                  tone={k.cashTrough < 0 ? "down" : k.cashTrough > k.cashOnHand * 0.5 ? "up" : undefined}
+                />
+                <Tile
+                  label="Runway"
+                  value={k.runwayMonths == null ? "—" : `${formatMonths(k.runwayMonths, 0)} m`}
+                  tone={k.runwayMonths == null ? "up" : k.runwayMonths >= 12 ? "up" : k.runwayMonths < 6 ? "down" : undefined}
+                />
+              </div>
+              <CashLine
+                months={metrics.months.map((m) => ({ index: m.index, label: m.label, cash: m.cash }))}
+                cashOnHand={k.cashOnHand}
+              />
+              <p className="axr-report__note" data-alert={k.runsOutMonth !== null ? "" : undefined}>
+                {k.runsOutMonth !== null
+                  ? `La caja se queda en negativo en ${MONTH_NAMES[k.runsOutMonth]}. Eso no es un KPI: es la fecha.`
+                  : `El punto más bajo del año es ${formatEUR(k.cashTrough)}, en ${MONTH_NAMES[k.cashTroughMonth]}.`}
+              </p>
+            </section>
+
+            <details className="axr-report__aviso">
+              <summary>Cómo está calculado cada uno</summary>
+              <p>
+                <strong>MRR / ARR</strong>: aquí no hay suscripción, es facturación devengada — el curso repartido
+                por los meses en que se da, no el día que se cobra. Lo cobrado por adelantado y aún sin entregar es
+                el ingreso diferido.
+              </p>
+              <p>
+                <strong>Margen bruto</strong>: descuenta sólo lo que cuesta ENTREGAR (docencia, coste por alumno,
+                pasarela). Ni marketing, ni ventas, ni estructura. Por debajo del 60 % no vendes producto digital:
+                vendes horas. Un edtech online sano está entre el 70 % y el 85 %.
+              </p>
+              <p>
+                <strong>CAC</strong>: marketing <em>y</em> ventas entre los alumnos nuevos. El{" "}
+                <strong>payback</strong> se mide contra el margen bruto que deja el alumno mientras paga: sano por
+                debajo de 12 meses, preocupante por encima de 18. <strong>LTV</strong> a margen bruto, con la
+                recompra dentro; <strong>LTV : CAC</strong> mínimo 3×, y por debajo de 2× el negocio no escala,
+                compra ingresos.
+              </p>
+              <p>
+                <strong>Runway</strong>: caja disponible entre la quema media de los meses que cierran en negativo.
+                Si el año no quema, no hay runway que contar. La amortización no resta caja; los gastos
+                financieros, sí.
+              </p>
             </details>
           </div>
         </aside>

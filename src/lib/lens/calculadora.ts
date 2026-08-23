@@ -135,6 +135,17 @@ export type LensScenarioData = {
   salesTeam: LensSalesTeam;
   /** Impuesto de sociedades, en %. A 0 el escenario se comporta como antes. */
   corporateTaxPct: number;
+  /**
+   * Amortizaciones del periodo. Es lo que separa el EBITDA del EBIT: sin
+   * este campo, "EBITDA" sería un nombre bonito para el beneficio operativo.
+   */
+  amortizationPerPeriod: number;
+  /** Gastos financieros del periodo (intereses, comisiones de financiación). */
+  financialCostsPerPeriod: number;
+  /** Caja disponible hoy. De aquí sale el runway, que no es un KPI: es la vida. */
+  cashOnHand: number;
+  /** % de alumnos que termina el curso. Predice recompra, reseñas y churn. */
+  completionRate: number;
   dividends: LensDividends;
   /** Socios y su participación. Debería sumar 100 %. */
   partners: LensPartner[];
@@ -177,6 +188,10 @@ export function defaultLensScenario(): LensScenarioData {
     convocatoriaWeeks: 12,
     salesTeam: { reps: 1, salaryPerRep: 1800, bonusPerEnrollment: 150 },
     corporateTaxPct: 0,
+    amortizationPerPeriod: 0,
+    financialCostsPerPeriod: 0,
+    cashOnHand: 40000,
+    completionRate: 70,
     dividends: { enabled: true, payoutPct: 60, revenueThreshold: 60000, everyMonths: 3 },
     partners: [
       { id: "socio-1", name: "Socio 1", sharePct: 50 },
@@ -214,6 +229,10 @@ export function normalizeScenario(raw: Partial<LensScenarioData> | null | undefi
     calendar: { ...base.calendar, ...(raw.calendar ?? {}) },
     salesTeam: { ...base.salesTeam, ...(raw.salesTeam ?? {}) },
     corporateTaxPct: raw.corporateTaxPct ?? 0,
+    amortizationPerPeriod: raw.amortizationPerPeriod ?? 0,
+    financialCostsPerPeriod: raw.financialCostsPerPeriod ?? 0,
+    cashOnHand: raw.cashOnHand ?? base.cashOnHand,
+    completionRate: raw.completionRate ?? base.completionRate,
     // Un escenario guardado antes de que existiera el reparto NO empieza a
     // repartir solo al abrirlo: sale con el reparto apagado y con dos socios
     // de ejemplo listos para editar. Encenderlo es una decisión, y tiene que
@@ -306,14 +325,76 @@ export type LensMonth = {
   /** 0 = enero. */
   index: number;
   label: string;
+  /** Lo COBRADO este mes. */
   revenue: number;
+  /**
+   * Lo DEVENGADO: la parte del curso que se ha entregado este mes.
+   *
+   * Cobrar en enero un programa que se da hasta marzo no es facturación de
+   * enero, es caja de enero. Un inversor mira las dos y compara: la
+   * diferencia entre ellas es el ingreso diferido, y es lo primero que
+   * pregunta quien ha visto quebrar a alguien con la caja llena.
+   */
+  recognized: number;
   costs: number;
   profit: number;
   cumulative: number;
+  /** Caja al cierre del mes, contando la que había al empezar el año. */
+  cash: number;
   /** Convocatorias que arrancan este mes. */
   starts: number;
   /** Convocatorias en marcha algún día de este mes. */
   running: number;
+};
+
+/**
+ * Las métricas que mira quien no ha visto el negocio por dentro.
+ *
+ * No son "otra vista" de las mismas cifras: son definiciones concretas, con
+ * su letra pequeña. El CAC de aquí lleva ventas dentro, no sólo publicidad;
+ * el LTV va a margen bruto y no a ingreso; y el margen bruto sólo descuenta
+ * lo que cuesta ENTREGAR la formación. Cambiar cualquiera de esas tres cosas
+ * cambia la conversación entera, así que están dichas una por una.
+ */
+export type LensInvestorKpis = {
+  /** Ingreso devengado medio por mes: lo que de verdad se ha entregado. */
+  mrr: number;
+  /** El año entero, devengado. */
+  arr: number;
+  /** Crecimiento medio mes a mes del devengado, en %. */
+  growthMoM: number;
+  /** Lo cobrado por adelantado que aún no se ha entregado, en % del año. */
+  deferredPct: number;
+
+  /** Ingresos menos lo que cuesta entregar: docencia, plataforma, pasarela. */
+  grossProfit: number;
+  grossMarginPct: number;
+  /** Beneficio operativo antes de amortizaciones. */
+  ebitda: number;
+  ebitdaMarginPct: number;
+  ebit: number;
+
+  /** Captar un alumno cuesta esto, contando marketing Y ventas. */
+  cacLoaded: number;
+  /** Meses en recuperar ese CAC con el margen bruto que deja el alumno. */
+  paybackMonths: number | null;
+  /** Margen bruto que deja un alumno, contando la recompra. */
+  ltvGross: number;
+  ltvCacLoaded: number;
+
+  /** % que vuelve a comprar (aquí no hay suscripción, hay recompra). */
+  repurchasePct: number;
+  completionPct: number;
+
+  cashOnHand: number;
+  /** Meses de vida al ritmo de quema actual. null = no quema. */
+  runwayMonths: number | null;
+  /** El punto más bajo de la caja durante el año. */
+  cashTrough: number;
+  /** Mes en que la caja toca ese suelo (0 = enero). */
+  cashTroughMonth: number;
+  /** Mes en que la caja se queda en negativo, si pasa. */
+  runsOutMonth: number | null;
 };
 
 export type LensMetrics = {
@@ -328,6 +409,12 @@ export type LensMetrics = {
   gatewayFees: number;
   variableCostsTotal: number;
   totalFixedCosts: number;
+  /** Gastos de explotación: todo menos amortizaciones e impuestos. */
+  opex: number;
+  /** Beneficio operativo antes de amortizaciones. */
+  ebitda: number;
+  /** EBITDA menos amortizaciones. */
+  ebit: number;
   /** Horas de docencia contratadas para una convocatoria. */
   teachingHours: number;
   /** Coste del profesorado de UNA convocatoria entera. */
@@ -352,6 +439,7 @@ export type LensMetrics = {
   dividendPlan: LensDividendPlan;
   annual: LensAnnual;
   months: LensMonth[];
+  kpis: LensInvestorKpis;
 };
 
 export function computeLensMetrics(data: LensScenarioData): LensMetrics {
@@ -392,7 +480,11 @@ export function computeLensMetrics(data: LensScenarioData): LensMetrics {
   const salesBonusTotal = (data.salesTeam.bonusPerEnrollment || 0) * totalStudents;
   const salesCostTotal = salesFixedTotal + salesBonusTotal;
 
-  const totalCosts =
+  // Gastos de explotación: todo lo que cuesta operar, sin amortizaciones ni
+  // financieros. Lo que queda al restarlos es el EBITDA, que es exactamente
+  // lo que significan esas siglas y no "el beneficio antes de lo que me
+  // convenga".
+  const opex =
     totalMarketingSpend +
     variableCostsTotal +
     gatewayFees +
@@ -400,7 +492,10 @@ export function computeLensMetrics(data: LensScenarioData): LensMetrics {
     teachingCostTotal +
     salesCostTotal;
 
-  const profitBeforeTax = totalRevenue - totalCosts;
+  const ebitda = totalRevenue - opex;
+  const ebit = ebitda - (data.amortizationPerPeriod || 0);
+  const profitBeforeTax = ebit - (data.financialCostsPerPeriod || 0);
+  const totalCosts = totalRevenue - profitBeforeTax;
   // Sobre pérdidas no se paga impuesto: con BAI negativo la cuota es 0, no un
   // ingreso ficticio que maquillaría el resultado.
   const corporateTax = profitBeforeTax > 0 ? profitBeforeTax * ((data.corporateTaxPct || 0) / 100) : 0;
@@ -427,6 +522,20 @@ export function computeLensMetrics(data: LensScenarioData): LensMetrics {
   }));
 
   const dividendPlan = computeDividendPlan(data, totalRevenue, netProfit);
+
+  const months = computeMonths(data, {
+    students: totalStudents,
+    marketing: totalMarketingSpend,
+    variablePerStudent: data.variableCostPerStudent + (data.salesTeam.bonusPerEnrollment || 0),
+    teaching: teachingCostPerConvocatoria,
+    gatewayPct: data.gatewayFeePct,
+    // La amortización se queda fuera: es un apunte contable, no una salida
+    // de dinero. Meterla aquí haría que la caja pareciera peor de lo que es.
+    monthlyOverheads:
+      (totalFixedCosts + salesFixedTotal + (data.financialCostsPerPeriod || 0)) / periodMonths,
+    avgTicket,
+    cashOnHand: data.cashOnHand || 0,
+  });
   const annual = computeAnnual(data, {
     students: totalStudents,
     revenue: totalRevenue,
@@ -446,6 +555,9 @@ export function computeLensMetrics(data: LensScenarioData): LensMetrics {
     gatewayFees,
     variableCostsTotal,
     totalFixedCosts,
+    opex,
+    ebitda,
+    ebit,
     teachingHours,
     teachingCostPerConvocatoria,
     teachingCostTotal,
@@ -462,15 +574,20 @@ export function computeLensMetrics(data: LensScenarioData): LensMetrics {
     channelStats,
     dividendPlan,
     annual,
-    months: computeMonths(data, {
+    kpis: computeInvestorKpis(data, {
+      revenue: totalRevenue,
       students: totalStudents,
+      teaching: teachingCostTotal,
+      variableCosts: variableCostsTotal,
+      gatewayFees,
       marketing: totalMarketingSpend,
-      variablePerStudent: data.variableCostPerStudent + (data.salesTeam.bonusPerEnrollment || 0),
-      teaching: teachingCostPerConvocatoria,
-      gatewayPct: data.gatewayFeePct,
-      monthlyOverheads: (totalFixedCosts + salesFixedTotal) / periodMonths,
-      avgTicket,
+      salesCost: salesCostTotal,
+      ebitda,
+      ebit,
+      periodMonths,
+      months,
     }),
+    months,
   };
 }
 
@@ -516,9 +633,11 @@ function computeMonths(
     gatewayPct: number;
     monthlyOverheads: number;
     avgTicket: number;
+    cashOnHand: number;
   },
 ): LensMonth[] {
   const revenue = new Array(12).fill(0);
+  const recognized = new Array(12).fill(0);
   const costs = new Array(12).fill(0);
   const starts = new Array(12).fill(0);
   const running = new Array(12).fill(0);
@@ -555,6 +674,16 @@ function computeMonths(
     // Variables y comisión comercial: al matricularse.
     costs[startMonth] += v.variablePerStudent * v.students;
 
+    // Devengado: la matrícula entera se reparte por los días que dura la
+    // convocatoria, se haya cobrado cuando se haya cobrado. Esto es lo que
+    // diría la cuenta de resultados; lo de arriba, lo que dice el banco.
+    const matriculaTotal = v.students * v.avgTicket;
+    for (let d = 0; d < durationDays; d++) {
+      const day = startDay + d;
+      if (day > 365) break;
+      recognized[monthOfDay(day)] += matriculaTotal / durationDays;
+    }
+
     // Docencia: repartida por los días de clase que caen en cada mes.
     const mesesEnMarcha = new Set<number>();
     for (let d = 0; d < durationDays; d++) {
@@ -580,9 +709,11 @@ function computeMonths(
       index: m,
       label,
       revenue: revenue[m],
+      recognized: recognized[m],
       costs: costs[m],
       profit,
       cumulative: acc,
+      cash: v.cashOnHand + acc,
       starts: starts[m],
       running: running[m],
     };
@@ -590,6 +721,128 @@ function computeMonths(
 }
 
 export { MONTH_NAMES };
+
+// ── Las métricas de inversor ──────────────────────────────
+
+/**
+ * Aquí no hay fórmulas nuevas: hay definiciones, y cada una lleva su letra
+ * pequeña escrita al lado. Un CAC sin ventas dentro y un CAC con ventas
+ * dentro son el mismo nombre para dos números que llevan a decisiones
+ * distintas, y eso es lo que hay que dejar claro antes de enseñárselo a
+ * nadie.
+ */
+function computeInvestorKpis(
+  data: LensScenarioData,
+  v: {
+    revenue: number;
+    students: number;
+    teaching: number;
+    variableCosts: number;
+    gatewayFees: number;
+    marketing: number;
+    salesCost: number;
+    ebitda: number;
+    ebit: number;
+    periodMonths: number;
+    months: LensMonth[];
+  },
+): LensInvestorKpis {
+  // ── Recurrencia ──
+  // No hay suscripción, así que el "MRR" es facturación normalizada: el
+  // ingreso devengado que cae en cada mes. Llamarlo MRR sin esa aclaración
+  // sería vender humo.
+  const devengadoAnual = v.months.reduce((a, m) => a + m.recognized, 0);
+  const cobradoAnual = v.months.reduce((a, m) => a + m.revenue, 0);
+  const mrr = devengadoAnual / 12;
+
+  // Crecimiento mes a mes: media de los meses con actividad, comparando cada
+  // uno con el anterior. Los meses a cero se saltan; con un calendario de
+  // convocatorias, dividir por cero sale más veces de lo que parece.
+  const saltos: number[] = [];
+  for (let m = 1; m < 12; m++) {
+    const antes = v.months[m - 1].recognized;
+    if (antes > 0) saltos.push(((v.months[m].recognized - antes) / antes) * 100);
+  }
+  const growthMoM = saltos.length ? saltos.reduce((a, b) => a + b, 0) / saltos.length : 0;
+
+  // Diferido: lo cobrado que todavía no se ha entregado. Si se cobra por
+  // adelantado un programa largo, la caja y la cuenta de resultados cuentan
+  // dos historias distintas, y ésta es la diferencia entre las dos.
+  const deferredPct = cobradoAnual > 0 ? Math.max(0, ((cobradoAnual - devengadoAnual) / cobradoAnual) * 100) : 0;
+
+  // ── Márgenes ──
+  // Coste directo de ENTREGAR: docencia, coste variable por alumno y
+  // pasarela. Ni marketing ni ventas ni estructura: eso no es entregar.
+  const cogs = v.teaching + v.variableCosts + v.gatewayFees;
+  const grossProfit = v.revenue - cogs;
+  const grossMarginPct = v.revenue > 0 ? (grossProfit / v.revenue) * 100 : 0;
+
+  // ── Unidad ──
+  const cacLoaded = v.students > 0 ? (v.marketing + v.salesCost) / v.students : 0;
+  const grossPerStudent = v.students > 0 ? grossProfit / v.students : 0;
+
+  // Payback: en cuántos meses vuelve el CAC. Se mide contra el margen bruto
+  // que deja el alumno mientras paga, no contra el precio: recuperar el CAC
+  // con dinero que se va en dar la clase no es recuperarlo.
+  const mixSum = data.plans.reduce((sum, p) => sum + (p.mix || 0), 0) || 1;
+  const mesesDeCobro = Math.max(
+    1,
+    data.plans.reduce((sum, p) => sum + Math.max(1, p.payMonths || 1) * ((p.mix || 0) / mixSum), 0),
+  );
+  const margenMensual = grossPerStudent / mesesDeCobro;
+  const paybackMonths = margenMensual > 0 ? cacLoaded / margenMensual : null;
+
+  const repurchasePct = data.repeatPurchaseRate || 0;
+  // LTV a margen, no a ingreso: es lo que se compara con el CAC. El upsell
+  // entra con el mismo margen bruto que el curso, que es la hipótesis menos
+  // mala mientras no se venda otra cosa.
+  const ltvGross = grossPerStudent * (1 + repurchasePct / 100);
+  const ltvCacLoaded = cacLoaded > 0 ? ltvGross / cacLoaded : 0;
+
+  // ── Caja ──
+  const cashOnHand = data.cashOnHand || 0;
+  const flujos = v.months.map((m) => m.profit);
+  const quema = flujos.filter((f) => f < 0);
+  const quemaMedia = quema.length ? Math.abs(quema.reduce((a, b) => a + b, 0)) / quema.length : 0;
+  const anual = flujos.reduce((a, b) => a + b, 0);
+  // Si el año cierra en positivo no hay runway que contar: no se quema, se
+  // acumula. Poner un número ahí sería asustar sin motivo.
+  const runwayMonths = anual < 0 && quemaMedia > 0 ? cashOnHand / quemaMedia : null;
+
+  let cashTrough = cashOnHand;
+  let cashTroughMonth = 0;
+  let runsOutMonth: number | null = null;
+  v.months.forEach((m) => {
+    if (m.cash < cashTrough) {
+      cashTrough = m.cash;
+      cashTroughMonth = m.index;
+    }
+    if (runsOutMonth === null && m.cash < 0) runsOutMonth = m.index;
+  });
+
+  return {
+    mrr,
+    arr: devengadoAnual,
+    growthMoM,
+    deferredPct,
+    grossProfit,
+    grossMarginPct,
+    ebitda: v.ebitda,
+    ebitdaMarginPct: v.revenue > 0 ? (v.ebitda / v.revenue) * 100 : 0,
+    ebit: v.ebit,
+    cacLoaded,
+    paybackMonths,
+    ltvGross,
+    ltvCacLoaded,
+    repurchasePct,
+    completionPct: data.completionRate || 0,
+    cashOnHand,
+    runwayMonths,
+    cashTrough,
+    cashTroughMonth,
+    runsOutMonth,
+  };
+}
 
 function computeAnnual(
   data: LensScenarioData,
@@ -734,6 +987,11 @@ export function formatEUR(value: number, maximumFractionDigits = 0): string {
 
 export function formatPct(value: number, maximumFractionDigits = 1): string {
   return new Intl.NumberFormat("es-ES", { maximumFractionDigits }).format(value) + " %";
+}
+
+/** Meses con coma decimal, que aquí se escribe "0,3" y no "0.3". */
+export function formatMonths(value: number, maximumFractionDigits = 1): string {
+  return new Intl.NumberFormat("es-ES", { maximumFractionDigits }).format(value);
 }
 
 export function formatRatio(value: number, maximumFractionDigits = 1): string {

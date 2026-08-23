@@ -256,3 +256,92 @@ export function MonthlyPL({
     </figure>
   );
 }
+
+// ── Tendencia de doce meses ───────────────────────────────
+/** Doce columnas de una sola serie: para mirar la pendiente, no la cifra. */
+export function TrendBars({
+  months,
+  color = INK,
+}: {
+  months: { index: number; label: string; value: number }[];
+  color?: string;
+}) {
+  const W = 340;
+  const H = 44;
+  const max = Math.max(...months.map((m) => m.value), 1);
+  const slot = W / 12;
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H + 14}`} width="100%" role="img" aria-label="Evolución mes a mes">
+      {months.map((m) => {
+        const h = (m.value / max) * H;
+        return (
+          <g key={m.index}>
+            <rect
+              x={m.index * slot + slot * 0.22}
+              y={H - h}
+              width={slot * 0.56}
+              height={Math.max(1, h)}
+              fill={color}
+              rx={1.5}
+            >
+              <title>{`${m.label}: ${formatEUR(m.value)}`}</title>
+            </rect>
+            <text x={m.index * slot + slot / 2} y={H + 11} textAnchor="middle" className="axr-pl__month">
+              {m.label}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// ── La caja a lo largo del año ────────────────────────────
+/**
+ * La línea que decide si el negocio llega a diciembre.
+ *
+ * Se dibuja con el cero SIEMPRE dentro del cuadro, aunque la caja no baje
+ * nunca de él: sin esa referencia, una línea que sube no dice si sube por
+ * encima o por debajo de quedarse sin dinero.
+ */
+export function CashLine({
+  months,
+  cashOnHand,
+}: {
+  months: { index: number; label: string; cash: number }[];
+  cashOnHand: number;
+}) {
+  const W = 340;
+  const H = 56;
+  const puntos = [cashOnHand, ...months.map((m) => m.cash)];
+  const max = Math.max(...puntos, 0);
+  const min = Math.min(...puntos, 0);
+  const span = max - min || 1;
+  const y = (v: number) => H - ((v - min) / span) * H;
+  const x = (i: number) => (i / (puntos.length - 1)) * W;
+
+  const linea = puntos.map((v, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(" ");
+  const area = `${linea} L ${W} ${y(min)} L 0 ${y(min)} Z`;
+  const cero = y(0);
+  const bajoCero = puntos.some((v) => v < 0);
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H + 14}`} width="100%" role="img" aria-label="Caja mes a mes">
+      <path d={area} fill={bajoCero ? "rgba(163,32,32,0.10)" : "rgba(3,134,50,0.10)"} />
+      <line x1={0} y1={cero} x2={W} y2={cero} stroke="#c6c6c6" strokeWidth={1} strokeDasharray="3 3" />
+      <path d={linea} fill="none" stroke={bajoCero ? LOSS : GO} strokeWidth={2} strokeLinejoin="round" />
+      {months.map((m, i) => (
+        <circle key={m.index} cx={x(i + 1)} cy={y(m.cash)} r={2.5} fill={m.cash < 0 ? LOSS : GO}>
+          <title>{`${m.label}: ${formatEUR(m.cash)}`}</title>
+        </circle>
+      ))}
+      <text x={0} y={H + 11} className="axr-pl__month" textAnchor="start">
+        E
+      </text>
+      <text x={W} y={H + 11} className="axr-pl__month" textAnchor="end">
+        D
+      </text>
+    </svg>
+  );
+}
