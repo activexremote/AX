@@ -13,6 +13,16 @@ const nextConfig: NextConfig = {
   // relativas a su propio paquete. Empaquetarlo rompe esas rutas y el PDF
   // falla al escribir la primera letra: se deja fuera del bundle.
   serverExternalPackages: ["pdfkit"],
+  // Y además hay que llevarse sus .afm a la función.
+  //
+  // PDFKit abre las métricas de Helvetica con
+  // `readFileSync(__dirname + "/data/Helvetica.afm")`. Esa ruta se construye
+  // en tiempo de ejecución, así que el rastreador de ficheros de Next no la
+  // ve y en producción la función se despliega sin los .afm: el PDF revienta
+  // al escribir la primera letra, y sólo allí, nunca en local.
+  outputFileTracingIncludes: {
+    "/lens/calculadora-matriculas/pdf": ["./node_modules/pdfkit/js/data/**"],
+  },
   experimental: {
     optimizePackageImports: ["@carbon/react", "@carbon/icons-react"],
   },
