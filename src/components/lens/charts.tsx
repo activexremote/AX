@@ -37,8 +37,6 @@ export const CAT = {
 export const CAT_ORDER = Object.values(CAT);
 
 const INK = "#161616";
-const HELPER = "#6f6f6f";
-const GO = "#038632";
 const LOSS = "#a32020";
 
 export type Slice = { key: string; label: string; value: number; color: string };
@@ -55,16 +53,19 @@ export function StackedBar({
   slices,
   total,
   caption,
+  dense,
 }: {
   slices: Slice[];
   total: number;
   caption?: string;
+  /** Leyenda a dos columnas y sin pie: para el informe, que va apretado. */
+  dense?: boolean;
 }) {
   const visibles = slices.filter((s) => s.value > 0);
   const suma = visibles.reduce((a, s) => a + s.value, 0) || 1;
 
   return (
-    <figure className="axr-chart">
+    <figure className="axr-chart" data-dense={dense ? "" : undefined}>
       <div className="axr-chart__stack" role="img" aria-label={caption ?? "Reparto"}>
         {visibles.map((s) => {
           const pct = (s.value / suma) * 100;
@@ -90,167 +91,55 @@ export function StackedBar({
         ))}
       </ul>
 
-      {caption ? <figcaption>{caption}</figcaption> : null}
+      {caption && !dense ? <figcaption>{caption}</figcaption> : null}
       <span className="axr-chart__sr">Total: {formatEUR(total)}</span>
     </figure>
   );
 }
 
-// ── Cascada ───────────────────────────────────────────────
+// ── Barras comparadas ─────────────────────────────────────
 /**
- * De la facturación al beneficio, restando por bloques.
+ * Una fila por cosa: nombre, cifra, barra y un renglón de contexto.
  *
- * Horizontal y no vertical: en un móvil, una cascada vertical deja las
- * etiquetas de canto o partidas, y aquí el nombre de cada resta importa tanto
- * como su tamaño.
+ * Sirve igual para los cursos del año que para el reparto entre socios: en
+ * los dos casos la pregunta es la misma —quién se lleva cuánto de este
+ * total—, y repetir la misma forma es lo que hace que la segunda no haya que
+ * aprenderla.
  */
-export function Waterfall({
+export function MiniBars({
   rows,
 }: {
-  rows: { key: string; label: string; value: number; color?: string; kind?: "total" | "result" }[];
+  rows: { key: string; label: string; meta?: string; value: number; color: string }[];
 }) {
   const max = Math.max(...rows.map((r) => Math.abs(r.value)), 1);
 
   return (
-    <figure className="axr-chart">
-      <ul className="axr-chart__waterfall">
-        {rows.map((r) => {
-          const pct = Math.min(100, (Math.abs(r.value) / max) * 100);
-          const color =
-            r.kind === "result" ? (r.value >= 0 ? GO : LOSS) : r.kind === "total" ? INK : (r.color ?? HELPER);
-          return (
-            <li key={r.key} data-kind={r.kind}>
-              <div className="axr-chart__wf-head">
-                <span>
-                  <span className="axr-chart__dot" style={{ background: color }} aria-hidden />
-                  {r.label}
-                </span>
-                <span style={r.kind === "result" ? { color } : undefined}>{formatEUR(r.value)}</span>
-              </div>
-              <div className="axr-chart__wf-track">
-                <div className="axr-chart__wf-fill" style={{ width: `${pct}%`, background: color }} />
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-    </figure>
+    <ul className="axr-mini">
+      {rows.map((r) => (
+        <li key={r.key}>
+          {/* El contexto va en la MISMA línea que el nombre, no debajo: un
+              renglón extra por fila son doce píxeles, y con cuatro filas se
+              sale de la pantalla justo por eso. */}
+          <div className="axr-mini__head">
+            <span>
+              <span className="axr-chart__dot" style={{ background: r.color }} aria-hidden />
+              {r.label}
+              {r.meta ? <em>{r.meta}</em> : null}
+            </span>
+            <span>{formatEUR(r.value)}</span>
+          </div>
+          <div className="axr-mini__track" title={`${r.label}: ${formatEUR(r.value)}`}>
+            <div
+              className="axr-mini__fill"
+              style={{ width: `${(Math.abs(r.value) / max) * 100}%`, background: r.color }}
+            />
+          </div>
+        </li>
+      ))}
+    </ul>
   );
 }
 
-// ── Anillo ────────────────────────────────────────────────
-/**
- * El reparto entre socios, con el total en el centro.
- *
- * Aquí sí un anillo: son pocas porciones, de un mismo total, y lo que se mira
- * es "cuánto de la tarta es mío", que es justo lo que un anillo contesta.
- */
-export function Donut({
-  slices,
-  centerLabel,
-  centerValue,
-}: {
-  slices: Slice[];
-  centerLabel: string;
-  centerValue: string;
-}) {
-  const size = 168;
-  const r = 62;
-  const stroke = 22;
-  const c = 2 * Math.PI * r;
-  const suma = slices.reduce((a, s) => a + Math.max(0, s.value), 0);
-
-  let offset = 0;
-
-  return (
-    <figure className="axr-chart axr-chart--donut">
-      <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size} role="img" aria-label={`${centerLabel}: ${centerValue}`}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e0e0e0" strokeWidth={stroke} />
-        {suma > 0
-          ? slices.map((s) => {
-              const frac = Math.max(0, s.value) / suma;
-              const dash = frac * c;
-              // 2 px de hueco entre porciones: sin él, dos colores contiguos
-              // se leen como uno solo cuando la porción es fina.
-              const el = (
-                <circle
-                  key={s.key}
-                  cx={size / 2}
-                  cy={size / 2}
-                  r={r}
-                  fill="none"
-                  stroke={s.color}
-                  strokeWidth={stroke}
-                  strokeDasharray={`${Math.max(0, dash - 2)} ${c - Math.max(0, dash - 2)}`}
-                  strokeDashoffset={-offset}
-                  transform={`rotate(-90 ${size / 2} ${size / 2})`}
-                >
-                  <title>{`${s.label}: ${formatEUR(s.value)}`}</title>
-                </circle>
-              );
-              offset += dash;
-              return el;
-            })
-          : null}
-        <text x={size / 2} y={size / 2 - 4} textAnchor="middle" className="axr-chart__donut-value">
-          {centerValue}
-        </text>
-        <text x={size / 2} y={size / 2 + 14} textAnchor="middle" className="axr-chart__donut-label">
-          {centerLabel}
-        </text>
-      </svg>
-
-      <ul className="axr-chart__legend">
-        {slices.map((s) => (
-          <li key={s.key}>
-            <span className="axr-chart__dot" style={{ background: s.color }} aria-hidden />
-            <span className="axr-chart__legend-label">{s.label}</span>
-            <span className="axr-chart__legend-value">{formatEUR(s.value)}</span>
-          </li>
-        ))}
-      </ul>
-    </figure>
-  );
-}
-
-// ── Barras comparadas ─────────────────────────────────────
-/** Una fila por curso: convocatorias, alumnos y facturación del año. */
-export function CourseBars({
-  rows,
-}: {
-  rows: { id: string; name: string; intakes: number; students: number; revenue: number }[];
-}) {
-  const max = Math.max(...rows.map((r) => r.revenue), 1);
-
-  return (
-    <figure className="axr-chart">
-      <ul className="axr-chart__courses">
-        {rows.map((r, i) => (
-          <li key={r.id}>
-            <div className="axr-chart__wf-head">
-              <span>
-                <span className="axr-chart__dot" style={{ background: CAT_ORDER[i % CAT_ORDER.length] }} aria-hidden />
-                {r.name}
-              </span>
-              <span>{formatEUR(r.revenue)}</span>
-            </div>
-            <div className="axr-chart__wf-track">
-              <div
-                className="axr-chart__wf-fill"
-                style={{ width: `${(r.revenue / max) * 100}%`, background: CAT_ORDER[i % CAT_ORDER.length] }}
-              />
-            </div>
-            <div className="axr-chart__courses-meta">
-              {r.intakes} {r.intakes === 1 ? "convocatoria" : "convocatorias"} · {Math.round(r.students)} alumnos
-            </div>
-          </li>
-        ))}
-      </ul>
-    </figure>
-  );
-}
-
-// ── Calendario del año ────────────────────────────────────
 /**
  * Las 52 semanas del año y cuántas ocupan las convocatorias.
  *
@@ -258,29 +147,24 @@ export function CourseBars({
  * doce semanas son sesenta, y sesenta semanas no caben en un año por mucho
  * que la hoja de cálculo sume.
  */
-export function YearCapacity({ weeksBusy, weeksOver }: { weeksBusy: number; weeksOver: number }) {
+export function Capacity({ weeksBusy, weeksOver }: { weeksBusy: number; weeksOver: number }) {
   const pct = Math.min(100, (weeksBusy / 52) * 100);
   const over = weeksOver > 0;
 
   return (
-    <figure className="axr-chart">
-      <div className="axr-chart__wf-head">
-        <span>Semanas del año con convocatoria en marcha</span>
-        <span style={over ? { color: LOSS } : undefined}>
-          {Math.round(weeksBusy)} / 52
-        </span>
+    <div className="axr-mini axr-mini--capacity">
+      <div className="axr-mini__head">
+        <span>Semanas ocupadas</span>
+        <span style={over ? { color: LOSS } : undefined}>{Math.round(weeksBusy)} / 52</span>
       </div>
-      <div className="axr-chart__wf-track" data-tall="">
-        <div
-          className="axr-chart__wf-fill"
-          style={{ width: `${pct}%`, background: over ? LOSS : INK }}
-        />
+      <div className="axr-mini__track">
+        <div className="axr-mini__fill" style={{ width: `${pct}%`, background: over ? LOSS : INK }} />
       </div>
-      <figcaption>
+      <div className="axr-mini__meta" data-alert={over ? "" : undefined}>
         {over
-          ? `No caben: te pasas ${Math.round(weeksOver)} semanas. O solapas convocatorias, o quitas una.`
-          : `Quedan ${Math.round(52 - weeksBusy)} semanas sin convocatoria en marcha.`}
-      </figcaption>
-    </figure>
+          ? `Te pasas ${Math.round(weeksOver)} semanas: o solapas convocatorias, o quitas una.`
+          : `Quedan ${Math.round(52 - weeksBusy)} semanas libres.`}
+      </div>
+    </div>
   );
 }

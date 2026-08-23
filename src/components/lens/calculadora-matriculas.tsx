@@ -4,8 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { saveScenario, updateScenario, deleteScenario } from "@/app/lens/calculadora-matriculas/actions";
-import { MetricCard } from "@/components/lens/metric-card";
-import { CAT, CAT_ORDER, CourseBars, Donut, StackedBar, Waterfall, YearCapacity } from "@/components/lens/charts";
+import { CAT, CAT_ORDER, Capacity, MiniBars, StackedBar } from "@/components/lens/charts";
 import {
   buildScenarioName,
   computeLensMetrics,
@@ -14,6 +13,7 @@ import {
   formatPct,
   formatRatio,
   normalizeScenario,
+  METRIC_INFO,
   payoutCadenceLabel,
   periodLabel,
   scenarioPeriodLabel,
@@ -200,6 +200,13 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
   }
 
   const div = metrics.dividendPlan;
+
+  // De la tabla de canales sólo se mira esto: dónde sale barato el alumno y
+  // dónde caro. Los canales sin alumnos quedan fuera, que su CAC es 0 y
+  // saldrían siempre como "el más barato".
+  const conAlumnos = metrics.channelStats.filter((c) => c.students > 0);
+  const bestChannel = conAlumnos.length ? conAlumnos.reduce((a, b) => (b.cac < a.cac ? b : a)) : null;
+  const worstChannel = conAlumnos.length > 1 ? conAlumnos.reduce((a, b) => (b.cac > a.cac ? b : a)) : null;
   const barMax = Math.max(
     metrics.totalRevenue,
     metrics.totalMarketingSpend,
@@ -775,206 +782,230 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
 
         {/* ── Resultado ── */}
         <aside className="axr-calc__pane" data-pane="resultado" data-active={pane === "resultado" ? "" : undefined}>
-          <div className="axr-calc__preview-inner">
-            <div className="axr-calc__kpis">
-              <MetricCard metricKey="totalStudents" value={String(metrics.totalStudents)} />
-              <MetricCard metricKey="totalRevenue" value={formatEUR(metrics.totalRevenue)} />
-              <MetricCard
-                metricKey="netProfit"
+          {/* ══ El informe ══
+              Cabe entero en una pantalla de móvil, sin scroll. Esa es la
+              restricción que manda sobre todo lo demás: bloques pequeños,
+              nada repetido y ni un número que no se mire.
+
+              Por eso se fue la cascada: decía exactamente lo mismo que la
+              barra apilada, en el triple de alto. Y la tabla de canales se
+              quedó en una línea con los dos extremos, que es lo único que se
+              mira de ella: dónde sale barato y dónde caro. */}
+          <div className="axr-report">
+            <div className="axr-report__kpis">
+              <Tile label="Alumnos" value={String(metrics.totalStudents)} metricKey="totalStudents" />
+              <Tile label="Facturación" value={formatEUR(metrics.totalRevenue)} metricKey="totalRevenue" />
+              <Tile
+                label="Beneficio"
                 value={formatEUR(metrics.netProfit)}
-                tone={metrics.netProfit >= 0 ? "positive" : "negative"}
+                tone={metrics.netProfit >= 0 ? "up" : "down"}
+                metricKey="netProfit"
               />
-              <MetricCard
+              <Tile
+                label="Margen"
+                value={formatPct(metrics.netMarginPct, 0)}
+                tone={metrics.netMarginPct >= 0 ? "up" : "down"}
                 metricKey="netMarginPct"
-                value={formatPct(metrics.netMarginPct)}
-                tone={metrics.netMarginPct >= 0 ? "positive" : "negative"}
               />
             </div>
 
             {/* ── El año ── */}
-            <Section
-              title="El año"
-              hint={`${metrics.annual.intakes} convocatorias repitiendo este escenario.`}
-            >
-              <div className="axr-calc__heroes">
-                <div>
-                  <span>Facturación anual</span>
-                  <strong>{formatEUR(metrics.annual.revenue)}</strong>
-                </div>
-                <div data-tone={metrics.annual.netProfit >= 0 ? "up" : "down"}>
-                  <span>Beneficio anual</span>
-                  <strong>{formatEUR(metrics.annual.netProfit)}</strong>
-                </div>
-                <div data-tone={metrics.annual.dividends > 0 ? "up" : undefined}>
-                  <span>Dividendos al año</span>
-                  <strong>{formatEUR(metrics.annual.dividends)}</strong>
-                </div>
+            <section className="axr-report__block">
+              <h3>
+                El año
+                <em>
+                  {metrics.annual.intakes} {metrics.annual.intakes === 1 ? "convocatoria" : "convocatorias"}
+                </em>
+              </h3>
+              <div className="axr-report__trio">
+                <Tile label="Facturación" value={formatEUR(metrics.annual.revenue)} />
+                <Tile
+                  label="Beneficio"
+                  value={formatEUR(metrics.annual.netProfit)}
+                  tone={metrics.annual.netProfit >= 0 ? "up" : "down"}
+                />
+                <Tile
+                  label="Dividendos"
+                  value={formatEUR(metrics.annual.dividends)}
+                  tone={metrics.annual.dividends > 0 ? "up" : undefined}
+                />
               </div>
 
-              <CourseBars rows={metrics.annual.perCourse} />
-              <YearCapacity weeksBusy={metrics.annual.weeksBusy} weeksOver={metrics.annual.weeksOver} />
-            </Section>
+              <MiniBars
+                rows={metrics.annual.perCourse.map((c, i) => ({
+                  key: c.id,
+                  label: c.name,
+                  meta: `${c.intakes} × ${Math.round(c.students / Math.max(1, c.intakes))} al.`,
+                  value: c.revenue,
+                  color: CAT_ORDER[i % CAT_ORDER.length],
+                }))}
+              />
 
-            {/* ── A dónde va cada euro ── */}
-            <Section title="A dónde va cada euro" hint="De la facturación de un periodo, qué se lleva cada cosa.">
+              <Capacity weeksBusy={metrics.annual.weeksBusy} weeksOver={metrics.annual.weeksOver} />
+            </section>
+
+            {/* ── Cada euro ── */}
+            <section className="axr-report__block">
+              <h3>
+                A dónde va cada euro
+                <em>por {scenarioPeriodShort(scenario)}</em>
+              </h3>
               <StackedBar
                 total={metrics.totalRevenue}
-                caption="Cada tramo es una parte de la facturación del periodo."
+                dense
                 slices={[
                   { key: "captacion", label: "Captación", value: metrics.totalMarketingSpend, color: CAT.captacion },
-                  { key: "variables", label: "Variables por alumno", value: metrics.variableCostsTotal, color: CAT.variables },
-                  { key: "pasarela", label: "Pasarela de pago", value: metrics.gatewayFees, color: CAT.pasarela },
+                  { key: "variables", label: "Variables", value: metrics.variableCostsTotal, color: CAT.variables },
+                  { key: "pasarela", label: "Pasarela", value: metrics.gatewayFees, color: CAT.pasarela },
                   { key: "profesorado", label: "Profesorado", value: metrics.teachingCostTotal, color: CAT.profesorado },
-                  { key: "comercial", label: "Equipo comercial", value: metrics.salesCostTotal, color: CAT.comercial },
+                  { key: "comercial", label: "Comercial", value: metrics.salesCostTotal, color: CAT.comercial },
                   { key: "estructura", label: "Estructura", value: metrics.totalFixedCosts, color: CAT.estructura },
-                  { key: "impuesto", label: "Impuesto de sociedades", value: metrics.corporateTax, color: "#525252" },
-                  { key: "beneficio", label: "Beneficio neto", value: Math.max(0, metrics.netProfit), color: "#038632" },
-                ]}
-              />
-            </Section>
-
-            {/* ── Cascada ── */}
-            <Section title="De la facturación al beneficio" hint="Restando por bloques, en el orden en que se paga.">
-              <Waterfall
-                rows={[
-                  { key: "rev", label: "Facturación", value: metrics.totalRevenue, kind: "total" },
-                  { key: "cap", label: "Captación", value: metrics.totalMarketingSpend, color: CAT.captacion },
-                  { key: "var", label: "Variables por alumno", value: metrics.variableCostsTotal, color: CAT.variables },
-                  { key: "pas", label: "Pasarela de pago", value: metrics.gatewayFees, color: CAT.pasarela },
-                  { key: "prof", label: "Profesorado", value: metrics.teachingCostTotal, color: CAT.profesorado },
-                  { key: "com", label: "Equipo comercial", value: metrics.salesCostTotal, color: CAT.comercial },
-                  { key: "fij", label: "Estructura", value: metrics.totalFixedCosts, color: CAT.estructura },
                   ...(metrics.corporateTax > 0
-                    ? [{ key: "tax", label: "Impuesto de sociedades", value: metrics.corporateTax, color: "#525252" }]
+                    ? [{ key: "tax", label: "Impuestos", value: metrics.corporateTax, color: "#525252" }]
                     : []),
-                  { key: "net", label: "Beneficio neto", value: metrics.netProfit, kind: "result" as const },
+                  { key: "beneficio", label: "Beneficio", value: Math.max(0, metrics.netProfit), color: "#038632" },
                 ]}
               />
-            </Section>
+            </section>
 
-            <Section
-              title="Dividendos"
-              hint={`Ventana de ${div.windowMonths} ${div.windowMonths === 1 ? "mes" : "meses"} · ${payoutCadenceLabel(div.windowMonths)} · ${div.payoutsPerYear} repartos al año.`}
-            >
+            {/* ── Dividendos ── */}
+            <section className="axr-report__block">
+              <h3>
+                Dividendos
+                <em>{payoutCadenceLabel(div.windowMonths)}</em>
+              </h3>
+
               {div.blockedReason ? (
-                <p className="axr-calc__blocked">
+                <p className="axr-report__note">
                   {div.blockedReason === "disabled"
-                    ? "El reparto está desactivado en este escenario."
+                    ? "Reparto desactivado."
                     : div.blockedReason === "below-threshold"
-                      ? `No se reparte: faltan ${formatEUR(div.threshold - div.revenueInWindow)} de facturación en la ventana para llegar al umbral.`
-                      : "No se reparte: no hay beneficio en la ventana."}
+                      ? `Faltan ${formatEUR(div.threshold - div.revenueInWindow)} de facturación en la ventana.`
+                      : "No hay beneficio que repartir."}
                 </p>
               ) : null}
 
-              <div className="axr-calc__kpis">
-                <MetricCard metricKey="dividendPool" value={formatEUR(div.poolPerPayout)} tone={div.poolPerPayout > 0 ? "positive" : undefined} />
-                <MetricCard metricKey="retained" value={formatEUR(div.retainedPerPayout)} />
+              <div className="axr-report__split">
+                <Tile
+                  label="Por reparto"
+                  value={formatEUR(div.poolPerPayout)}
+                  tone={div.poolPerPayout > 0 ? "up" : undefined}
+                  big
+                  metricKey="dividendPool"
+                />
+                <Tile label="Reservas" value={formatEUR(div.retainedPerPayout)} metricKey="retained" />
               </div>
 
               {div.partners.length > 0 && div.poolPerPayout > 0 ? (
-                <Donut
-                  centerLabel="por reparto"
-                  centerValue={formatEUR(div.poolPerPayout)}
-                  slices={div.partners.map((p, i) => ({
+                <MiniBars
+                  rows={div.partners.map((p, i) => ({
                     key: p.id,
                     label: p.name,
+                    meta: `${formatPct(p.sharePct, 0)} · ${formatEUR(p.perYear)}/año`,
                     value: p.perPayout,
                     color: CAT_ORDER[i % CAT_ORDER.length],
                   }))}
                 />
               ) : null}
+            </section>
 
-              {div.partners.length > 0 ? (
-                <table className="axr-calc__channel-table" style={{ marginTop: "1rem" }}>
-                  <thead>
-                    <tr>
-                      <th>Socio</th>
-                      <th>%</th>
-                      <th>Por reparto</th>
-                      <th>Al año</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {div.partners.map((p) => (
-                      <tr key={p.id}>
-                        <td>{p.name}</td>
-                        <td>{formatPct(p.sharePct, 0)}</td>
-                        <td>{formatEUR(p.perPayout)}</td>
-                        <td>{formatEUR(p.perYear)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <p className="axr-calc__blocked">No hay socios definidos: añádelos para ver el reparto.</p>
-              )}
-            </Section>
-
-            <Section title="Unidad económica" hint="Lo que cuesta y lo que vale cada alumno.">
-              <div className="axr-calc__kpis">
-                <MetricCard metricKey="avgTicket" value={formatEUR(metrics.avgTicket)} />
-                <MetricCard metricKey="cac" value={formatEUR(metrics.cac, 0)} />
-                <MetricCard metricKey="ltv" value={formatEUR(metrics.ltv)} />
-                <MetricCard
+            {/* ── Unidad económica ── */}
+            <section className="axr-report__block">
+              <h3>
+                Por alumno
+                <em>
+                  {metrics.breakEvenStudents == null
+                    ? "sin equilibrio"
+                    : `equilibrio en ${Math.ceil(metrics.breakEvenStudents)}`}
+                </em>
+              </h3>
+              <div className="axr-report__grid6">
+                <Tile label="Ticket" value={formatEUR(metrics.avgTicket)} metricKey="avgTicket" />
+                <Tile label="CAC" value={formatEUR(metrics.cac, 0)} metricKey="cac" />
+                <Tile label="LTV" value={formatEUR(metrics.ltv)} metricKey="ltv" />
+                <Tile
+                  label="LTV : CAC"
                   metricKey="ltvCacRatio"
                   value={formatRatio(metrics.ltvCacRatio)}
-                  tone={metrics.ltvCacRatio >= 3 ? "positive" : metrics.ltvCacRatio < 1 ? "negative" : undefined}
+                  tone={metrics.ltvCacRatio >= 3 ? "up" : metrics.ltvCacRatio < 1 ? "down" : undefined}
                 />
-                <MetricCard
+                <Tile
+                  label="ROAS"
                   metricKey="roas"
                   value={formatRatio(metrics.roas)}
-                  tone={metrics.roas >= 1 ? "positive" : "negative"}
+                  tone={metrics.roas >= 1 ? "up" : "down"}
                 />
-                <MetricCard
+                <Tile
+                  label="Equilibrio"
                   metricKey="breakEvenStudents"
                   value={
-                    metrics.breakEvenStudents == null
-                      ? "No se cubre nunca"
-                      : `${Math.ceil(metrics.breakEvenStudents)} alumnos`
+                    metrics.breakEvenStudents == null ? "—" : `${Math.ceil(metrics.breakEvenStudents)} al.`
                   }
                   tone={
                     metrics.breakEvenStudents != null && metrics.totalStudents >= metrics.breakEvenStudents
-                      ? "positive"
-                      : undefined
+                      ? "up"
+                      : "down"
                   }
                 />
               </div>
-            </Section>
 
-            {metrics.channelStats.length > 0 ? (
-              <Section title="Por canal" hint="Dónde salen los alumnos más baratos.">
-                <table className="axr-calc__channel-table">
-                  <thead>
-                    <tr>
-                      <th>Canal</th>
-                      <th>% alumnos</th>
-                      <th>CAC</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {metrics.channelStats.map((c) => (
-                      <tr key={c.id}>
-                        <td>{c.name}</td>
-                        <td>{formatPct(c.share * 100)}</td>
-                        <td>{formatEUR(c.cac, 0)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </Section>
-            ) : null}
+              {bestChannel && worstChannel ? (
+                <p className="axr-report__note">
+                  Más barato: <strong>{bestChannel.name}</strong> a {formatEUR(bestChannel.cac, 0)} · más caro:{" "}
+                  <strong>{worstChannel.name}</strong> a {formatEUR(worstChannel.cac, 0)}
+                </p>
+              ) : null}
+            </section>
+
+            <details className="axr-report__aviso">
+              <summary>Aviso: hipótesis, no contabilidad oficial</summary>
+              <p>{LENS_DISCLAIMER}</p>
+            </details>
           </div>
         </aside>
       </div>
 
-      <p className="axr-calc__disclaimer">
-        <strong>Aviso.</strong> {LENS_DISCLAIMER}
-      </p>
     </div>
   );
 }
 
 // ── Piezas de formulario ──────────────────────────────────
+
+/**
+ * Una cifra del informe.
+ *
+ * Sin caja, sin icono y sin botón de ayuda: el informe entero tiene que caber
+ * en una pantalla, y cuatro tarjetas con borde y relleno se comen esa
+ * pantalla ellas solas. La explicación de cada métrica sigue estando, en el
+ * `title` del elemento.
+ */
+function Tile({
+  label,
+  value,
+  tone,
+  big,
+  metricKey,
+}: {
+  label: string;
+  value: string;
+  tone?: "up" | "down";
+  big?: boolean;
+  /** Qué métrica es, para poder explicarla al pasar por encima. */
+  metricKey?: keyof typeof METRIC_INFO;
+}) {
+  const info = metricKey ? METRIC_INFO[metricKey] : undefined;
+  return (
+    <div
+      className="axr-report__tile"
+      data-tone={tone}
+      data-big={big ? "" : undefined}
+      title={info ? `${info.label}. ${info.explanation} Cálculo: ${info.formula}.` : undefined}
+    >
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
 
 function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
