@@ -5,6 +5,7 @@ import "@/styles/globals.scss";
 import { I18nProvider } from "@/lib/i18n/provider";
 import { ConsentDefaultScript } from "@/components/consent/consent-default-script";
 import { ConsentMount } from "@/components/consent/consent-mount";
+import { ExtensionNoiseScript } from "@/components/dev/extension-noise-script";
 import { getI18n } from "@/lib/i18n/server";
 import { SITE_NAME, SITE_URL } from "@/lib/seo";
 
@@ -58,6 +59,9 @@ export default async function RootLayout({
       <body>
         {/* Antes que nada: deja todo denegado hasta que haya decisión. */}
         <ConsentDefaultScript />
+        {/* Y calla a las extensiones del navegador, que en desarrollo tapan
+            la pantalla con errores que no son de esta web. */}
+        <ExtensionNoiseScript />
         <I18nProvider value={{ locale, t }}>{children}</I18nProvider>
         <ConsentMount />
       </body>
