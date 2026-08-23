@@ -1,5 +1,9 @@
 // Crea el primer usuario administrador. Uso:
-//   node scripts/create-admin.mjs <email> <password> "<Nombre>"
+//   node scripts/create-admin.mjs <email> "<Nombre>"
+//
+// Sin contraseña: al campus se entra con un enlace mágico, así que la cuenta
+// se crea con el correo ya dado por bueno y se accede pidiendo el enlace
+// desde /login.
 import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "node:fs";
 
@@ -13,9 +17,9 @@ const env = Object.fromEntries(
     }),
 );
 
-const [, , email, password, name] = process.argv;
-if (!email || !password) {
-  console.error('Uso: node scripts/create-admin.mjs <email> <password> "<Nombre>"');
+const [, , email, name] = process.argv;
+if (!email) {
+  console.error('Uso: node scripts/create-admin.mjs <email> "<Nombre>"');
   process.exit(1);
 }
 
@@ -25,7 +29,6 @@ const admin = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_RO
 
 const { data, error } = await admin.auth.admin.createUser({
   email,
-  password,
   email_confirm: true,
   user_metadata: { full_name: name ?? email.split("@")[0] },
 });

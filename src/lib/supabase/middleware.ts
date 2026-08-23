@@ -1,5 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import type { User } from "@supabase/supabase-js";
+
+import { PHONE_OTP_ENABLED } from "@/lib/auth/phone";
 
 const PUBLIC_PATHS = [
   "/bienvenida",
@@ -15,6 +18,27 @@ const PUBLIC_PATHS = [
   "/auth/callback",
   "/auth/sign-out",
 ];
+
+/** Segundo paso del registro: el SMS que confirma el teléfono. */
+const VERIFY_PATH = "/verificar-telefono";
+
+/**
+ * Registro a medias: hay cuenta y sesión, hay un teléfono declarado en el
+ * alta, y nadie ha contestado todavía al código.
+ *
+ * Se mira `user_metadata.phone` y no el perfil a propósito: el usuario ya
+ * viene resuelto de `getUser()`, así que la comprobación no cuesta ni una
+ * consulta más en cada navegación. Y sólo afecta a quien se registró por el
+ * formulario: las cuentas que crea el webhook de Stripe al cobrar una
+ * matrícula no traen teléfono en los metadatos y entran como siempre.
+ *
+ * Mientras el SMS esté apagado esto no se cumple nunca y el candado no
+ * existe: se entra con el enlace del correo y punto.
+ */
+function faltaVerificarTelefono(user: User): boolean {
+  if (!PHONE_OTP_ENABLED) return false;
+  return Boolean(user.user_metadata?.phone) && !user.phone_confirmed_at;
+}
 
 /** Cookie de sesión que Supabase quiere escribir en la respuesta. */
 type SessionCookie = { name: string; value: string; options: Record<string, unknown> };
@@ -91,6 +115,27 @@ export async function updateSession(
     // Se vuelve a la URL que la persona veía, con su prefijo de idioma.
     url.searchParams.set("redirect", request.nextUrl.pathname);
     return { redirect: NextResponse.redirect(url), cookies, hasUser: false };
+  }
+
+  // El campus se queda cerrado hasta que el teléfono esté confirmado. Las
+  // páginas públicas siguen abiertas —quien esté a medias puede seguir
+  // leyendo el blog— pero "/" no cuenta como pública aquí: para quien tiene
+  // sesión, "/" ES el campus.
+  if (user && faltaVerificarTelefono(user) && path !== VERIFY_PATH && (path === "/" || !isPublic)) {
+    const url = request.nextUrl.clone();
+    url.pathname = VERIFY_PATH;
+    url.search = "";
+    url.searchParams.set("next", request.nextUrl.pathname);
+    return { redirect: NextResponse.redirect(url), cookies, hasUser: true };
+  }
+
+  // Y al revés: quien no tiene nada pendiente no se queda encallado en la
+  // pantalla del SMS si vuelve a ella con el botón de atrás.
+  if (user && !faltaVerificarTelefono(user) && path === VERIFY_PATH) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    url.search = "";
+    return { redirect: NextResponse.redirect(url), cookies, hasUser: true };
   }
 
   if (user && path === "/login") {

@@ -263,6 +263,70 @@
     &:disabled { background: #8d8d8d; cursor: not-allowed; }
   }
 
+  // Pantalla del SMS: una sola columna, sin la mitad de marca.
+  &__frame--narrow {
+    max-width: 460px;
+  }
+
+  &__hint {
+    display: block;
+    font-size: 0.75rem;
+    line-height: 1.45;
+    color: var(--axr-text-helper);
+
+    &--block {
+      margin: 1rem 0 0 0;
+    }
+  }
+
+  // El código se lee de un vistazo o no sirve de nada: cifras grandes y
+  // separadas, como vienen en el propio SMS.
+  &__code {
+    font-family: var(--axr-mono);
+    font-size: 1.25rem;
+    letter-spacing: 0.4em;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    margin-top: 1.25rem;
+  }
+
+  &__ghost {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    font-size: 0.8125rem;
+    color: #161616;
+    text-decoration: underline;
+    cursor: pointer;
+
+    &:disabled { color: #8d8d8d; cursor: not-allowed; }
+  }
+
+  // Confirmación de "enlace enviado": sustituye al formulario entero.
+  &__sent {
+    border: 1px solid #161616;
+    border-left-width: 3px;
+    padding: 1.25rem;
+
+    &-title {
+      margin: 0;
+      font-weight: 600;
+      color: #161616;
+    }
+
+    &-body {
+      margin: 0.5rem 0 0.75rem 0;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      color: var(--axr-text-secondary);
+    }
+  }
+
   &__error {
     background: #fff1f1;
     border-left: 3px solid #da1e28;

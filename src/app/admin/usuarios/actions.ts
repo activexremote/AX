@@ -31,17 +31,18 @@ export async function changeUserRole(userId: string, role: UserRole) {
 export async function inviteUser(formData: FormData) {
   await assertAdmin();
   const email = String(formData.get("email") ?? "").trim();
-  const password = String(formData.get("password") ?? "");
   const fullName = String(formData.get("full_name") ?? "").trim();
   const role = String(formData.get("role") ?? "alumno") as UserRole;
 
-  if (!email || !password) return { error: "Email y contraseña son obligatorios." };
-  if (password.length < 6) return { error: "La contraseña debe tener al menos 6 caracteres." };
+  if (!email) return { error: "El email es obligatorio." };
 
+  // Sin contraseña a propósito: el campus se entra con un enlace mágico, así
+  // que una contraseña temporal aquí sería un secreto que nadie usaría nunca.
+  // La cuenta nace con el correo dado por bueno y quien la reciba entra
+  // pidiendo su enlace desde /login.
   const admin = createAdminClient();
   const { data, error } = await admin.auth.admin.createUser({
     email,
-    password,
     email_confirm: true,
     user_metadata: { full_name: fullName || email.split("@")[0] },
   });

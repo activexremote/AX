@@ -43,6 +43,10 @@ export interface Profile {
   email: string;
   full_name: string | null;
   avatar_url: string | null;
+  /** En E.164, tal y como se pidió en el registro. */
+  phone: string | null;
+  /** Null mientras el número esté declarado pero sin confirmar por SMS. */
+  phone_verified_at: string | null;
   role: UserRole;
   created_at: string;
 }

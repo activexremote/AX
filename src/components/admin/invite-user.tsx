@@ -47,10 +47,7 @@ export function InviteUserButton() {
             <label>{t.adminForm.invEmail}</label>
             <input name="email" type="email" required />
           </div>
-          <div className="axr-form__row">
-            <label>{t.adminForm.invPassword}</label>
-            <input name="password" type="text" required minLength={6} />
-          </div>
+          <p className="axr-login__hint">{t.adminForm.invNoPassword}</p>
           <div className="axr-form__row">
             <label>{t.adminForm.invRole}</label>
             <select name="role" defaultValue="alumno">

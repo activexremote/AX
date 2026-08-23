@@ -34,10 +34,17 @@ PGPASSWORD='<password>' psql "<connection-string>" -f supabase/migrations/0001_i
 PGPASSWORD='<password>' psql "<connection-string>" -f supabase/migrations/0002_seed_initial.sql
 ```
 
+### Correos
+
+Las plantillas de correo con la marca del campus están en `supabase/emails/`
+(magic link, alta y acceso tras matricularse). Se generan con
+`node scripts/build-emails.mjs` y se pegan en Authentication → Emails del panel
+de Supabase; ver `supabase/emails/README.md`.
+
 ### Crear el primer administrador
 
 ```bash
-node scripts/create-admin.mjs <email> <password> "<Nombre>"
+node scripts/create-admin.mjs <email> "<Nombre>"
 ```
 
 ## Estructura
@@ -45,8 +52,9 @@ node scripts/create-admin.mjs <email> <password> "<Nombre>"
 ```
 src/
   app/
-    login/                  Login (email/password + Google OAuth)
-    auth/                   callback OAuth + sign-out
+    login/                  Acceso con enlace mágico + Google OAuth
+    verificar-telefono/     Paso 2 opcional: código SMS (apagado, NEXT_PUBLIC_PHONE_OTP)
+    auth/                   callback del enlace/OAuth + sign-out
     (campus)/               Campus para usuarios autenticados
       page.tsx              Home: hero + ruta + catálogo de módulos
       modulos/[slug]        Detalle de módulo + lecciones
@@ -88,7 +96,9 @@ lanzar a mano desde Admin → Integración Slack.
 
 ## Funcionalidades
 
-- Login split-screen con email/contraseña y Google OAuth
+- Acceso sin contraseña: enlace mágico al correo y Google OAuth
+- Registro con nombre, email y teléfono (la verificación por SMS existe pero
+  está apagada: cuesta dinero por código, se enciende con `NEXT_PUBLIC_PHONE_OTP=on`)
 - Catálogo de módulos con ruta recomendada y stats
 - Lecciones con contenido Markdown, audio narrado y tabla de contenidos
 - Quizzes con corrección automática y pantalla "¡Has aprobado!"
