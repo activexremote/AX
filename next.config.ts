@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
     silenceDeprecations: ["global-builtin", "import"],
   },
   transpilePackages: ["@carbon/react", "@carbon/icons-react", "@carbon/styles"],
+  // PDFKit lee sus fuentes base (los .afm de Helvetica) del disco, con rutas
+  // relativas a su propio paquete. Empaquetarlo rompe esas rutas y el PDF
+  // falla al escribir la primera letra: se deja fuera del bundle.
+  serverExternalPackages: ["pdfkit"],
   experimental: {
     optimizePackageImports: ["@carbon/react", "@carbon/icons-react"],
   },
