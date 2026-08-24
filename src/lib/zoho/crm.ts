@@ -1,4 +1,10 @@
-import { idFromReply, zohoConfigured, zohoFetch, type ZohoRecordReply } from "@/lib/zoho/client";
+import {
+  errorFromReply,
+  idFromReply,
+  zohoConfigured,
+  zohoFetch,
+  type ZohoRecordReply,
+} from "@/lib/zoho/client";
 
 // ══════════════════════════════════════════════════════════
 //  Qué se manda a Zoho y en qué módulo
@@ -76,6 +82,11 @@ export async function upsertZohoLead(lead: ZohoLeadInput): Promise<string | null
     console.error(`[zoho] no se pudo guardar el lead ${lead.email}: ${reply.error}`);
     return null;
   }
+  const recordError = errorFromReply(reply.data);
+  if (recordError) {
+    console.error(`[zoho] no se pudo guardar el lead ${lead.email}: ${recordError}`);
+    return null;
+  }
   return idFromReply(reply.data);
 }
 
@@ -134,7 +145,7 @@ export async function registerZohoEnrolment(e: ZohoEnrolmentInput): Promise<void
   }
 
   if (lead?.id && !lead.Converted__s) {
-    const convertido = await zohoFetch(`/Leads/${lead.id}/actions/convert`, {
+    const convertido = await zohoFetch<ZohoRecordReply>(`/Leads/${lead.id}/actions/convert`, {
       method: "POST",
       body: JSON.stringify({
         data: [
@@ -154,11 +165,12 @@ export async function registerZohoEnrolment(e: ZohoEnrolmentInput): Promise<void
       }),
     });
 
-    if (convertido.ok) return;
+    const convertidoError = convertido.ok ? errorFromReply(convertido.data) : convertido.error;
+    if (!convertidoError) return;
     // Si la conversión falla —lo típico: la etapa del negocio no se llama así
     // en esta cuenta— se sigue por el camino de abajo, para que el pago quede
     // registrado igualmente en vez de perderse.
-    console.error(`[zoho] no se pudo convertir el lead de ${e.email}: ${convertido.error}`);
+    console.error(`[zoho] no se pudo convertir el lead de ${e.email}: ${convertidoError}`);
   }
 
   const contacto = await zohoFetch<ZohoRecordReply>("/Contacts/upsert", {
@@ -180,9 +192,14 @@ export async function registerZohoEnrolment(e: ZohoEnrolmentInput): Promise<void
     console.error(`[zoho] no se pudo guardar el contacto ${e.email}: ${contacto.error}`);
     return;
   }
+  const contactoError = errorFromReply(contacto.data);
+  if (contactoError) {
+    console.error(`[zoho] no se pudo guardar el contacto ${e.email}: ${contactoError}`);
+    return;
+  }
 
   const contactId = idFromReply(contacto.data);
-  const negocio = await zohoFetch("/Deals", {
+  const negocio = await zohoFetch<ZohoRecordReply>("/Deals", {
     method: "POST",
     body: JSON.stringify({
       data: [
@@ -198,7 +215,8 @@ export async function registerZohoEnrolment(e: ZohoEnrolmentInput): Promise<void
     }),
   });
 
-  if (!negocio.ok) {
-    console.error(`[zoho] contacto guardado pero el negocio no: ${negocio.error}`);
+  const negocioError = negocio.ok ? errorFromReply(negocio.data) : negocio.error;
+  if (negocioError) {
+    console.error(`[zoho] contacto guardado pero el negocio no: ${negocioError}`);
   }
 }

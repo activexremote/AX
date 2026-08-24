@@ -128,3 +128,16 @@ export function idFromReply(reply: ZohoRecordReply | null): string | null {
   if (!first || first.status !== "success") return null;
   return first.details?.id ?? null;
 }
+
+/**
+ * El motivo si un registro NO se guardó, aunque la petición haya llegado
+ * bien (HTTP 200): los endpoints de escritura de Zoho meten el éxito/fallo
+ * de CADA registro dentro del cuerpo, no en el código HTTP. Sin esto, un
+ * valor de lista rechazado (código INVALID_DATA) queda invisible en los
+ * logs — la llamada "funciona" y el registro nunca se crea.
+ */
+export function errorFromReply(reply: ZohoRecordReply | null): string | null {
+  const first = reply?.data?.[0];
+  if (!first || first.status === "success") return null;
+  return `${first.code ?? "ERROR"}: ${first.message ?? "sin detalle"}`;
+}
