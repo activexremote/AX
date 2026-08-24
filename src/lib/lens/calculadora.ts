@@ -343,9 +343,9 @@ export type LensAnnual = {
   tax: number;
   netProfit: number;
   dividends: number;
-  /** Semanas de calendario que ocupan esas convocatorias. */
+  /** Semanas del año con alguna convocatoria en marcha. Máximo 52. */
   weeksBusy: number;
-  /** Si no caben en 52 semanas, cuántas faltan. */
+  /** Semanas del último grupo que se van al ejercicio siguiente. */
   weeksOver: number;
   perCourse: { id: string; name: string; intakes: number; students: number; revenue: number }[];
 };
@@ -937,7 +937,25 @@ function computeAnnual(
   const pretax = ebitda - belowEbitda;
   const tax = pretax > 0 ? pretax * ((data.corporateTaxPct || 0) / 100) : 0;
 
-  const weeksBusy = intakes * (data.convocatoriaWeeks || 12);
+  // Semanas del año con alguna convocatoria en marcha.
+  //
+  // NO es convocatorias × duración: si dos grupos van en paralelo, esas
+  // semanas se cuentan una vez, no dos. Sumarlas daba "72 de 52", que además
+  // de imposible es mentira: con seis grupos solapados el calendario está
+  // lleno, no desbordado. Lo que sí se sale del año es la cola del último,
+  // y eso se cuenta aparte.
+  const durationDays = (data.convocatoriaWeeks || 12) * 7;
+  const ocupados = new Set<number>();
+  let colaFuera = 0;
+  for (let i = 0; i < intakes; i++) {
+    const inicio = (data.calendar?.firstStartDay || 1) + i * Math.max(1, data.calendar?.startEveryDays || 1);
+    for (let d = 0; d < durationDays; d++) {
+      const dia = inicio + d;
+      if (dia >= 1 && dia <= 365) ocupados.add(dia);
+      else if (dia > 365) colaFuera = Math.max(colaFuera, dia - 365);
+    }
+  }
+  const weeksBusy = ocupados.size / 7;
 
   return {
     intakes,
@@ -952,7 +970,8 @@ function computeAnnual(
     // Los dividendos ya vienen anualizados por su propia cadencia.
     dividends: 0,
     weeksBusy,
-    weeksOver: Math.max(0, weeksBusy - 52),
+    /** Días del último grupo que caen ya en el año siguiente, en semanas. */
+    weeksOver: colaFuera / 7,
     perCourse: courses.map((c) => ({
       id: c.id,
       name: c.name,
@@ -1229,9 +1248,26 @@ export function buildYearSummary(d: LensScenarioData, m: LensMetrics): string[] 
   const avisos: string[] = [];
   if (a.weeksOver > 0) {
     avisos.push(
-      `esas ${a.intakes} convocatorias ocupan ${Math.round(a.weeksBusy)} semanas y el año tiene 52, así que ` +
-        `${Math.round(a.weeksOver)} se van al siguiente ejercicio`,
+      `la última convocatoria se sale del año: ${Math.round(a.weeksOver)} ` +
+        `${Math.round(a.weeksOver) === 1 ? "semana suya cae" : "semanas suyas caen"} ya en el ejercicio siguiente`,
     );
+  }
+  // Convocatorias que, con este ritmo, arrancarían ya fuera del año.
+  const cabenEnElAno = (() => {
+    let n = 0;
+    for (let i = 0; i < a.intakes; i++) {
+      if ((d.calendar?.firstStartDay || 1) + i * Math.max(1, d.calendar?.startEveryDays || 1) <= 365) n++;
+    }
+    return n;
+  })();
+  if (cabenEnElAno < a.intakes) {
+    avisos.push(
+      `con ${d.calendar.startEveryDays} días entre convocatorias sólo arrancan ${cabenEnElAno} de las ${a.intakes} ` +
+        `dentro del año — las otras se han imputado a diciembre para que las cuentas cuadren, pero el calendario no da`,
+    );
+  }
+  if (a.weeksBusy >= 51.5 && a.intakes > 1) {
+    avisos.push(`el calendario está lleno: hay clase las 52 semanas, sin ventana para descansar ni para reorganizar`);
   }
   const mixSum = d.plans.reduce((sum, x) => sum + (x.mix || 0), 0);
   if (Math.round(mixSum) !== 100) avisos.push(`la mezcla de planes suma ${formatPct(mixSum, 0)} en vez de 100 %`);

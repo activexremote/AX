@@ -968,9 +968,8 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
                 Por curso
                 <em>
                   {metrics.annual.intakes} convocatorias ·{" "}
-                  <span data-alert={metrics.annual.weeksOver > 0 ? "" : undefined}>
-                    {Math.round(metrics.annual.weeksBusy)}/52 sem
-                    {metrics.annual.weeksOver > 0 ? ` (+${Math.round(metrics.annual.weeksOver)})` : ""}
+                  <span data-alert={metrics.annual.weeksBusy >= 51.5 ? "" : undefined}>
+                    {Math.round(metrics.annual.weeksBusy)}/52 sem con clase
                   </span>
                 </em>
               </h3>
