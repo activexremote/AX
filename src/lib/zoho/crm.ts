@@ -83,6 +83,15 @@ export type ZohoEnrolmentInput = {
   firstName: string;
   lastName: string;
   email: string;
+  /**
+   * Id del lead en Zoho, si lo tenemos guardado del formulario.
+   *
+   * Vale más que buscar por email: el buscador de Zoho va contra un índice
+   * que tarda en ponerse al día, así que un lead creado hace un minuto NO
+   * aparece todavía. Quien rellena el formulario y paga a continuación
+   * acabaría con ficha de lead y ficha de contacto sin relación entre ellas.
+   */
+  zohoLeadId?: string | null;
   /** Etiquetas legibles de los cursos comprados. */
   courses: string[];
   /** Nombre de la oferta contratada, para el título del negocio. */
@@ -105,11 +114,24 @@ export async function registerZohoEnrolment(e: ZohoEnrolmentInput): Promise<void
   const dealName = `${nombreNegocio} — ${e.courses.join(" + ") || "matrícula"}`;
   const hoy = new Date().toISOString().slice(0, 10);
 
-  const encontrado = await zohoFetch<{ data?: { id: string; Converted__s?: boolean }[] }>(
-    `/Leads/search?criteria=${encodeURIComponent(`(Email:equals:${e.email})`)}`,
-  );
+  let lead: { id: string; Converted__s?: boolean } | null = null;
 
-  const lead = encontrado.ok ? encontrado.data?.data?.[0] : null;
+  if (e.zohoLeadId) {
+    // Camino bueno: sabemos exactamente cuál es su ficha.
+    const directo = await zohoFetch<{ data?: { id: string; Converted__s?: boolean }[] }>(
+      `/Leads/${e.zohoLeadId}`,
+    );
+    lead = directo.ok ? (directo.data?.data?.[0] ?? null) : null;
+  }
+
+  if (!lead) {
+    // Camino de repuesto: compró sin pasar por el formulario, o el lead es de
+    // antes de que guardáramos el id.
+    const encontrado = await zohoFetch<{ data?: { id: string; Converted__s?: boolean }[] }>(
+      `/Leads/search?criteria=${encodeURIComponent(`(Email:equals:${e.email})`)}`,
+    );
+    lead = encontrado.ok ? (encontrado.data?.data?.[0] ?? null) : null;
+  }
 
   if (lead?.id && !lead.Converted__s) {
     const convertido = await zohoFetch(`/Leads/${lead.id}/actions/convert`, {

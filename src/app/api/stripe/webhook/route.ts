@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 
 import { stripe } from "@/lib/stripe/client";
 import { ALL_OFFERS, OFFERS, isOfferKey } from "@/lib/stripe/catalog";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { registerZohoEnrolment } from "@/lib/zoho/crm";
 import {
   ensureUser,
@@ -154,7 +155,21 @@ async function onCheckoutCompleted(session: Stripe.Checkout.Session) {
   // está cobrado y el acceso ya está dado; si Zoho falla, queda el log y se
   // arregla a mano, pero el webhook tiene que seguir su camino.
   try {
+    // Si esta persona pidió información antes, su ficha de Zoho está apuntada
+    // en nuestra tabla de leads. Ir a buscarla ahí evita depender del
+    // buscador de Zoho, que tarda en indexar y devolvería "no existe" para un
+    // lead reciente.
+    const { data: leadPrevio } = await createAdminClient()
+      .from("leads")
+      .select("zoho_lead_id")
+      .eq("email", email.toLowerCase())
+      .not("zoho_lead_id", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
     await registerZohoEnrolment({
+      zohoLeadId: leadPrevio?.zoho_lead_id ?? null,
       firstName: order.first_name ?? "",
       lastName: order.last_name ?? "",
       email,
