@@ -3,6 +3,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getLocale } from "@/lib/i18n/server";
 import { notify } from "@/lib/slack/notify";
+import { validateLead } from "@/lib/leads/validate";
 import { upsertZohoLead } from "@/lib/zoho/crm";
 
 // ⚠︎ SIN `export`. Un archivo con "use server" sólo puede exportar funciones
@@ -23,31 +24,101 @@ const COURSE_LABELS: Record<CourseKey, string> = {
 
 export type LeadResult = { ok: true } | { error: string };
 
+/**
+ * Ventana en la que dos envíos del mismo correo son EL MISMO envío.
+ *
+ * Quien pulsa dos veces, o corrige una errata y reenvía, no es un lead nuevo:
+ * es el mismo con mejores datos. Dentro de la ventana se actualiza la ficha
+ * en vez de crear otra fila, que es lo que llenaba la tabla de parejas.
+ */
+const VENTANA_REENVIO_MIN = 30;
+
+/** Más de esto desde el mismo correo en un día es un bot, no una persona. */
+const MAX_POR_DIA = 5;
+
 // El formulario es público: se inserta con la service role (no hay política de
 // insert para anon), así la tabla no queda expuesta a la REST API.
 export async function submitLead(formData: FormData): Promise<LeadResult> {
-  // Honeypot: los bots rellenan todos los campos, las personas no ven este.
-  if (String(formData.get("company") ?? "").trim()) return { ok: true };
-
   const courses = formData
     .getAll("courses")
     .map(String)
     .filter((c): c is CourseKey => (COURSE_KEYS as readonly string[]).includes(c));
 
-  const firstName = String(formData.get("first_name") ?? "").trim();
-  const lastName = String(formData.get("last_name") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const phone = String(formData.get("phone") ?? "").trim();
-  const city = String(formData.get("city") ?? "").trim();
-
   // El curso es opcional: quien todavía no lo tiene claro es justo el lead
   // que hay que capturar. Si no marca ninguno, se guarda vacío y lo resuelve
   // la llamada comercial.
-  if (!firstName || !lastName || !email || !phone || !city) return { error: "missing_fields" };
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return { error: "bad_email" };
+  const bruto = {
+    firstName: String(formData.get("first_name") ?? ""),
+    lastName: String(formData.get("last_name") ?? ""),
+    email: String(formData.get("email") ?? ""),
+    phone: String(formData.get("phone") ?? ""),
+    city: String(formData.get("city") ?? ""),
+  };
+
+  if (!bruto.firstName || !bruto.lastName || !bruto.email || !bruto.phone || !bruto.city) {
+    return { error: "missing_fields" };
+  }
+
+  // Cuánto ha tardado en rellenarlo. El formulario manda el instante en que
+  // se pintó; si no viene —página servida de caché— no se tiene en cuenta.
+  const pintado = Number(formData.get("t") ?? 0);
+  const elapsedMs = pintado > 0 ? Date.now() - pintado : null;
+
+  const revisado = validateLead({
+    ...bruto,
+    honeypot: String(formData.get("company") ?? ""),
+    elapsedMs,
+  });
+
+  if (!revisado.ok) {
+    // Al bot no se le dice que se le ha pillado: se le devuelve el mismo
+    // "gracias" que a todo el mundo. Si supiera por qué ha fallado, probaría
+    // otra vez con el campo arreglado.
+    if (revisado.error === "spam") return { ok: true };
+    return { error: revisado.error };
+  }
+
+  const { firstName, lastName, email, phone, city } = revisado.value;
 
   const locale = await getLocale();
   const admin = createAdminClient();
+
+  // ── Freno ──
+  // Cinco solicitudes del mismo correo en un día no las hace una persona.
+  // Se cuenta por correo y no por IP a propósito: guardar direcciones IP
+  // obligaría a cambiar la política de privacidad, que enumera exactamente
+  // qué datos se recogen, y no compensa por esto.
+  const desdeAyer = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { count } = await admin
+    .from("leads")
+    .select("id", { count: "exact", head: true })
+    .eq("email", email)
+    .gte("created_at", desdeAyer);
+
+  if ((count ?? 0) >= MAX_POR_DIA) return { error: "too_many" };
+
+  // ── ¿Es el mismo envío otra vez? ──
+  const desdeHaceUnRato = new Date(Date.now() - VENTANA_REENVIO_MIN * 60 * 1000).toISOString();
+  const { data: reciente } = await admin
+    .from("leads")
+    .select("id")
+    .eq("email", email)
+    .gte("created_at", desdeHaceUnRato)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (reciente?.id) {
+    // Se actualiza en lugar de duplicar: si volvió a enviarlo es porque algo
+    // quería cambiar, y los datos buenos son los últimos.
+    await admin
+      .from("leads")
+      .update({ first_name: firstName, last_name: lastName, phone, city, courses, locale })
+      .eq("id", reciente.id);
+
+    await enviarAZoho(admin, reciente.id, { firstName, lastName, email, phone, city, courses, locale });
+    return { ok: true };
+  }
 
   const { data: fila, error } = await admin
     .from("leads")
@@ -64,28 +135,7 @@ export async function submitLead(formData: FormData): Promise<LeadResult> {
     .single();
   if (error) return { error: "db" };
 
-  // ── Zoho ──
-  // Ni el CRM ni Slack pueden tumbar el envío: el lead ya está guardado en
-  // Supabase, que es la fuente de la verdad. Si Zoho está caído o mal
-  // configurado, queda el aviso en el log y la persona ve su "gracias".
-  try {
-    const zohoId = await upsertZohoLead({
-      firstName,
-      lastName,
-      email,
-      phone,
-      city,
-      courses: courses.map((c) => COURSE_LABELS[c]),
-      locale,
-    });
-    // El id se guarda para saber qué lead nuestro es cuál en el CRM, y para
-    // no tener que buscar por email cuando haya que cruzarlos.
-    if (zohoId && fila?.id) {
-      await admin.from("leads").update({ zoho_lead_id: zohoId }).eq("id", fila.id);
-    }
-  } catch (e) {
-    console.error(`[zoho] fallo guardando el lead ${email}: ${(e as Error).message}`);
-  }
+  await enviarAZoho(admin, fila?.id ?? null, { firstName, lastName, email, phone, city, courses, locale });
 
   // El aviso de Slack no debe tumbar el envío: el lead ya está guardado.
   try {
@@ -105,4 +155,38 @@ export async function submitLead(formData: FormData): Promise<LeadResult> {
   }
 
   return { ok: true };
+}
+
+/**
+ * El lead al CRM.
+ *
+ * Ni el CRM ni Slack pueden tumbar el envío: el lead ya está en Supabase, que
+ * es la fuente de la verdad. Si Zoho está caído o mal configurado, queda el
+ * aviso en el log, la persona ve su "gracias" y `npm run zoho:sync` lo
+ * repesca después.
+ */
+async function enviarAZoho(
+  admin: ReturnType<typeof createAdminClient>,
+  leadId: string | null,
+  lead: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    city: string;
+    courses: CourseKey[];
+    locale: string;
+  },
+) {
+  try {
+    const zohoId = await upsertZohoLead({
+      ...lead,
+      courses: lead.courses.map((c) => COURSE_LABELS[c]),
+    });
+    if (zohoId && leadId) {
+      await admin.from("leads").update({ zoho_lead_id: zohoId }).eq("id", leadId);
+    }
+  } catch (e) {
+    console.error(`[zoho] fallo guardando el lead ${lead.email}: ${(e as Error).message}`);
+  }
 }

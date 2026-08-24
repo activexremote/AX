@@ -88,7 +88,11 @@ export const landingCopy = {
       errors: {
         missing_course: "Elige al menos un curso.",
         missing_fields: "Completa todos los campos.",
+        bad_name: "Revisa el nombre y los apellidos.",
         bad_email: "Revisa la dirección de email.",
+        bad_phone: "Revisa el teléfono: sólo números, con prefijo si es de fuera de España.",
+        bad_city: "Revisa la ciudad.",
+        too_many: "Ya hemos recibido tu solicitud. Te escribimos en menos de 24 horas laborables.",
         db: "No se pudo enviar. Inténtalo de nuevo en un momento.",
       },
     },
@@ -599,7 +603,11 @@ export const landingCopy = {
       errors: {
         missing_course: "Pick at least one course.",
         missing_fields: "Please fill in every field.",
+        bad_name: "Check the first name and surname.",
         bad_email: "Check the email address.",
+        bad_phone: "Check the phone number: digits only, with country code if you're outside Spain.",
+        bad_city: "Check the city.",
+        too_many: "We already have your request. We'll write within 24 working hours.",
         db: "Couldn't send it. Please try again in a moment.",
       },
     },

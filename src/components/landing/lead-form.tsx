@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, useTransition } from "react";
+import { useId, useRef, useState, useTransition } from "react";
 
 import { submitLead } from "@/app/bienvenida/actions";
 import type { LandingCopy } from "@/app/bienvenida/copy";
@@ -19,12 +19,17 @@ type Props = {
 
 export function LeadForm({ copy, variant = "hero", preselect = [], submitLabel }: Props) {
   const uid = useId();
+  // Instante en que se pintó el formulario. Viaja con el envío para que el
+  // servidor sepa cuánto se ha tardado en rellenarlo: cinco campos en menos
+  // de dos segundos y medio no los rellena una persona.
+  const pintado = useRef(Date.now());
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
   function handleSubmit(formData: FormData) {
     setError(null);
+    formData.set("t", String(pintado.current));
     startTransition(async () => {
       const result = await submitLead(formData);
       if ("error" in result) {
@@ -56,23 +61,65 @@ export function LeadForm({ copy, variant = "hero", preselect = [], submitLabel }
             tarjeta entera quepa en la pantalla de un teléfono. */}
         <div className="axr-lead__field axr-lead__field--pair">
           <label htmlFor={`${uid}-first`}>{copy.firstName}</label>
-          <input id={`${uid}-first`} name="first_name" type="text" autoComplete="given-name" required />
+          <input
+            id={`${uid}-first`}
+            name="first_name"
+            type="text"
+            autoComplete="given-name"
+            autoCapitalize="words"
+            maxLength={60}
+            required
+          />
         </div>
         <div className="axr-lead__field axr-lead__field--pair">
           <label htmlFor={`${uid}-last`}>{copy.lastName}</label>
-          <input id={`${uid}-last`} name="last_name" type="text" autoComplete="family-name" required />
+          <input
+            id={`${uid}-last`}
+            name="last_name"
+            type="text"
+            autoComplete="family-name"
+            autoCapitalize="words"
+            maxLength={60}
+            required
+          />
         </div>
         <div className="axr-lead__field">
           <label htmlFor={`${uid}-email`}>{copy.email}</label>
-          <input id={`${uid}-email`} name="email" type="email" autoComplete="email" required />
+          <input
+            id={`${uid}-email`}
+            name="email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            autoCapitalize="off"
+            spellCheck={false}
+            maxLength={254}
+            required
+          />
         </div>
         <div className="axr-lead__field">
           <label htmlFor={`${uid}-phone`}>{copy.phone}</label>
-          <input id={`${uid}-phone`} name="phone" type="tel" autoComplete="tel" required />
+          <input
+            id={`${uid}-phone`}
+            name="phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            maxLength={24}
+            required
+          />
         </div>
         <div className="axr-lead__field axr-lead__field--wide">
           <label htmlFor={`${uid}-city`}>{copy.city}</label>
-          <input id={`${uid}-city`} name="city" type="text" autoComplete="address-level2" required />
+          <input
+            id={`${uid}-city`}
+            name="city"
+            type="text"
+            autoComplete="address-level2"
+            autoCapitalize="words"
+            maxLength={80}
+            required
+          />
         </div>
       </div>
 
