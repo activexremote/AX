@@ -208,8 +208,11 @@ export function MonthlyPL({
   const W = 340;
   const ETIQ = 9; // sitio para la cifra encima y debajo de las columnas
   const BARS = 88; // alto de la banda de columnas, etiquetas incluidas
-  const LINE = 32; // alto de la banda del acumulado
-  const GAP = 13; // sitio para las letras de los meses
+  const LINE = 46; // alto de la banda del acumulado, con sitio para sus cifras
+  const LINE_PAD = 9; // aire encima del punto más alto, para su número
+  // El hueco de las letras de los meses tiene que dar para dos cosas: la
+  // letra y, justo debajo, la cifra del punto más alto de la caja.
+  const GAP = 17;
   const H = BARS + GAP + LINE;
 
   // 13 huecos: la inversión inicial y los doce meses.
@@ -234,7 +237,9 @@ export function MonthlyPL({
   const cMax = Math.max(...caja, 0);
   const cMin = Math.min(...caja, 0);
   const cSpan = cMax - cMin || 1;
-  const yCaja = (v: number) => BARS + GAP + LINE - ((v - cMin) / cSpan) * LINE;
+  // El trazado no llega al techo de la banda: se le deja el hueco de una
+  // línea de texto, que es donde va la cifra del punto más alto.
+  const yCaja = (v: number) => BARS + GAP + LINE - ((v - cMin) / cSpan) * (LINE - LINE_PAD);
   const xCaja = (i: number) => i * slot + slot / 2;
   const linea = caja.map((v, i) => `${i === 0 ? "M" : "L"} ${xCaja(i).toFixed(1)} ${yCaja(v).toFixed(1)}`).join(" ");
   const bajoCero = caja.some((v) => v < 0);
@@ -333,14 +338,22 @@ export function MonthlyPL({
           </circle>
         ))}
 
-        {/* Sólo dos cifras en la línea: de dónde sale y a dónde llega. Doce
-            números pegados a una línea que sube son doce estorbos. */}
-        <text x={xCaja(0) + 3} y={yCaja(caja[0]) - 5} className="axr-pl__value" textAnchor="start" fill={INK}>
-          {shortEUR(caja[0])}
-        </text>
-        <text x={W} y={yCaja(caja[caja.length - 1]) - 5} className="axr-pl__value" textAnchor="end" fill={INK}>
-          {shortEUR(caja[caja.length - 1])}
-        </text>
+        {/* La cifra de CADA tramo, encima de su punto. Con dos números —el
+            primero y el último— se veía la forma de la curva pero no en qué
+            mes estaba el dinero, que es justo lo que se viene a mirar. Caben
+            los trece: cada hueco mide 26 px y una cifra en miles ocupa 18. */}
+        {caja.map((v, i) => (
+          <text
+            key={`c${i}`}
+            x={i === caja.length - 1 ? W - 1 : xCaja(i)}
+            y={yCaja(v) - 5}
+            className="axr-pl__value"
+            textAnchor={i === caja.length - 1 ? "end" : i === 0 ? "start" : "middle"}
+            fill={v < 0 ? LOSS : INK}
+          >
+            {shortEUR(v)}
+          </text>
+        ))}
       </svg>
 
       <figcaption className="axr-pl__legend">
@@ -354,13 +367,10 @@ export function MonthlyPL({
         </span>
         <span>
           <span className="axr-pl__line" aria-hidden />
-          Caja acumulada
+          Caja
         </span>
         <span>
-          <strong className="axr-pl__start">M</strong> arranca convocatoria
-        </span>
-        <span>
-          Diciembre <strong>{formatEUR(cumulative)}</strong>
+          <strong className="axr-pl__start">M</strong> arranca grupo
         </span>
       </figcaption>
     </figure>
