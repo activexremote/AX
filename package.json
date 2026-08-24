@@ -12,6 +12,7 @@
     "stripe:setup": "node --experimental-strip-types --import ./scripts/alias-loader.mjs scripts/stripe-setup.mjs",
     "check:links": "node scripts/check-links.mjs",
     "zoho:setup": "node scripts/zoho-setup.mjs",
+    "zoho:sync": "node --experimental-strip-types --import ./scripts/alias-loader.mjs scripts/zoho-sync-leads.mjs",
     "zoho:probe": "node scripts/zoho-setup.mjs --probe",
     "lens:audit": "node --experimental-strip-types --import ./scripts/alias-loader.mjs scripts/audit-calculadora.mjs",
     "blog:schedule": "node scripts/blog-schedule.mjs",
