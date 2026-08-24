@@ -4476,8 +4476,14 @@ $axr-tool-cats:
     p { margin: 0; color: var(--lp-body); line-height: 1.6; text-wrap: pretty; }
   }
 
+  // Dos partners, dos columnas.
+  //
+  // La rejilla llegaba a cuatro columnas porque antes había once tarjetas.
+  // Con dos, esa misma regla las deja arrinconadas a la izquierda de una fila
+  // vacía, y una sección medio vacía se lee como si faltara algo. Centradas y
+  // en pareja se leen como lo que son: los dos acuerdos que hay.
   &__grid {
-    max-width: var(--lp-max);
+    max-width: 760px;
     margin: 0 auto;
     padding: 0;
     list-style: none;
@@ -4486,8 +4492,6 @@ $axr-tool-cats:
     gap: 0.75rem;
 
     @media (min-width: 561px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    @media (min-width: 861px) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    @media (min-width: 1141px) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   }
 
   &__note {

@@ -7,6 +7,12 @@ import type { Locale } from "@/lib/i18n/config";
 //  alumnos del programa. No son «herramientas que se mencionan en clase»:
 //  son acuerdos, y por eso la copy habla en primera persona del plural.
 //
+//  ⚠︎ Aquí SÓLO entra quien tenga acuerdo firmado. Una marca en esta sección
+//  dice "trabajamos con ellos y te dan algo", que es una afirmación sobre un
+//  tercero: si el acuerdo no existe, no es una exageración de marketing, es
+//  un problema. Las herramientas que se estudian en clase van en tools.ts,
+//  que es otra cosa y así lo dice el aviso legal.
+//
 //  ⚠︎ Los logos son propiedad de cada marca. Se guardan en
 //  public/logos/partners/ sin recolorear —recolorear un logo lo invalida y
 //  casi todas las guías de marca lo prohíben— y a la misma ALTURA óptica,
@@ -31,32 +37,18 @@ export type Partner = {
   /**
    * Sale en la tira del héroe.
    *
-   * Dos, no once. El héroe no es el muestrario de partners —para eso está la
-   * sección de más abajo, con los once y su beneficio—: es la primera línea
-   * de confianza, y una fila larga de logos encogidos no da confianza, da
-   * ruido. Con dos, cada logotipo entra grande y se lee de verdad.
+   * Hoy salen los dos que hay, así que la tira del héroe y la sección de
+   * abajo enseñan lo mismo. La bandera se queda igualmente: el día que haya
+   * un tercer acuerdo, el héroe no debe crecer con él. Ahí caben dos o tres
+   * logotipos grandes; una fila larga de marcas encogidas no da confianza,
+   * da ruido.
    */
   hero?: true;
 };
 
 export const PARTNERS: readonly Partner[] = [
-  { key: "deel",       name: "Deel",             logo: "deel.svg",            ratio: 78 / 27,   url: "https://www.deel.com", hero: true },
+  { key: "deel",            name: "Deel",            logo: "deel.svg",            ratio: 78 / 27, url: "https://www.deel.com", hero: true },
   { key: "remoteandtalent", name: "Remote & Talent", logo: "remoteandtalent.svg", ratio: 80 / 90, dark: true, url: "https://remoteandtalent.com", hero: true },
-  // ⚠︎ SIN LOGO, y por un motivo que conviene saber: hiremo.com NO es la web
-  // de la empresa, es un dominio aparcado y en venta («This domain may be for
-  // sale»). Tampoco resuelven hiremo.io, .ai, .app, .co, .es, .tech ni
-  // gethiremo.com. Hasta saber cuál es su dirección real, el nombre se compone
-  // en nuestra tipografía y el enlace se deja fuera para no mandar a nadie a
-  // una página de venta de dominios.
-  { key: "hiremo",     name: "Hiremo",                                                            url: "" },
-  { key: "safetywing", name: "SafetyWing",       logo: "safetywing.svg",      ratio: 120 / 24,  url: "https://safetywing.com" },
-  { key: "wio",        name: "Wio Business",     logo: "wio.png",             ratio: 1,         url: "https://wio.io" },
-  { key: "revolut",    name: "Revolut Business", logo: "revolut.svg",         ratio: 1,         url: "https://www.revolut.com/business" },
-  { key: "factorial",  name: "Factorial",        logo: "factorial.svg",       ratio: 160 / 32,  url: "https://factorialhr.com" },
-  { key: "vercel",     name: "Vercel",           logo: "vercel.svg",          ratio: 1,         url: "https://vercel.com" },
-  { key: "stripe",     name: "Stripe",           logo: "stripe.svg",          ratio: 1,         url: "https://stripe.com" },
-  { key: "delvy",      name: "Delvy",            logo: "delvy.svg",           ratio: 211.5 / 68, url: "https://delvy.es" },
-  { key: "nomad",      name: "Nomad Capitalist", logo: "nomad.png",           ratio: 150 / 71,  url: "https://nomadcapitalist.com" },
 ];
 
 // Aquí vivía un código de color por familia (talento / dinero / legal /
@@ -92,15 +84,6 @@ const es: PartnerCopy = {
   items: {
     deel:            { area: "Global Hiring",       desc: "Contrata y paga talento en cualquier parte del mundo." },
     remoteandtalent: { area: "Remote Talent",       desc: "Encuentra talento preparado para trabajar en remoto." },
-    hiremo:          { area: "AI Recruiting",       desc: "Automatiza la creación de equipos con inteligencia artificial." },
-    safetywing:      { area: "Digital Nomads",      desc: "Seguro médico para trabajar y viajar por todo el mundo." },
-    wio:             { area: "Business Banking",    desc: "Tu cuenta bancaria empresarial para operar internacionalmente." },
-    revolut:         { area: "Business Finance",    desc: "Gestiona tu dinero y pagos internacionales desde un solo sitio." },
-    factorial:       { area: "HR & People",         desc: "Gestiona personas, equipos y RRHH desde una sola plataforma." },
-    vercel:          { area: "Web Infrastructure",  desc: "Publica y escala tus proyectos digitales en minutos." },
-    stripe:          { area: "Payments",            desc: "Cobra online y crea sistemas de pago para tu negocio." },
-    delvy:           { area: "International Legal", desc: "Asesoramiento legal para crear y operar negocios internacionales." },
-    nomad:           { area: "Visas & Mobility",    desc: "Asesoramiento para residencia, visados y movilidad internacional." },
   },
   benefitLabel: "Beneficio para alumnos",
   // El diploma sigue siendo lo que es, y eso no lo cambia tener acuerdos:
@@ -116,15 +99,6 @@ const en: PartnerCopy = {
   items: {
     deel:            { area: "Global Hiring",       desc: "Hire and pay talent anywhere in the world." },
     remoteandtalent: { area: "Remote Talent",       desc: "Find talent that is ready to work remotely." },
-    hiremo:          { area: "AI Recruiting",       desc: "Build teams automatically, with AI doing the sifting." },
-    safetywing:      { area: "Digital Nomads",      desc: "Health insurance for working and travelling worldwide." },
-    wio:             { area: "Business Banking",    desc: "Your business bank account for operating internationally." },
-    revolut:         { area: "Business Finance",    desc: "Run your money and international payments from one place." },
-    factorial:       { area: "HR & People",         desc: "Manage people, teams and HR from a single platform." },
-    vercel:          { area: "Web Infrastructure",  desc: "Ship and scale your digital projects in minutes." },
-    stripe:          { area: "Payments",            desc: "Take payments online and build billing for your business." },
-    delvy:           { area: "International Legal", desc: "Legal advice for setting up and running businesses abroad." },
-    nomad:           { area: "Visas & Mobility",    desc: "Advice on residency, visas and international mobility." },
   },
   benefitLabel: "Student benefit",
   note: "Each brand belongs to its own company. Partners provide benefits and conditions for our students, but they do not accredit the programme or issue the diploma: ActiveXRemote issues it, listing the modules passed, and it is a private company certification, not an official qualification or a university degree.",

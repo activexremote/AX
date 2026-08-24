@@ -9,9 +9,9 @@ import { getLocale } from "@/lib/i18n/server";
 // ══════════════════════════════════════════════════════════
 //  Partners
 //
-//  Dos piezas: la tira del héroe —dos logotipos, sólo para decir «no estamos
-//  solos» antes de que nadie lea nada— y la sección de detalle, con los once
-//  y el beneficio de cada uno.
+//  Dos piezas: la tira del héroe —los logotipos, sólo para decir «no estamos
+//  solos» antes de que nadie lea nada— y la sección de detalle, con el
+//  beneficio de cada uno.
 //
 //  Los logos van todos a la MISMA ALTURA y nunca al mismo ancho: es como se
 //  unifica una fila de logotipos. Igualarlos por ancho hace que un wordmark
@@ -64,8 +64,8 @@ function PartnerMark({ p, size }: { p: Partner; size: number }) {
  * Antes eran cinco metidos en pastillas blancas con su nombre y su categoría,
  * y el resultado era una fila de tarjetas peleándose con el titular, que es
  * lo único que en un héroe tiene que leerse. Aquí el trabajo de la tira es
- * respaldar, no explicar: quién quiera saber qué hace cada partner lo tiene
- * en la sección de abajo, con los once y su beneficio.
+ * respaldar, no explicar: quien quiera saber qué hace cada partner lo tiene
+ * en la sección de abajo, con su beneficio.
  *
  * Los logos van a una tinta (CSS: `brightness(0) invert(1)`) y a la misma
  * ALTURA óptica, nunca al mismo ancho: igualar por ancho aplastaría el
