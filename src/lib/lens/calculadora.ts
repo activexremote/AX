@@ -319,10 +319,28 @@ export type LensDividendPlan = {
 export type LensAnnual = {
   /** Convocatorias al año, sumando todos los cursos. */
   intakes: number;
-  /** Cuántas veces cabe el periodo del escenario en un año. */
-  factor: number;
+  /**
+   * Cuántas veces se repite lo que va POR CONVOCATORIA: matrículas,
+   * captación, coste por alumno, comisión comercial y docencia.
+   */
+  intakeFactor: number;
+  /**
+   * Cuántas veces cabe el periodo del escenario en un año natural. Es el que
+   * se aplica a lo que va POR CALENDARIO: estructura, sueldos, amortización
+   * y financieros, que se pagan los doce meses haya convocatoria o no.
+   *
+   * Confundir los dos factores era el error que hacía que los doce meses no
+   * sumaran el año: cinco convocatorias de doce semanas son sesenta semanas,
+   * y la estructura no se paga sesenta semanas, se paga cincuenta y dos.
+   */
+  timeFactor: number;
   students: number;
   revenue: number;
+  /** Explotación del año: ingresos menos gastos de explotación. */
+  ebitda: number;
+  /** Amortizaciones + financieros del año. */
+  belowEbitda: number;
+  tax: number;
   netProfit: number;
   dividends: number;
   /** Semanas de calendario que ocupan esas convocatorias. */
@@ -533,28 +551,41 @@ export function computeLensMetrics(data: LensScenarioData): LensMetrics {
     share: totalStudents > 0 ? c.students / totalStudents : 0,
   }));
 
-  const dividendPlan = computeDividendPlan(data, totalRevenue, netProfit);
+  // El orden importa: el año primero, porque los dividendos se reparten sobre
+  // el año y los meses tienen que sumar exactamente lo que diga el año.
+  const annual = computeAnnual(data, {
+    students: totalStudents,
+    revenue: totalRevenue,
+    marketing: totalMarketingSpend,
+    variableCosts: variableCostsTotal,
+    salesBonus: salesBonusTotal,
+    teachingPerConvocatoria: teachingCostPerConvocatoria,
+    gatewayPct: data.gatewayFeePct,
+    fixedCosts: totalFixedCosts,
+    salesFixed: salesFixedTotal,
+    periodMonths,
+  });
+
+  const dividendPlan = computeDividendPlan(data, annual.revenue, annual.netProfit);
+  annual.dividends = dividendPlan.poolPerYear;
 
   const months = computeMonths(data, {
-    students: totalStudents,
-    marketing: totalMarketingSpend,
-    variablePerStudent: data.variableCostPerStudent + (data.salesTeam.bonusPerEnrollment || 0),
-    teaching: teachingCostPerConvocatoria,
+    intakes: annual.intakes,
+    // Todo lo que va por convocatoria se reparte entre las convocatorias del
+    // año, así que los doce meses suman el año por construcción y no por
+    // suerte.
+    revenuePerIntake: annual.intakeFactor > 0 ? annual.revenue / annual.intakeFactor : 0,
+    marketingPerIntake: totalMarketingSpend,
+    variablePerIntake: variableCostsTotal + salesBonusTotal,
+    teachingPerIntake: teachingCostPerConvocatoria,
     gatewayPct: data.gatewayFeePct,
     // La amortización se queda fuera: es un apunte contable, no una salida
     // de dinero. Meterla aquí haría que la caja pareciera peor de lo que es.
     monthlyOverheads:
       (totalFixedCosts + salesFixedTotal + (data.financialCostsPerPeriod || 0)) / periodMonths,
-    avgTicket,
     // El año empieza con la inversión ya pagada: es el agujero del que hay
     // que salir, y enseñarlo es justo el sentido de la gráfica.
     cashOnHand: (data.cashOnHand || 0) - (data.initialInvestment || 0),
-  });
-  const annual = computeAnnual(data, {
-    students: totalStudents,
-    revenue: totalRevenue,
-    netProfit,
-    dividendsPerYear: dividendPlan.poolPerYear,
   });
 
   return {
@@ -640,13 +671,13 @@ function monthOfDay(day: number): number {
 function computeMonths(
   data: LensScenarioData,
   v: {
-    students: number;
-    marketing: number;
-    variablePerStudent: number;
-    teaching: number;
+    intakes: number;
+    revenuePerIntake: number;
+    marketingPerIntake: number;
+    variablePerIntake: number;
+    teachingPerIntake: number;
     gatewayPct: number;
     monthlyOverheads: number;
-    avgTicket: number;
     cashOnHand: number;
   },
 ): LensMonth[] {
@@ -657,59 +688,69 @@ function computeMonths(
   const running = new Array(12).fill(0);
 
   const cal = data.calendar;
-  const intakes = (data.courses ?? []).reduce((sum, c) => sum + (c.intakesPerYear || 0), 0);
   const durationDays = Math.max(1, (data.convocatoriaWeeks || 12) * 7);
   const mixSum = data.plans.reduce((sum, p) => sum + (p.mix || 0), 0) || 1;
 
-  for (let i = 0; i < intakes; i++) {
-    const startDay = (cal.firstStartDay || 1) + i * Math.max(1, cal.startEveryDays || 1);
-    if (startDay > 365) break; // lo que no arranca dentro del año, no cuenta
-    const startMonth = monthOfDay(startDay);
-    starts[startMonth] += 1;
+  /**
+   * Lo que se sale del año se imputa al borde.
+   *
+   * Una convocatoria que arranca en noviembre da clase hasta febrero, y su
+   * captación se pagó en octubre. En un año en marcha eso se compensa solo:
+   * lo que se va por diciembre lo devuelve la convocatoria del año anterior
+   * que entra por enero. Recortarlo sin más haría que los doce meses no
+   * sumaran el año, y entonces la gráfica y el resumen dirían cosas
+   * distintas del mismo escenario.
+   */
+  const mes = (day: number) => monthOfDay(Math.min(365, Math.max(1, day)));
 
-    // Captación: se paga por delante, y puede caer en el año anterior. Si
-    // cae fuera, se imputa a enero: sacarla del cuadro haría que el año
-    // pareciera más barato de lo que es.
-    const capDay = startDay - (cal.marketingLeadDays || 0);
-    costs[capDay < 1 ? 0 : monthOfDay(capDay)] += v.marketing;
+  if (data.periodMode === "convocatoria" && v.intakes > 0) {
+    for (let i = 0; i < v.intakes; i++) {
+      const startDay = (cal.firstStartDay || 1) + i * Math.max(1, cal.startEveryDays || 1);
+      const startMonth = mes(startDay);
+      starts[startMonth] += 1;
 
-    // Matrículas: cada plan cobra en los meses que tenga.
-    for (const p of data.plans) {
-      const share = (p.mix || 0) / mixSum;
-      const total = v.students * share * (p.price || 0);
-      const meses = Math.max(1, Math.round(p.payMonths || 1));
-      for (let k = 0; k < meses; k++) {
-        const m = monthOfDay(Math.min(365, startDay + k * 30));
-        revenue[m] += total / meses;
-        costs[m] += (total / meses) * (v.gatewayPct / 100);
+      // Captación: se paga por delante.
+      costs[mes(startDay - (cal.marketingLeadDays || 0))] += v.marketingPerIntake;
+
+      // Matrículas: cada plan cobra en los meses que tenga.
+      for (const p of data.plans) {
+        const total = v.revenuePerIntake * ((p.mix || 0) / mixSum);
+        const meses = Math.max(1, Math.round(p.payMonths || 1));
+        for (let k = 0; k < meses; k++) {
+          const m = mes(startDay + k * 30);
+          revenue[m] += total / meses;
+          costs[m] += (total / meses) * (v.gatewayPct / 100);
+        }
       }
-    }
 
-    // Variables y comisión comercial: al matricularse.
-    costs[startMonth] += v.variablePerStudent * v.students;
+      // Variables y comisión comercial: al matricularse.
+      costs[startMonth] += v.variablePerIntake;
 
-    // Devengado: la matrícula entera se reparte por los días que dura la
-    // convocatoria, se haya cobrado cuando se haya cobrado. Esto es lo que
-    // diría la cuenta de resultados; lo de arriba, lo que dice el banco.
-    const matriculaTotal = v.students * v.avgTicket;
-    for (let d = 0; d < durationDays; d++) {
-      const day = startDay + d;
-      if (day > 365) break;
-      recognized[monthOfDay(day)] += matriculaTotal / durationDays;
+      // Docencia y devengado: repartidos por los días que dura.
+      const mesesEnMarcha = new Set<number>();
+      for (let d = 0; d < durationDays; d++) {
+        const m = mes(startDay + d);
+        costs[m] += v.teachingPerIntake / durationDays;
+        recognized[m] += v.revenuePerIntake / durationDays;
+        mesesEnMarcha.add(m);
+      }
+      // Un grupo cuenta una vez por mes, aunque dure treinta días de ese mes:
+      // lo que se quiere saber es cuántos grupos hay a la vez.
+      for (const m of mesesEnMarcha) running[m] += 1;
     }
-
-    // Docencia: repartida por los días de clase que caen en cada mes.
-    const mesesEnMarcha = new Set<number>();
-    for (let d = 0; d < durationDays; d++) {
-      const day = startDay + d;
-      if (day > 365) break;
-      const m = monthOfDay(day);
-      costs[m] += v.teaching / durationDays;
-      mesesEnMarcha.add(m);
+  } else {
+    // Sin convocatorias: el escenario describe un trozo de tiempo y el año es
+    // ese trozo repetido. No hay calendario que valga, así que se reparte por
+    // igual entre los doce meses.
+    const meses = Math.max(0.25, effectivePeriodMonths(data));
+    for (let m = 0; m < 12; m++) {
+      revenue[m] += v.revenuePerIntake / meses;
+      recognized[m] += v.revenuePerIntake / meses;
+      costs[m] +=
+        (v.marketingPerIntake + v.variablePerIntake + v.teachingPerIntake) / meses +
+        (v.revenuePerIntake / meses) * (v.gatewayPct / 100);
+      running[m] = 1;
     }
-    // Un grupo cuenta una vez por mes, aunque dure treinta días de ese mes:
-    // lo que se quiere saber es cuántos grupos hay a la vez.
-    for (const m of mesesEnMarcha) running[m] += 1;
   }
 
   // Estructura y sueldos: todos los meses, haya o no convocatoria.
@@ -860,41 +901,72 @@ function computeInvestorKpis(
 
 function computeAnnual(
   data: LensScenarioData,
-  base: { students: number; revenue: number; netProfit: number; dividendsPerYear: number },
+  v: {
+    students: number;
+    revenue: number;
+    marketing: number;
+    variableCosts: number;
+    salesBonus: number;
+    teachingPerConvocatoria: number;
+    gatewayPct: number;
+    fixedCosts: number;
+    salesFixed: number;
+    periodMonths: number;
+  },
 ): LensAnnual {
   const courses = data.courses ?? [];
   const intakes = courses.reduce((sum, c) => sum + (c.intakesPerYear || 0), 0);
 
-  // Si el escenario ES una convocatoria, el año son tantas convocatorias como
-  // se hagan. Si se declaró en meses, el año son 12/meses, y las
-  // convocatorias sólo sirven para el reparto por curso.
-  const factor =
-    data.periodMode === "convocatoria" ? intakes : 12 / Math.max(0.25, data.periodMonths || 1);
+  // Dos ritmos distintos, y hay que respetarlos por separado.
+  const intakeFactor = data.periodMode === "convocatoria" ? intakes : 12 / Math.max(0.25, v.periodMonths);
+  const timeFactor = 12 / Math.max(0.25, v.periodMonths);
+
+  const revenue = v.revenue * intakeFactor;
+  const opex =
+    v.marketing * intakeFactor +
+    v.variableCosts * intakeFactor +
+    v.salesBonus * intakeFactor +
+    v.teachingPerConvocatoria * (data.periodMode === "convocatoria" ? intakes : intakeFactor) +
+    revenue * (v.gatewayPct / 100) +
+    v.fixedCosts * timeFactor +
+    v.salesFixed * timeFactor;
+
+  const ebitda = revenue - opex;
+  const belowEbitda =
+    ((data.amortizationPerPeriod || 0) + (data.financialCostsPerPeriod || 0)) * timeFactor;
+  const pretax = ebitda - belowEbitda;
+  const tax = pretax > 0 ? pretax * ((data.corporateTaxPct || 0) / 100) : 0;
 
   const weeksBusy = intakes * (data.convocatoriaWeeks || 12);
 
   return {
     intakes,
-    factor,
-    students: base.students * factor,
-    revenue: base.revenue * factor,
-    netProfit: base.netProfit * factor,
-    // Los dividendos ya vienen anualizados por su propia cadencia: repartir
-    // cada trimestre son cuatro repartos al año, se hagan las convocatorias
-    // que se hagan.
-    dividends: base.dividendsPerYear,
+    intakeFactor,
+    timeFactor,
+    students: v.students * intakeFactor,
+    revenue,
+    ebitda,
+    belowEbitda,
+    tax,
+    netProfit: pretax - tax,
+    // Los dividendos ya vienen anualizados por su propia cadencia.
+    dividends: 0,
     weeksBusy,
     weeksOver: Math.max(0, weeksBusy - 52),
     perCourse: courses.map((c) => ({
       id: c.id,
       name: c.name,
       intakes: c.intakesPerYear || 0,
-      students: base.students * (c.intakesPerYear || 0),
-      revenue: base.revenue * (c.intakesPerYear || 0),
+      students: v.students * (c.intakesPerYear || 0),
+      revenue: v.revenue * (c.intakesPerYear || 0),
     })),
   };
 }
 
+// ── El año, mes a mes ─────────────────────────────────────
+
+
+// ── Las métricas de inversor ──────────────────────────────
 /**
  * Reparto de dividendos.
  *
@@ -905,15 +977,17 @@ function computeAnnual(
  */
 function computeDividendPlan(
   data: LensScenarioData,
-  totalRevenue: number,
-  netProfit: number,
+  annualRevenue: number,
+  annualNetProfit: number,
 ): LensDividendPlan {
-  const periodMonths = effectivePeriodMonths(data);
   const windowMonths = Math.max(1, data.dividends?.everyMonths || 1);
-  const factor = windowMonths / periodMonths;
+  // La ventana es un trozo de AÑO, no un trozo del periodo del escenario: un
+  // reparto trimestral es un trimestre de calendario, se hagan las
+  // convocatorias que se hagan y duren lo que duren.
+  const trozo = windowMonths / 12;
 
-  const revenueInWindow = totalRevenue * factor;
-  const profitInWindow = netProfit * factor;
+  const revenueInWindow = annualRevenue * trozo;
+  const profitInWindow = annualNetProfit * trozo;
   const threshold = data.dividends?.revenueThreshold || 0;
   const thresholdMet = revenueInWindow >= threshold;
 
@@ -1046,6 +1120,135 @@ export const LENS_DISCLAIMER =
   "informe de auditoría, y no es asesoramiento fiscal, contable ni de inversión. Cambiar un " +
   "supuesto cambia el resultado: úsese para comparar escenarios y tomar decisiones, nunca como " +
   "prueba de un resultado.";
+
+/**
+ * El resumen del ejercicio, en prosa.
+ *
+ * Un cuadro de mandos contesta preguntas que ya te has hecho. Esto contesta
+ * la que se hace en voz alta cuando alguien mira la pantalla por encima del
+ * hombro: "vale, ¿y esto qué significa?". Va en frases, con los números
+ * dentro, y dice también lo que no cuadra —semanas que no caben, mezclas que
+ * no suman, meses en rojo— porque un resumen que sólo cuenta lo bueno no es
+ * un resumen, es un folleto.
+ *
+ * Devuelve párrafos sueltos para que los pinte igual la pantalla que el PDF.
+ */
+export function buildYearSummary(d: LensScenarioData, m: LensMetrics): string[] {
+  const parrafos: string[] = [];
+  const a = m.annual;
+  const p = m.dividendPlan;
+
+  // ── El plan del año ──
+  const cursos = (d.courses ?? []).filter((c) => (c.intakesPerYear || 0) > 0);
+  const trozos = cursos.map((c) => `${c.intakesPerYear} de ${c.name}`);
+  const detalle =
+    trozos.length <= 1 ? trozos.join("") : `${trozos.slice(0, -1).join(", ")} y ${trozos[trozos.length - 1]}`;
+  const duracionDias = (d.convocatoriaWeeks || 12) * 7;
+  const hueco = (d.calendar?.startEveryDays || 0) - duracionDias;
+  const semanasHueco = Math.round(Math.abs(hueco) / 7);
+  const ritmo =
+    hueco > 3
+      ? `con ${semanasHueco} ${semanasHueco === 1 ? "semana" : "semanas"} de descanso entre una y la siguiente`
+      : hueco < -3
+        ? `solapándose ${semanasHueco} ${semanasHueco === 1 ? "semana" : "semanas"}, o sea con dos grupos en marcha a la vez`
+        : "encadenadas, una detrás de otra sin descanso";
+
+  parrafos.push(
+    `Este año se harán ${a.intakes} ${a.intakes === 1 ? "convocatoria" : "convocatorias"}` +
+      (detalle ? ` (${detalle})` : "") +
+      `, de ${d.convocatoriaWeeks} semanas cada una y ${ritmo}. ` +
+      `Eso son ${Math.round(a.students)} alumnos en el año, a un ticket medio de ${formatEUR(m.avgTicket)}.`,
+  );
+
+  // ── El dinero ──
+  const estructura = m.totalFixedCosts * a.timeFactor + m.salesFixedTotal * a.timeFactor;
+  const docencia = m.teachingCostPerConvocatoria * a.intakes;
+  parrafos.push(
+    `Supondrá una facturación de ${formatEUR(a.revenue)} y unos costes de ${formatEUR(a.revenue - a.ebitda)}, ` +
+      `de los cuales ${formatEUR(estructura)} son estructura y sueldos fijos —se pagan los doce meses, haya clase o no— ` +
+      `y ${formatEUR(docencia)}, profesorado. ` +
+      `Deja un EBITDA de ${formatEUR(a.ebitda)} (${formatPct(m.totalRevenue > 0 ? (a.ebitda / a.revenue) * 100 : 0, 0)}) ` +
+      `y un beneficio neto de ${formatEUR(a.netProfit)}` +
+      (a.tax > 0 ? `, ya descontados ${formatEUR(a.tax)} de impuesto de sociedades` : "") +
+      `.`,
+  );
+
+  // ── El reparto ──
+  if (p.blockedReason === null && p.poolPerPayout > 0) {
+    const socios = p.partners
+      .map((s) => `${s.name} ${formatEUR(s.perYear)}`)
+      .join(", ");
+    parrafos.push(
+      `Se repartirán dividendos ${p.payoutsPerYear} ${p.payoutsPerYear === 1 ? "vez" : "veces"} al año, ` +
+        `${formatEUR(p.poolPerPayout)} cada vez —${formatEUR(p.poolPerYear)} en total—, siempre que la facturación ` +
+        `de cada ${payoutCadenceLabel(p.windowMonths).replace("cada ", "")} llegue a ${formatEUR(p.threshold)}. ` +
+        (socios ? `Al año, por socio: ${socios}. ` : "") +
+        `El resto, ${formatEUR(a.netProfit - p.poolPerYear)}, se queda como reservas.`,
+    );
+  } else {
+    parrafos.push(
+      p.blockedReason === "disabled"
+        ? `No hay reparto de dividendos en este escenario: el beneficio se queda entero dentro.`
+        : p.blockedReason === "below-threshold"
+          ? `No habrá reparto: la facturación de cada ${payoutCadenceLabel(p.windowMonths).replace("cada ", "")} ` +
+            `se queda en ${formatEUR(p.revenueInWindow)} y el umbral está en ${formatEUR(p.threshold)}.`
+          : `No habrá reparto: no hay beneficio que repartir.`,
+    );
+  }
+
+  // ── El calendario ──
+  const fuertes = [...m.months].sort((x, y) => y.revenue - x.revenue).slice(0, 3);
+  const rojos = m.months.filter((x) => x.profit < 0);
+  // "marzo, agosto y octubre", no "marzo, agosto, octubre": el resumen se lee
+  // en voz alta delante de alguien, y ahí la coma final canta.
+  const nombres = (lista: LensMonth[]) => {
+    const ms = lista.map((x) => MONTH_NAMES[x.index]);
+    if (ms.length <= 1) return ms.join("");
+    return `${ms.slice(0, -1).join(", ")} y ${ms[ms.length - 1]}`;
+  };
+  parrafos.push(
+    `Los meses más fuertes serán ${nombres(fuertes)}, que es cuando entran las matrículas de cada convocatoria. ` +
+      (rojos.length
+        ? `Y ${rojos.length} ${rojos.length === 1 ? "mes cerrará" : "meses cerrarán"} en negativo (${nombres(rojos)}): ` +
+          `son los meses sin arranque, en los que se paga docencia y estructura mientras sólo entran los plazos pendientes.`
+        : `Ningún mes cierra en negativo.`),
+  );
+
+  // ── La caja ──
+  const suelo = m.kpis.cashTrough;
+  parrafos.push(
+    m.kpis.runsOutMonth !== null
+      ? `Ojo con la caja: se queda en negativo en ${MONTH_NAMES[m.kpis.runsOutMonth]}. ` +
+        `Con ${formatEUR(d.cashOnHand)} de partida y ${formatEUR(d.initialInvestment)} de inversión inicial no llega; ` +
+        `hace falta más colchón, cobrar antes o gastar menos por delante.`
+      : `La caja aguanta todo el año: el punto más bajo es ${formatEUR(suelo)} en ${MONTH_NAMES[m.kpis.cashTroughMonth]}, ` +
+        `y diciembre cierra con ${formatEUR(m.months[11].cash)}.`,
+  );
+
+  // ── Lo que no cuadra ──
+  const avisos: string[] = [];
+  if (a.weeksOver > 0) {
+    avisos.push(
+      `esas ${a.intakes} convocatorias ocupan ${Math.round(a.weeksBusy)} semanas y el año tiene 52, así que ` +
+        `${Math.round(a.weeksOver)} se van al siguiente ejercicio`,
+    );
+  }
+  const mixSum = d.plans.reduce((sum, x) => sum + (x.mix || 0), 0);
+  if (Math.round(mixSum) !== 100) avisos.push(`la mezcla de planes suma ${formatPct(mixSum, 0)} en vez de 100 %`);
+  if (p.partners.length && Math.round(p.sharesSum) !== 100) {
+    avisos.push(`las participaciones de los socios suman ${formatPct(p.sharesSum, 0)}`);
+  }
+  if (m.breakEvenStudents != null && m.totalStudents < m.breakEvenStudents) {
+    avisos.push(
+      `cada convocatoria necesita ${Math.ceil(m.breakEvenStudents)} alumnos para cubrir costes y hay ${m.totalStudents}`,
+    );
+  }
+  if (avisos.length) {
+    parrafos.push(`Antes de dar esto por bueno: ${avisos.join("; ")}.`);
+  }
+
+  return parrafos;
+}
 
 /** Explicaciones en lenguaje llano de cada métrica, para el icono (i) de cada tarjeta. */
 export const METRIC_INFO: Record<string, { label: string; formula: string; explanation: string }> = {

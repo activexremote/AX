@@ -1,6 +1,7 @@
 import PDFDocument from "pdfkit";
 
 import {
+  buildYearSummary,
   computeLensMetrics,
   formatEUR,
   formatPct,
@@ -49,6 +50,16 @@ function wa(text: string): string {
     // El espacio duro que mete Intl entre la cifra y el € rompe el reparto de
     // palabras de PDFKit y se come el espacio siguiente ("1.800 €fijo").
     .replace(/\u00a0/g, " ")
+    // Y aun con espacio normal, el euro se lo come: este PDF no incrusta la
+    // fuente, y el glifo del € de las sustitutas es más ancho de lo que dice
+    // la métrica de Helvetica, así que pisa lo que viene detrás. En las
+    // tablas se evitó poniendo el importe al final de cada fragmento, pero en
+    // un texto corrido no se puede: ahí va un espacio de más, que es lo que
+    // devuelve el hueco a su sitio.
+    .replace(/€ (?=\S)/g, "€  ")
+    // Y lo mismo cuando detrás viene un signo de puntuación pegado: sin este
+    // hueco, "60.000 €." pierde el punto y la frase parece quedarse a medias.
+    .replace(/€(?=[.,;:)])/g, "€ ")
     .replace(/[−–—]/g, "-")
     .replace(/→/g, ">")
     .replace(/[≥]/g, ">=")
@@ -125,7 +136,10 @@ export async function buildScenarioPdf(opts: LensPdfOptions): Promise<Buffer> {
   let rightEnd = dividends(doc, m, d, rightX, top, colW);
   rightEnd = assumptions(doc, m, d, rightX, rightEnd + 14, colW);
 
-  y = Math.max(leftEnd, rightEnd) + 16;
+  y = Math.max(leftEnd, rightEnd) + 14;
+
+  // ── El año en frases ──
+  y = summary(doc, m, d, y);
 
   // ── Aviso y pie ──
   disclaimer(doc, y);
@@ -410,6 +424,36 @@ function assumptions(
   );
 
   return y;
+}
+
+/**
+ * El resumen, a todo el ancho y en prosa.
+ *
+ * Es lo que hace que este PDF se pueda mandar a alguien que no estaba en la
+ * conversación: las tablas de arriba dicen los números, esto dice qué
+ * significan. Y ocupa justo la banda que quedaba vacía entre las dos
+ * columnas y el aviso.
+ */
+function summary(
+  doc: PDFKit.PDFDocument,
+  m: ReturnType<typeof computeLensMetrics>,
+  d: LensScenarioData,
+  y: number,
+): number {
+  const parrafos = buildYearSummary(d, m);
+  if (!parrafos.length) return y;
+
+  y = sectionTitle(doc, "El año, en corto", M, y, W);
+  doc.font("Helvetica").fontSize(7.5).fillColor(BODY);
+  for (const parrafo of parrafos) {
+    // Alineado a la izquierda y no justificado: al justificar, PDFKit estira
+    // los espacios de la línea y se traga el espacio de más que se le pone
+    // detrás del euro, que es justo lo que evita que "29.351 €" se pegue a la
+    // palabra siguiente.
+    doc.text(wa(parrafo), M, y, { width: W, align: "left", lineGap: 0.4 });
+    y = doc.y + 3;
+  }
+  return y + 2;
 }
 
 function disclaimer(doc: PDFKit.PDFDocument, y: number) {

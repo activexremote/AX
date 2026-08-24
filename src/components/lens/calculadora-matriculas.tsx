@@ -19,6 +19,7 @@ import {
   periodLabel,
   scenarioPeriodLabel,
   scenarioPeriodShort,
+  buildYearSummary,
   LENS_DISCLAIMER,
   MONTH_NAMES,
   type LensScenarioData,
@@ -209,6 +210,8 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
   // justamente la configuración: enseña el informe, que es lo que se estaba
   // mirando antes de ir a tocar un número.
   const rightPane = pane === "config" ? "resultado" : pane;
+
+  const resumen = useMemo(() => buildYearSummary(scenario, metrics), [scenario, metrics]);
 
   // De la tabla de canales sólo se mira esto: dónde sale barato el alumno y
   // dónde caro. Los canales sin alumnos quedan fuera, que su CAC es 0 y
@@ -1087,6 +1090,20 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
                 />
               </div>
 
+            </section>
+
+            {/* ── El año contado en frases ──
+                Va debajo de todo a propósito: no es un dato más, es lo que se
+                lee cuando alguien pregunta "vale, ¿y esto qué significa?", y
+                para eso hay que haber visto antes los números. */}
+            <section className="axr-report__block axr-report__summary">
+              <h3>
+                Resumen del ejercicio
+                <em>en cristiano</em>
+              </h3>
+              {resumen.map((parrafo, i) => (
+                <p key={i}>{parrafo}</p>
+              ))}
             </section>
 
             <details className="axr-report__aviso">

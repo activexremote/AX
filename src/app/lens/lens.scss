@@ -1177,6 +1177,18 @@
     gap: 0.4rem 0.5rem;
   }
 
+  // El resumen: texto de verdad, con su ancho de lectura y su interlínea.
+  // Es lo único de esta pantalla que se lee en lugar de consultarse.
+  &__summary p {
+    margin: 0 0 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1.55;
+    color: var(--axr-text-secondary);
+    max-width: 62ch;
+
+    &:last-child { margin-bottom: 0; }
+  }
+
   &__note {
     margin: 0.4rem 0 0;
     font-size: 0.6875rem;

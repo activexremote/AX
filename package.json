@@ -11,6 +11,7 @@
     "blog:art": "node scripts/build-blog-art.mjs && node scripts/attach-blog-art.mjs",
     "stripe:setup": "node --experimental-strip-types --import ./scripts/alias-loader.mjs scripts/stripe-setup.mjs",
     "check:links": "node scripts/check-links.mjs",
+    "lens:audit": "node --experimental-strip-types --import ./scripts/alias-loader.mjs scripts/audit-calculadora.mjs",
     "blog:schedule": "node scripts/blog-schedule.mjs",
     "blog:links": "node scripts/blog-links.mjs",
     "glossary:art": "node --experimental-strip-types scripts/build-glossary-art.mjs",
