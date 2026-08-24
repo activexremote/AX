@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 
 import { stripe } from "@/lib/stripe/client";
 import { ALL_OFFERS, OFFERS, isOfferKey } from "@/lib/stripe/catalog";
+import { registerZohoEnrolment } from "@/lib/zoho/crm";
 import {
   ensureUser,
   getOrderBySession,
@@ -146,6 +147,23 @@ async function onCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   if (user) {
     await grantEnrollments(user.id, order.courses, order.id);
+  }
+
+  // ── Zoho ──
+  // Igual que en el formulario: el CRM no puede tumbar esto. El dinero ya
+  // está cobrado y el acceso ya está dado; si Zoho falla, queda el log y se
+  // arregla a mano, pero el webhook tiene que seguir su camino.
+  try {
+    await registerZohoEnrolment({
+      firstName: order.first_name ?? "",
+      lastName: order.last_name ?? "",
+      email,
+      courses: order.courses,
+      offer: order.offer,
+      amount: (session.amount_total ?? 0) / 100,
+    });
+  } catch (e) {
+    console.error(`[zoho] matrícula de ${email} no registrada: ${(e as Error).message}`);
   }
 
   await notifySafely({
