@@ -12,9 +12,9 @@ const PUBLIC_PATHS = [
   "/legal",
   "/glosario",
   "/blog",
-  // Landings de campaña. Sin esto el candado del campus mandaba al login a
+  // La landing de campaña. Sin esto el candado del campus mandaba al login a
   // todo el tráfico de anuncios: la ruta es pública, como /bienvenida.
-  "/lp",
+  "/trabajo-remoto",
   // El checkout se hace sin cuenta: la cuenta se crea al confirmarse el pago.
   "/matricula",
   "/login",

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 // ══════════════════════════════════════════════════════════
 //  Efectos de la landing de campaña.
 //
-//  Todo lo que se mueve en /lp/trabajo-remoto está aquí y en un único
+//  Todo lo que se mueve en /trabajo-remoto está aquí y en un único
 //  componente montado una vez: un observador para las entradas, uno para los
 //  contadores y un solo listener de puntero delegado en la raíz. La
 //  alternativa —un componente cliente por tarjeta— convierte media página en

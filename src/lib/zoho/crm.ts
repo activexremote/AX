@@ -52,7 +52,7 @@ const MEDIOS_PAGO = new Set(["cpc", "ppc", "paid", "paidsocial", "paid_social", 
  * trae `utm_*` y no por eso deja de ser un lead válido.
  */
 export type LeadOrigin = {
-  /** Ruta en la que estaba: /bienvenida, /lp/trabajo-remoto… */
+  /** Ruta en la que estaba: /bienvenida, /trabajo-remoto… */
   page?: string;
   source?: string;
   medium?: string;
@@ -70,13 +70,13 @@ export type LeadOrigin = {
  *
  * Tres señales, y basta con una: identificador de clic (lo pone la propia
  * plataforma y es la más fiable), medio de pago declarado en la URL, o estar
- * en /lp/, que son las landings que sólo reciben anuncios.
+ * en la landing de campaña, que sólo recibe anuncios.
  */
 function esDeAnuncio(o?: LeadOrigin): boolean {
   if (!o) return false;
   if (o.clickId) return true;
   if (o.medium && MEDIOS_PAGO.has(o.medium.toLowerCase())) return true;
-  return /^\/(?:[a-z]{2}\/)?lp\//.test(o.page ?? "");
+  return /^\/(?:[a-z]{2}\/)?trabajo-remoto\/?$/.test(o.page ?? "");
 }
 
 /** Las líneas de campaña que se escriben en la ficha. */

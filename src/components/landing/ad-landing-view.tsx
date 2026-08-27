@@ -8,18 +8,18 @@ import { SlackLogo } from "@/components/slack-logo";
 import { TOOL_ICONS } from "@/components/landing/tool-icons";
 import { AdClocks, AdFx, AdHeroVideo, AdLiveVideo, AdStickyBar } from "@/components/landing/ad-fx";
 import { PLACEHOLDER_LOGOS, PlaceholderLogos } from "@/components/landing/ad-logos";
-import { adCopy } from "@/app/lp/trabajo-remoto/copy";
-import { STACK_TOOLS, WHATSAPP_NUMBER } from "@/app/lp/trabajo-remoto/contact";
+import { adCopy } from "@/app/trabajo-remoto/copy";
+import { STACK_TOOLS, WHATSAPP_NUMBER } from "@/app/trabajo-remoto/contact";
 import { landingCopy } from "@/app/bienvenida/copy";
 import { COHORT_START } from "@/app/bienvenida/cohort";
 import { DEMO_FACULTY, FACULTY } from "@/app/bienvenida/faculty";
 import { PARTNERS, partnerLogo } from "@/app/bienvenida/partners";
 import { TOOLS, type Tool } from "@/app/bienvenida/tools";
 import { getLocale } from "@/lib/i18n/server";
-import "@/app/lp/trabajo-remoto/ad-landing.scss";
+import "@/app/trabajo-remoto/ad-landing.scss";
 
 // ══════════════════════════════════════════════════════════
-//  Landing de campaña — /lp/trabajo-remoto
+//  Landing de campaña — /trabajo-remoto
 //
 //  Es una SEGUNDA landing, no un rediseño de la portada: /bienvenida sigue
 //  siendo la página de marca y ésta existe para el tráfico de pago. Por eso

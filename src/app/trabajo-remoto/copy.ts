@@ -1,7 +1,7 @@
 import type { Locale } from "@/lib/i18n/config";
 
 // ══════════════════════════════════════════════════════════
-//  Landing de campaña — /lp/trabajo-remoto
+//  Landing de campaña — /trabajo-remoto
 //
 //  Copy PROPIA y autocontenida. No importa nada de bienvenida/copy.ts a
 //  propósito: esta página existe para tráfico de pago y su texto se reescribe

@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
 
 import { AdLandingView } from "@/components/landing/ad-landing-view";
-import { adCopy } from "@/app/lp/trabajo-remoto/copy";
+import { adCopy } from "@/app/trabajo-remoto/copy";
 import { getLocale } from "@/lib/i18n/server";
 import { absolute, OG_LOCALE, SITE_NAME } from "@/lib/seo";
 
-const PATH = "/lp/trabajo-remoto";
+const PATH = "/trabajo-remoto";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
     // que salen de aquí siguen contando.
     robots: { index: false, follow: true },
     // Sin `alternates`: sin indexación no hay canónica que declarar ni grupo
-    // hreflang que formar. Los dos idiomas existen (/lp/… y /en/lp/…) y cada
+    // hreflang que formar. Los dos idiomas existen (/trabajo-remoto y /en/trabajo-remoto) y cada
     // anuncio apunta al suyo.
     openGraph: {
       type: "website",
