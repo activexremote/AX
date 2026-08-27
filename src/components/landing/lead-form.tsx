@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState, useTransition } from "react";
 
 import { submitLead } from "@/app/bienvenida/actions";
 import type { LandingCopy } from "@/app/bienvenida/copy";
@@ -17,8 +17,60 @@ type Props = {
   submitLabel?: string;
 };
 
+// ══════════════════════════════════════════════════════════
+//  De dónde viene quien rellena el formulario
+//
+//  Sin esto, en Zoho todos los leads son iguales y no hay forma de saber qué
+//  campaña los trajo: pagas anuncios a ciegas. Se lee del propio navegador
+//  —los `utm_*` que pone la plataforma, el identificador de clic y la página
+//  en la que está— y viaja con el envío en campos ocultos.
+//
+//  No hay cookies ni almacenamiento: sólo la URL de ESTA visita. Un lead lo
+//  es en el momento en que rellena el formulario, así que la atribución a
+//  última interacción es la que corresponde, y además es la que no obliga a
+//  pedir consentimiento para nada.
+//
+//  Se recoge después de montar, no en el servidor: la página es común a los
+//  dos idiomas y puede venir de caché, así que la URL buena es siempre la que
+//  ve el navegador.
+// ══════════════════════════════════════════════════════════
+const CLICK_IDS = ["gclid", "wbraid", "gbraid", "fbclid", "msclkid", "ttclid"] as const;
+
+function leerOrigen(): Record<string, string> {
+  const q = new URLSearchParams(window.location.search);
+  // Tope de longitud: los campos de texto de Zoho no son infinitos y una URL
+  // de anuncio puede traer parámetros larguísimos.
+  const get = (k: string) => (q.get(k) ?? "").trim().slice(0, 120);
+
+  let referrer = "";
+  try {
+    // Sólo el dominio. La URL completa de donde venga es un dato personal más
+    // del que no necesitamos nada.
+    if (document.referrer) referrer = new URL(document.referrer).host;
+  } catch {
+    // Un referrer que no es una URL válida no es un problema: se ignora.
+  }
+  if (referrer === window.location.host) referrer = "";
+
+  const campos: Record<string, string> = {
+    page: window.location.pathname,
+    source: get("utm_source"),
+    medium: get("utm_medium"),
+    campaign: get("utm_campaign"),
+    term: get("utm_term"),
+    content: get("utm_content"),
+    clickId: CLICK_IDS.map((k) => get(k)).find(Boolean) ?? "",
+    referrer,
+  };
+
+  return Object.fromEntries(Object.entries(campos).filter(([, v]) => v));
+}
+
 export function LeadForm({ copy, variant = "hero", preselect = [], submitLabel }: Props) {
   const uid = useId();
+  const [origen, setOrigen] = useState<Record<string, string>>({});
+
+  useEffect(() => setOrigen(leerOrigen()), []);
   // Instante en que se pintó el formulario. Viaja con el envío para que el
   // servidor sepa cuánto se ha tardado en rellenarlo: cinco campos en menos
   // de dos segundos y medio no los rellena una persona.
@@ -146,6 +198,13 @@ export function LeadForm({ copy, variant = "hero", preselect = [], submitLabel }
           ))}
         </div>
       </fieldset>
+
+      {/* De dónde viene la visita. Se pinta tras montar, así que en el HTML
+          del servidor no hay nada: eso es lo que evita que se sirva de caché
+          la atribución de otra persona. */}
+      {Object.entries(origen).map(([k, v]) => (
+        <input key={k} type="hidden" name={`o_${k}`} value={v} readOnly />
+      ))}
 
       {/* Honeypot — oculto para personas, irresistible para bots. */}
       <input

@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getLocale } from "@/lib/i18n/server";
 import { notify } from "@/lib/slack/notify";
 import { validateLead } from "@/lib/leads/validate";
-import { upsertZohoLead } from "@/lib/zoho/crm";
+import { upsertZohoLead, type LeadOrigin } from "@/lib/zoho/crm";
 
 // ⚠︎ SIN `export`. Un archivo con "use server" sólo puede exportar funciones
 // async: cualquier otra cosa hace que Next tire el módulo entero en tiempo de
@@ -16,6 +16,19 @@ import { upsertZohoLead } from "@/lib/zoho/crm";
 // compilar y no llega a existir en tiempo de ejecución.
 const COURSE_KEYS = ["remote-professional", "remote-founder"] as const;
 export type CourseKey = (typeof COURSE_KEYS)[number];
+
+/** Campos de atribución que acepta el formulario. Nada fuera de esta lista
+ *  llega al CRM: es un campo oculto y viene del navegador. */
+const ORIGIN_FIELDS = [
+  "page",
+  "source",
+  "medium",
+  "campaign",
+  "term",
+  "content",
+  "clickId",
+  "referrer",
+] as const satisfies readonly (keyof LeadOrigin)[];
 
 const COURSE_LABELS: Record<CourseKey, string> = {
   "remote-professional": "Remote Professional",
@@ -43,6 +56,22 @@ export async function submitLead(formData: FormData): Promise<LeadResult> {
     .getAll("courses")
     .map(String)
     .filter((c): c is CourseKey => (COURSE_KEYS as readonly string[]).includes(c));
+
+  // ── De dónde viene ──
+  // Lo rellena <LeadForm/> con los `utm_*` y el identificador de clic de la
+  // URL (ver la cabecera de ese archivo). Se limpia aquí y no allí porque son
+  // datos que llegan del navegador: cualquiera puede mandar lo que quiera en
+  // un campo oculto, y de aquí salen hacia el CRM y hacia Slack.
+  const origin: LeadOrigin = {};
+  for (const campo of ORIGIN_FIELDS) {
+    const valor = String(formData.get(`o_${campo}`) ?? "")
+      // Fuera saltos de línea y caracteres de control: la ficha de Zoho es un
+      // campo de texto y Slack interpreta el suyo como marcado.
+      .replace(/[\u0000-\u001f\u007f]/g, " ")
+      .trim()
+      .slice(0, 120);
+    if (valor) origin[campo] = valor;
+  }
 
   // El curso es opcional: quien todavía no lo tiene claro es justo el lead
   // que hay que capturar. Si no marca ninguno, se guarda vacío y lo resuelve
@@ -116,7 +145,7 @@ export async function submitLead(formData: FormData): Promise<LeadResult> {
       .update({ first_name: firstName, last_name: lastName, phone, city, courses, locale })
       .eq("id", reciente.id);
 
-    await enviarAZoho(admin, reciente.id, { firstName, lastName, email, phone, city, courses, locale });
+    await enviarAZoho(admin, reciente.id, { firstName, lastName, email, phone, city, courses, locale, origin });
     return { ok: true };
   }
 
@@ -135,7 +164,7 @@ export async function submitLead(formData: FormData): Promise<LeadResult> {
     .single();
   if (error) return { error: "db" };
 
-  await enviarAZoho(admin, fila?.id ?? null, { firstName, lastName, email, phone, city, courses, locale });
+  await enviarAZoho(admin, fila?.id ?? null, { firstName, lastName, email, phone, city, courses, locale, origin });
 
   // El aviso de Slack no debe tumbar el envío: el lead ya está guardado.
   try {
@@ -148,6 +177,7 @@ export async function submitLead(formData: FormData): Promise<LeadResult> {
         `*Teléfono:* ${phone}`,
         `*Ciudad:* ${city}`,
         `*Curso(s):* ${courses.length ? courses.map((c) => COURSE_LABELS[c]).join(" + ") : "sin especificar"}`,
+        `*Origen:* ${describirOrigen(origin)}`,
       ],
     });
   } catch {
@@ -155,6 +185,15 @@ export async function submitLead(formData: FormData): Promise<LeadResult> {
   }
 
   return { ok: true };
+}
+
+/** Una línea legible con la campaña, para el aviso de Slack. */
+function describirOrigen(o: LeadOrigin): string {
+  const campana = [o.source, o.medium, o.campaign].filter(Boolean).join(" / ");
+  const partes = [o.page, campana, o.clickId ? "clic de anuncio" : null, o.referrer]
+    .filter(Boolean)
+    .join(" · ");
+  return partes || "directo";
 }
 
 /**
@@ -176,6 +215,7 @@ async function enviarAZoho(
     city: string;
     courses: CourseKey[];
     locale: string;
+    origin: LeadOrigin;
   },
 ) {
   try {

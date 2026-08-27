@@ -56,7 +56,12 @@ export default async function RootLayout({
       lang={locale}
       className={`${inter.variable} ${plexMono.variable}`}
     >
-      <body>
+      {/* Las extensiones del navegador escriben atributos en <body> antes de
+          que React hidrate —ColorZilla pone `cz-shortcut-listen`, Grammarly
+          los suyos— y React lo denuncia como una diferencia entre servidor y
+          cliente. No lo es: es la vía oficial de React para este caso y sólo
+          calla los ATRIBUTOS de esta etiqueta, no lo que hay dentro. */}
+      <body suppressHydrationWarning>
         {/* Antes que nada: deja todo denegado hasta que haya decisión. */}
         <ConsentDefaultScript />
         {/* Y calla a las extensiones del navegador, que en desarrollo tapan

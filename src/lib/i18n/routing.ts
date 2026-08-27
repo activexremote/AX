@@ -31,6 +31,11 @@ export const LOCALIZED_ROOTS = [
   // desde la web en inglés llevaba a la pantalla de pago en español.
   "matricula",
   "cursos-relampago",
+  // Landings de campaña (/lp/...). Están en noindex, pero necesitan idioma en
+  // la URL igual que el resto: sin esto, /en/lp/... daba 404 y una /lp/...
+  // servida a alguien con el navegador en inglés se pintaba según su cookie,
+  // no según el anuncio en el que hizo clic.
+  "lp",
 ] as const;
 
 /** Cabecera con la que el proxy le cuenta a la app qué idioma pide la URL. */

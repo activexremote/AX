@@ -1,0 +1,2508 @@
+// ══════════════════════════════════════════════════════════
+//  Landing de campaña — /lp/trabajo-remoto
+//
+//  Hoja AUTOCONTENIDA y con ámbito .axr-ad. No importa landing.scss a
+//  propósito: son 130 kB pensados para una página de diecisiete secciones y
+//  ésta tiene once. Una landing de anuncios que tarda en pintar es dinero
+//  quemado, así que aquí sólo está el CSS que esta página usa.
+//
+//  El precio de esa decisión es que los campos del formulario se estilan otra
+//  vez (el componente <LeadForm/> se reutiliza tal cual, sus clases no). Está
+//  asumido: preferimos repetir ~100 líneas de CSS a mover el bloque .axr-lead
+//  fuera de landing.scss y arriesgar la portada, que es la que factura.
+//
+//  ── Móvil primero ────────────────────────────────────────
+//  Todo lo que hay sin `@media` es la versión de teléfono. Las consultas sólo
+//  AÑADEN a partir de un ancho, nunca deshacen. Los tres saltos son 700 px
+//  (tablet), 1000 px (dos columnas de verdad) y 1200 px (holgura).
+//
+//  ── El héroe cabe en una pantalla ────────────────────────
+//  De 1000 px en adelante, héroe + marquesina + barra superior ocupan
+//  exactamente una ventana (`100svh`) y ni un píxel más: en un MacBook Air se
+//  ve el titular, el formulario entero y la tira de logotipos sin tocar el
+//  scroll. `svh` y no `vh` porque en el móvil `vh` cuenta con la barra del
+//  navegador retraída y el contenido acaba cortado justo al cargar.
+//
+//  Identidad: Sistema B del brandbook —acento morado #5B4BF5, mesh oscuro en
+//  el héroe, esquinas redondeadas, píldoras— con el verde de acción global
+//  (--axr-go) en todo lo pulsable.
+// ══════════════════════════════════════════════════════════
+
+.axr-ad {
+  --ad-max: 1180px;
+
+  // Los tres altos de "chrome". Se declaran aquí porque el cálculo del héroe
+  // los resta y la reserva del pie los suma: escritos en dos sitios, el día
+  // que cambie uno el héroe deja de cuadrar por unos píxeles y nadie sabrá
+  // por qué.
+  --ad-nav-h: 54px;
+  --ad-mq-h: 54px;
+  --ad-sticky-h: 60px;
+
+  --ad-gutter: 1.15rem;
+  --ad-pad-l: max(var(--ad-gutter), env(safe-area-inset-left));
+  --ad-pad-r: max(var(--ad-gutter), env(safe-area-inset-right));
+  --ad-section: 2.5rem;
+
+  --ad-ink: #161326;
+  --ad-body: #514d69;
+  --ad-muted: #8a86a0;
+  --ad-accent: #5b4bf5;
+  --ad-soft: #f4f3fb;
+  --ad-border: #e7e4f5;
+
+  --ad-radius: 20px;
+  --ad-radius-md: 15px;
+  --ad-radius-sm: 11px;
+
+  --ad-mesh:
+    radial-gradient(60% 85% at 12% 18%, #7b5cff 0%, transparent 60%),
+    radial-gradient(55% 75% at 88% 12%, #ff6a3d 0%, transparent 55%),
+    radial-gradient(65% 85% at 78% 88%, #d61f9c 0%, transparent 58%),
+    radial-gradient(70% 90% at 22% 92%, #4f46e5 0%, transparent 60%),
+    linear-gradient(160deg, #3a1f6e 0%, #241246 100%);
+
+  @media (min-width: 700px) {
+    --ad-gutter: 1.6rem;
+    --ad-section: 3.5rem;
+    --ad-nav-h: 58px;
+    --ad-mq-h: 58px;
+    --ad-sticky-h: 66px;
+  }
+  @media (min-width: 1200px) {
+    --ad-section: 4.25rem;
+    --ad-nav-h: 60px;
+    --ad-mq-h: 62px;
+  }
+
+  background: #fff;
+  color: var(--ad-ink);
+  font-family: var(--axr-sans);
+
+  // ⚠︎ Aquí NO va `overflow-x`. Ni `clip` ni `hidden`: un contenedor que
+  // recorta puede convertirse en el marco de referencia de un elemento
+  // `sticky`, y el que hay dentro es la barra superior. Además era
+  // redundante: el héroe, el cierre y la marquesina —lo único que se sale a
+  // propósito— ya se recortan cada uno por su cuenta.
+
+  // Palabras largas en columnas estrechas: mejor partir que desbordar.
+  overflow-wrap: break-word;
+
+  // El ancla no puede quedar debajo de la barra superior… salvo cuando la
+  // barra está escondida, que es justo cuando se salta a #solicitar.
+  [id] { scroll-margin-top: calc(var(--ad-nav-h) + env(safe-area-inset-top) + 0.75rem); }
+
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--ad-accent);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  h1, h2, h3, h4 {
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.12;
+    text-wrap: balance;
+  }
+  p { margin: 0; line-height: 1.55; }
+
+  &__wrap {
+    max-width: var(--ad-max);
+    margin: 0 auto;
+    padding-left: var(--ad-pad-l);
+    padding-right: var(--ad-pad-r);
+  }
+
+  &__section {
+    padding-top: var(--ad-section);
+    padding-bottom: var(--ad-section);
+  }
+
+  &__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ad-muted);
+
+    &::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      background: var(--ad-accent);
+      flex: none;
+    }
+  }
+
+  &__h2 {
+    font-size: clamp(1.5rem, 4.6vw, 2.25rem);
+    margin-bottom: 1.35rem;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  Barra superior
+//
+//  Sin menú y a propósito: en una página de captación cada enlace de salida
+//  es un lead que se va. Sólo la marca y la única acción que tiene la página.
+//
+//  Se esconde cuando aparece la de abajo (ver <AdStickyBar/>): las dos hacen
+//  lo mismo y tenerlas a la vez enmarca el contenido por arriba y por abajo.
+// ══════════════════════════════════════════════════════════
+.axr-ad__bar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  // La página va con `viewport-fit: cover` para que el mesh llegue al borde,
+  // así que arriba puede haber muesca o barra de estado. Sin esta reserva, el
+  // logotipo y el CTA quedaban debajo de la hora del móvil.
+  height: calc(var(--ad-nav-h) + env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top);
+  display: flex;
+  align-items: center;
+  background: rgba(22, 19, 38, 0.97);
+  color: #fff;
+  visibility: visible;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
+
+  // Escondida de verdad, no sólo fuera de la pantalla: con `transform` a
+  // secas su enlace seguía siendo tabulable y el foco saltaba a un botón que
+  // nadie ve. La visibilidad cambia AL TERMINAR de salir, para no cortar la
+  // animación.
+  .axr-ad[data-bar="on"] & {
+    transform: translate3d(0, -101%, 0);
+    visibility: hidden;
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s 0.3s;
+  }
+
+  &-inner {
+    max-width: var(--ad-max);
+    width: 100%;
+    margin: 0 auto;
+    padding-left: var(--ad-pad-l);
+    padding-right: var(--ad-pad-r);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  &-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: #fff;
+    text-decoration: none;
+
+    span {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+    }
+    // Junto al CTA no cabe el wordmark en un móvil estrecho: queda el símbolo.
+    @media (max-width: 379px) { span { display: none; } }
+  }
+
+  &-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 38px;
+    padding: 0 1rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #fff;
+    background: var(--axr-go);
+    border-radius: 999px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.15s ease;
+
+    &:hover { background: var(--axr-go-deep); text-decoration: none; }
+    @media (min-width: 700px) { min-height: 40px; padding: 0 1.2rem; font-size: 0.875rem; }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  Héroe
+// ══════════════════════════════════════════════════════════
+.axr-ad__hero {
+  position: relative;
+  overflow: clip;
+  background: var(--ad-mesh);
+  color: #fff;
+  padding: 1.5rem 0 1.75rem;
+
+  @media (min-width: 700px) { padding: 2rem 0 2.25rem; }
+
+  // De aquí en adelante, héroe + marquesina caben en la ventana. `min-height`
+  // y no `height`: si un día la copy crece, la página se estira en vez de
+  // recortar el formulario por abajo.
+  @media (min-width: 1000px) {
+    display: grid;
+    align-items: center;
+    min-height: calc(100svh - var(--ad-nav-h) - var(--ad-mq-h));
+    padding: 1.75rem 0;
+  }
+
+  &-inner {
+    position: relative;
+    z-index: 1;
+    max-width: var(--ad-max);
+    width: 100%;
+    margin: 0 auto;
+    padding-left: var(--ad-pad-l);
+    padding-right: var(--ad-pad-r);
+    display: grid;
+    gap: 1.15rem;
+    grid-template-areas:
+      "copy"
+      "form"
+      "meta";
+
+    @media (min-width: 1000px) {
+      grid-template-columns: minmax(0, 1fr) minmax(330px, 390px);
+      grid-template-rows: auto 1fr;
+      grid-template-areas:
+        "copy form"
+        "meta form";
+      gap: 1.5rem 2.5rem;
+      align-items: start;
+    }
+    @media (min-width: 1200px) {
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 410px);
+      gap: 1.75rem 3.25rem;
+    }
+  }
+
+  &-copy { grid-area: copy; }
+  &-meta { grid-area: meta; align-self: end; }
+
+  &-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.32rem 0.8rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+
+    @media (min-width: 700px) { font-size: 0.75rem; padding: 0.38rem 0.95rem; }
+  }
+
+  h1 {
+    margin: 0.85rem 0 0.7rem;
+    // En el móvil manda el ancho y punto: el tope por altura dejaba el
+    // titular en 27 px en un teléfono alto y estrecho, que para un héroe es
+    // letra pequeña.
+    font-size: clamp(1.85rem, 7.2vw, 2.5rem);
+    line-height: 1.05;
+    // ⚠︎ Aquí había `max-width: 15ch` fijo. En un móvil eso son ~210 px: el
+    // titular caía en una columna estrecha de cuatro líneas contra el borde
+    // izquierdo. La medida sólo tiene sentido cuando hay sitio de sobra al
+    // lado, que es de 1000 px en adelante.
+    max-width: none;
+
+    // De aquí en adelante sí entra el tope por altura: es lo que hace que el
+    // titular ceda en un portátil bajo en vez de empujar el formulario fuera
+    // de la ventana.
+    @media (min-width: 1000px) {
+      font-size: clamp(1.9rem, min(3.4vw, 5.4vh), 3rem);
+      max-width: 20ch;
+    }
+
+    em {
+      display: block;
+      font-style: normal;
+      color: rgba(255, 255, 255, 0.72);
+    }
+  }
+
+  &-lead {
+    max-width: 42ch;
+    font-size: clamp(0.9375rem, min(2.2vw, 2vh), 1.0625rem);
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.86);
+  }
+
+  &-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.85rem 1.5rem;
+    margin-top: 1rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+  }
+
+  &-partners {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    &-label {
+      font-size: 0.625rem;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    &-logos {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1.1rem;
+    }
+  }
+}
+
+// Los seis datos del programa. Sin tarjeta: la tarjeta obligaba a bajar el
+// formulario media pantalla y era justo lo que impedía que el héroe cupiera.
+.axr-ad__facts {
+  display: grid;
+  // Dos columnas en todas partes. Son cuatro datos: a tres, el último se
+  // quedaba solo en su fila, y a cuatro no cabe «1 clase de 4 h por semana».
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem 1.15rem;
+  margin: 1.1rem 0 0;
+
+  @media (min-width: 1000px) { gap: 0.75rem 1.75rem; }
+
+  div {
+    min-width: 0;
+    padding-left: 0.65rem;
+    border-left: 2px solid rgba(255, 255, 255, 0.28);
+  }
+
+  dt {
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.55);
+    margin-bottom: 0.15rem;
+  }
+  dd {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.25;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+
+    @media (min-width: 1000px) { font-size: 0.9375rem; }
+  }
+}
+
+// Tarjeta blanca del formulario
+.axr-ad__form-card {
+  grid-area: form;
+  background: #fff;
+  color: var(--ad-ink);
+  border-radius: var(--ad-radius);
+  padding: 1.05rem;
+  box-shadow: 0 24px 55px rgba(20, 12, 45, 0.3);
+
+  @media (min-width: 480px) { padding: 1.25rem; }
+  @media (min-width: 1200px) { padding: 1.4rem; }
+
+  h2 {
+    font-size: 1.0625rem;
+    margin-bottom: 0.2rem;
+  }
+  > p {
+    font-size: 0.8125rem;
+    color: var(--ad-body);
+    margin-bottom: 0.85rem;
+  }
+}
+
+// Los logotipos van a la misma ALTURA óptica, nunca al mismo ancho, y sin
+// recolorear: el ancho lo calcula el ratio del viewBox (ver partners.ts).
+.axr-ad__logo {
+  display: block;
+  object-fit: contain;
+
+  &--dark {
+    padding: 0.28rem 0.45rem;
+    background: #161326;
+    border-radius: 8px;
+    box-sizing: content-box;
+  }
+}
+
+// ── Relojes ─────────────────────────────────────────────
+.axr-ad__clocks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.7rem;
+
+  &-label {
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    list-style: none;
+    padding: 0.2rem 0.55rem;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  strong {
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: #fff;
+  }
+  em {
+    font-style: normal;
+    font-size: 0.625rem;
+    color: rgba(255, 255, 255, 0.58);
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  Marquesina del stack
+//
+//  Alto FIJO: es uno de los sumandos que el héroe resta para caber en una
+//  ventana. Si creciera con su contenido, el cálculo dejaría de valer.
+// ══════════════════════════════════════════════════════════
+.axr-ad__marquee {
+  position: relative;
+  height: var(--ad-mq-h);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-left: var(--ad-pad-l);
+  background: #161326;
+  color: #fff;
+  overflow: hidden;
+
+  // Sin la etiqueta, ese margen izquierdo sólo es hueco muerto: en un móvil
+  // la tira gana los 18 px que le faltaban.
+  @media (max-width: 699px) { padding-left: 0; gap: 0; }
+
+  &-label {
+    position: relative;
+    z-index: 3;
+    flex: none;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.42);
+    // En un móvil se come el sitio de los logotipos, que es lo que se
+    // reconoce de un vistazo.
+    @media (max-width: 699px) { display: none; }
+  }
+
+  // La pista se recorta AQUÍ y no en la sección. Recortando fuera, la fila en
+  // movimiento ocupaba también el hueco de la etiqueta y los logotipos se
+  // leían encima del texto.
+  &-view {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+
+    // Los bordes se desvanecen: sin esto los logotipos aparecen y desaparecen
+    // de golpe contra el filo.
+    &::before,
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 8%;
+      z-index: 2;
+      pointer-events: none;
+    }
+    &::before { left: 0; background: linear-gradient(90deg, #161326, transparent); }
+    &::after { right: 0; background: linear-gradient(270deg, #161326, transparent); }
+  }
+
+  &-track {
+    display: flex;
+    width: max-content;
+    animation: axr-ad-marquee 46s linear infinite;
+
+    @media (hover: hover) {
+      &:hover { animation-play-state: paused; }
+    }
+  }
+
+  &-run {
+    display: flex;
+    align-items: center;
+    gap: 1.75rem;
+    padding-right: 1.75rem;
+
+    @media (min-width: 700px) { gap: 2.25rem; padding-right: 2.25rem; }
+  }
+
+  &-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    white-space: nowrap;
+    color: rgba(255, 255, 255, 0.78);
+
+    svg, img {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+      flex: none;
+    }
+  }
+
+}
+
+@keyframes axr-ad-marquee {
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+// ── Las cuatro cifras ───────────────────────────────────
+.axr-ad__stats-band {
+  border-bottom: 1px solid var(--ad-border);
+  background: #fff;
+}
+
+.axr-ad__stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin: 0 auto;
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+  list-style: none;
+
+  @media (min-width: 700px) {
+    grid-template-columns: repeat(4, 1fr);
+    padding-top: 1.9rem;
+    padding-bottom: 1.9rem;
+  }
+
+  li { list-style: none; }
+
+  strong {
+    display: block;
+    font-size: clamp(1.75rem, 5.5vw, 2.5rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--ad-ink);
+  }
+  span {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.8125rem;
+    color: var(--ad-body);
+  }
+}
+
+// ── Frase-manifiesto ────────────────────────────────────
+.axr-ad__statement {
+  padding: clamp(2rem, 6vw, 3.25rem) 0;
+  background: var(--ad-soft);
+  border-bottom: 1px solid var(--ad-border);
+
+  p {
+    max-width: var(--ad-max);
+    margin: 0 auto;
+    padding-left: var(--ad-pad-l);
+    padding-right: var(--ad-pad-r);
+    font-size: clamp(1.4rem, 4.4vw, 2.3rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.14;
+    color: var(--ad-muted);
+    text-wrap: balance;
+
+    em { font-style: normal; color: var(--ad-ink); }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  Cómo funciona y a dónde llegas
+//
+//  Una sola sección donde antes había dos de tarjetas de texto. De 1000 px en
+//  adelante cabe en una ventana: cuatro iconos arriba y el diagrama debajo.
+//
+//  El diagrama es lo que antes eran cuatro párrafos. Un núcleo que se bifurca
+//  en dos caminos dice «hay una base común y luego eliges» sin escribirlo, y
+//  de cada salida sólo queda el rol y el entregable.
+// ══════════════════════════════════════════════════════════
+.axr-ad__how {
+  @media (min-width: 1000px) {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+}
+
+// ── Los cuatro pilares ──────────────────────────────────
+// Fila de iconos, no tarjetas: una tarjeta por frase de diez palabras es
+// mucho marco para muy poco cuadro.
+.axr-ad__pillars {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  // Cierran la sección: la separación de arriba la pone el filete inferior
+  // del bloque de la clase, y por debajo ya está el aire de la sección.
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @media (min-width: 560px) { grid-template-columns: 1fr 1fr; gap: 1.25rem 1.75rem; }
+  @media (min-width: 1000px) {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.75rem;
+  }
+
+  li {
+    list-style: none;
+    padding-left: 0.9rem;
+    border-left: 2px solid var(--ad-border);
+
+    @media (min-width: 1000px) {
+      padding: 0 0 0 0.95rem;
+    }
+  }
+
+  strong {
+    display: block;
+    margin: 0.55rem 0 0.3rem;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+
+  span {
+    display: block;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: var(--ad-body);
+  }
+}
+
+.axr-ad__pillar-icon {
+  display: block;
+  color: var(--ad-accent);
+}
+
+// ── El diagrama ─────────────────────────────────────────
+// Banda propia y con fondo suave: es un dibujo, no un párrafo, y sobre el
+// blanco de la sección anterior se leía como una continuación de ella.
+.axr-ad__fork-band {
+  background: var(--ad-soft);
+  border-block: 1px solid var(--ad-border);
+}
+
+.axr-ad__fork {
+  h2 { text-align: center; margin-bottom: 1.25rem; }
+
+  // El nodo del núcleo, centrado: es de donde sale todo.
+  &-core {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    width: max-content;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0.75rem 1.5rem;
+    text-align: center;
+    border: 1px solid var(--ad-border);
+    border-radius: 999px;
+    background: #fff;
+
+    &-tag {
+      font-size: 0.5625rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ad-accent);
+    }
+
+    strong {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    &-note {
+      font-size: 0.75rem;
+      color: var(--ad-muted);
+    }
+  }
+
+  // El conector: un tallo, una barra y dos bajadas. Cada pieza crece con su
+  // retardo, así que se lee como un trazo que se dibuja y no como cuatro
+  // rayas que aparecen.
+  &-link {
+    position: relative;
+    height: 30px;
+
+    @media (min-width: 760px) { height: 48px; }
+
+    &::before,
+    &::after,
+    span {
+      content: "";
+      position: absolute;
+      background: var(--ad-border);
+    }
+
+    // Tallo desde el núcleo
+    &::before {
+      left: 50%;
+      top: 0;
+      width: 2px;
+      height: 50%;
+      margin-left: -1px;
+      transform-origin: top;
+    }
+
+    // Barra horizontal entre los centros de las dos columnas
+    &::after {
+      top: 50%;
+      left: 25%;
+      right: 25%;
+      height: 2px;
+      transform-origin: center;
+    }
+
+    // Bajadas hacia cada carril
+    span {
+      top: 50%;
+      width: 2px;
+      height: 50%;
+      margin-left: -1px;
+
+      &:first-child { left: 25%; }
+      &:last-child { left: 75%; }
+    }
+
+    // En una columna, la barra y las bajadas no significan nada: queda el
+    // tallo, que sí dice «esto viene de arriba».
+    @media (max-width: 759px) {
+      &::after,
+      span { display: none; }
+      &::before { height: 100%; }
+    }
+  }
+
+  &-lanes {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+
+    @media (min-width: 760px) { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  }
+}
+
+// Un carril por camino. El acento lo pone el brandbook: morado el
+// Professional, rojo el Founder. Nada más cambia entre los dos.
+.axr-ad__lane {
+  --lane: var(--ad-accent);
+  border: 1px solid var(--ad-border);
+  border-top: 3px solid var(--lane);
+  border-radius: var(--ad-radius-md);
+  padding: 1.1rem;
+  background: #fff;
+
+  &[data-variant="1"] { --lane: #e4462f; }
+
+  header { margin-bottom: 0.9rem; }
+
+  h3 {
+    font-size: 1.0625rem;
+    letter-spacing: -0.02em;
+  }
+
+  &-tag {
+    display: block;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lane);
+    margin-bottom: 0.2rem;
+  }
+
+  ul {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  li {
+    list-style: none;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius-sm);
+    background: var(--ad-soft);
+
+    strong {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.35rem;
+    }
+    span {
+      display: block;
+      font-size: 0.5625rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--lane);
+      margin-bottom: 0.1rem;
+    }
+    em {
+      display: block;
+      font-style: normal;
+      font-size: 0.8125rem;
+      line-height: 1.4;
+      color: var(--ad-body);
+    }
+  }
+}
+
+// ── Cronograma ──────────────────────────────────────────
+.axr-ad__timeline { background: #fff; }
+
+.axr-ad__rail {
+  position: relative;
+  display: grid;
+  gap: 1.35rem;
+  margin: 0;
+  padding: 0;
+
+  @media (min-width: 860px) {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1.25rem;
+  }
+
+  li {
+    position: relative;
+    list-style: none;
+    padding-left: 1.65rem;
+
+    @media (min-width: 860px) { padding-left: 0; padding-top: 2rem; }
+  }
+
+  // La línea. Vertical en móvil, horizontal de 860 px en adelante. Se dibuja
+  // con scaleX/scaleY: animar `width` o `height` obliga al navegador a
+  // recalcular el layout en cada fotograma.
+  &::before {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    background: var(--ad-border);
+    transform-origin: top;
+
+    @media (min-width: 860px) {
+      left: 0;
+      right: 0;
+      top: 5px;
+      bottom: auto;
+      width: auto;
+      height: 2px;
+      transform-origin: left;
+    }
+  }
+
+  &-node {
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--ad-accent);
+
+    @media (min-width: 860px) { top: 0; }
+  }
+
+  em {
+    display: block;
+    font-style: normal;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ad-accent);
+    margin-bottom: 0.25rem;
+  }
+  strong {
+    display: block;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.25rem;
+  }
+  p {
+    font-size: 0.875rem;
+    color: var(--ad-body);
+  }
+}
+
+// ── Qué aprenderás ──────────────────────────────────────
+.axr-ad__program {
+  &-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.35rem;
+
+    @media (min-width: 900px) {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      gap: 2.5rem;
+      align-items: start;
+    }
+  }
+
+  &-text {
+    p { color: var(--ad-body); }
+    .axr-ad__h2 { margin: 0.55rem 0 0.8rem; }
+  }
+
+  // Etiqueta de subbloque dentro de la columna. Va en versalitas y no como un
+  // <h3>: son dos rótulos de servicio, no dos apartados nuevos.
+  &-label {
+    display: block;
+    margin: 1.35rem 0 0.6rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--ad-muted);
+  }
+
+  // Herramientas con logotipo. La ficha es del tamaño de un dedo aunque no se
+  // pulse: por debajo de eso los logos dejan de reconocerse.
+  &-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0;
+
+    li {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      list-style: none;
+      padding: 0.3rem 0.7rem 0.3rem 0.45rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--ad-body);
+      background: #fff;
+      border: 1px solid var(--ad-border);
+      border-radius: 999px;
+
+      svg, img {
+        width: 18px;
+        height: 18px;
+        object-fit: contain;
+        flex: none;
+      }
+    }
+  }
+
+  &-panel {
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius-md);
+    padding: 0.4rem 1.05rem 1.05rem;
+    background: #fff;
+  }
+
+  &-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    width: 100%;
+    min-height: 48px;
+    margin-top: 1.05rem;
+    padding: 0 1.35rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #fff;
+    background: var(--axr-go);
+    border-radius: 999px;
+    text-decoration: none;
+    transition: background 0.15s ease;
+
+    &:hover { background: var(--axr-go-deep); text-decoration: none; }
+  }
+}
+
+// Acordeón sin JavaScript: <details> lo resuelve el navegador y el contenido
+// sigue en el HTML para quien lo lee sin abrirlo (buscador o lector).
+.axr-ad__fold {
+  border-bottom: 1px solid var(--ad-border);
+
+  &:last-of-type { border-bottom: 0; }
+
+  > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 0;
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker { display: none; }
+
+    strong {
+      display: block;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    em {
+      display: block;
+      font-style: normal;
+      font-size: 0.625rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ad-accent);
+      margin-bottom: 0.2rem;
+    }
+  }
+
+  &-sign {
+    position: relative;
+    flex: none;
+    width: 18px;
+    height: 18px;
+
+    &::before,
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 50% 0 auto;
+      height: 1.5px;
+      background: var(--ad-ink);
+      transition: transform 0.2s ease;
+    }
+    &::after { transform: rotate(90deg); }
+  }
+
+  &[open] &-sign::after { transform: rotate(0deg); }
+
+  ol {
+    margin: 0 0 0.9rem;
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  li {
+    display: flex;
+    gap: 0.7rem;
+    align-items: baseline;
+    font-size: 0.9375rem;
+    color: var(--ad-body);
+    list-style: none;
+
+    span {
+      flex: none;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--ad-muted);
+      font-variant-numeric: tabular-nums;
+    }
+  }
+}
+
+// ── Empresas (maqueta) ──────────────────────────────────
+.axr-ad__alumni-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+}
+
+// Wordmark inventado. Gris y sin color de marca a propósito: tiene que leerse
+// como un hueco reservado, no como una empresa de verdad.
+.axr-ad__fakelogo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ad-muted);
+  filter: grayscale(1);
+  transition: color 0.2s ease, transform 0.2s ease;
+
+  @media (min-width: 700px) { font-size: 0.9375rem; }
+  @media (hover: hover) {
+    &:hover { color: var(--ad-ink); transform: translateY(-2px); }
+  }
+}
+
+// Aviso de dato de maqueta. Misma pinta en todos los sitios donde aparece
+// (logotipos, profesorado) para que se lea como lo que es: una marca del
+// equipo, no parte del argumentario.
+.axr-ad__flag {
+  display: flex;
+  // A varias líneas —y en un móvil siempre lo es— el punto tiene que quedarse
+  // con la primera, no centrarse en el bloque entero.
+  align-items: flex-start;
+  gap: 0.45rem;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 1.05rem;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  color: #7a5b00;
+  background: #fff8e1;
+  border: 1px solid #f2df9e;
+  // Píldora sólo mientras quepa en una línea; en cuanto envuelve, una píldora
+  // de tres renglones se ve como un error.
+  border-radius: 12px;
+
+  @media (min-width: 900px) { border-radius: 999px; align-items: center; }
+
+  &::before {
+    content: "";
+    flex: none;
+    width: 6px;
+    height: 6px;
+    margin-top: 0.35rem;
+    border-radius: 50%;
+    background: #d9a300;
+  }
+
+  @media (min-width: 900px) {
+    &::before { margin-top: 0; }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  Cierre: la prueba y el formulario
+//
+//  Blanco, y no el mesh de antes. El mesh iba justo antes del pie, que
+//  también es oscuro: dos bloques oscuros seguidos cerraban la página en un
+//  túnel. En blanco, la última pantalla respira y el pie hace de suelo.
+//
+//  La tarjeta del formulario ya no puede apoyarse en una sombra sobre el
+//  mesh, así que se sostiene con filete.
+// ══════════════════════════════════════════════════════════
+.axr-ad__final {
+  position: relative;
+  background: #fff;
+  border-top: 1px solid var(--ad-border);
+  color: var(--ad-ink);
+
+  &-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+
+    @media (min-width: 900px) {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 400px);
+      gap: 3rem;
+      align-items: start;
+      justify-content: space-between;
+    }
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 4.6vw, 2.25rem);
+    margin: 0.5rem 0 0.7rem;
+  }
+
+  &-text > p {
+    color: var(--ad-body);
+    max-width: 46ch;
+  }
+}
+
+// Rótulo de subbloque de la prueba. Versalitas y no <h3>: son dos etiquetas
+// de servicio dentro del cierre, no dos apartados nuevos que compitan con
+// «Solicita aquí más información».
+.axr-ad__proof-label {
+  display: block;
+  margin: 1.5rem 0 0.7rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ad-muted);
+}
+
+// El equipo, en cuatro líneas. Eran cuatro tarjetas a lo ancho de la página;
+// aquí caben en media columna sin perder ni la cara ni el papel de cada uno,
+// que es lo único que hace falta saber a estas alturas de la página.
+.axr-ad__team {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.6rem 1.25rem;
+  margin: 0;
+  padding: 0;
+
+  @media (min-width: 480px) { grid-template-columns: 1fr 1fr; }
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    list-style: none;
+    min-width: 0;
+  }
+
+  img {
+    flex: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    object-fit: cover;
+    background: var(--ad-soft);
+  }
+
+  span { min-width: 0; }
+
+  strong {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+  em {
+    display: block;
+    font-style: normal;
+    font-size: 0.75rem;
+    line-height: 1.3;
+    color: var(--ad-body);
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  Pie
+//
+//  El mismo que el de la portada: columna de marca con idioma y medios de
+//  pago, columnas de enlaces y una barra inferior. Los estilos se reescriben
+//  aquí porque esta página no carga landing.scss (ver la cabecera).
+//
+//  La reserva del alto de la barra inferior va en el padding de la barra del
+//  pie: así el último contenido de la página nunca queda debajo de ella. Es
+//  FIJA y no depende de que la barra se vea, porque una reserva que aparece y
+//  desaparece a mitad de scroll da un salto de página.
+// ══════════════════════════════════════════════════════════
+.axr-ad__foot {
+  background: var(--ad-ink);
+  color: #fff;
+  border-radius: 24px 24px 0 0;
+
+  @media (min-width: 1000px) { border-radius: 32px 32px 0 0; margin-top: 2rem; }
+
+  .axr-ad__eyebrow {
+    color: rgba(255, 255, 255, 0.55);
+    &::before { background: rgba(255, 255, 255, 0.45); }
+  }
+
+  &-inner {
+    max-width: var(--ad-max);
+    margin: 0 auto;
+    padding: var(--ad-section) var(--ad-pad-r) 2.25rem var(--ad-pad-l);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+
+    @media (min-width: 621px) { grid-template-columns: 1.3fr 1fr; }
+  }
+
+  &-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 44px;
+    color: #fff;
+
+    span {
+      font-size: 1.0625rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    &:hover { text-decoration: none; }
+  }
+
+  &-brand p {
+    margin: 0.7rem 0 1rem;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.68);
+  }
+
+  // El conmutador de idioma del campus es diminuto para un dedo.
+  &-locale .axr-locale button {
+    min-width: 46px;
+    min-height: 40px;
+    font-size: 0.75rem;
+  }
+
+  &-cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.6rem 1.25rem;
+
+    @media (min-width: 621px) {
+      display: flex;
+      gap: 2.75rem;
+      justify-content: flex-end;
+    }
+  }
+
+  &-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+
+    a {
+      display: flex;
+      align-items: center;
+      // Altura de dedo sin separar visualmente los enlaces.
+      min-height: 40px;
+      font-size: 0.9375rem;
+      color: rgba(255, 255, 255, 0.7);
+      &:hover { color: #fff; }
+    }
+    .axr-ad__eyebrow { margin-bottom: 0.15rem; }
+
+    @media (min-width: 621px) {
+      gap: 0.7rem;
+      a { min-height: 0; display: block; }
+    }
+  }
+
+  &-bar {
+    max-width: var(--ad-max);
+    margin: 0 auto;
+    padding: 1.1rem var(--ad-pad-r) calc(1.1rem + var(--ad-sticky-h) + env(safe-area-inset-bottom)) var(--ad-pad-l);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    display: grid;
+    gap: 0.85rem;
+
+    &-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 1rem;
+      justify-content: space-between;
+      font-size: 0.6875rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      line-height: 1.5;
+      color: rgba(255, 255, 255, 0.58);
+    }
+  }
+
+  // El descargo del diploma: en minúscula y sin versalitas, porque es una
+  // frase que hay que poder leer, no una etiqueta.
+  &-note {
+    margin: 0;
+    font-size: 0.6875rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.45);
+    max-width: 80ch;
+  }
+
+  .axr-cookie-link {
+    font: inherit;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+    &:hover { color: #fff; }
+  }
+}
+
+// ── Medios de pago ──────────────────────────────────────
+// Marcas de aceptación oficiales, en su color y sin recolorear (ver
+// payment-badges.tsx). Anidado bajo .axr-ad para que esta definición y la de
+// landing.scss no puedan verse nunca en la misma página.
+.axr-ad .axr-pay {
+  margin-top: 1.4rem;
+  display: grid;
+  gap: 0.7rem;
+  justify-items: start;
+
+  &__secure {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.45rem;
+    align-items: start;
+    margin: 0;
+    max-width: 42ch;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.55);
+
+    svg { margin-top: 0.15rem; color: #58d68d; }
+  }
+
+  // Fichas diminutas. Una marca de aceptación se reconoce por su forma y su
+  // color, no se lee: a 34 px sigue siendo identificable y deja de competir
+  // con los enlaces del pie.
+  &__cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+
+    li {
+      width: 34px;
+      aspect-ratio: 750 / 471;
+      border-radius: 3px;
+      overflow: hidden;
+      background: #fff;
+      // Varias marcas traen fondo blanco (UnionPay): sin filete se fundirían
+      // con su propia ficha.
+      box-shadow: inset 0 0 0 1px rgba(20, 16, 40, 0.15);
+    }
+    img { display: block; width: 100%; height: 100%; }
+  }
+
+  &__processor {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+
+    span {
+      font-size: 0.6875rem;
+      letter-spacing: 0.02em;
+      color: rgba(255, 255, 255, 0.4);
+    }
+    // El logotipo va en su color: es de Stripe, no nuestro, y recolorearlo
+    // iría contra sus normas de marca.
+    img { display: block; height: 14px; width: auto; }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  Barra inferior
+//
+//  Marco flotante, no franja pegada al filo: separada del borde y con las
+//  esquinas redondeadas se lee como parte del navegador y no como una sección
+//  más de la página. Debajo, el pie ya reserva su alto, así que no tapa nada.
+// ══════════════════════════════════════════════════════════
+.axr-ad__sticky {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  background: rgba(22, 19, 38, 0.97);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  padding-bottom: env(safe-area-inset-bottom);
+  overflow: hidden;
+  transform: translate3d(0, 130%, 0);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+
+  &[data-on] { transform: none; }
+
+  @media (min-width: 700px) {
+    left: max(0.9rem, env(safe-area-inset-left));
+    right: max(0.9rem, env(safe-area-inset-right));
+    bottom: 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    box-shadow: 0 18px 40px rgba(10, 6, 25, 0.4);
+    padding-bottom: 0;
+  }
+
+  // Progreso de lectura: lo escribe <AdStickyBar/> en --read (0 → 1).
+  &-read {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    transform: scaleX(var(--read, 0));
+    transform-origin: left;
+    background: linear-gradient(90deg, #6d5cff, #d61f9c);
+  }
+
+  &-inner {
+    max-width: var(--ad-max);
+    min-height: var(--ad-sticky-h);
+    margin: 0 auto;
+    padding: 0.55rem var(--ad-pad-r) 0.55rem var(--ad-pad-l);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  &-left {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-width: 0;
+  }
+
+  &-note {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.82);
+    // En un móvil no cabe junto al reloj y al botón: manda el botón.
+    @media (max-width: 819px) { display: none; }
+  }
+
+  &-clock {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3rem;
+
+    > span { display: inline-flex; align-items: baseline; gap: 0.08rem; }
+
+    // Por debajo de 480 px, tres cifras y el botón no caben juntos y el botón
+    // no es negociable. Se queda el número de días, que es el que empuja.
+    @media (max-width: 479px) {
+      > span:not(:first-child) { display: none; }
+    }
+
+    strong {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+    }
+    em {
+      font-style: normal;
+      font-size: 0.6875rem;
+      color: rgba(255, 255, 255, 0.55);
+    }
+  }
+
+  &-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex: none;
+    min-height: 42px;
+    padding: 0 1.15rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #fff;
+    background: var(--axr-go);
+    border-radius: 999px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.15s ease;
+
+    &:hover { background: var(--axr-go-deep); text-decoration: none; }
+    @media (min-width: 700px) { min-height: 44px; padding: 0 1.35rem; font-size: 0.9375rem; }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  WhatsApp
+// ══════════════════════════════════════════════════════════
+.axr-ad__wa {
+  position: fixed;
+  right: max(0.9rem, env(safe-area-inset-right));
+  bottom: calc(0.9rem + env(safe-area-inset-bottom));
+  z-index: 41;
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  color: #fff;
+  background: #25d366;
+  box-shadow: 0 8px 20px rgba(20, 12, 45, 0.28);
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s ease,
+    bottom 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+
+  @media (min-width: 700px) { width: 54px; height: 54px; }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px rgba(20, 12, 45, 0.34);
+    text-decoration: none;
+  }
+
+  // Halo mínimo: crece poco, tarda mucho y casi no se ve. La versión anterior
+  // era un anillo saltando cada dos segundos y en una página que ya se mueve
+  // sola eso no llama la atención, la reparte.
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px solid #25d366;
+    z-index: -1;
+    animation: axr-ad-halo 6s ease-out infinite;
+  }
+}
+
+@keyframes axr-ad-halo {
+  0%   { transform: scale(1);    opacity: 0.45; }
+  55%  { transform: scale(1.28); opacity: 0; }
+  100% { transform: scale(1.28); opacity: 0; }
+}
+
+// Con la barra puesta, la insignia se aparta hacia arriba: si no, quedaba
+// justo detrás y en el móvil no había forma de pulsarla.
+.axr-ad__sticky[data-on] ~ .axr-ad__wa {
+  bottom: calc(0.9rem + var(--ad-sticky-h) + 0.6rem + env(safe-area-inset-bottom));
+}
+
+// ══════════════════════════════════════════════════════════
+//  Zumbido de los CTA
+//
+//  Cada nueve segundos, un pulso de medio segundo: el botón se levanta dos
+//  píxeles y suelta un anillo. El resto del ciclo está completamente quieto,
+//  que es lo que hace que se note cuando pasa.
+//
+//  Cada botón entra con su retardo. A la vez parecerían una alarma; separados
+//  parece que la página respira.
+// ══════════════════════════════════════════════════════════
+@keyframes axr-ad-buzz {
+  0%, 88%, 100% {
+    transform: none;
+    box-shadow: 0 0 0 0 rgba(var(--axr-go-rgb), 0);
+  }
+  92% {
+    transform: translateY(-2px);
+    box-shadow: 0 0 0 7px rgba(var(--axr-go-rgb), 0.18);
+  }
+  96% {
+    transform: translateY(0);
+    box-shadow: 0 0 0 13px rgba(var(--axr-go-rgb), 0);
+  }
+}
+
+.axr-ad__buzz {
+  animation: axr-ad-buzz 9s ease-out 4s infinite;
+
+  // Con el cursor encima o el foco puesto ya hay atención: el zumbido sobra y
+  // además su `transform` pisaría el de la interacción.
+  &:hover,
+  &:focus-visible { animation: none; }
+}
+
+.axr-ad__bar-cta.axr-ad__buzz { animation-delay: 5s; }
+.axr-ad__sticky-cta.axr-ad__buzz { animation-delay: 2.5s; }
+.axr-ad__program-cta.axr-ad__buzz { animation-delay: 7s; }
+
+// ══════════════════════════════════════════════════════════
+//  MOVIMIENTO
+//
+//  Regla de oro: la página se lee entera sin JavaScript. Por eso el estado
+//  por defecto de todo lo animado es el FINAL —visible, en su sitio— y sólo
+//  cuando <AdFx/> monta y añade `.fx-on` se pasa al estado inicial para
+//  animar. Si el script falla o tarda, no hay nada oculto esperándolo.
+// ══════════════════════════════════════════════════════════
+
+.axr-ad.fx-on [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 16px, 0);
+  transition:
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0ms),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0ms);
+
+  &.is-in { opacity: 1; transform: none; }
+}
+
+// Foco que sigue al cursor. Se dibuja en un ::after propio y no en el fondo
+// de la tarjeta: así no pelea con su color ni con su borde, y basta con
+// desvanecerlo para quitarlo.
+.axr-ad [data-spot] {
+  position: relative;
+  isolation: isolate;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    background: radial-gradient(
+      340px circle at var(--mx, 50%) var(--my, 0%),
+      rgba(91, 75, 245, 0.13),
+      transparent 68%
+    );
+  }
+
+  @media (hover: hover) {
+    &:hover::after { opacity: 1; }
+  }
+}
+
+// ── Decorado del héroe y del cierre ─────────────────────
+.axr-ad__hero-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+// ══════════════════════════════════════════════════════════
+//  Vídeo de fondo
+//
+//  El máster mide 848 × 336. Se enseña a SU TAMAÑO y entero: `contain`, tope
+//  de 848 px y `height: auto`. Con `cover` se ampliaba entre dos y tres veces
+//  —de ahí el pixelado— y además recortaba por los lados.
+//
+//  Por debajo de 848 px de ancho encoge con la pantalla, nunca se corta. Los
+//  bordes se difuminan con una máscara para que no se vea el rectángulo.
+// ══════════════════════════════════════════════════════════
+.axr-ad__hero-video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  // 848 px es el ancho REAL del máster: es el techo, nunca se pasa de ahí, así
+  // que no hay ampliación en ninguna pantalla. Por debajo puede ocupar más que
+  // el contenedor —140 %— y eso es lo que evita que en un móvil se quede en
+  // una tira fina en mitad del héroe: se desborda por los lados, el héroe lo
+  // recorta con `overflow: clip` y la máscara difumina el corte.
+  width: min(848px, 140%);
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+  mask-image: radial-gradient(closest-side at 50% 50%, #000 55%, transparent 100%);
+
+  // En el móvil la mitad de abajo del héroe la tapa la tarjeta blanca del
+  // formulario, así que centrado el vídeo no se veía. Se sube a la zona del
+  // titular, que es la única donde el fondo queda a la vista.
+  @media (max-width: 999px) {
+    top: 0;
+    transform: translate(-50%, -8%);
+  }
+
+  &[data-on] { opacity: 0.5; }
+
+  // El póster ya se está pintando aunque el vídeo no arranque (movimiento
+  // reducido, ahorro de datos, autoplay bloqueado): ahí también tiene que
+  // verse algo, así que la opacidad no puede depender sólo de data-on.
+  &:not([data-on]) { opacity: 0.3; }
+}
+
+// Retícula técnica, con una máscara para que el texto nunca caiga sobre las
+// líneas más marcadas.
+.axr-ad__hero-grid {
+  position: absolute;
+  inset: -1px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(120% 90% at 50% 0%, #000 20%, transparent 78%);
+  animation: axr-ad-grid 26s linear infinite;
+}
+
+// Velo entre el vídeo y el texto. El brandbook lo pide explícitamente para
+// texto sobre imagen; aquí además oscurece por abajo, que es donde caen las
+// tarjetas blancas y donde el contraste se pierde antes.
+.axr-ad__hero-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(22, 19, 38, 0.34) 0%, rgba(22, 19, 38, 0.6) 100%),
+    radial-gradient(90% 70% at 20% 20%, rgba(58, 31, 110, 0.45), transparent 70%);
+}
+
+// Órbitas de color: el mesh del brandbook, pero respirando.
+.axr-ad__hero-orb {
+  position: absolute;
+  will-change: transform;
+
+  &--1 {
+    width: 46vw;
+    height: 46vw;
+    top: -16%;
+    left: -10%;
+    background: radial-gradient(closest-side, rgba(123, 92, 255, 0.55), transparent 100%);
+    animation: axr-ad-orb-a 20s ease-in-out infinite;
+  }
+  &--2 {
+    width: 38vw;
+    height: 38vw;
+    top: 6%;
+    right: -8%;
+    background: radial-gradient(closest-side, rgba(255, 106, 61, 0.42), transparent 100%);
+    animation: axr-ad-orb-b 24s ease-in-out infinite;
+  }
+  &--3 {
+    width: 42vw;
+    height: 42vw;
+    bottom: -20%;
+    left: 38%;
+    background: radial-gradient(closest-side, rgba(214, 31, 156, 0.38), transparent 100%);
+    animation: axr-ad-orb-a 28s ease-in-out infinite reverse;
+  }
+}
+
+// Barrido lento y muy tenue: sensación de pantalla encendida sin llegar a
+// leerse como una animación.
+.axr-ad__hero-scan {
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 45%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 100%
+  );
+  will-change: transform;
+  animation: axr-ad-scan 11s ease-in-out infinite;
+}
+
+@keyframes axr-ad-grid { to { background-position: 48px 48px; } }
+@keyframes axr-ad-orb-a {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(4%, 6%, 0) scale(1.12); }
+}
+@keyframes axr-ad-orb-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1.06); }
+  50% { transform: translate3d(-5%, 8%, 0) scale(0.94); }
+}
+@keyframes axr-ad-scan {
+  0%, 100% { transform: translate3d(-100%, 0, 0); }
+  50% { transform: translate3d(240%, 0, 0); }
+}
+
+// Punto latiendo: píldora de convocatoria y barra inferior.
+.axr-ad__pulse {
+  position: relative;
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: inherit;
+    animation: axr-ad-pulse 3.2s ease-out infinite;
+  }
+}
+
+@keyframes axr-ad-pulse {
+  0% { transform: scale(1); opacity: 0.55; }
+  70%, 100% { transform: scale(2.6); opacity: 0; }
+}
+
+// El trazo del cronograma crece cuando la lista entra en escena.
+.axr-ad.fx-on .axr-ad__rail::before { transform: scaleY(0); transition: transform 0.9s ease 0.1s; }
+.axr-ad.fx-on .axr-ad__rail.is-in::before { transform: scaleY(1); }
+
+@media (min-width: 860px) {
+  .axr-ad.fx-on .axr-ad__rail::before { transform: scaleX(0); }
+  .axr-ad.fx-on .axr-ad__rail.is-in::before { transform: scaleX(1); }
+}
+
+.axr-ad.fx-on .axr-ad__rail .axr-ad__rail-node {
+  transform: scale(0);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--d, 0ms) + 250ms);
+}
+.axr-ad.fx-on .axr-ad__rail.is-in .axr-ad__rail-node { transform: scale(1); }
+
+// Hoja de símbolos de la marquesina: sólo define, no pinta.
+.axr-ad__sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+// ══════════════════════════════════════════════════════════
+//  Formulario
+//
+//  Mismo componente que la portada (<LeadForm/>), estilos propios: esta hoja
+//  no carga landing.scss. Todo anidado bajo .axr-ad para que las dos
+//  definiciones de .axr-lead no puedan verse nunca en la misma página.
+//
+//  Los tamaños de escritorio son APRETADOS a propósito: esta tarjeta es la
+//  pieza más alta del héroe y por tanto la que decide si cabe en una ventana
+//  de portátil. Nada baja de 44 px de zona pulsable ni de 16 px de tipo en el
+//  campo (por debajo, Safari en iOS hace zoom al enfocar).
+// ══════════════════════════════════════════════════════════
+.axr-ad .axr-lead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  text-align: left;
+  color: var(--ad-ink);
+
+  &[data-variant="panel"] {
+    background: #fff;
+    padding: 1.15rem;
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius);
+    // Sombra corta: sobre blanco, la sombra larga que tenía contra el mesh se
+    // veía como una mancha gris.
+    box-shadow: 0 12px 32px rgba(20, 12, 45, 0.08);
+
+    @media (min-width: 481px) { padding: 1.6rem; }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+
+    @media (min-width: 360px) and (max-width: 560px) {
+      grid-template-columns: 1fr 1fr;
+      > * { grid-column: 1 / -1; }
+      > .axr-lead__field--pair { grid-column: span 1; }
+    }
+    @media (min-width: 561px) { grid-template-columns: 1fr 1fr; gap: 0.65rem; }
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+
+    &--wide { grid-column: 1 / -1; }
+
+    label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--ad-body);
+    }
+
+    input {
+      width: 100%;
+      min-height: 44px;
+      padding: 0.55rem 0.7rem;
+      font: inherit;
+      // 16 px exactos: por debajo, Safari en iOS hace zoom al enfocar y deja
+      // la página descuadrada.
+      font-size: 16px;
+      color: var(--ad-ink);
+      background: #fff;
+      border: 1px solid var(--ad-border);
+      border-radius: var(--ad-radius-sm);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+      &:focus {
+        outline: none;
+        border-color: var(--ad-accent);
+        box-shadow: 0 0 0 3px rgba(91, 75, 245, 0.16);
+      }
+    }
+  }
+
+  &__courses {
+    border: 0;
+    padding: 0;
+    margin: 0;
+
+    legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.35rem;
+      padding: 0;
+      margin-bottom: 0.4rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+
+      span { font-size: 0.6875rem; font-weight: 400; color: var(--ad-muted); }
+    }
+  }
+
+  &__course-opts {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+
+    @media (min-width: 561px) { grid-template-columns: 1fr 1fr; }
+  }
+
+  &__course {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius-sm);
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: border-color 0.15s ease, background 0.15s ease;
+
+    @media (hover: hover) {
+      &:hover { border-color: var(--ad-accent); }
+    }
+
+    input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+    &:has(input:checked) {
+      border-color: var(--ad-accent);
+      background: var(--ad-soft);
+    }
+    input:checked + .axr-lead__course-box {
+      background: var(--ad-accent);
+      border-color: var(--ad-accent);
+      &::after { transform: rotate(45deg) scale(1); }
+    }
+    input:focus-visible + .axr-lead__course-box {
+      outline: 2px solid var(--ad-accent);
+      outline-offset: 2px;
+    }
+  }
+
+  &__course-box {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--ad-border);
+    border-radius: 5px;
+    background: #fff;
+    transition: border-color 0.15s ease, background 0.15s ease;
+
+    &::after {
+      content: "";
+      display: block;
+      width: 4px;
+      height: 8px;
+      margin: 2px auto 0;
+      border: solid #fff;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg) scale(0);
+      transition: transform 0.15s ease;
+    }
+  }
+
+  &__course-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.02rem;
+    min-width: 0;
+
+    strong { font-size: 0.8125rem; font-weight: 600; line-height: 1.2; }
+    em {
+      font-style: normal;
+      font-size: 0.5625rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ad-muted);
+    }
+  }
+
+  // Honeypot: fuera de pantalla, invisible para personas.
+  &__hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &__error {
+    margin: 0;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8125rem;
+    color: #b4234c;
+    background: #fdeef2;
+    border: 1px solid #f6c9d5;
+    border-radius: var(--ad-radius-sm);
+  }
+
+  &__submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 48px;
+    padding: 0.75rem 1.4rem;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #fff;
+    background: var(--axr-go);
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+
+    &:hover:not(:disabled) { background: var(--axr-go-deep); transform: translateY(-1px); }
+    &:disabled { opacity: 0.6; cursor: progress; }
+  }
+
+  &__legal {
+    margin: 0;
+    font-size: 0.625rem;
+    line-height: 1.45;
+    color: var(--ad-muted);
+  }
+
+  &--done {
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 220px;
+    text-align: center;
+
+    strong { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.02em; }
+    p { max-width: 320px; color: var(--ad-body); font-size: 0.9375rem; }
+  }
+
+  &__done-mark {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    margin-bottom: 0.3rem;
+    font-size: 1.25rem;
+    color: #fff;
+    background: var(--ad-accent);
+    border-radius: 999px;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  Movimiento reducido
+//
+//  No es una preferencia estética: hay quien se marea de verdad. Se apaga
+//  todo lo que se desplaza, late o zumba.
+// ══════════════════════════════════════════════════════════
+@media (prefers-reduced-motion: reduce) {
+  .axr-ad,
+  .axr-ad *,
+  .axr-ad__sticky,
+  .axr-ad__wa {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .axr-ad.fx-on [data-reveal] { opacity: 1; transform: none; }
+  .axr-ad.fx-on .axr-ad__rail::before,
+  .axr-ad.fx-on .axr-ad__rail .axr-ad__rail-node { transform: none; }
+  .axr-ad__marquee-track,
+  .axr-ad__buzz,
+  .axr-ad__wa::before { animation: none; }
+}
+
+// ══════════════════════════════════════════════════════════
+//  Secciones de debajo del pliegue
+//
+//  `content-visibility: auto` le dice al navegador que no maquete ni pinte
+//  una sección hasta que se acerca a la ventana. En una página larga con
+//  rejillas, acordeones y una veintena de tarjetas es la diferencia entre
+//  maquetarlo todo antes del primer pintado y maquetar sólo lo que se ve.
+//
+//  `contain-intrinsic-size` va en el HTML (un alto estimado por sección):
+//  sin él, el navegador cuenta esas secciones como de alto cero y la barra de
+//  scroll pega saltos mientras se baja.
+// ══════════════════════════════════════════════════════════
+.axr-ad__defer {
+  content-visibility: auto;
+}
+
+// ══════════════════════════════════════════════════════════
+//  La clase en directo
+//
+//  Abre la sección del profesorado: lo que se vende no son cuatro biografías,
+//  es estar en la sala con ellos. El vídeo enseña la sala.
+//
+//  El vídeo mide 1280 × 720 y aquí nunca se pinta más ancho que eso, así que
+//  no hay ampliación: `aspect-ratio` reserva su hueco desde el primer pintado
+//  y el póster entra sin mover nada de sitio.
+// ══════════════════════════════════════════════════════════
+.axr-ad__live {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.35rem;
+  margin-bottom: clamp(2rem, 5vw, 3.25rem);
+  padding-bottom: clamp(2rem, 5vw, 3.25rem);
+  border-bottom: 1px solid var(--ad-border);
+
+  @media (min-width: 900px) {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: center;
+  }
+
+  &-frame {
+    position: relative;
+    // El hueco está reservado antes de que llegue nada: sin esto, el póster
+    // aparece y empuja hacia abajo todo el equipo docente.
+    aspect-ratio: 16 / 9;
+    max-width: 1280px;
+    border-radius: var(--ad-radius);
+    overflow: hidden;
+    background: #161326;
+    box-shadow: 0 18px 44px rgba(20, 12, 45, 0.18);
+  }
+
+  &-video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  // Distintivo de directo. Rojo y no morado a propósito: es el código que
+  // todo el mundo ya sabe leer sin que se lo expliquen.
+  &-badge {
+    position: absolute;
+    top: 0.7rem;
+    left: 0.7rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #fff;
+    background: rgba(22, 19, 38, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+
+    // El punto verde de la convocatoria aquí es rojo: esto es "emitiendo".
+    .axr-ad__pulse { background: #ff4d4d; }
+  }
+
+  &-text {
+    h2 {
+      font-size: clamp(1.35rem, 4vw, 2rem);
+      margin-bottom: 0.8rem;
+    }
+    > p { color: var(--ad-body); }
+
+    dl {
+      display: grid;
+      gap: 0.75rem;
+      margin: 1.15rem 0 0;
+    }
+
+    dt {
+      display: flex;
+      align-items: baseline;
+      gap: 0.45rem;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--ad-ink);
+
+      &::before {
+        content: "";
+        flex: none;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--ad-accent);
+        transform: translateY(-1px);
+      }
+    }
+    dd {
+      margin: 0.1rem 0 0 1.15rem;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      color: var(--ad-body);
+    }
+  }
+
+}
+
+// ══════════════════════════════════════════════════════════
+//  El diagrama se dibuja
+//
+//  Cuatro piezas con cuatro retardos: tallo, barra, bajadas y carriles. En
+//  ese orden se lee como un trazo que avanza; a la vez sería un parpadeo.
+//  Todo con `transform`, así que no repinta nada.
+// ══════════════════════════════════════════════════════════
+.axr-ad.fx-on .axr-ad__fork {
+  &-core {
+    transform: scale(0.94);
+    opacity: 0;
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease;
+  }
+  &-link {
+    &::before { transform: scaleY(0); transition: transform 0.35s ease 0.25s; }
+    &::after { transform: scaleX(0); transition: transform 0.45s ease 0.5s; }
+    span { transform: scaleY(0); transition: transform 0.3s ease 0.85s; }
+  }
+  .axr-ad__lane {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+
+    &[data-variant="0"] { transition-delay: 1.05s; }
+    &[data-variant="1"] { transition-delay: 1.2s; }
+  }
+}
+
+.axr-ad.fx-on .axr-ad__fork.is-in {
+  .axr-ad__fork-core { transform: none; opacity: 1; }
+  .axr-ad__fork-link {
+    &::before { transform: scaleY(1); }
+    &::after { transform: scaleX(1); }
+    span { transform: scaleY(1); }
+  }
+  .axr-ad__lane { opacity: 1; transform: none; }
+}
+
+// ── El pulso del cronograma ─────────────────────────────
+// Un destello que recorre el raíl una vez, justo detrás del trazo. Es un
+// filete de 2 px, así que animar su degradado no cuesta nada, y basta para
+// que la línea se lea como un recorrido y no como un separador.
+@media (min-width: 860px) {
+  .axr-ad__rail::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    opacity: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      transparent 6%,
+      var(--ad-accent) 12%,
+      transparent 20%,
+      transparent 100%
+    );
+    background-size: 300% 100%;
+  }
+
+  .axr-ad.fx-on .axr-ad__rail.is-in::after {
+    animation: axr-ad-rail 2.6s ease-in-out 0.75s 1 forwards;
+  }
+}
+
+@keyframes axr-ad-rail {
+  0% { opacity: 0; background-position: -60% 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { opacity: 0; background-position: 160% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .axr-ad.fx-on .axr-ad__fork-core,
+  .axr-ad.fx-on .axr-ad__fork .axr-ad__lane { opacity: 1; transform: none; }
+  .axr-ad.fx-on .axr-ad__fork-link::before,
+  .axr-ad.fx-on .axr-ad__fork-link::after,
+  .axr-ad.fx-on .axr-ad__fork-link span { transform: none; }
+  .axr-ad__rail::after { animation: none; opacity: 0; }
+}
+
+// ── Cómo se cursa ───────────────────────────────────────
+// Cinco datos de formato. Eran una tarjeta con borde y sombra en una sección
+// propia; aquí son cinco líneas con icono y ocupan un tercio de aquello. Un
+// dato de logística se comprueba de un vistazo, no se lee.
+.axr-ad__how-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.7rem 1.25rem;
+  margin: 0;
+
+  @media (min-width: 460px) { grid-template-columns: 1fr 1fr; }
+
+  div {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      "icon key"
+      "icon value";
+    align-items: start;
+    gap: 0 0.55rem;
+    min-width: 0;
+  }
+
+  svg {
+    grid-area: icon;
+    margin-top: 0.15rem;
+    color: var(--ad-accent);
+  }
+
+  dt {
+    grid-area: key;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ad-muted);
+  }
+
+  dd {
+    grid-area: value;
+    margin: 0.1rem 0 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--ad-ink);
+  }
+}

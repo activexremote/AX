@@ -28,7 +28,70 @@ import {
 //     las etapas que existen de verdad en tu cuenta.
 
 const DEAL_STAGE = process.env.ZOHO_DEAL_STAGE ?? "Closed Won";
-const LEAD_SOURCE = process.env.ZOHO_LEAD_SOURCE ?? "Web";
+
+// ⚠︎ `Lead_Source` es una LISTA DE VALORES en Zoho, no un texto libre: un
+// valor que no esté en la lista hace que Zoho rechace el registro entero y el
+// lead se pierde. Antes había un "Web" por defecto que NO existe en la lista
+// de esta cuenta (`npm run zoho:probe` la imprime), así que sin la variable
+// puesta el formulario habría dejado de escribir en el CRM sin avisar.
+//
+// Sin variable, el campo no se manda y Zoho aplica su propio valor por
+// defecto. Es la única opción que no puede romper nada.
+const LEAD_SOURCE = process.env.ZOHO_LEAD_SOURCE || undefined;
+
+// Origen de quien llega por un anuncio. "Advertisement" viene en la lista por
+// defecto de Zoho, así que funciona sin tocar nada; si en tu cuenta la lista
+// está personalizada, esta variable es la que lo arregla.
+const LEAD_SOURCE_ADS = process.env.ZOHO_LEAD_SOURCE_ADS ?? "Advertisement";
+
+/** Medios que son tráfico de pago, en minúsculas. */
+const MEDIOS_PAGO = new Set(["cpc", "ppc", "paid", "paidsocial", "paid_social", "display", "banner"]);
+
+/**
+ * De dónde venía quien rellenó el formulario. Todo opcional: la portada no
+ * trae `utm_*` y no por eso deja de ser un lead válido.
+ */
+export type LeadOrigin = {
+  /** Ruta en la que estaba: /bienvenida, /lp/trabajo-remoto… */
+  page?: string;
+  source?: string;
+  medium?: string;
+  campaign?: string;
+  term?: string;
+  content?: string;
+  /** gclid, wbraid, fbclid… El identificador de clic de la plataforma. */
+  clickId?: string;
+  /** Sólo el dominio de procedencia. */
+  referrer?: string;
+};
+
+/**
+ * ¿Es tráfico de pago?
+ *
+ * Tres señales, y basta con una: identificador de clic (lo pone la propia
+ * plataforma y es la más fiable), medio de pago declarado en la URL, o estar
+ * en /lp/, que son las landings que sólo reciben anuncios.
+ */
+function esDeAnuncio(o?: LeadOrigin): boolean {
+  if (!o) return false;
+  if (o.clickId) return true;
+  if (o.medium && MEDIOS_PAGO.has(o.medium.toLowerCase())) return true;
+  return /^\/(?:[a-z]{2}\/)?lp\//.test(o.page ?? "");
+}
+
+/** Las líneas de campaña que se escriben en la ficha. */
+function lineasOrigen(o?: LeadOrigin): string[] {
+  if (!o) return [];
+  const campana = [o.source, o.medium, o.campaign].filter(Boolean).join(" / ");
+  return [
+    campana ? `Campaña: ${campana}` : null,
+    o.term ? `Término: ${o.term}` : null,
+    o.content ? `Anuncio: ${o.content}` : null,
+    o.clickId ? `Id de clic: ${o.clickId}` : null,
+    o.referrer ? `Procedencia: ${o.referrer}` : null,
+    o.page ? `Página: ${o.page}` : null,
+  ].filter((l): l is string => Boolean(l));
+}
 
 export type ZohoLeadInput = {
   firstName: string;
@@ -39,6 +102,8 @@ export type ZohoLeadInput = {
   /** Etiquetas legibles de los cursos que le interesan. */
   courses: string[];
   locale?: string;
+  /** De dónde viene. Ver LeadOrigin. */
+  origin?: LeadOrigin;
 };
 
 /**
@@ -53,6 +118,9 @@ export async function upsertZohoLead(lead: ZohoLeadInput): Promise<string | null
   if (!zohoConfigured()) return null;
 
   const cursos = lead.courses.length ? lead.courses.join(" + ") : "sin especificar";
+  const deAnuncio = esDeAnuncio(lead.origin);
+  const fuente = deAnuncio ? LEAD_SOURCE_ADS : LEAD_SOURCE;
+
   const reply = await zohoFetch<ZohoRecordReply>("/Leads/upsert", {
     method: "POST",
     body: JSON.stringify({
@@ -64,11 +132,16 @@ export async function upsertZohoLead(lead: ZohoLeadInput): Promise<string | null
           Email: lead.email,
           Phone: lead.phone || undefined,
           City: lead.city || undefined,
-          Lead_Source: LEAD_SOURCE,
+          // `undefined` desaparece al serializar a JSON: sin variable puesta,
+          // el campo no viaja y Zoho aplica su valor por defecto.
+          Lead_Source: fuente,
           Description: [
             `Curso(s) de interés: ${cursos}`,
             lead.locale ? `Idioma de la web: ${lead.locale}` : null,
-            "Origen: formulario de la web de ActiveXRemote",
+            deAnuncio
+              ? "Origen: campaña de pago (landing de anuncios)"
+              : "Origen: formulario de la web de ActiveXRemote",
+            ...lineasOrigen(lead.origin),
           ]
             .filter(Boolean)
             .join("\n"),
