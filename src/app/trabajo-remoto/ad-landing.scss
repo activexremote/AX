@@ -356,7 +356,7 @@
     // dentro, así que en una pantalla baja el titular cede antes que comerse
     // el resto del héroe, y el 8,4vw evita que en un móvil estrecho se quede
     // en letra pequeña.
-    font-size: clamp(1.7rem, min(8.4vw, 5.6vh), 3.1rem);
+    font-size: clamp(1.55rem, min(6.4vw, 4.4vh), 2.4rem);
     line-height: 1.06;
     // ⚠︎ Aquí había `max-width: 15ch` fijo. En un móvil eso son ~210 px: el
     // titular caía en una columna estrecha de cuatro líneas contra el borde
@@ -366,12 +366,20 @@
     // De aquí en adelante sí entra el tope por altura: es lo que hace que el
     // titular ceda en un portátil bajo en vez de empujar el formulario fuera
     // de la ventana.
-    @media (min-width: 1000px) { max-width: 20ch; }
+    @media (min-width: 1000px) { max-width: 26ch; }
 
+    // La segunda línea —el curso— a cuerpo menor. Es un antetítulo, no medio
+    // titular: a tamaño de H1 las dos frases suman seis renglones y el héroe
+    // deja de caber en una pantalla.
     em {
       display: block;
+      margin-top: 0.5rem;
       font-style: normal;
-      color: rgba(255, 255, 255, 0.72);
+      font-size: 0.5em;
+      font-weight: 600;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      color: rgba(255, 255, 255, 0.78);
     }
   }
 
@@ -480,15 +488,25 @@
 
 // Los logotipos van a la misma ALTURA óptica, nunca al mismo ancho, y sin
 // recolorear: el ancho lo calcula el ratio del viewBox (ver partners.ts).
+// Los logotipos de partner del héroe van A UNA TINTA, en blanco, como en la
+// portada. Sobre el mesh, cada marca con su color convierte la tira en un
+// mosaico; y hay logotipos de trazo negro —el de Quantum— que sobre oscuro
+// sencillamente no se verían.
+//
+// `brightness(0)` los aplasta a negro puro e `invert(1)` los pasa a blanco.
+// La transparencia se conserva, así que el PNG recortado sale como línea
+// blanca limpia y no como un cuadrado.
 .axr-ad__logo {
   display: block;
   object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.92;
 
+  // La pastilla oscura ya no hace falta con todo a una tinta: era para los
+  // logotipos claros sobre fondo claro, y aquí el fondo es el mesh.
   &--dark {
-    padding: 0.28rem 0.45rem;
-    background: #161326;
-    border-radius: 8px;
-    box-sizing: content-box;
+    padding: 0;
+    background: none;
   }
 }
 
@@ -2588,87 +2606,108 @@
 // ══════════════════════════════════════════════════════════
 //  Empleos y sectores
 //
-//  La única sección con imagen de fondo, y a sangre. La ilustración —dos
-//  personas trabajando, un amanecer y un anochecer en la misma costa— dice el
-//  argumento antes de que nadie lea: esto va de trabajar desde donde sea.
+//  La única sección con ilustración, y a sangre. Dos personas trabajando, un
+//  amanecer y un anochecer en la misma costa: dice el argumento antes de que
+//  nadie lea.
 //
-//  El velo va más cargado que el 0,35 que pide el brandbook para texto sobre
-//  imagen. No es capricho: el centro de esta ilustración es un sol casi
-//  blanco, y a 0,35 el titular desaparecía justo ahí.
+//  ── Por qué la imagen va en el flujo y no de fondo ───────
+//  Estaba como fondo con `object-fit: cover`. Eso hace que mande la altura de
+//  la sección: el navegador amplía la imagen hasta taparla, y con un máster
+//  de 2000 × 694 sobre una banda alta el aumento pasaba del 10 %. Eso era el
+//  pixelado.
+//
+//  Ahora manda la imagen. Su proporción fija el alto de la banda, el tope de
+//  2000 px impide que se pinte por encima de su tamaño real y no hay recorte
+//  ni reescalado en ningún ancho de pantalla. Tampoco hay animación sobre
+//  ella: cualquier `scale` sería, otra vez, ampliarla.
 // ══════════════════════════════════════════════════════════
 .axr-ad__jobs {
   position: relative;
-  overflow: clip;
-  isolation: isolate;
   color: #fff;
-  // Se pinta antes de que llegue la imagen y se queda si no llega: el texto
-  // nunca se apoya sólo en el JPEG.
   background: #0b0e28;
-  padding-top: clamp(2.75rem, 7vw, 4.5rem);
-  padding-bottom: clamp(2.75rem, 7vw, 4.5rem);
+  padding-bottom: clamp(2rem, 5vw, 3rem);
+
+  &-band {
+    position: relative;
+    // Nunca más ancha que sus píxeles reales. Por encima de 2000 px de
+    // ventana, los lados los pone el fondo de la sección.
+    max-width: 2000px;
+    margin: 0 auto;
+  }
 
   &-bg {
-    position: absolute;
-    inset: 0;
-    z-index: -2;
+    display: block;
 
     img {
+      display: block;
       width: 100%;
-      height: 100%;
-      object-fit: cover;
-      // El amanecer está a la izquierda y el anochecer a la derecha: al
-      // recortar en vertical interesa conservar la línea del horizonte.
-      object-position: center 55%;
-      // Un punto de más para que el vaivén no descubra los bordes.
-      transform: scale(1.08);
-      will-change: transform;
-      animation: axr-ad-drift 48s ease-in-out infinite;
+      // La proporción del máster, sin recortes: la banda mide lo que mide la
+      // imagen y ni un píxel más.
+      height: auto;
     }
   }
 
-  // Deriva lentísima: 48 segundos de ida y vuelta. No se ve moverse, se nota
-  // que está viva. Y es `transform`, así que no repinta nada.
   &-veil {
     position: absolute;
     inset: 0;
-    z-index: -1;
-    background:
-      linear-gradient(180deg, rgba(9, 11, 34, 0.62) 0%, rgba(9, 11, 34, 0.7) 42%, rgba(9, 11, 34, 0.9) 100%),
-      radial-gradient(120% 90% at 50% 40%, rgba(9, 11, 34, 0.25), transparent 70%);
+    // Sólo hace falta donde cae el texto, y sólo de tablet en adelante: en un
+    // móvil el titular va debajo de la banda, sobre el fondo oscuro.
+    background: linear-gradient(
+      180deg,
+      rgba(9, 11, 34, 0.15) 0%,
+      rgba(9, 11, 34, 0.45) 45%,
+      rgba(9, 11, 34, 0.88) 100%
+    );
+
+    @media (max-width: 759px) { display: none; }
+  }
+
+  &-head {
+    position: relative;
+    padding-top: clamp(1.5rem, 4vw, 2rem);
+    max-width: var(--ad-max);
+
+    // Sobre la banda, apoyado abajo. Por debajo de 760 px la banda mide 135 px
+    // y ahí no cabe un titular: se queda en el flujo, justo debajo.
+    @media (min-width: 760px) {
+      position: absolute;
+      left: 50%;
+      bottom: clamp(1.25rem, 3vw, 2.25rem);
+      transform: translateX(-50%);
+      width: 100%;
+      padding-top: 0;
+    }
+
+    h2 {
+      font-size: clamp(1.5rem, 4.6vw, 2.25rem);
+      margin: 0.5rem 0 0.6rem;
+      max-width: 24ch;
+      color: #fff;
+      // Sobre imagen, el brandbook pide blanco y peso alto. La sombra hace el
+      // resto donde el velo no llega.
+      text-shadow: 0 2px 20px rgba(6, 8, 26, 0.6);
+    }
+
+    p {
+      max-width: 56ch;
+      color: rgba(255, 255, 255, 0.88);
+      text-shadow: 0 1px 14px rgba(6, 8, 26, 0.55);
+      // En pantallas donde la banda es estrecha, la entradilla es lo primero
+      // que sobra: el titular ya lo dice.
+      @media (min-width: 760px) and (max-width: 1079px) { display: none; }
+    }
   }
 
   &-inner {
     position: relative;
     z-index: 1;
+    padding-top: clamp(1.75rem, 4vw, 2.5rem);
   }
-
-  &-head {
-    max-width: 62ch;
-    margin-bottom: clamp(1.75rem, 4vw, 2.5rem);
-
-    h2 {
-      font-size: clamp(1.75rem, 6.2vw, 2.5rem);
-      margin: 0.6rem 0 0.75rem;
-      // Sobre imagen, el brandbook pide blanco puro y peso alto. No se negocia.
-      color: #fff;
-      text-shadow: 0 2px 24px rgba(6, 8, 26, 0.5);
-    }
-
-    p {
-      color: rgba(255, 255, 255, 0.86);
-      max-width: 56ch;
-    }
-  }
-}
-
-@keyframes axr-ad-drift {
-  0%, 100% { transform: scale(1.08) translate3d(-1.2%, 0, 0); }
-  50% { transform: scale(1.12) translate3d(1.2%, 0, 0); }
 }
 
 // El eyebrow de la casa, sobre oscuro.
 .axr-ad__eyebrow--light {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.75);
   &::before { background: #fff; }
 }
 
@@ -2799,7 +2838,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .axr-ad__jobs-bg img { animation: none; transform: scale(1.02); }
   .axr-ad.fx-on .axr-ad__sectors li { opacity: 1; transform: none; }
 }
 

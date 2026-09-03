@@ -63,8 +63,12 @@ export const adCopy = {
     // pasa si dejo los datos. Todo lo demás puede esperar al scroll.
     hero: {
       badge: "Convocatoria del 9 de enero de 2027 · 25 plazas",
-      titleTop: "Empleo remoto internacional",
-      titleBottom: "o tu propio negocio global",
+      // Dos líneas, como pide el documento: la escuela arriba y el curso
+      // debajo. La segunda va a cuerpo menor —titular y antetítulo— porque a
+      // tamaño de H1 las dos frases juntas son seis renglones y el héroe deja
+      // de caber en una pantalla de portátil.
+      titleTop: "La Escuela para conseguir tu empleo remoto internacional o crear tu propio negocio global.",
+      titleBottom: "Escoge entre el Curso Remote Professional o el Curso Remote Founder.",
       lead: "Formación online y en directo. Clases de cuatro horas los fines de semana, durante siete semanas, y los recursos que necesitas al terminar cada módulo.",
       formTitle: "Recibe el programa completo",
       formLead: "Temario, fechas, horarios y condiciones. Sin compromiso.",
@@ -386,8 +390,8 @@ export const adCopy = {
 
     hero: {
       badge: "Cohort of 9 January 2027 · 25 seats",
-      titleTop: "An international remote job",
-      titleBottom: "or your own global business",
+      titleTop: "The school for landing an international remote job or building your own global business.",
+      titleBottom: "Choose between the Remote Professional course and the Remote Founder course.",
       lead: "Live online training, taught in Spanish. Four-hour classes at weekends, over seven weeks, and the resources you need at the end of every module.",
       formTitle: "Get the full programme",
       formLead: "Syllabus, dates, schedule and terms. No strings attached.",

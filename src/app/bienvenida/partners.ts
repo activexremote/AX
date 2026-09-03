@@ -47,9 +47,21 @@ export type Partner = {
 };
 
 export const PARTNERS: readonly Partner[] = [
-  { key: "deel",            name: "Deel",            logo: "deel.svg",            ratio: 78 / 27, url: "https://www.deel.com", hero: true },
   { key: "remoteandtalent", name: "Remote & Talent", logo: "remoteandtalent.svg", ratio: 80 / 90, dark: true, url: "https://remoteandtalent.com", hero: true },
+  { key: "quantum",         name: "Quantum Mindset Solutions", logo: "quantum.png", ratio: 1,     url: "https://quantummindsetsolutions.com", hero: true },
 ];
+
+// ⚠︎ Deel está RETIRADO, no borrado. Vuelve entrando esta línea en la lista:
+//
+//   { key: "deel", name: "Deel", logo: "deel.svg", ratio: 78 / 27,
+//     url: "https://www.deel.com", hero: true },
+//
+// Su SVG sigue en public/logos/partners/. Se quitó a petición del equipo
+// mientras se aclara el acuerdo, y esta lista es la única fuente: afecta a
+// la portada y a la landing de campaña a la vez, que es como tiene que ser.
+// Un partner no puede estar anunciado en una página y no en la otra: es una
+// afirmación sobre un tercero, y o es cierta en las dos o no lo es en
+// ninguna.
 
 // Aquí vivía un código de color por familia (talento / dinero / legal /
 // producto) que pintaba el borde y la categoría de cada pastilla del héroe.
@@ -82,8 +94,8 @@ const es: PartnerCopy = {
   title: "Aprende y benefíciate junto a ellos.",
   lead: "Acuerdos con las plataformas que sostienen el trabajo remoto internacional. No son sólo herramientas que se estudian: cada una da beneficios directos y exclusivos a nuestros alumnos dentro del programa.",
   items: {
-    deel:            { area: "Global Hiring",       desc: "Contrata y paga talento en cualquier parte del mundo." },
     remoteandtalent: { area: "Remote Talent",       desc: "Encuentra talento preparado para trabajar en remoto." },
+    quantum:         { area: "Mindset & Performance", desc: "Entrena la cabeza para sostener el cambio, no sólo la técnica." },
   },
   benefitLabel: "Beneficio para alumnos",
   // El diploma sigue siendo lo que es, y eso no lo cambia tener acuerdos:
@@ -97,8 +109,8 @@ const en: PartnerCopy = {
   title: "Learn with them, and get the perks.",
   lead: "Agreements with the platforms that hold up international remote work. They aren't just tools you study: each one gives our students direct, exclusive benefits inside the programme.",
   items: {
-    deel:            { area: "Global Hiring",       desc: "Hire and pay talent anywhere in the world." },
     remoteandtalent: { area: "Remote Talent",       desc: "Find talent that is ready to work remotely." },
+    quantum:         { area: "Mindset & Performance", desc: "Trains the head to sustain the change, not just the technique." },
   },
   benefitLabel: "Student benefit",
   note: "Each brand belongs to its own company. Partners provide benefits and conditions for our students, but they do not accredit the programme or issue the diploma: ActiveXRemote issues it, listing the modules passed, and it is a private company certification, not an official qualification or a university degree.",

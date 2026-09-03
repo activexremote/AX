@@ -434,32 +434,38 @@ export async function AdLandingView() {
           brandbook: aquí va más cargado, y el texto en blanco y peso 600 o
           más, como manda la sección 7. */}
       <section className="axr-ad__jobs axr-ad__defer" style={{ containIntrinsicSize: "auto 680px" }}>
-        <picture className="axr-ad__jobs-bg" aria-hidden>
-          {/* Un móvil no tiene por qué bajarse los 2000 px: la versión corta
-              pesa una tercera parte y a ese ancho se ve idéntica. */}
-          <source media="(max-width: 780px)" srcSet="/img/skyline-remoto-sm.jpg" />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/img/skyline-remoto.jpg"
-            alt=""
-            width={2000}
-            height={694}
-            loading="lazy"
-            decoding="async"
-          />
-        </picture>
-        <span className="axr-ad__jobs-veil" aria-hidden />
+        {/* La ilustración va EN EL FLUJO, no de fondo con `cover`. Con cover,
+            la altura de la sección mandaba y el navegador ampliaba la imagen
+            para taparla: de ahí el pixelado. Aquí manda la imagen —su
+            proporción fija el alto de la banda— y nunca se pinta por encima
+            de sus 2000 px reales. */}
+        <div className="axr-ad__jobs-band">
+          <picture className="axr-ad__jobs-bg">
+            {/* Un móvil no tiene por qué bajarse los 2000 px: la versión corta
+                pesa una tercera parte y a ese ancho se ve idéntica. */}
+            <source media="(max-width: 780px)" srcSet="/img/skyline-remoto-sm.jpg" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/img/skyline-remoto.jpg"
+              alt=""
+              width={2000}
+              height={694}
+              loading="lazy"
+              decoding="async"
+            />
+          </picture>
+          <span className="axr-ad__jobs-veil" aria-hidden />
 
-        <div className="axr-ad__wrap axr-ad__jobs-inner">
-          <header className="axr-ad__jobs-head" data-reveal>
+          {/* Sobre la banda a partir de tablet; debajo en un móvil, donde la
+              banda mide 135 px y ahí no cabe un titular. */}
+          <header className="axr-ad__jobs-head axr-ad__wrap" data-reveal>
             <span className="axr-ad__eyebrow axr-ad__eyebrow--light">{c.jobs.eyebrow}</span>
             <h2>{c.jobs.title}</h2>
             <p>{c.jobs.lead}</p>
           </header>
+        </div>
 
-          {/* Las cifras, en rejilla y no en tira: se comparan de un vistazo y
-              no hay nada escondido a la derecha esperando a que alguien
-              adivine que se arrastra. */}
+        <div className="axr-ad__wrap axr-ad__jobs-inner">
           <div className="axr-ad__pay" data-reveal>
             <span className="axr-ad__pay-label">{c.jobs.salaryLabel}</span>
             <ul className="axr-ad__pay-grid">
