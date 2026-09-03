@@ -10,7 +10,11 @@ import type { Locale } from "@/lib/i18n/config";
 //
 //  ── Regla de contenido ───────────────────────────────────
 //  Aquí sólo entra lo que ya sostiene la web pública: 14 módulos, 56 h,
-//  grupos de 25 y 2.400 €. Nada de cifras nuevas.
+//  grupos de 25. Nada de cifras nuevas.
+//
+//  ⚠︎ SIN PRECIOS. Se han retirado a petición del equipo: esta página no
+//  muestra importes por ahora. Si vuelven, van en `hero.facts`, que es de
+//  donde salieron.
 //
 //  ⚠︎ El CALENDARIO de esta convocatoria es propio y no el de la portada:
 //  siete fines de semana, del 9 de enero al 21 de febrero de 2027, dos clases
@@ -89,7 +93,6 @@ export const adCopy = {
         { k: "Formato", v: "100 % online, en directo" },
         { k: "Empieza y finaliza", v: "9 ene → 21 feb de 2027" },
         { k: "Ritmo", v: "2 clases de 4 h por fin de semana" },
-        { k: "Precio", v: "2.400 € · o 3 plazos de 800 €" },
       ],
       partnersLabel: "Partners con beneficios para alumnos",
       partnersNote: "Acuerdos con las plataformas que sostienen el trabajo remoto internacional.",
@@ -411,8 +414,9 @@ export const adCopy = {
       // ⚠︎ Un solo aviso para los dos datos de maqueta de esta sección: los
       // logotipos (PLACEHOLDER_LOGOS en ad-logos.tsx) y el profesorado
       // (DEMO_FACULTY en bienvenida/faculty.ts).
-      notice:
-        "Logotipos, fotografías y nombres de muestra: se sustituyen por los reales antes de publicar. El equipo docente de cada convocatoria se comunica antes de formalizar la matrícula.",
+      // Sólo cubre los logotipos de empresa, que siguen siendo inventados.
+      // El profesorado ya no: es una persona real y su ficha enlaza al perfil.
+      notice: "Logotipos de empresa de ejemplo, pendientes de sustituir por los reales.",
     },
 
     final: {
@@ -452,7 +456,6 @@ export const adCopy = {
         { k: "Format", v: "100% online, live" },
         { k: "Runs", v: "9 Jan → 21 Feb 2027" },
         { k: "Pace", v: "Two 4-hour classes per weekend" },
-        { k: "Price", v: "€2,400 · or 3 × €800" },
       ],
       partnersLabel: "Partners with student benefits",
       partnersNote: "Agreements with the platforms that hold up international remote work.",
@@ -723,8 +726,7 @@ export const adCopy = {
 
     faculty: {
       title: "Who teaches the classes",
-      notice:
-        "Sample logos, photographs and names: they will be replaced with the real ones before publishing. Each cohort's teaching team is communicated before enrolment is formalised.",
+      notice: "Sample company logos, to be replaced with the real ones.",
     },
 
     final: {

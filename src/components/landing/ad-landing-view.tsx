@@ -12,7 +12,7 @@ import { PLACEHOLDER_LOGOS, PlaceholderLogos } from "@/components/landing/ad-log
 import { adCopy } from "@/app/trabajo-remoto/copy";
 import { COHORT_START, STACK_TOOLS, WHATSAPP_NUMBER } from "@/app/trabajo-remoto/contact";
 import { landingCopy } from "@/app/bienvenida/copy";
-import { DEMO_FACULTY, FACULTY } from "@/app/bienvenida/faculty";
+import { TEACHERS, teacherCopy } from "@/app/trabajo-remoto/faculty";
 import { PARTNERS, partnerLogo } from "@/app/bienvenida/partners";
 import { ENTITY } from "@/app/legal/entity";
 import { TOOLS, type Tool } from "@/app/bienvenida/tools";
@@ -721,16 +721,30 @@ export async function AdLandingView() {
             <h2>{c.final.title}</h2>
             <p>{c.final.body}</p>
 
+            {/* Una persona real en vez de cuatro fichas de muestra, así que
+                la ficha crece: con nombre, cargo, un párrafo y el enlace al
+                perfil. Cuatro retratos inventados ocupaban más y sostenían
+                menos. */}
             <span className="axr-ad__proof-label">{c.faculty.title}</span>
             <ul className="axr-ad__team">
-              {FACULTY.map((m) => (
-                <li key={m.id}>
+              {TEACHERS.map((t) => (
+                <li key={t.id}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={m.photo} alt="" width={36} height={36} loading="lazy" decoding="async" />
-                  <span>
-                    <strong>{m.name}</strong>
-                    <em>{m[locale].role}</em>
-                  </span>
+                  <img src={t.photo} alt="" width={64} height={64} loading="lazy" decoding="async" />
+                  <div>
+                    <strong>{t.name}</strong>
+                    <em>{t[locale].role}</em>
+                    <p>{t[locale].bio}</p>
+                    <ul className="axr-ad__team-tags">
+                      {t[locale].tags.map((tag) => (
+                        <li key={tag}>{tag}</li>
+                      ))}
+                    </ul>
+                    <a href={t.url} target="_blank" rel="noopener noreferrer">
+                      {teacherCopy[locale].linkLabel}
+                      <span aria-hidden> →</span>
+                    </a>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -740,10 +754,8 @@ export async function AdLandingView() {
               <PlaceholderLogos />
             </div>
 
-            {/* Un solo aviso para los dos datos de maqueta de la sección. */}
-            {(PLACEHOLDER_LOGOS || DEMO_FACULTY) && (
-              <p className="axr-ad__flag">{c.faculty.notice}</p>
-            )}
+            {/* El aviso ya sólo cubre los logotipos: el profesorado es real. */}
+            {PLACEHOLDER_LOGOS && <p className="axr-ad__flag">{c.faculty.notice}</p>}
           </div>
 
           <div data-reveal>
