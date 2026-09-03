@@ -42,7 +42,13 @@ import "@/app/trabajo-remoto/ad-landing.scss";
 //  profesorado arrastra el aviso de faculty.ts.
 // ══════════════════════════════════════════════════════════
 
-const LOGO_H = { hero: 22 } as const;
+// Alto óptico de los logotipos de partner en el héroe.
+//
+// Estaba en 22 px, que es medida de tira de pie de página, no de héroe. Y con
+// Deel fuera, los dos que quedan son marcas compactas —un pin y un sello
+// circular—, no wordmarks apaisados: a la misma altura ocupan la mitad de
+// ancho que ocupaba Deel, así que la fila se veía diminuta por partida doble.
+const LOGO_H = { hero: 48 } as const;
 
 function PartnerLogos({ size, eager }: { size: number; eager?: boolean }) {
   return (

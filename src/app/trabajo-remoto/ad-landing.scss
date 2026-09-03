@@ -423,7 +423,10 @@
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 1.1rem;
+      // Más aire entre marcas: a 48 px, 1,1rem las dejaba pegadas y parecían
+      // un solo logotipo raro.
+      gap: 1.6rem;
+      margin-top: 0.15rem;
     }
   }
 }
@@ -503,7 +506,10 @@
   display: block;
   object-fit: contain;
   filter: brightness(0) invert(1);
-  opacity: 0.92;
+  // Blanco pleno. A 0,92 sobre el mesh, un dibujo de línea fina como el sello
+  // de Quantum se deshacía: la línea no llega ni a un píxel y la opacidad se
+  // come lo poco que queda.
+  opacity: 1;
 
   // La pastilla oscura ya no hace falta con todo a una tinta: era para los
   // logotipos claros sobre fondo claro, y aquí el fondo es el mesh.
