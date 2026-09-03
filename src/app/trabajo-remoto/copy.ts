@@ -10,8 +10,13 @@ import type { Locale } from "@/lib/i18n/config";
 //
 //  ── Regla de contenido ───────────────────────────────────
 //  Aquí sólo entra lo que ya sostiene la web pública: 14 módulos, 56 h,
-//  14 semanas, grupos de 25, 2.400 €, 1 de diciembre de 2026. Nada de cifras
-//  nuevas. En particular NO hay rangos salariales ni número de alumnos: la
+//  grupos de 25 y 2.400 €. Nada de cifras nuevas.
+//
+//  ⚠︎ El CALENDARIO de esta convocatoria es propio y no el de la portada:
+//  siete fines de semana, del 9 de enero al 21 de febrero de 2027, dos clases
+//  de cuatro horas por fin de semana. La portada sigue vendiendo la de
+//  diciembre con una clase por semana, así que la fecha vive en
+//  trabajo-remoto/contact.ts y no en la constante compartida. En particular NO hay rangos salariales ni número de alumnos: la
 //  referencia los lleva, nosotros no tenemos dato verificable y publicarlo
 //  inventado es publicidad engañosa (ver src/app/bienvenida/flags.ts).
 //
@@ -20,8 +25,8 @@ import type { Locale } from "@/lib/i18n/config";
 //  has perdido algo. Cada dato tiene un dueño y sólo uno:
 //
 //    hero .......... qué es, para quién, cuándo empieza y cuánto cuesta
-//    stats ......... el tamaño del programa (módulos, horas, semanas, plazas)
-//    statement ..... la tesis de la escuela
+//    statement ..... quiénes somos y cómo enseñamos, en una frase
+//    jobs .......... a qué empleos y a qué sectores lleva esto
 //    live .......... CÓMO se da la clase (en directo, irrepetible, online)
 //    pillars ....... POR QUÉ funciona — cuatro cosas que no dice nadie más
 //    outcomes ...... la ESTRUCTURA y a dónde lleva cada camino
@@ -38,11 +43,16 @@ export type AdCopy = (typeof adCopy)["es"];
 export const adCopy = {
   es: {
     meta: {
-      title: "Formación online en directo para trabajar sin fronteras · 14 semanas",
+      title: "Formación online en directo para trabajar sin fronteras · 7 fines de semana",
       description:
         "Programa 100 % online y en directo, en español: consigue un empleo remoto internacional o monta tu negocio global. 14 módulos, 56 h, grupos de 25 plazas.",
     },
     nav: {
+      // La marca sola no dice a qué nos dedicamos. Quien llega desde un
+      // anuncio no nos conoce: en la barra tiene que leerse qué somos y qué
+      // está mirando, en dos líneas.
+      school: "Escuela de trabajo remoto",
+      course: "Programa Remote Professional & Founder",
       cta: "Solicita información",
       ctaShort: "Solicita info",
     },
@@ -52,10 +62,10 @@ export const adCopy = {
     // (formación online en directo), qué consigues (empleo o negocio) y qué
     // pasa si dejo los datos. Todo lo demás puede esperar al scroll.
     hero: {
-      badge: "Convocatoria del 1 de diciembre · 25 plazas",
+      badge: "Convocatoria del 9 de enero de 2027 · 25 plazas",
       titleTop: "Empleo remoto internacional",
       titleBottom: "o tu propio negocio global",
-      lead: "Formación online y en directo. Una clase de cuatro horas por semana durante catorce semanas, y algo terminado al final de cada una.",
+      lead: "Formación online y en directo. Clases de cuatro horas los fines de semana, durante siete semanas, y los recursos que necesitas al terminar cada módulo.",
       formTitle: "Recibe el programa completo",
       formLead: "Temario, fechas, horarios y condiciones. Sin compromiso.",
       // Cuatro datos, no seis: aquí van los de decisión —qué formato, cuándo
@@ -63,8 +73,8 @@ export const adCopy = {
       // cuenta la banda de cifras de justo debajo.
       facts: [
         { k: "Formato", v: "100 % online, en directo" },
-        { k: "Empieza", v: "1 de diciembre de 2026" },
-        { k: "Ritmo", v: "1 clase de 4 h por semana" },
+        { k: "Empieza y finaliza", v: "9 ene → 21 feb de 2027" },
+        { k: "Ritmo", v: "2 clases de 4 h por fin de semana" },
         { k: "Precio", v: "2.400 € · o 3 plazos de 800 €" },
       ],
       partnersLabel: "Partners con beneficios para alumnos",
@@ -75,18 +85,19 @@ export const adCopy = {
         { city: "Lisboa", tz: "Europe/Lisbon" },
         { city: "Bogotá", tz: "America/Bogota" },
         { city: "CDMX", tz: "America/Mexico_City" },
-      ],
-      stats: [
-        { value: 14, suffix: "", label: "módulos" },
-        { value: 56, suffix: " h", label: "de clase" },
-        { value: 14, suffix: "", label: "semanas" },
-        { value: 25, suffix: "", label: "plazas por grupo" },
+        { city: "Dubái", tz: "Asia/Dubai" },
+        { city: "Nueva York", tz: "America/New_York" },
       ],
     },
 
+    // ⚠︎ El documento de feedback traía «ActiveXRemote, Top #1 en formación
+    // práctica…». El «Top #1» se ha quitado: es un superlativo comparativo sin
+    // dato que lo sostenga, y afirmarlo sobre uno mismo entra de lleno en la
+    // Directiva 2005/29/CE de prácticas comerciales desleales. El resto de la
+    // frase se mantiene tal cual, porque describe y no compara.
     statement: {
-      top: "El trabajo en remoto se aprende",
-      bottom: "trabajando en remoto.",
+      top: "Formación práctica y 100 % actualizada en Remote Business.",
+      bottom: "En directo, online, y al ritmo al que se mueve el mercado.",
     },
 
     // ── CÓMO ES LA CLASE ─────────────────────────────────
@@ -104,30 +115,29 @@ export const adCopy = {
       videoLabel: "Fragmento de una clase en directo del programa",
     },
 
-    // ── POR QUÉ FUNCIONA ─────────────────────────────────
-    // Cuatro razones que no repiten a nadie: los entregables, el tamaño del
-    // grupo, la IA y el stack. El formato lo cuenta la clase de arriba y la
-    // estructura, el diagrama de abajo.
+    // Cuatro bloques con el formato de la referencia: un titular que se lee
+    // solo y dos líneas que lo sostienen. El del campus es el que más se
+    // aparta: la escuela tiene sede en Dubái, pero el aula está donde estés tú.
     pillars: [
       {
         icon: "deliver" as const,
-        title: "Sales con cosas hechas",
-        body: "Un entregable por módulo, corregido con tu nombre. No apuntes.",
+        title: "Oferta formativa puntera y actualizada",
+        body: "Contenidos revisados cada convocatoria sobre lo que hoy pide el mercado remoto internacional: fiscalidad, contratación, IA aplicada y operativa distribuida.",
       },
       {
         icon: "group" as const,
-        title: "Grupo de 25, no un curso masivo",
-        body: "Se te conoce, se te pregunta y se te sigue durante las 14 semanas.",
+        title: "Metodología práctica con profesionales en activo",
+        body: "Clases en directo con quien trabaja así todos los días. Grupos de 25, un entregable por módulo y corrección con tu nombre encima.",
       },
       {
-        icon: "ai" as const,
-        title: "IA dentro de cada módulo",
-        body: "Prompts, agentes y automatizaciones sobre tu propio trabajo.",
+        icon: "globe" as const,
+        title: "Sede en Dubái, aula en todo el mundo",
+        body: "La escuela opera desde Emiratos y el programa es 100 % online: se sigue desde cualquier país y cualquier huso horario, sin mudarte a ninguna parte.",
       },
       {
         icon: "stack" as const,
-        title: "Las herramientas de verdad",
-        body: "Las mismas que usan los equipos remotos, abiertas en pantalla.",
+        title: "Herramientas y plataformas estratégicas",
+        body: "Notion, Slack, Wise, Deel, Zapier y modelos de IA, abiertos en pantalla durante la clase e integrados en los ejercicios de cada módulo.",
       },
     ],
 
@@ -136,13 +146,13 @@ export const adCopy = {
     // no vuelve a contar los módulos: cuenta lo que te pasa a ti.
     outcomes: {
       title: "Una base común y, después, tu camino",
-      coreTag: "Semanas 1 – 7",
+      coreTag: "Módulos 01 – 07",
       coreName: "7 módulos de núcleo",
       coreNote: "Los mismos para todos",
       takeLabel: "Sales con",
       paths: [
         {
-          tag: "Semanas 8 – 14",
+          tag: "Módulos 08 – 14",
           name: "Remote Professional",
           items: [
             {
@@ -156,7 +166,7 @@ export const adCopy = {
           ],
         },
         {
-          tag: "Semanas 8 – 14",
+          tag: "Módulos 08 – 14",
           name: "Remote Founder",
           items: [
             {
@@ -192,13 +202,13 @@ export const adCopy = {
         },
         {
           n: "02",
-          when: "Semanas 1 – 7",
+          when: "Findes 1 – 4",
           title: "Montas la base",
           desc: "Fiscalidad, herramientas, IA, legal y hábitos de trabajo remoto.",
         },
         {
           n: "03",
-          when: "Semanas 8 – 14",
+          when: "Findes 4 – 7",
           title: "Construyes lo tuyo",
           desc: "Con el núcleo hecho ya sabes qué camino te encaja. Aquí se produce.",
         },
@@ -218,8 +228,8 @@ export const adCopy = {
     // ── EL TEMARIO Y LAS DUDAS ───────────────────────────
     program: {
       eyebrow: "El temario",
-      title: "Catorce módulos, uno por semana",
-      lead: "Siete de núcleo común y siete de la especialización que elijas. Cada módulo abre con el marco, sigue con la herramienta en pantalla y termina con un ejercicio aplicado a tu caso.",
+      title: "Catorce módulos en siete fines de semana",
+      lead: "Dos módulos por fin de semana: siete de núcleo común y siete de la especialización que elijas. Cada uno abre con el marco, sigue con la herramienta en pantalla y termina con un ejercicio aplicado a tu caso.",
       // Cinco dudas que no contesta ninguna otra sección. El formato, el
       // ritmo y el precio ya están en el héroe y no vuelven aquí.
       howLabel: "Las dudas de siempre",
@@ -228,13 +238,13 @@ export const adCopy = {
         { icon: "globe" as const, k: "Idioma", v: "Clases en español, materiales en ES y EN" },
         { icon: "replay" as const, k: "Al terminar", v: "Diploma con los módulos superados y las horas" },
         { icon: "chat" as const, k: "Entre clase y clase", v: "Feedback del equipo y grupo en Slack" },
-        { icon: "clock" as const, k: "Dedicación real", v: "4 h de clase y 2 – 3 h de ejercicio" },
+        { icon: "clock" as const, k: "Dedicación real", v: "8 h de clase el finde y 2 – 3 h de ejercicio" },
       ],
       toolsLabel: "Se abren en clase, no en un anexo",
       cta: "Recibe el temario completo",
       groups: [
         {
-          tag: "Semanas 1 – 7 · Todos",
+          tag: "Módulos 01 – 07 · Todos",
           name: "Núcleo común · 7 módulos",
           modules: [
             { n: "01", title: "Mindset remoto y el nuevo mercado global" },
@@ -247,7 +257,7 @@ export const adCopy = {
           ],
         },
         {
-          tag: "Semanas 8 – 14 · Camino 01",
+          tag: "Módulos 08 – 14 · Camino 01",
           name: "Remote Professional · 7 módulos",
           modules: [
             { n: "08", title: "Cómo encontrar los empleos remotos que no se publican" },
@@ -260,7 +270,7 @@ export const adCopy = {
           ],
         },
         {
-          tag: "Semanas 8 – 14 · Camino 02",
+          tag: "Módulos 08 – 14 · Camino 02",
           name: "Remote Founder · 7 módulos",
           modules: [
             { n: "08", title: "Diseño y validación del negocio remoto" },
@@ -275,12 +285,41 @@ export const adCopy = {
       ],
     },
 
+    // Dos tiras deslizables. No llevan sueldos a propósito: la referencia los
+    // pone, nosotros no tenemos dato verificable sobre nuestros alumnos y
+    // publicar rangos inventados es publicidad engañosa. Lo que sí es
+    // comprobable es a qué se dedica la gente que trabaja en remoto.
+    jobs: {
+      eyebrow: "A dónde lleva",
+      title: "Los empleos y los sectores donde esto se usa",
+      lead: "Dos mapas rápidos del terreno: los puestos que más se contratan en remoto y los sectores donde se monta negocio sin oficina.",
+      rows: [
+        {
+          label: "Empleos remotos más demandados",
+          items: ["Customer Success", "Ventas B2B y SDR", "Marketing y growth", "Diseño de producto", "Desarrollo de software", "Datos y analítica", "Operaciones y project management", "Soporte técnico", "Reclutamiento", "Redacción y contenido"],
+        },
+        {
+          label: "Sectores de remote business",
+          items: ["SaaS y software", "Consultoría y servicios", "E-commerce y marketplaces", "Formación online", "Agencias de marketing", "Salud digital", "Fintech", "Contenido y medios", "Diseño y creatividad", "Automatización e IA"],
+        },
+      ],
+    },
+    // La sede, justo antes del formulario: quien va a dejar sus datos quiere
+    // saber a quién se los deja y cuándo le van a coger el teléfono.
+    office: {
+      eyebrow: "Dónde estamos",
+      title: "Sede en Dubái, alumnos en todo el mundo",
+      hoursLabel: "Horario de atención",
+      hours: "De lunes a viernes, de 9:00 a 18:00 · GST (UTC+4)",
+      addressLabel: "Dirección",
+      note: "La escuela opera desde Emiratos Árabes Unidos y el programa es 100 % online: no hay que venir a ninguna parte.",
+    },
     alumni: {
       title: "Empresas donde trabajan nuestros alumnos",
     },
 
     sticky: {
-      note: "La convocatoria empieza el 1 de diciembre",
+      note: "La convocatoria empieza el 9 de enero",
       cta: "Solicita información",
       units: { d: "d", h: "h", m: "m" },
     },
@@ -314,26 +353,28 @@ export const adCopy = {
 
   en: {
     meta: {
-      title: "Live online training to work without borders · 14 weeks",
+      title: "Live online training to work without borders · 7 weekends",
       description:
         "A 100% online, live programme in Spanish: land an international remote job or build your own global business. 14 modules, 56 hours, cohorts of 25.",
     },
     nav: {
+      school: "Remote work school",
+      course: "Remote Professional & Founder programme",
       cta: "Request information",
       ctaShort: "Request info",
     },
 
     hero: {
-      badge: "Cohort of 1 December · 25 seats",
+      badge: "Cohort of 9 January 2027 · 25 seats",
       titleTop: "An international remote job",
       titleBottom: "or your own global business",
-      lead: "Live online training, taught in Spanish. One four-hour class a week for fourteen weeks, and something finished at the end of each one.",
+      lead: "Live online training, taught in Spanish. Four-hour classes at weekends, over seven weeks, and the resources you need at the end of every module.",
       formTitle: "Get the full programme",
       formLead: "Syllabus, dates, schedule and terms. No strings attached.",
       facts: [
         { k: "Format", v: "100% online, live" },
-        { k: "Starts", v: "1 December 2026" },
-        { k: "Pace", v: "One 4-hour class a week" },
+        { k: "Runs", v: "9 Jan → 21 Feb 2027" },
+        { k: "Pace", v: "Two 4-hour classes per weekend" },
         { k: "Price", v: "€2,400 · or 3 × €800" },
       ],
       partnersLabel: "Partners with student benefits",
@@ -344,18 +385,14 @@ export const adCopy = {
         { city: "Lisbon", tz: "Europe/Lisbon" },
         { city: "Bogotá", tz: "America/Bogota" },
         { city: "Mexico City", tz: "America/Mexico_City" },
-      ],
-      stats: [
-        { value: 14, suffix: "", label: "modules" },
-        { value: 56, suffix: " h", label: "of class" },
-        { value: 14, suffix: "", label: "weeks" },
-        { value: 25, suffix: "", label: "seats per group" },
+        { city: "Dubai", tz: "Asia/Dubai" },
+        { city: "New York", tz: "America/New_York" },
       ],
     },
 
     statement: {
-      top: "Remote work is learned",
-      bottom: "by working remotely.",
+      top: "Hands-on training, 100% up to date on Remote Business.",
+      bottom: "Live, online, and at the speed the market actually moves.",
     },
 
     live: {
@@ -373,35 +410,35 @@ export const adCopy = {
     pillars: [
       {
         icon: "deliver" as const,
-        title: "You leave with things built",
-        body: "One deliverable per module, marked with your name on it. Not notes.",
+        title: "A leading, up-to-date curriculum",
+        body: "Revised every cohort against what the international remote market asks for today: tax, hiring, applied AI and distributed operations.",
       },
       {
         icon: "group" as const,
-        title: "A group of 25, not a mass course",
-        body: "They know you, ask you and follow you for all 14 weeks.",
+        title: "Hands-on method, taught by working professionals",
+        body: "Live classes with people who work this way every day. Groups of 25, one deliverable per module and marking with your name on it.",
       },
       {
-        icon: "ai" as const,
-        title: "AI inside every module",
-        body: "Prompts, agents and automations applied to your own work.",
+        icon: "globe" as const,
+        title: "Based in Dubai, classroom everywhere",
+        body: "The school operates from the UAE and the programme is 100% online: follow it from any country and any time zone, without moving anywhere.",
       },
       {
         icon: "stack" as const,
-        title: "The tools people really use",
-        body: "The same ones remote teams run on, open on screen.",
+        title: "Strategic tools and platforms",
+        body: "Notion, Slack, Wise, Deel, Zapier and AI models, open on screen during class and built into every module's exercises.",
       },
     ],
 
     outcomes: {
       title: "A shared base, and then your path",
-      coreTag: "Weeks 1 – 7",
+      coreTag: "Modules 01 – 07",
       coreName: "7 core modules",
       coreNote: "The same for everyone",
       takeLabel: "You leave with",
       paths: [
         {
-          tag: "Weeks 8 – 14",
+          tag: "Modules 08 – 14",
           name: "Remote Professional",
           items: [
             {
@@ -415,7 +452,7 @@ export const adCopy = {
           ],
         },
         {
-          tag: "Weeks 8 – 14",
+          tag: "Modules 08 – 14",
           name: "Remote Founder",
           items: [
             {
@@ -448,13 +485,13 @@ export const adCopy = {
         },
         {
           n: "02",
-          when: "Weeks 1 – 7",
+          when: "Weekends 1 – 4",
           title: "You build the base",
           desc: "Tax, tools, AI, legal and remote working habits.",
         },
         {
           n: "03",
-          when: "Weeks 8 – 14",
+          when: "Weekends 4 – 7",
           title: "You build your own thing",
           desc: "With the core done you know which path fits. This is where you produce.",
         },
@@ -473,21 +510,21 @@ export const adCopy = {
 
     program: {
       eyebrow: "The syllabus",
-      title: "Fourteen modules, one a week",
-      lead: "Seven of common core and seven of the specialisation you pick. Each module opens with the framework, moves to the tool on screen and ends with an exercise applied to your own case.",
+      title: "Fourteen modules over seven weekends",
+      lead: "Two modules per weekend: seven of common core and seven of the specialisation you pick. Each opens with the framework, moves to the tool on screen and ends with an exercise applied to your own case.",
       howLabel: "The usual questions",
       how: [
         { icon: "check" as const, k: "Prior level", v: "None: the core starts from zero" },
         { icon: "globe" as const, k: "Language", v: "Classes in Spanish, materials in ES and EN" },
         { icon: "replay" as const, k: "When it ends", v: "A diploma listing the modules passed and the hours" },
         { icon: "chat" as const, k: "Between classes", v: "Team feedback and your group on Slack" },
-        { icon: "clock" as const, k: "Real workload", v: "4 h of class and 2 – 3 h of exercise" },
+        { icon: "clock" as const, k: "Real workload", v: "8 h of class per weekend and 2 – 3 h of exercise" },
       ],
       toolsLabel: "Opened in class, not in an appendix",
       cta: "Get the full syllabus",
       groups: [
         {
-          tag: "Weeks 1 – 7 · Everyone",
+          tag: "Modules 01 – 07 · Everyone",
           name: "Common core · 7 modules",
           modules: [
             { n: "01", title: "Remote mindset and the new global market" },
@@ -500,7 +537,7 @@ export const adCopy = {
           ],
         },
         {
-          tag: "Weeks 8 – 14 · Path 01",
+          tag: "Modules 08 – 14 · Path 01",
           name: "Remote Professional · 7 modules",
           modules: [
             { n: "08", title: "Finding the remote jobs that never get posted" },
@@ -513,7 +550,7 @@ export const adCopy = {
           ],
         },
         {
-          tag: "Weeks 8 – 14 · Path 02",
+          tag: "Modules 08 – 14 · Path 02",
           name: "Remote Founder · 7 modules",
           modules: [
             { n: "08", title: "Remote business design and validation" },
@@ -528,12 +565,35 @@ export const adCopy = {
       ],
     },
 
+    jobs: {
+      eyebrow: "Where it leads",
+      title: "The jobs and the sectors where this gets used",
+      lead: "Two quick maps of the ground: the roles hired most often remotely, and the sectors where businesses get built without an office.",
+      rows: [
+        {
+          label: "Most in-demand remote roles",
+          items: ["Customer Success", "B2B sales and SDR", "Marketing and growth", "Product design", "Software development", "Data and analytics", "Operations and project management", "Technical support", "Recruiting", "Writing and content"],
+        },
+        {
+          label: "Remote business sectors",
+          items: ["SaaS and software", "Consulting and services", "E-commerce and marketplaces", "Online education", "Marketing agencies", "Digital health", "Fintech", "Content and media", "Design and creative", "Automation and AI"],
+        },
+      ],
+    },
+    office: {
+      eyebrow: "Where we are",
+      title: "Based in Dubai, students everywhere",
+      hoursLabel: "Opening hours",
+      hours: "Monday to Friday, 9:00 to 18:00 · GST (UTC+4)",
+      addressLabel: "Address",
+      note: "The school operates from the United Arab Emirates and the programme is 100% online: there is nowhere to travel to.",
+    },
     alumni: {
       title: "Where our students work",
     },
 
     sticky: {
-      note: "The cohort starts on 1 December",
+      note: "The cohort starts on 9 January",
       cta: "Request information",
       units: { d: "d", h: "h", m: "m" },
     },

@@ -141,8 +141,8 @@
   }
 
   &__h2 {
-    font-size: clamp(1.5rem, 4.6vw, 2.25rem);
-    margin-bottom: 1.35rem;
+    font-size: clamp(1.7rem, 5.2vw, 2.6rem);
+    margin-bottom: 1.5rem;
   }
 }
 
@@ -196,17 +196,54 @@
   &-brand {
     display: inline-flex;
     align-items: center;
-    gap: 0.55rem;
+    gap: 0.6rem;
+    flex: none;
     color: #fff;
     text-decoration: none;
 
-    span {
+    &:hover { text-decoration: none; }
+  }
+
+  // Dos líneas: la marca y a qué se dedica. Quien llega desde un anuncio no
+  // nos conoce, y «ACTIVEXREMOTE» a secas no dice que esto sea una escuela.
+  &-lockup {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+
+    strong {
       font-size: 0.75rem;
       font-weight: 700;
       letter-spacing: 0.14em;
     }
-    // Junto al CTA no cabe el wordmark en un móvil estrecho: queda el símbolo.
-    @media (max-width: 379px) { span { display: none; } }
+    em {
+      font-style: normal;
+      font-size: 0.625rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    // Junto al CTA no cabe en un móvil estrecho: queda el símbolo.
+    @media (max-width: 419px) { display: none; }
+  }
+
+  // El curso, en el centro. Es el tercer elemento de la barra y el primero
+  // que se cae: en cuanto no hay sitio, manda el botón.
+  &-course {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: center;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.55);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    @media (max-width: 899px) { display: none; }
   }
 
   &-cta {
@@ -305,7 +342,7 @@
     // En el móvil manda el ancho y punto: el tope por altura dejaba el
     // titular en 27 px en un teléfono alto y estrecho, que para un héroe es
     // letra pequeña.
-    font-size: clamp(1.85rem, 7.2vw, 2.5rem);
+    font-size: clamp(2.05rem, 8.4vw, 2.9rem);
     line-height: 1.05;
     // ⚠︎ Aquí había `max-width: 15ch` fijo. En un móvil eso son ~210 px: el
     // titular caía en una columna estrecha de cuatro líneas contra el borde
@@ -317,7 +354,7 @@
     // titular ceda en un portátil bajo en vez de empujar el formulario fuera
     // de la ventana.
     @media (min-width: 1000px) {
-      font-size: clamp(1.9rem, min(3.4vw, 5.4vh), 3rem);
+      font-size: clamp(2.1rem, min(3.9vw, 6vh), 3.4rem);
       max-width: 20ch;
     }
 
@@ -330,7 +367,7 @@
 
   &-lead {
     max-width: 42ch;
-    font-size: clamp(0.9375rem, min(2.2vw, 2vh), 1.0625rem);
+    font-size: clamp(1.0625rem, min(2.5vw, 2.3vh), 1.1875rem);
     line-height: 1.5;
     color: rgba(255, 255, 255, 0.86);
   }
@@ -395,13 +432,13 @@
   }
   dd {
     margin: 0;
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     font-weight: 600;
-    line-height: 1.25;
+    line-height: 1.3;
     color: #fff;
     font-variant-numeric: tabular-nums;
 
-    @media (min-width: 1000px) { font-size: 0.9375rem; }
+    @media (min-width: 1000px) { font-size: 1rem; }
   }
 }
 
@@ -418,13 +455,13 @@
   @media (min-width: 1200px) { padding: 1.4rem; }
 
   h2 {
-    font-size: 1.0625rem;
-    margin-bottom: 0.2rem;
+    font-size: 1.1875rem;
+    margin-bottom: 0.25rem;
   }
   > p {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     color: var(--ad-body);
-    margin-bottom: 0.85rem;
+    margin-bottom: 0.9rem;
   }
 }
 
@@ -594,46 +631,6 @@
   to { transform: translate3d(-50%, 0, 0); }
 }
 
-// ── Las cuatro cifras ───────────────────────────────────
-.axr-ad__stats-band {
-  border-bottom: 1px solid var(--ad-border);
-  background: #fff;
-}
-
-.axr-ad__stats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  margin: 0 auto;
-  padding-top: 1.5rem;
-  padding-bottom: 1.5rem;
-  list-style: none;
-
-  @media (min-width: 700px) {
-    grid-template-columns: repeat(4, 1fr);
-    padding-top: 1.9rem;
-    padding-bottom: 1.9rem;
-  }
-
-  li { list-style: none; }
-
-  strong {
-    display: block;
-    font-size: clamp(1.75rem, 5.5vw, 2.5rem);
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-    color: var(--ad-ink);
-  }
-  span {
-    display: block;
-    margin-top: 0.3rem;
-    font-size: 0.8125rem;
-    color: var(--ad-body);
-  }
-}
-
 // ── Frase-manifiesto ────────────────────────────────────
 .axr-ad__statement {
   padding: clamp(2rem, 6vw, 3.25rem) 0;
@@ -645,7 +642,7 @@
     margin: 0 auto;
     padding-left: var(--ad-pad-l);
     padding-right: var(--ad-pad-r);
-    font-size: clamp(1.4rem, 4.4vw, 2.3rem);
+    font-size: clamp(1.45rem, 4vw, 2.15rem);
     font-weight: 700;
     letter-spacing: -0.03em;
     line-height: 1.14;
@@ -704,8 +701,8 @@
 
   strong {
     display: block;
-    margin: 0.55rem 0 0.3rem;
-    font-size: 0.9375rem;
+    margin: 0.7rem 0 0.4rem;
+    font-size: 1.0625rem;
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1.25;
@@ -713,8 +710,8 @@
 
   span {
     display: block;
-    font-size: 0.875rem;
-    line-height: 1.45;
+    font-size: 0.9375rem;
+    line-height: 1.5;
     color: var(--ad-body);
   }
 }
@@ -897,8 +894,8 @@
     em {
       display: block;
       font-style: normal;
-      font-size: 0.8125rem;
-      line-height: 1.4;
+      font-size: 0.875rem;
+      line-height: 1.45;
       color: var(--ad-body);
     }
   }
@@ -982,7 +979,7 @@
     margin-bottom: 0.25rem;
   }
   p {
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     color: var(--ad-body);
   }
 }
@@ -1144,7 +1141,7 @@
     display: flex;
     gap: 0.7rem;
     align-items: baseline;
-    font-size: 0.9375rem;
+    font-size: 1rem;
     color: var(--ad-body);
     list-style: none;
 
@@ -2504,5 +2501,145 @@
     font-weight: 500;
     line-height: 1.35;
     color: var(--ad-ink);
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  Empleos y sectores
+//
+//  Dos tiras que se arrastran con el dedo. El carrusel es `scroll-snap`, que
+//  lo resuelve el navegador: cero JavaScript, y con teclado y lector de
+//  pantalla funciona sin que haya que programar nada.
+//
+//  Las tiras se salen del contenedor por la derecha a propósito. El corte es
+//  lo que dice que hay más y que se puede arrastrar; una fila que termina
+//  limpia en el margen parece una lista completa.
+// ══════════════════════════════════════════════════════════
+.axr-ad__jobs {
+  background: #fff;
+  border-top: 1px solid var(--ad-border);
+
+  &-head {
+    max-width: 60ch;
+    margin-bottom: 1.75rem;
+
+    .axr-ad__h2 { margin: 0.55rem 0 0.7rem; }
+    p { color: var(--ad-body); }
+  }
+}
+
+.axr-ad__slide {
+  & + & { margin-top: 1.5rem; }
+
+  &-label {
+    display: block;
+    margin-bottom: 0.7rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--ad-muted);
+  }
+
+  &-track {
+    display: flex;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0.15rem var(--ad-pad-r) 0.6rem var(--ad-pad-l);
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    // La barra de scroll horizontal en un carrusel es ruido: el corte de la
+    // derecha ya dice que hay más.
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+
+    // Centrada con el resto de la página, pero sin cortar por la izquierda.
+    @media (min-width: calc(1180px + 4rem)) {
+      padding-left: max(var(--ad-pad-l), calc((100vw - var(--ad-max)) / 2));
+    }
+
+    li {
+      flex: none;
+      scroll-snap-align: start;
+      padding: 0.85rem 1.15rem;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--ad-ink);
+      background: var(--ad-soft);
+      border: 1px solid var(--ad-border);
+      border-radius: var(--ad-radius-md);
+      transition: border-color 0.2s ease, transform 0.2s ease;
+
+      @media (hover: hover) {
+        &:hover { border-color: var(--ad-accent); transform: translateY(-2px); }
+      }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  La sede
+//
+//  Sin mapa incrustado: un iframe de Google trae scripts de terceros, obliga
+//  a pedir consentimiento de cookies y frena la página justo antes del
+//  formulario, que es el peor sitio posible para frenarla. La dirección
+//  escrita contesta lo mismo y se puede pulsar para abrirla en el mapa que
+//  cada uno tenga instalado.
+// ══════════════════════════════════════════════════════════
+.axr-ad__office {
+  background: var(--ad-soft);
+  border-block: 1px solid var(--ad-border);
+
+  &-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.35rem;
+
+    @media (min-width: 860px) {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+      gap: 2.5rem;
+      align-items: center;
+    }
+  }
+
+  &-text {
+    .axr-ad__h2 { margin: 0.55rem 0 0.7rem; }
+    p { color: var(--ad-body); max-width: 46ch; }
+  }
+
+  &-card {
+    background: #fff;
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius-md);
+    padding: 1.35rem;
+
+    dl { margin: 0; display: grid; gap: 1rem; }
+
+    dt {
+      font-size: 0.625rem;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: var(--ad-accent);
+      margin-bottom: 0.25rem;
+    }
+
+    dd {
+      margin: 0;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      color: var(--ad-ink);
+    }
+
+    a {
+      color: var(--ad-ink);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-color: var(--ad-border);
+
+      &:hover { text-decoration-color: var(--ad-accent); }
+    }
   }
 }

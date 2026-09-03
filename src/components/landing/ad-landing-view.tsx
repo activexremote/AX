@@ -9,11 +9,11 @@ import { TOOL_ICONS } from "@/components/landing/tool-icons";
 import { AdClocks, AdFx, AdHeroVideo, AdLiveVideo, AdStickyBar } from "@/components/landing/ad-fx";
 import { PLACEHOLDER_LOGOS, PlaceholderLogos } from "@/components/landing/ad-logos";
 import { adCopy } from "@/app/trabajo-remoto/copy";
-import { STACK_TOOLS, WHATSAPP_NUMBER } from "@/app/trabajo-remoto/contact";
+import { COHORT_START, STACK_TOOLS, WHATSAPP_NUMBER } from "@/app/trabajo-remoto/contact";
 import { landingCopy } from "@/app/bienvenida/copy";
-import { COHORT_START } from "@/app/bienvenida/cohort";
 import { DEMO_FACULTY, FACULTY } from "@/app/bienvenida/faculty";
 import { PARTNERS, partnerLogo } from "@/app/bienvenida/partners";
+import { ENTITY } from "@/app/legal/entity";
 import { TOOLS, type Tool } from "@/app/bienvenida/tools";
 import { getLocale } from "@/lib/i18n/server";
 import "@/app/trabajo-remoto/ad-landing.scss";
@@ -100,11 +100,11 @@ const PILLAR_PATHS = {
       <path d="M17.5 14.4A5.5 5.5 0 0 1 20.5 19" />
     </>
   ),
-  // Chispa de IA.
-  ai: (
+  // Sede y alcance: un globo con su meridiano.
+  globe: (
     <>
-      <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" />
-      <path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z" />
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3c2.6 2.7 2.6 15.3 0 18-2.6-2.7-2.6-15.3 0-18" />
     </>
   ),
   // Capas del stack.
@@ -254,10 +254,17 @@ export async function AdLandingView() {
       {/* ── Barra ─────────────────────────────────────── */}
       <header className="axr-ad__bar">
         <div className="axr-ad__bar-inner">
+          {/* Dos líneas: quiénes somos y qué se está mirando. Con la marca
+              sola, quien llega desde un anuncio no sabe si esto es una
+              escuela, una consultora o una bolsa de empleo. */}
           <LocaleLink href="/bienvenida" className="axr-ad__bar-brand">
-            <BrandMark size={18} />
-            <span>ACTIVEXREMOTE</span>
+            <BrandMark size={20} />
+            <span className="axr-ad__bar-lockup">
+              <strong>ACTIVEXREMOTE</strong>
+              <em>{c.nav.school}</em>
+            </span>
           </LocaleLink>
+          <span className="axr-ad__bar-course">{c.nav.course}</span>
           <a href="#solicitar" className="axr-ad__bar-cta axr-ad__buzz">
             {c.nav.cta}
           </a>
@@ -357,23 +364,6 @@ export async function AdLandingView() {
         </div>
       </section>
 
-      {/* ── Las cuatro cifras ─────────────────────────── */}
-      {/* Vivían en el héroe y eran lo que impedía que cupiera en un portátil.
-          Aquí siguen siendo lo primero que se ve al empezar a bajar. */}
-      <section className="axr-ad__stats-band">
-        <ul className="axr-ad__stats axr-ad__wrap">
-          {c.hero.stats.map((s) => (
-            <li key={s.label} data-reveal>
-              <strong data-count={s.value} data-suffix={s.suffix}>
-                {s.value}
-                {s.suffix}
-              </strong>
-              <span>{s.label}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
       {/* ── La frase ──────────────────────────────────── */}
       <section className="axr-ad__statement">
         <p data-reveal>
@@ -433,6 +423,33 @@ export async function AdLandingView() {
 
       </section>
 
+      {/* ── Empleos y sectores ────────────────────────── */}
+      {/* Dos tiras que se arrastran con el dedo. `scroll-snap` lo resuelve el
+          navegador, así que un carrusel no cuesta ni una línea de JavaScript.
+          Sin cifras de sueldo: ver la cabecera de este bloque en copy.ts. */}
+      <section className="axr-ad__jobs axr-ad__section axr-ad__defer" style={{ containIntrinsicSize: "auto 420px" }}>
+        <div className="axr-ad__wrap">
+          <div className="axr-ad__jobs-head" data-reveal>
+            <span className="axr-ad__eyebrow">{c.jobs.eyebrow}</span>
+            <h2 className="axr-ad__h2">{c.jobs.title}</h2>
+            <p>{c.jobs.lead}</p>
+          </div>
+        </div>
+
+        {c.jobs.rows.map((row, i) => (
+          <div key={row.label} className="axr-ad__slide" data-reveal style={{ "--d": `${i * 90}ms` } as React.CSSProperties}>
+            <span className="axr-ad__slide-label axr-ad__wrap">{row.label}</span>
+            {/* La tira sale del contenedor por la derecha a propósito: el
+                corte es lo que dice que se puede arrastrar. */}
+            <ul className="axr-ad__slide-track">
+              {row.items.map((it) => (
+                <li key={it}>{it}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
+
       {/* ── El diagrama de salidas ────────────────────── */}
       <section className="axr-ad__fork-band axr-ad__section axr-ad__defer" style={{ containIntrinsicSize: "auto 520px" }}>
         <div className="axr-ad__wrap axr-ad__fork" data-reveal>
@@ -471,35 +488,6 @@ export async function AdLandingView() {
               </article>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* ── Cronograma ────────────────────────────────── */}
-      {/* Cinco hitos sobre una línea que se dibuja al entrar. Es la forma más
-          corta de contestar "¿en qué me estoy metiendo?" sin un párrafo. */}
-      <section className="axr-ad__timeline axr-ad__section axr-ad__defer" style={{ containIntrinsicSize: "auto 320px" }}>
-        <div className="axr-ad__wrap">
-          <h2 className="axr-ad__h2" data-reveal>
-            {c.timeline.title}
-          </h2>
-          {/* Cada hito lleva su propio `data-reveal`: antes lo llevaba la
-              lista entera y los cinco aparecían de golpe, que es exactamente
-              lo mismo que no animar nada. Ahora entran uno detrás de otro,
-              detrás del trazo, y el orden de lectura se lee solo. */}
-          <ol className="axr-ad__rail" data-reveal>
-            {c.timeline.items.map((t, i) => (
-              <li
-                key={t.n}
-                data-reveal
-                style={{ "--d": `${300 + i * 110}ms` } as React.CSSProperties}
-              >
-                <span className="axr-ad__rail-node" aria-hidden />
-                <em>{t.when}</em>
-                <strong>{t.title}</strong>
-                <p>{t.desc}</p>
-              </li>
-            ))}
-          </ol>
         </div>
       </section>
 
@@ -567,6 +555,74 @@ export async function AdLandingView() {
               {c.program.cta}
               <span aria-hidden>→</span>
             </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Cronograma ────────────────────────────────── */}
+      {/* Cinco hitos sobre una línea que se dibuja al entrar. Es la forma más
+          corta de contestar "¿en qué me estoy metiendo?" sin un párrafo. */}
+      <section className="axr-ad__timeline axr-ad__section axr-ad__defer" style={{ containIntrinsicSize: "auto 320px" }}>
+        <div className="axr-ad__wrap">
+          <h2 className="axr-ad__h2" data-reveal>
+            {c.timeline.title}
+          </h2>
+          {/* Cada hito lleva su propio `data-reveal`: antes lo llevaba la
+              lista entera y los cinco aparecían de golpe, que es exactamente
+              lo mismo que no animar nada. Ahora entran uno detrás de otro,
+              detrás del trazo, y el orden de lectura se lee solo. */}
+          <ol className="axr-ad__rail" data-reveal>
+            {c.timeline.items.map((t, i) => (
+              <li
+                key={t.n}
+                data-reveal
+                style={{ "--d": `${300 + i * 110}ms` } as React.CSSProperties}
+              >
+                <span className="axr-ad__rail-node" aria-hidden />
+                <em>{t.when}</em>
+                <strong>{t.title}</strong>
+                <p>{t.desc}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* ── La sede ───────────────────────────────────── */}
+      {/* Antes del formulario a propósito: quien va a dejar sus datos quiere
+          saber a quién se los deja y cuándo le cogen el teléfono.
+
+          Sin mapa incrustado: un iframe de Google carga scripts de terceros,
+          pide consentimiento de cookies y frena la página. Con la dirección y
+          el horario escritos se contesta lo mismo y se puede pulsar para
+          abrirlo en el mapa que cada uno tenga. */}
+      <section className="axr-ad__office axr-ad__section axr-ad__defer" style={{ containIntrinsicSize: "auto 320px" }}>
+        <div className="axr-ad__wrap axr-ad__office-grid" data-reveal>
+          <div className="axr-ad__office-text">
+            <span className="axr-ad__eyebrow">{c.office.eyebrow}</span>
+            <h2 className="axr-ad__h2">{c.office.title}</h2>
+            <p>{c.office.note}</p>
+          </div>
+
+          <div className="axr-ad__office-card" data-spot>
+            <dl>
+              <div>
+                <dt>{c.office.addressLabel}</dt>
+                <dd>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ENTITY.address)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {ENTITY.address}
+                  </a>
+                </dd>
+              </div>
+              <div>
+                <dt>{c.office.hoursLabel}</dt>
+                <dd>{c.office.hours}</dd>
+              </div>
+            </dl>
           </div>
         </div>
       </section>

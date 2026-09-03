@@ -12,6 +12,19 @@
 // ══════════════════════════════════════════════════════════
 export const WHATSAPP_NUMBER = "34600000000";
 
+// ══════════════════════════════════════════════════════════
+//  La convocatoria de ESTA landing
+//
+//  Propia, no la de bienvenida/cohort.ts. La portada vende la convocatoria de
+//  diciembre con su formato de una clase por semana; ésta vende la de enero,
+//  que va en fines de semana. Tocar la constante compartida habría cambiado
+//  la cuenta atrás y las fechas de la portada de rebote.
+//
+//  Siete fines de semana, sábado y domingo, cuatro horas cada día: 14 módulos
+//  y 56 h lectivas. Del 9 de enero al 21 de febrero de 2027.
+// ══════════════════════════════════════════════════════════
+export const COHORT_START = "2027-01-09T10:00:00+01:00";
+
 /**
  * El stack que se enseña en la página, con su logotipo.
  *
