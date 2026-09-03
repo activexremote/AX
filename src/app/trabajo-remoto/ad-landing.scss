@@ -2714,9 +2714,10 @@
   &::before { background: #fff; }
 }
 
-// ── Las cifras ──────────────────────────────────────────
-// En rejilla y no en tira: se comparan de un vistazo y no hay nada escondido
-// a la derecha esperando a que alguien adivine que aquello se arrastra.
+// ── La tabla de sueldos ─────────────────────────────────
+// Cuatro puestos por tres mercados. En tabla y no en tarjetas porque son
+// datos tabulares: así se comparan por columna de un vistazo y un lector de
+// pantalla los anuncia con su fila y su encabezado.
 .axr-ad__pay {
   &-label {
     display: block;
@@ -2728,73 +2729,72 @@
     color: rgba(255, 255, 255, 0.6);
   }
 
-  &-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.7rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-
-    @media (min-width: 520px) { grid-template-columns: repeat(2, 1fr); }
-    @media (min-width: 1080px) { grid-template-columns: repeat(5, 1fr); gap: 0.85rem; }
-
-    li {
-      list-style: none;
-      // Vidrio, no blanco opaco: la ilustración tiene que seguir viéndose
-      // detrás o la sección vuelve a ser una tabla sobre una foto.
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      border-radius: var(--ad-radius-md);
-      transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
-
-      @media (hover: hover) {
-        &:hover {
-          background: rgba(255, 255, 255, 0.16);
-          border-color: rgba(255, 255, 255, 0.45);
-          transform: translateY(-3px);
-        }
-      }
-    }
-
-    a {
-      display: block;
-      padding: 1rem 1.1rem;
-      color: inherit;
-      text-decoration: none;
-      &:hover { text-decoration: none; }
-    }
-
-    strong {
-      display: block;
-      font-size: clamp(1.0625rem, 2.6vw, 1.1875rem);
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      line-height: 1.15;
-      font-variant-numeric: tabular-nums;
-      color: #fff;
-    }
-
-    span {
-      display: block;
-      margin-top: 0.3rem;
-      font-size: 0.8125rem;
-      font-weight: 500;
-      line-height: 1.35;
-      color: rgba(255, 255, 255, 0.72);
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      text-decoration-color: rgba(255, 255, 255, 0.3);
-    }
-
-    li:hover span { text-decoration-color: rgba(255, 255, 255, 0.7); }
+  // En un móvil cuatro columnas no caben. Se arrastra, y el degradado del
+  // borde derecho es lo que dice que hay más.
+  &-scroll {
+    position: relative;
+    overflow-x: auto;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
   }
 
-  // La procedencia y la fecha. Sin fecha, un rango de sueldos deja de ser
-  // comprobable en cuanto pasa un año.
+  &-table {
+    width: 100%;
+    min-width: 520px;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+
+    th, td {
+      padding: 0.7rem 0.9rem;
+      text-align: right;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    thead th {
+      font-size: 0.625rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.55);
+      border-bottom-color: rgba(255, 255, 255, 0.28);
+      white-space: nowrap;
+    }
+
+    // El puesto manda a la izquierda; las cifras se alinean a la derecha,
+    // que es como se comparan números.
+    th[scope="row"] {
+      text-align: left;
+      padding-left: 0;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: #fff;
+    }
+    thead th:first-child { text-align: left; padding-left: 0; }
+    tbody tr:last-child th,
+    tbody tr:last-child td { border-bottom: 0; }
+
+    td a {
+      font-size: clamp(0.9375rem, 2.2vw, 1.0625rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fff;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-color: rgba(255, 255, 255, 0.22);
+
+      &:hover { text-decoration-color: rgba(255, 255, 255, 0.8); }
+    }
+
+    // La última columna es el argumento: se destaca sin decir nada.
+    td:last-child a { color: #a5f3c4; }
+  }
+
+  // La procedencia y la fecha. Sin fecha, un sueldo deja de ser comprobable
+  // en cuanto pasa un año.
   &-note {
     margin-top: 0.9rem;
-    max-width: 78ch;
+    max-width: 82ch;
     font-size: 0.75rem;
     line-height: 1.55;
     color: rgba(255, 255, 255, 0.6);
@@ -2802,15 +2802,18 @@
 }
 
 // ── Los sectores ────────────────────────────────────────
+// Treinta, y en fichas pequeñas. Con diez y a tamaño de botón ocupaban media
+// pantalla para decir menos: aquí el mensaje es la cantidad, así que la
+// ficha se encoge y la lista se alarga.
 .axr-ad__sectors {
-  margin-top: clamp(1.75rem, 4vw, 2.5rem);
-  padding-top: clamp(1.5rem, 3.5vw, 2rem);
+  margin-top: clamp(1.5rem, 3.5vw, 2rem);
+  padding-top: clamp(1.25rem, 3vw, 1.6rem);
   border-top: 1px solid rgba(255, 255, 255, 0.16);
 
   ul {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.45rem;
+    gap: 0.3rem;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -2818,12 +2821,13 @@
 
   li {
     list-style: none;
-    padding: 0.4rem 0.85rem;
-    font-size: 0.875rem;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.75rem;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.88);
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 999px;
   }
 }

@@ -466,18 +466,40 @@ export async function AdLandingView() {
         </div>
 
         <div className="axr-ad__wrap axr-ad__jobs-inner">
+          {/* Una tabla de verdad, no una rejilla de divs: son datos
+              tabulares y esto es lo que hace que un lector de pantalla los
+              anuncie con su fila y su columna. Cada cifra enlaza a la ficha
+              de la que sale. */}
           <div className="axr-ad__pay" data-reveal>
             <span className="axr-ad__pay-label">{c.jobs.salaryLabel}</span>
-            <ul className="axr-ad__pay-grid">
-              {c.jobs.roles.map((r, i) => (
-                <li key={r.name} data-reveal style={{ "--d": `${120 + i * 80}ms` } as React.CSSProperties}>
-                  <a href={r.url} target="_blank" rel="noopener nofollow">
-                    <strong>{r.range}</strong>
-                    <span>{r.name}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <div className="axr-ad__pay-scroll">
+              <table className="axr-ad__pay-table">
+                <thead>
+                  <tr>
+                    <th scope="col">{c.jobs.eyebrow}</th>
+                    {c.jobs.markets.map((m) => (
+                      <th key={m} scope="col">
+                        {m}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {c.jobs.roles.map((r) => (
+                    <tr key={r.name}>
+                      <th scope="row">{r.name}</th>
+                      {r.pay.map((cell, i) => (
+                        <td key={c.jobs.markets[i]}>
+                          <a href={cell.url} target="_blank" rel="noopener nofollow">
+                            {cell.v}
+                          </a>
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <p className="axr-ad__pay-note">{c.jobs.salaryNote}</p>
           </div>
 
@@ -485,7 +507,7 @@ export async function AdLandingView() {
             <span className="axr-ad__pay-label">{c.jobs.sectorsLabel}</span>
             <ul>
               {c.jobs.sectors.map((it, i) => (
-                <li key={it} style={{ "--d": `${i * 45}ms` } as React.CSSProperties}>
+                <li key={it} style={{ "--d": `${i * 18}ms` } as React.CSSProperties}>
                   {it}
                 </li>
               ))}

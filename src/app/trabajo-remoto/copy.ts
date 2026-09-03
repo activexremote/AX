@@ -302,38 +302,81 @@ export const adCopy = {
     // ══════════════════════════════════════════════════
     //  Sueldos: dato real o ningún dato
     //
-    //  Las cinco cifras son el RANGO TÍPICO de Glassdoor España (percentil 25
-    //  al 75), consultado en septiembre de 2026, y cada puesto enlaza a su
-    //  ficha para que cualquiera pueda comprobarlo. Ésa es la diferencia
+    //  Doce cifras: cuatro puestos por tres mercados. Todas son la media
+    //  publicada por Glassdoor en el sitio de cada país, consultada en
+    //  septiembre de 2026, y CADA UNA enlaza a su ficha. Ésa es la diferencia
     //  entre un dato y un adorno: que se puede ir a mirar.
     //
-    //  Sólo entran los cinco puestos de los que hay rango NACIONAL publicado.
-    //  Hay más perfiles con datos, pero unos con rango y otros con media, o
-    //  unos de España y otros de una ciudad, es una tabla que compara cosas
-    //  distintas y engaña sin querer.
+    //  Sólo cuatro puestos, y son los cuatro de los que hay media nacional
+    //  publicada en los tres países. Customer Success se quedó fuera: en
+    //  España la única cifra que encontré cuelga de una página con el título
+    //  descolocado, y citar algo que no inspira confianza es peor que dejar
+    //  una fila menos.
     //
-    //  ⚠︎ Son sueldos de referencia en España, no promesas de lo que va a
-    //  cobrar nadie al salir del programa, y el texto lo dice. Prometer un
-    //  sueldo es lo único que no se puede hacer aquí.
+    //  ⚠︎ Las cifras van en moneda local y SIN convertir. Convertirlas a euros
+    //  sugeriría que 151.000 $ en Estados Unidos y 151.000 € en España son lo
+    //  mismo, y entre impuestos, sanidad y coste de la vivienda no se parecen.
+    //  La comparación honesta es «así de distinto paga cada mercado», no «vas
+    //  a ganar esto».
     //
-    //  Al revisar: vuelve a mirar las fichas y actualiza `checked`. Un rango
-    //  de hace dos años con fecha visible es honesto; sin fecha, no.
+    //  ⚠︎ Son sueldos de mercado, no promesas. El texto lo dice: prometer un
+    //  sueldo es lo único que esta página no puede hacer.
+    //
+    //  Al revisar: vuelve a mirar las doce fichas y actualiza la fecha. Un
+    //  dato de hace dos años con la fecha puesta es honesto; sin fecha, no.
     // ══════════════════════════════════════════════════
     jobs: {
       eyebrow: "A dónde lleva",
-      title: "Los perfiles, los sectores y lo que se paga",
-      lead: "Perfiles habituales en equipos distribuidos con su sueldo de referencia en España, y los sectores donde se monta negocio sin oficina. Son datos públicos de Glassdoor, no una previsión nuestra: cada puesto enlaza a su ficha.",
-      salaryLabel: "Sueldo bruto anual en España · rango típico",
-      salaryNote: "Rango del percentil 25 al 75 en Glassdoor España, consultado en septiembre de 2026. Es la referencia del mercado español para cada puesto, no una estimación de lo que cobrarás al terminar el curso.",
+      title: "Lo que paga cada mercado por el mismo puesto",
+      lead: "La misma silla, tres países. Es el argumento entero del trabajo remoto internacional en una tabla, y no lo decimos nosotros: son medias públicas de Glassdoor y cada cifra enlaza a su ficha.",
+      salaryLabel: "Sueldo medio anual, en moneda local",
+      markets: ["España", "Reino Unido", "EE. UU."],
       roles: [
-        { name: "Product Marketing Manager", range: "35.000 – 61.750 €", url: "https://www.glassdoor.es/Sueldos/product-marketing-manager-sueldo-SRCH_KO0,25.htm" },
-        { name: "Product Manager", range: "32.000 – 59.000 €", url: "https://www.glassdoor.es/Sueldos/product-manager-sueldo-SRCH_KO0,15.htm" },
-        { name: "Sales Development Representative", range: "25.400 – 45.000 €", url: "https://www.glassdoor.es/Sueldos/sales-development-representative-sueldo-SRCH_KO0,32.htm" },
-        { name: "Analista de datos", range: "23.600 – 39.000 €", url: "https://www.glassdoor.es/Sueldos/analista-de-datos-sueldo-SRCH_KO0,17.htm" },
-        { name: "Customer Success Specialist", range: "24.000 – 38.000 €", url: "https://www.glassdoor.es/Sueldos/customer-success-specialist-sueldo-SRCH_KO0,27.htm" },
+        {
+          name: "Product Manager",
+          pay: [
+            { v: "45.000 €", url: "https://www.glassdoor.es/Sueldos/product-manager-sueldo-SRCH_KO0,15.htm" },
+            { v: "£63.126", url: "https://www.glassdoor.co.uk/Salaries/product-manager-salary-SRCH_KO0,15.htm" },
+            { v: "$151.317", url: "https://www.glassdoor.com/Salaries/product-manager-salary-SRCH_KO0,15.htm" },
+          ],
+        },
+        {
+          name: "Product Marketing Manager",
+          pay: [
+            { v: "48.000 €", url: "https://www.glassdoor.es/Sueldos/product-marketing-manager-sueldo-SRCH_KO0,25.htm" },
+            { v: "£63.157", url: "https://www.glassdoor.co.uk/Salaries/product-marketing-manager-salary-SRCH_KO0,25.htm" },
+            { v: "$141.190", url: "https://www.glassdoor.com/Salaries/product-marketing-manager-salary-SRCH_KO0,25.htm" },
+          ],
+        },
+        {
+          name: "Sales Development Representative",
+          pay: [
+            { v: "33.000 €", url: "https://www.glassdoor.es/Sueldos/sales-development-representative-sueldo-SRCH_KO0,32.htm" },
+            { v: "£39.680", url: "https://www.glassdoor.co.uk/Salaries/sales-development-representative-salary-SRCH_KO0,32.htm" },
+            { v: "$103.886", url: "https://www.glassdoor.com/Salaries/sales-development-representative-salary-SRCH_KO0,32.htm" },
+          ],
+        },
+        {
+          name: "Analista de datos",
+          pay: [
+            { v: "29.200 €", url: "https://www.glassdoor.es/Sueldos/analista-de-datos-sueldo-SRCH_KO0,17.htm" },
+            { v: "£37.641", url: "https://www.glassdoor.co.uk/Salaries/data-analyst-salary-SRCH_KO0,12.htm" },
+            { v: "$93.535", url: "https://www.glassdoor.com/Salaries/data-analyst-salary-SRCH_KO0,12.htm" },
+          ],
+        },
       ],
-      sectorsLabel: "Sectores de remote business",
-      sectors: ["SaaS y software", "Consultoría y servicios", "E-commerce y marketplaces", "Formación online", "Agencias de marketing", "Salud digital", "Fintech", "Contenido y medios", "Diseño y creatividad", "Automatización e IA"],
+      salaryNote: "Medias publicadas por Glassdoor en cada país, consultadas en septiembre de 2026. Van en moneda local y sin convertir: los impuestos y el coste de vida de cada sitio no son comparables, así que la tabla dice cuánto paga cada mercado, no cuánto vas a ganar tú al terminar el curso.",
+      sectorsLabel: "Sectores donde se monta negocio remoto",
+      sectors: [
+        "SaaS y software", "Consultoría", "E-commerce", "Marketplaces", "Formación online",
+        "Agencias de marketing", "Salud digital", "Fintech", "Insurtech", "Legaltech",
+        "HR tech y reclutamiento", "Contenido y medios", "Diseño y creatividad", "Vídeo y audio",
+        "Automatización e IA", "Ciberseguridad", "Datos y analítica", "Desarrollo a medida",
+        "No-code", "Traducción y localización", "Turismo y viajes", "Inmobiliaria",
+        "Logística", "Energía y sostenibilidad", "Deporte y bienestar", "Gaming",
+        "Comunidades y membresías", "Coaching y mentoría", "Contabilidad y fiscalidad",
+        "Comercio internacional",
+      ],
     },
     // La sede, justo antes del formulario: quien va a dejar sus datos quiere
     // saber a quién se los deja y cuándo le van a coger el teléfono.
@@ -601,19 +644,56 @@ export const adCopy = {
 
     jobs: {
       eyebrow: "Where it leads",
-      title: "The roles, the sectors and what they pay",
-      lead: "Roles common in distributed teams with their reference salary in Spain, and the sectors where businesses get built without an office. Public Glassdoor data, not a forecast of ours: every role links to its page.",
-      salaryLabel: "Gross annual salary in Spain · typical range",
-      salaryNote: "25th-to-75th percentile range on Glassdoor Spain, checked in September 2026. It is the Spanish market reference for each role, not an estimate of what you will earn after the course.",
+      title: "What each market pays for the same job",
+      lead: "The same chair, three countries. That is the whole argument for international remote work in one table, and it is not us saying it: these are public Glassdoor averages and every figure links to its page.",
+      salaryLabel: "Average annual salary, in local currency",
+      markets: ["Spain", "United Kingdom", "United States"],
       roles: [
-        { name: "Product Marketing Manager", range: "€35,000 – 61,750", url: "https://www.glassdoor.es/Sueldos/product-marketing-manager-sueldo-SRCH_KO0,25.htm" },
-        { name: "Product Manager", range: "€32,000 – 59,000", url: "https://www.glassdoor.es/Sueldos/product-manager-sueldo-SRCH_KO0,15.htm" },
-        { name: "Sales Development Representative", range: "€25,400 – 45,000", url: "https://www.glassdoor.es/Sueldos/sales-development-representative-sueldo-SRCH_KO0,32.htm" },
-        { name: "Data analyst", range: "€23,600 – 39,000", url: "https://www.glassdoor.es/Sueldos/analista-de-datos-sueldo-SRCH_KO0,17.htm" },
-        { name: "Customer Success Specialist", range: "€24,000 – 38,000", url: "https://www.glassdoor.es/Sueldos/customer-success-specialist-sueldo-SRCH_KO0,27.htm" },
+        {
+          name: "Product Manager",
+          pay: [
+            { v: "€45,000", url: "https://www.glassdoor.es/Sueldos/product-manager-sueldo-SRCH_KO0,15.htm" },
+            { v: "£63,126", url: "https://www.glassdoor.co.uk/Salaries/product-manager-salary-SRCH_KO0,15.htm" },
+            { v: "$151,317", url: "https://www.glassdoor.com/Salaries/product-manager-salary-SRCH_KO0,15.htm" },
+          ],
+        },
+        {
+          name: "Product Marketing Manager",
+          pay: [
+            { v: "€48,000", url: "https://www.glassdoor.es/Sueldos/product-marketing-manager-sueldo-SRCH_KO0,25.htm" },
+            { v: "£63,157", url: "https://www.glassdoor.co.uk/Salaries/product-marketing-manager-salary-SRCH_KO0,25.htm" },
+            { v: "$141,190", url: "https://www.glassdoor.com/Salaries/product-marketing-manager-salary-SRCH_KO0,25.htm" },
+          ],
+        },
+        {
+          name: "Sales Development Representative",
+          pay: [
+            { v: "€33,000", url: "https://www.glassdoor.es/Sueldos/sales-development-representative-sueldo-SRCH_KO0,32.htm" },
+            { v: "£39,680", url: "https://www.glassdoor.co.uk/Salaries/sales-development-representative-salary-SRCH_KO0,32.htm" },
+            { v: "$103,886", url: "https://www.glassdoor.com/Salaries/sales-development-representative-salary-SRCH_KO0,32.htm" },
+          ],
+        },
+        {
+          name: "Data analyst",
+          pay: [
+            { v: "€29,200", url: "https://www.glassdoor.es/Sueldos/analista-de-datos-sueldo-SRCH_KO0,17.htm" },
+            { v: "£37,641", url: "https://www.glassdoor.co.uk/Salaries/data-analyst-salary-SRCH_KO0,12.htm" },
+            { v: "$93,535", url: "https://www.glassdoor.com/Salaries/data-analyst-salary-SRCH_KO0,12.htm" },
+          ],
+        },
       ],
-      sectorsLabel: "Remote business sectors",
-      sectors: ["SaaS and software", "Consulting and services", "E-commerce and marketplaces", "Online education", "Marketing agencies", "Digital health", "Fintech", "Content and media", "Design and creative", "Automation and AI"],
+      salaryNote: "Averages published by Glassdoor in each country, checked in September 2026. They are in local currency and unconverted: tax and cost of living are not comparable between these places, so the table says what each market pays, not what you will earn once the course ends.",
+      sectorsLabel: "Sectors where remote businesses get built",
+      sectors: [
+        "SaaS and software", "Consulting", "E-commerce", "Marketplaces", "Online education",
+        "Marketing agencies", "Digital health", "Fintech", "Insurtech", "Legaltech",
+        "HR tech and recruiting", "Content and media", "Design and creative", "Video and audio",
+        "Automation and AI", "Cybersecurity", "Data and analytics", "Custom development",
+        "No-code", "Translation and localisation", "Travel and tourism", "Real estate",
+        "Logistics", "Energy and sustainability", "Sport and wellbeing", "Gaming",
+        "Communities and memberships", "Coaching and mentoring", "Accounting and tax",
+        "International trade",
+      ],
     },
     office: {
       eyebrow: "Where we are",
