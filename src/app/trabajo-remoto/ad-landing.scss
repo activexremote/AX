@@ -2838,11 +2838,15 @@
   // Nota al pie de verdad: pequeña y apagada. A 0,75rem y en 82 caracteres
   // ocupaba tres renglones anchos y pesaba tanto como la tabla que anota.
   &-note {
-    margin-top: 0.7rem;
-    max-width: 68ch;
-    font-size: 0.6875rem;
-    line-height: 1.5;
-    color: rgba(255, 255, 255, 0.5);
+    margin-top: 0.6rem;
+    max-width: 72ch;
+    // 10 px. Es el suelo que defendería: por debajo, un texto de dos líneas
+    // sobre fondo oscuro deja de leerse cómodamente, y esta nota es
+    // precisamente la que sostiene que las cifras de arriba son ciertas.
+    font-size: 0.625rem;
+    line-height: 1.45;
+    letter-spacing: 0.005em;
+    color: rgba(255, 255, 255, 0.42);
 
     a {
       color: rgba(255, 255, 255, 0.72);
