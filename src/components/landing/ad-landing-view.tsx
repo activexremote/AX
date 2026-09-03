@@ -506,7 +506,16 @@ export async function AdLandingView() {
                 </tbody>
               </table>
             </div>
-            <p className="axr-ad__pay-note">{c.jobs.salaryNote}</p>
+            <p className="axr-ad__pay-note">
+              {c.jobs.salaryNote.before}
+              {/* `nofollow`: es una cita de la fuente, no una recomendación,
+                  y no tenemos por qué pasarle autoridad de enlace a Glassdoor
+                  desde una página de captación. */}
+              <a href={c.jobs.salaryNote.url} target="_blank" rel="noopener nofollow">
+                {c.jobs.salaryNote.link}
+              </a>
+              {c.jobs.salaryNote.after}
+            </p>
           </div>
 
           <div className="axr-ad__sectors" data-reveal>

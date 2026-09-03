@@ -368,7 +368,16 @@ export const adCopy = {
           ],
         },
       ],
-      salaryNote: "Medias publicadas por Glassdoor en cada país, consultadas en septiembre de 2026. Van en moneda local y sin convertir: los impuestos y el coste de vida de cada sitio no son comparables, así que la tabla dice cuánto paga cada mercado, no cuánto vas a ganar tú al terminar el curso.",
+      // Partida en tres para poder enlazar «Glassdoor» sin meter HTML en la
+      // copy. Y recortada a la mitad: es una nota al pie, no un párrafo.
+      // Lo que no se puede quitar son las dos salvedades —la fecha y que no
+      // es una promesa de sueldo—, que es justo por lo que la nota existe.
+      salaryNote: {
+        before: "Medias de ",
+        link: "Glassdoor",
+        url: "https://www.glassdoor.es/Sueldos/index.htm",
+        after: " en cada país, septiembre de 2026. En moneda local y sin convertir: dicen cuánto paga cada mercado, no cuánto vas a ganar tú.",
+      },
       sectorsLabel: "Sectores donde se monta negocio remoto",
       sectors: [
         "SaaS y software", "Consultoría", "E-commerce", "Marketplaces", "Formación online",
@@ -685,7 +694,12 @@ export const adCopy = {
           ],
         },
       ],
-      salaryNote: "Averages published by Glassdoor in each country, checked in September 2026. They are in local currency and unconverted: tax and cost of living are not comparable between these places, so the table says what each market pays, not what you will earn once the course ends.",
+      salaryNote: {
+        before: "Averages from ",
+        link: "Glassdoor",
+        url: "https://www.glassdoor.com/Salaries/index.htm",
+        after: " in each country, September 2026. Local currency, unconverted: they say what each market pays, not what you will earn.",
+      },
       sectorsLabel: "Sectors where remote businesses get built",
       sectors: [
         "SaaS and software", "Consulting", "E-commerce", "Marketplaces", "Online education",

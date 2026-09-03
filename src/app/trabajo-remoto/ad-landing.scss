@@ -2835,12 +2835,23 @@
 
   // La procedencia y la fecha. Sin fecha, un sueldo deja de ser comprobable
   // en cuanto pasa un año.
+  // Nota al pie de verdad: pequeña y apagada. A 0,75rem y en 82 caracteres
+  // ocupaba tres renglones anchos y pesaba tanto como la tabla que anota.
   &-note {
-    margin-top: 0.9rem;
-    max-width: 82ch;
-    font-size: 0.75rem;
-    line-height: 1.55;
-    color: rgba(255, 255, 255, 0.6);
+    margin-top: 0.7rem;
+    max-width: 68ch;
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.5);
+
+    a {
+      color: rgba(255, 255, 255, 0.72);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      text-decoration-color: rgba(255, 255, 255, 0.3);
+
+      &:hover { color: #fff; text-decoration-color: #fff; }
+    }
   }
 }
 
