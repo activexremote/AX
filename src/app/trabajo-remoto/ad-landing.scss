@@ -351,12 +351,15 @@
     // En el móvil manda el ancho y punto: el tope por altura dejaba el
     // titular en 27 px en un teléfono alto y estrecho, que para un héroe es
     // letra pequeña.
-    // Exactamente la curva del héroe de /bienvenida (landing.scss, &-title):
-    // una sola ecuación para todos los tamaños. El `min()` mete la altura
-    // dentro, así que en una pantalla baja el titular cede antes que comerse
-    // el resto del héroe, y el 8,4vw evita que en un móvil estrecho se quede
-    // en letra pequeña.
-    font-size: clamp(1.55rem, min(6.4vw, 4.4vh), 2.4rem);
+    // Exactamente la curva del héroe de /bienvenida (landing.scss, &-title),
+    // sin recortar. La bajé a 2,4rem cuando el titular pasó a ser dos frases
+    // largas, y el resultado fue una landing con la letra más pequeña que la
+    // portada, que es justo lo que había que evitar.
+    //
+    // El `min()` es lo que permite devolverla entera sin romper el héroe: en
+    // una pantalla baja manda el 5,6vh y el titular cede solo, igual que en
+    // la portada. No hace falta recortar el tope.
+    font-size: clamp(1.7rem, min(8.4vw, 5.6vh), 3.1rem);
     line-height: 1.06;
     // ⚠︎ Aquí había `max-width: 15ch` fijo. En un móvil eso son ~210 px: el
     // titular caía en una columna estrecha de cuatro líneas contra el borde
@@ -673,10 +676,10 @@
     margin: 0 auto;
     padding-left: var(--ad-pad-l);
     padding-right: var(--ad-pad-r);
-    font-size: clamp(1.45rem, 4vw, 2.15rem);
+    font-size: clamp(1.7rem, 7.4vw, 3.25rem);
     font-weight: 700;
     letter-spacing: -0.03em;
-    line-height: 1.14;
+    line-height: 1.08;
     color: var(--ad-muted);
     text-wrap: balance;
 
@@ -1282,7 +1285,7 @@
   }
 
   h2 {
-    font-size: clamp(1.5rem, 4.6vw, 2.25rem);
+    font-size: clamp(1.75rem, 6.2vw, 2.5rem);
     margin: 0.5rem 0 0.7rem;
   }
 
@@ -2363,7 +2366,7 @@
 
   &-text {
     h2 {
-      font-size: clamp(1.35rem, 4vw, 2rem);
+      font-size: clamp(1.75rem, 6.2vw, 2.5rem);
       margin-bottom: 0.8rem;
     }
     > p { color: var(--ad-body); }
@@ -2679,7 +2682,7 @@
     }
 
     h2 {
-      font-size: clamp(1.5rem, 4.6vw, 2.25rem);
+      font-size: clamp(1.75rem, 6.2vw, 2.5rem);
       margin: 0.5rem 0 0.6rem;
       max-width: 24ch;
       color: #fff;
