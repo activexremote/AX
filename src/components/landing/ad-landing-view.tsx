@@ -424,43 +424,66 @@ export async function AdLandingView() {
       </section>
 
       {/* ── Empleos y sectores ────────────────────────── */}
-      {/* Dos tiras que se arrastran con el dedo. `scroll-snap` lo resuelve el
-          navegador, así que un carrusel no cuesta ni una línea de JavaScript.
-          Sin cifras de sueldo: ver la cabecera de este bloque en copy.ts. */}
-      <section className="axr-ad__jobs axr-ad__section axr-ad__defer" style={{ containIntrinsicSize: "auto 420px" }}>
-        <div className="axr-ad__wrap">
-          <div className="axr-ad__jobs-head" data-reveal>
-            <span className="axr-ad__eyebrow">{c.jobs.eyebrow}</span>
-            <h2 className="axr-ad__h2">{c.jobs.title}</h2>
+      {/* La única sección de la página con imagen de fondo, y a sangre. Es
+          donde se habla de a dónde lleva esto, así que la ilustración —dos
+          personas trabajando, un amanecer y un anochecer en la misma línea de
+          costa— dice el argumento entero antes de que nadie lea una palabra.
+
+          Sobre una ilustración tan clara en el centro no basta el velo del
+          brandbook: aquí va más cargado, y el texto en blanco y peso 600 o
+          más, como manda la sección 7. */}
+      <section className="axr-ad__jobs axr-ad__defer" style={{ containIntrinsicSize: "auto 680px" }}>
+        <picture className="axr-ad__jobs-bg" aria-hidden>
+          {/* Un móvil no tiene por qué bajarse los 2000 px: la versión corta
+              pesa una tercera parte y a ese ancho se ve idéntica. */}
+          <source media="(max-width: 780px)" srcSet="/img/skyline-remoto-sm.jpg" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/img/skyline-remoto.jpg"
+            alt=""
+            width={2000}
+            height={694}
+            loading="lazy"
+            decoding="async"
+          />
+        </picture>
+        <span className="axr-ad__jobs-veil" aria-hidden />
+
+        <div className="axr-ad__wrap axr-ad__jobs-inner">
+          <header className="axr-ad__jobs-head" data-reveal>
+            <span className="axr-ad__eyebrow axr-ad__eyebrow--light">{c.jobs.eyebrow}</span>
+            <h2>{c.jobs.title}</h2>
             <p>{c.jobs.lead}</p>
+          </header>
+
+          {/* Las cifras, en rejilla y no en tira: se comparan de un vistazo y
+              no hay nada escondido a la derecha esperando a que alguien
+              adivine que se arrastra. */}
+          <div className="axr-ad__pay" data-reveal>
+            <span className="axr-ad__pay-label">{c.jobs.salaryLabel}</span>
+            <ul className="axr-ad__pay-grid">
+              {c.jobs.roles.map((r, i) => (
+                <li key={r.name} data-reveal style={{ "--d": `${120 + i * 80}ms` } as React.CSSProperties}>
+                  <a href={r.url} target="_blank" rel="noopener nofollow">
+                    <strong>{r.range}</strong>
+                    <span>{r.name}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <p className="axr-ad__pay-note">{c.jobs.salaryNote}</p>
           </div>
-        </div>
 
-        {/* Tira de sueldos. Cada ficha es un enlace a la fuente: eso es lo
-            que convierte una cifra en un dato comprobable en vez de en un
-            adorno, y es la única condición para poder publicarla. */}
-        <div className="axr-ad__slide" data-reveal>
-          <span className="axr-ad__slide-label axr-ad__wrap">{c.jobs.salaryLabel}</span>
-          <ul className="axr-ad__slide-track axr-ad__slide-track--pay">
-            {c.jobs.roles.map((r) => (
-              <li key={r.name}>
-                <a href={r.url} target="_blank" rel="noopener nofollow">
-                  <strong>{r.range}</strong>
-                  <span>{r.name}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-          <p className="axr-ad__slide-note axr-ad__wrap">{c.jobs.salaryNote}</p>
-        </div>
-
-        <div className="axr-ad__slide" data-reveal style={{ "--d": "90ms" } as React.CSSProperties}>
-          <span className="axr-ad__slide-label axr-ad__wrap">{c.jobs.sectorsLabel}</span>
-          <ul className="axr-ad__slide-track">
-            {c.jobs.sectors.map((it) => (
-              <li key={it}>{it}</li>
-            ))}
-          </ul>
+          <div className="axr-ad__sectors" data-reveal>
+            <span className="axr-ad__pay-label">{c.jobs.sectorsLabel}</span>
+            <ul>
+              {c.jobs.sectors.map((it, i) => (
+                <li key={it} style={{ "--d": `${i * 45}ms` } as React.CSSProperties}>
+                  {it}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 

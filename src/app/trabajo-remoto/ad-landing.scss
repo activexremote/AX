@@ -2518,81 +2518,6 @@
 }
 
 // ══════════════════════════════════════════════════════════
-//  Empleos y sectores
-//
-//  Dos tiras que se arrastran con el dedo. El carrusel es `scroll-snap`, que
-//  lo resuelve el navegador: cero JavaScript, y con teclado y lector de
-//  pantalla funciona sin que haya que programar nada.
-//
-//  Las tiras se salen del contenedor por la derecha a propósito. El corte es
-//  lo que dice que hay más y que se puede arrastrar; una fila que termina
-//  limpia en el margen parece una lista completa.
-// ══════════════════════════════════════════════════════════
-.axr-ad__jobs {
-  background: #fff;
-  border-top: 1px solid var(--ad-border);
-
-  &-head {
-    max-width: 60ch;
-    margin-bottom: 1.75rem;
-
-    .axr-ad__h2 { margin: 0.55rem 0 0.7rem; }
-    p { color: var(--ad-body); }
-  }
-}
-
-.axr-ad__slide {
-  & + & { margin-top: 1.5rem; }
-
-  &-label {
-    display: block;
-    margin-bottom: 0.7rem;
-    font-size: 0.625rem;
-    font-weight: 700;
-    letter-spacing: 0.13em;
-    text-transform: uppercase;
-    color: var(--ad-muted);
-  }
-
-  &-track {
-    display: flex;
-    gap: 0.6rem;
-    margin: 0;
-    padding: 0.15rem var(--ad-pad-r) 0.6rem var(--ad-pad-l);
-    list-style: none;
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
-    // La barra de scroll horizontal en un carrusel es ruido: el corte de la
-    // derecha ya dice que hay más.
-    scrollbar-width: none;
-    &::-webkit-scrollbar { display: none; }
-
-    // Centrada con el resto de la página, pero sin cortar por la izquierda.
-    @media (min-width: calc(1180px + 4rem)) {
-      padding-left: max(var(--ad-pad-l), calc((100vw - var(--ad-max)) / 2));
-    }
-
-    li {
-      flex: none;
-      scroll-snap-align: start;
-      padding: 0.85rem 1.15rem;
-      font-size: 0.9375rem;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-      color: var(--ad-ink);
-      background: var(--ad-soft);
-      border: 1px solid var(--ad-border);
-      border-radius: var(--ad-radius-md);
-      transition: border-color 0.2s ease, transform 0.2s ease;
-
-      @media (hover: hover) {
-        &:hover { border-color: var(--ad-accent); transform: translateY(-2px); }
-      }
-    }
-  }
-}
-
-// ══════════════════════════════════════════════════════════
 //  La sede
 //
 //  Sin mapa incrustado: un iframe de Google trae scripts de terceros, obliga
@@ -2657,58 +2582,220 @@
   }
 }
 
-// ── La tira de sueldos ──────────────────────────────────
-// Cada ficha es un enlace a la ficha de Glassdoor de ese puesto. La cifra
-// manda tipográficamente y el nombre del puesto va debajo: quien barre la
-// tira con la vista está comparando números, no leyendo títulos.
-.axr-ad__slide-track--pay {
-  li {
+// ══════════════════════════════════════════════════════════
+//  Empleos y sectores
+//
+//  La única sección con imagen de fondo, y a sangre. La ilustración —dos
+//  personas trabajando, un amanecer y un anochecer en la misma costa— dice el
+//  argumento antes de que nadie lea: esto va de trabajar desde donde sea.
+//
+//  El velo va más cargado que el 0,35 que pide el brandbook para texto sobre
+//  imagen. No es capricho: el centro de esta ilustración es un sol casi
+//  blanco, y a 0,35 el titular desaparecía justo ahí.
+// ══════════════════════════════════════════════════════════
+.axr-ad__jobs {
+  position: relative;
+  overflow: clip;
+  isolation: isolate;
+  color: #fff;
+  // Se pinta antes de que llegue la imagen y se queda si no llega: el texto
+  // nunca se apoya sólo en el JPEG.
+  background: #0b0e28;
+  padding-top: clamp(2.75rem, 7vw, 4.5rem);
+  padding-bottom: clamp(2.75rem, 7vw, 4.5rem);
+
+  &-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      // El amanecer está a la izquierda y el anochecer a la derecha: al
+      // recortar en vertical interesa conservar la línea del horizonte.
+      object-position: center 55%;
+      // Un punto de más para que el vaivén no descubra los bordes.
+      transform: scale(1.08);
+      will-change: transform;
+      animation: axr-ad-drift 48s ease-in-out infinite;
+    }
+  }
+
+  // Deriva lentísima: 48 segundos de ida y vuelta. No se ve moverse, se nota
+  // que está viva. Y es `transform`, así que no repinta nada.
+  &-veil {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(180deg, rgba(9, 11, 34, 0.62) 0%, rgba(9, 11, 34, 0.7) 42%, rgba(9, 11, 34, 0.9) 100%),
+      radial-gradient(120% 90% at 50% 40%, rgba(9, 11, 34, 0.25), transparent 70%);
+  }
+
+  &-inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  &-head {
+    max-width: 62ch;
+    margin-bottom: clamp(1.75rem, 4vw, 2.5rem);
+
+    h2 {
+      font-size: clamp(1.75rem, 6.2vw, 2.5rem);
+      margin: 0.6rem 0 0.75rem;
+      // Sobre imagen, el brandbook pide blanco puro y peso alto. No se negocia.
+      color: #fff;
+      text-shadow: 0 2px 24px rgba(6, 8, 26, 0.5);
+    }
+
+    p {
+      color: rgba(255, 255, 255, 0.86);
+      max-width: 56ch;
+    }
+  }
+}
+
+@keyframes axr-ad-drift {
+  0%, 100% { transform: scale(1.08) translate3d(-1.2%, 0, 0); }
+  50% { transform: scale(1.12) translate3d(1.2%, 0, 0); }
+}
+
+// El eyebrow de la casa, sobre oscuro.
+.axr-ad__eyebrow--light {
+  color: rgba(255, 255, 255, 0.7);
+  &::before { background: #fff; }
+}
+
+// ── Las cifras ──────────────────────────────────────────
+// En rejilla y no en tira: se comparan de un vistazo y no hay nada escondido
+// a la derecha esperando a que alguien adivine que aquello se arrastra.
+.axr-ad__pay {
+  &-label {
+    display: block;
+    margin-bottom: 0.8rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  &-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+    margin: 0;
     padding: 0;
-    background: #fff;
+    list-style: none;
+
+    @media (min-width: 520px) { grid-template-columns: repeat(2, 1fr); }
+    @media (min-width: 1080px) { grid-template-columns: repeat(5, 1fr); gap: 0.85rem; }
+
+    li {
+      list-style: none;
+      // Vidrio, no blanco opaco: la ilustración tiene que seguir viéndose
+      // detrás o la sección vuelve a ser una tabla sobre una foto.
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: var(--ad-radius-md);
+      transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+
+      @media (hover: hover) {
+        &:hover {
+          background: rgba(255, 255, 255, 0.16);
+          border-color: rgba(255, 255, 255, 0.45);
+          transform: translateY(-3px);
+        }
+      }
+    }
 
     a {
       display: block;
-      padding: 0.9rem 1.15rem;
+      padding: 1rem 1.1rem;
       color: inherit;
       text-decoration: none;
-
       &:hover { text-decoration: none; }
     }
 
     strong {
       display: block;
-      font-size: 1.125rem;
+      font-size: clamp(1.0625rem, 2.6vw, 1.1875rem);
       font-weight: 700;
       letter-spacing: -0.02em;
+      line-height: 1.15;
       font-variant-numeric: tabular-nums;
-      color: var(--ad-ink);
+      color: #fff;
     }
 
     span {
       display: block;
-      margin-top: 0.15rem;
+      margin-top: 0.3rem;
       font-size: 0.8125rem;
       font-weight: 500;
-      color: var(--ad-body);
-      // El subrayado dice que se puede ir a comprobarlo.
+      line-height: 1.35;
+      color: rgba(255, 255, 255, 0.72);
       text-decoration: underline;
       text-underline-offset: 3px;
-      text-decoration-color: var(--ad-border);
+      text-decoration-color: rgba(255, 255, 255, 0.3);
     }
 
-    @media (hover: hover) {
-      &:hover span { text-decoration-color: var(--ad-accent); }
-    }
+    li:hover span { text-decoration-color: rgba(255, 255, 255, 0.7); }
+  }
+
+  // La procedencia y la fecha. Sin fecha, un rango de sueldos deja de ser
+  // comprobable en cuanto pasa un año.
+  &-note {
+    margin-top: 0.9rem;
+    max-width: 78ch;
+    font-size: 0.75rem;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.6);
   }
 }
 
-// La procedencia del dato, con su fecha. Sin fecha, un rango de sueldos deja
-// de ser comprobable en cuanto pasa un año.
-.axr-ad__slide-note {
-  display: block;
-  margin-top: 0.5rem;
-  max-width: 74ch;
-  font-size: 0.75rem;
-  line-height: 1.55;
-  color: var(--ad-muted);
+// ── Los sectores ────────────────────────────────────────
+.axr-ad__sectors {
+  margin-top: clamp(1.75rem, 4vw, 2.5rem);
+  padding-top: clamp(1.5rem, 3.5vw, 2rem);
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    list-style: none;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.88);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+  }
+}
+
+// Las fichas entran escalonadas; los sectores, también, pero más rápido.
+.axr-ad.fx-on .axr-ad__sectors {
+  li {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+    transition:
+      opacity 0.4s ease var(--d, 0ms),
+      transform 0.4s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0ms);
+  }
+  &.is-in li { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .axr-ad__jobs-bg img { animation: none; transform: scale(1.02); }
+  .axr-ad.fx-on .axr-ad__sectors li { opacity: 1; transform: none; }
 }
