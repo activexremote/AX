@@ -46,7 +46,7 @@ export const consentCopy: Record<Locale, ConsentCopy> = {
     categories: {
       preferences: {
         name: "Preferencias",
-        desc: "Recuerdan elecciones tuyas, como el idioma en el que quieres ver el sitio, para no tener que repetirlas en cada visita.",
+        desc: "Recuerdan elecciones tuyas, como el idioma del sitio, y permiten el mapa de Google que muestra dónde está la oficina. Si la rechazas, el mapa no se carga.",
       },
       analytics: {
         name: "Medición",
@@ -82,7 +82,7 @@ export const consentCopy: Record<Locale, ConsentCopy> = {
     categories: {
       preferences: {
         name: "Preferences",
-        desc: "They remember your choices, such as the language you want the site in, so you don't have to repeat them on every visit.",
+        desc: "They remember your choices, such as the language you want the site in, and they allow the Google map that shows where the office is. Turn this off and the map will not load.",
       },
       analytics: {
         name: "Measurement",

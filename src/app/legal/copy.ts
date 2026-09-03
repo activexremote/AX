@@ -517,7 +517,14 @@ const COOKIES_ES: LegalDoc = {
       blocks: [
         {
           t: "p",
-          text: `Las cookies propias las instala ${E.name} desde el dominio ${E.domain}. Las de terceros las instalarían servicios ajenos, y en este sitio sólo pueden llegar a instalarse si tú activas su categoría en el panel de configuración. Hoy no cargamos ninguna cookie de terceros por defecto.`,
+          // ⚠︎ Esta frase decía «Hoy no cargamos ninguna cookie de terceros
+          // por defecto». Dejó de ser cierta al poner el mapa de Google
+          // visible de entrada en la landing de campaña, así que se ha
+          // corregido en el mismo cambio. Si algún día vuelve a no cargarse
+          // ningún tercero por defecto, esto se reescribe otra vez: una
+          // política que describe una web que ya no existe no protege a
+          // nadie, y es la primera cosa que mira una inspección.
+          text: `Las cookies propias las instala ${E.name} desde el dominio ${E.domain}. De terceros hay una sola: la página del programa incrusta un mapa de Google Maps para enseñar dónde está la oficina, y Google instala sus propias cookies al cargarlo. Es la única que se carga sin haber elegido antes. Si rechazas la categoría «Preferencias» en el panel de configuración, ese mapa deja de cargarse y en su lugar aparece un botón para abrirlo sólo si tú quieres. Ningún otro servicio ajeno instala cookies en este sitio.`,
         },
       ],
     },
@@ -535,7 +542,7 @@ const COOKIES_ES: LegalDoc = {
             ],
             [
               "Preferencias",
-              "Recuerdan elecciones que has hecho tú, como el idioma en el que quieres ver el sitio.",
+              "Recuerdan elecciones que has hecho tú, como el idioma en el que quieres ver el sitio. En esta categoría entra también el mapa de Google Maps que muestra dónde está la oficina: rechazarla impide que se cargue.",
               "Sí, salvo que la preferencia sea imprescindible para prestar el servicio que has solicitado expresamente.",
             ],
             [

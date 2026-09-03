@@ -8,32 +8,37 @@ import { CONSENT_COOKIE, parseConsent } from "@/lib/consent/config";
 // ══════════════════════════════════════════════════════════
 //  El mapa de la sede
 //
+//  El mapa se ve de entrada. Es una decisión tomada a propósito y tiene
+//  consecuencias, así que quedan escritas:
+//
 //  Un mapa de Google incrustado es una transferencia de datos a un tercero:
-//  carga scripts, lee la IP y planta sus cookies. La primera regla del aviso
-//  de esta web es que nada que requiera permiso se cargue antes de la
-//  elección (ver la cabecera de lib/consent/config.ts), así que el iframe no
-//  puede salir de serie.
+//  carga sus scripts, le revela la IP de quien visita y planta sus cookies.
+//  La primera versión de esto no lo cargaba hasta que alguien lo pedía, que
+//  es lo que pide el RGPD en sentido estricto y lo que dice la cabecera de
+//  lib/consent/config.ts.
 //
-//  Cómo se resuelve sin que la mayoría note nada:
+//  Lo que se conserva de aquello: si alguien ha RECHAZADO expresamente las
+//  cookies de preferencias, el mapa no se carga. Un «no» explícito se
+//  respeta; no hacerlo sería, además de ilegal, una tomadura de pelo con el
+//  panel de configuración que tiene la web.
 //
-//   · Si ya hay consentimiento de «preferencias» —la categoría de los
-//     contenidos incrustados—, el mapa aparece solo. Quien acepta cookies ve
-//     el mapa y ya está.
-//   · Si no, sale una tarjeta con el pin y un botón. Pulsarlo ES el permiso
-//     para esa carga concreta, y se avisa de lo que implica antes de pulsar.
-//   · Y si alguien revoca el permiso, el mapa se retira en el acto: para eso
-//     está el evento del banner. Revocar tiene que costar lo mismo que
-//     conceder.
+//  Lo que cambia: quien no ha decidido todavía ve el mapa. Eso implica cargar
+//  un tercero antes del consentimiento, y por eso se ha corregido a la vez la
+//  política de cookies, que hasta hoy afirmaba que no se carga ninguna cookie
+//  de terceros por defecto. Esa frase habría dejado de ser cierta.
 //
-//  Efecto secundario que interesa: mientras nadie lo abre, esta sección no
-//  hace ni una petición a Google, y va justo antes del formulario.
+//  `loading="lazy"` no es un detalle: el iframe sólo se pide cuando la
+//  sección se acerca a la pantalla, así que quien no baja hasta aquí no llega
+//  a tocar a Google.
 // ══════════════════════════════════════════════════════════
 
-function tienePermiso(): boolean {
+/** `null` si no hay decisión; si la hay, qué se decidió sobre preferencias. */
+function decisionPreferencias(): boolean | null {
   const raw = document.cookie.match(
     new RegExp(`(?:^|;\\s*)${CONSENT_COOKIE}=([^;]*)`),
   )?.[1];
-  return parseConsent(raw)?.c.preferences === true;
+  const guardado = parseConsent(raw);
+  return guardado ? guardado.c.preferences : null;
 }
 
 export function AdMap({
@@ -48,23 +53,26 @@ export function AdMap({
   cta: string;
   notice: string;
 }) {
-  // Consentido por la cookie, o abierto a mano en esta visita.
-  const [consent, setConsent] = useState(false);
-  const [manual, setManual] = useState(false);
+  // Se parte de "no bloqueado": en el servidor no hay cookies que leer y el
+  // mapa es lo que se quiere enseñar. Si al montar resulta que hay un rechazo
+  // expreso, se retira.
+  const [bloqueado, setBloqueado] = useState(false);
+  // Y si estando bloqueado alguien lo abre a mano, vale para esta visita.
+  const [abierto, setAbierto] = useState(false);
 
   useEffect(() => {
-    const leer = () => setConsent(tienePermiso());
+    const leer = () => setBloqueado(decisionPreferencias() === false);
     leer();
     window.addEventListener(CONSENT_CHANGED_EVENT, leer);
     return () => window.removeEventListener(CONSENT_CHANGED_EVENT, leer);
   }, []);
 
-  // Revocar retira también el que se abrió a mano: es la misma decisión.
+  // Volver a rechazar retira también el que se abrió a mano.
   useEffect(() => {
-    if (!consent) setManual(false);
-  }, [consent]);
+    if (bloqueado) setAbierto(false);
+  }, [bloqueado]);
 
-  if (consent || manual) {
+  if (!bloqueado || abierto) {
     return (
       <iframe
         className="axr-ad__map"
@@ -88,7 +96,7 @@ export function AdMap({
         />
         <circle cx="12" cy="11" r="2.6" fill="currentColor" />
       </svg>
-      <button type="button" onClick={() => setManual(true)}>
+      <button type="button" onClick={() => setAbierto(true)}>
         {cta}
       </button>
       <p>{notice}</p>

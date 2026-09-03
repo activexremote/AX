@@ -335,7 +335,7 @@ export const adCopy = {
       addressLabel: "Dirección",
       mapLabel: "Mapa de la sede de ActiveXRemote en Dubái",
       mapCta: "Ver el mapa",
-      mapNotice: "Al abrirlo se carga un mapa de Google, que instala sus propias cookies.",
+      mapNotice: "Has rechazado las cookies de preferencias, así que el mapa de Google no se carga. Puedes abrirlo sólo para esta visita.",
       note: "La escuela opera desde Emiratos Árabes Unidos y el programa es 100 % online: no hay que venir a ninguna parte.",
     },
     alumni: {
@@ -613,7 +613,7 @@ export const adCopy = {
       addressLabel: "Address",
       mapLabel: "Map of the ActiveXRemote office in Dubai",
       mapCta: "Show the map",
-      mapNotice: "Opening it loads a Google map, which sets its own cookies.",
+      mapNotice: "You turned down preference cookies, so the Google map is not loaded. You can open it just for this visit.",
       note: "The school operates from the United Arab Emirates and the programme is 100% online: there is nowhere to travel to.",
     },
     alumni: {
