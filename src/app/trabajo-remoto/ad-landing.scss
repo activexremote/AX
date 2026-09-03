@@ -107,7 +107,15 @@
     line-height: 1.12;
     text-wrap: balance;
   }
-  p { margin: 0; line-height: 1.55; }
+  // Cuerpo de la casa: 1rem, y 1,0625rem en cuanto hay sitio. Es la medida
+  // de /bienvenida y del brandbook (§9, «Cuerpo»).
+  p {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.55;
+
+    @media (min-width: 641px) { font-size: 1.0625rem; }
+  }
 
   &__wrap {
     max-width: var(--ad-max);
@@ -140,8 +148,9 @@
     }
   }
 
+  // El H2 de sección de /bienvenida, sin retocar.
   &__h2 {
-    font-size: clamp(1.7rem, 5.2vw, 2.6rem);
+    font-size: clamp(1.75rem, 6.2vw, 2.5rem);
     margin-bottom: 1.5rem;
   }
 }
@@ -342,21 +351,22 @@
     // En el móvil manda el ancho y punto: el tope por altura dejaba el
     // titular en 27 px en un teléfono alto y estrecho, que para un héroe es
     // letra pequeña.
-    font-size: clamp(2.05rem, 8.4vw, 2.9rem);
-    line-height: 1.05;
+    // Exactamente la curva del héroe de /bienvenida (landing.scss, &-title):
+    // una sola ecuación para todos los tamaños. El `min()` mete la altura
+    // dentro, así que en una pantalla baja el titular cede antes que comerse
+    // el resto del héroe, y el 8,4vw evita que en un móvil estrecho se quede
+    // en letra pequeña.
+    font-size: clamp(1.7rem, min(8.4vw, 5.6vh), 3.1rem);
+    line-height: 1.06;
     // ⚠︎ Aquí había `max-width: 15ch` fijo. En un móvil eso son ~210 px: el
     // titular caía en una columna estrecha de cuatro líneas contra el borde
-    // izquierdo. La medida sólo tiene sentido cuando hay sitio de sobra al
-    // lado, que es de 1000 px en adelante.
+    // izquierdo. La medida sólo tiene sentido cuando hay sitio al lado.
     max-width: none;
 
     // De aquí en adelante sí entra el tope por altura: es lo que hace que el
     // titular ceda en un portátil bajo en vez de empujar el formulario fuera
     // de la ventana.
-    @media (min-width: 1000px) {
-      font-size: clamp(2.1rem, min(3.9vw, 6vh), 3.4rem);
-      max-width: 20ch;
-    }
+    @media (min-width: 1000px) { max-width: 20ch; }
 
     em {
       display: block;
@@ -367,9 +377,12 @@
 
   &-lead {
     max-width: 42ch;
-    font-size: clamp(1.0625rem, min(2.5vw, 2.3vh), 1.1875rem);
-    line-height: 1.5;
-    color: rgba(255, 255, 255, 0.86);
+    // 1rem → 1,075rem, igual que &__hero-lead en /bienvenida.
+    font-size: 1rem;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.9);
+
+    @media (min-width: 981px) { font-size: 1.075rem; }
   }
 
   &-foot {
@@ -455,7 +468,7 @@
   @media (min-width: 1200px) { padding: 1.4rem; }
 
   h2 {
-    font-size: 1.1875rem;
+    font-size: 1.25rem;
     margin-bottom: 0.25rem;
   }
   > p {
@@ -702,7 +715,7 @@
   strong {
     display: block;
     margin: 0.7rem 0 0.4rem;
-    font-size: 1.0625rem;
+    font-size: 1.125rem;
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1.25;
@@ -847,7 +860,7 @@
   header { margin-bottom: 0.9rem; }
 
   h3 {
-    font-size: 1.0625rem;
+    font-size: 1.125rem;
     letter-spacing: -0.02em;
   }
 
@@ -2642,4 +2655,60 @@
       &:hover { text-decoration-color: var(--ad-accent); }
     }
   }
+}
+
+// ── La tira de sueldos ──────────────────────────────────
+// Cada ficha es un enlace a la ficha de Glassdoor de ese puesto. La cifra
+// manda tipográficamente y el nombre del puesto va debajo: quien barre la
+// tira con la vista está comparando números, no leyendo títulos.
+.axr-ad__slide-track--pay {
+  li {
+    padding: 0;
+    background: #fff;
+
+    a {
+      display: block;
+      padding: 0.9rem 1.15rem;
+      color: inherit;
+      text-decoration: none;
+
+      &:hover { text-decoration: none; }
+    }
+
+    strong {
+      display: block;
+      font-size: 1.125rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      color: var(--ad-ink);
+    }
+
+    span {
+      display: block;
+      margin-top: 0.15rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--ad-body);
+      // El subrayado dice que se puede ir a comprobarlo.
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-color: var(--ad-border);
+    }
+
+    @media (hover: hover) {
+      &:hover span { text-decoration-color: var(--ad-accent); }
+    }
+  }
+}
+
+// La procedencia del dato, con su fecha. Sin fecha, un rango de sueldos deja
+// de ser comprobable en cuanto pasa un año.
+.axr-ad__slide-note {
+  display: block;
+  margin-top: 0.5rem;
+  max-width: 74ch;
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: var(--ad-muted);
 }

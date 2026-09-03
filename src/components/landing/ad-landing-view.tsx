@@ -436,18 +436,32 @@ export async function AdLandingView() {
           </div>
         </div>
 
-        {c.jobs.rows.map((row, i) => (
-          <div key={row.label} className="axr-ad__slide" data-reveal style={{ "--d": `${i * 90}ms` } as React.CSSProperties}>
-            <span className="axr-ad__slide-label axr-ad__wrap">{row.label}</span>
-            {/* La tira sale del contenedor por la derecha a propósito: el
-                corte es lo que dice que se puede arrastrar. */}
-            <ul className="axr-ad__slide-track">
-              {row.items.map((it) => (
-                <li key={it}>{it}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
+        {/* Tira de sueldos. Cada ficha es un enlace a la fuente: eso es lo
+            que convierte una cifra en un dato comprobable en vez de en un
+            adorno, y es la única condición para poder publicarla. */}
+        <div className="axr-ad__slide" data-reveal>
+          <span className="axr-ad__slide-label axr-ad__wrap">{c.jobs.salaryLabel}</span>
+          <ul className="axr-ad__slide-track axr-ad__slide-track--pay">
+            {c.jobs.roles.map((r) => (
+              <li key={r.name}>
+                <a href={r.url} target="_blank" rel="noopener nofollow">
+                  <strong>{r.range}</strong>
+                  <span>{r.name}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p className="axr-ad__slide-note axr-ad__wrap">{c.jobs.salaryNote}</p>
+        </div>
+
+        <div className="axr-ad__slide" data-reveal style={{ "--d": "90ms" } as React.CSSProperties}>
+          <span className="axr-ad__slide-label axr-ad__wrap">{c.jobs.sectorsLabel}</span>
+          <ul className="axr-ad__slide-track">
+            {c.jobs.sectors.map((it) => (
+              <li key={it}>{it}</li>
+            ))}
+          </ul>
+        </div>
       </section>
 
       {/* ── El diagrama de salidas ────────────────────── */}

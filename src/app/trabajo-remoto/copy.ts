@@ -285,24 +285,41 @@ export const adCopy = {
       ],
     },
 
-    // Dos tiras deslizables. No llevan sueldos a propósito: la referencia los
-    // pone, nosotros no tenemos dato verificable sobre nuestros alumnos y
-    // publicar rangos inventados es publicidad engañosa. Lo que sí es
-    // comprobable es a qué se dedica la gente que trabaja en remoto.
+    // ══════════════════════════════════════════════════
+    //  Sueldos: dato real o ningún dato
+    //
+    //  Las cinco cifras son el RANGO TÍPICO de Glassdoor España (percentil 25
+    //  al 75), consultado en septiembre de 2026, y cada puesto enlaza a su
+    //  ficha para que cualquiera pueda comprobarlo. Ésa es la diferencia
+    //  entre un dato y un adorno: que se puede ir a mirar.
+    //
+    //  Sólo entran los cinco puestos de los que hay rango NACIONAL publicado.
+    //  Hay más perfiles con datos, pero unos con rango y otros con media, o
+    //  unos de España y otros de una ciudad, es una tabla que compara cosas
+    //  distintas y engaña sin querer.
+    //
+    //  ⚠︎ Son sueldos de referencia en España, no promesas de lo que va a
+    //  cobrar nadie al salir del programa, y el texto lo dice. Prometer un
+    //  sueldo es lo único que no se puede hacer aquí.
+    //
+    //  Al revisar: vuelve a mirar las fichas y actualiza `checked`. Un rango
+    //  de hace dos años con fecha visible es honesto; sin fecha, no.
+    // ══════════════════════════════════════════════════
     jobs: {
       eyebrow: "A dónde lleva",
-      title: "Los empleos y los sectores donde esto se usa",
-      lead: "Dos mapas rápidos del terreno: los puestos que más se contratan en remoto y los sectores donde se monta negocio sin oficina.",
-      rows: [
-        {
-          label: "Empleos remotos más demandados",
-          items: ["Customer Success", "Ventas B2B y SDR", "Marketing y growth", "Diseño de producto", "Desarrollo de software", "Datos y analítica", "Operaciones y project management", "Soporte técnico", "Reclutamiento", "Redacción y contenido"],
-        },
-        {
-          label: "Sectores de remote business",
-          items: ["SaaS y software", "Consultoría y servicios", "E-commerce y marketplaces", "Formación online", "Agencias de marketing", "Salud digital", "Fintech", "Contenido y medios", "Diseño y creatividad", "Automatización e IA"],
-        },
+      title: "Los perfiles, los sectores y lo que se paga",
+      lead: "Perfiles habituales en equipos distribuidos con su sueldo de referencia en España, y los sectores donde se monta negocio sin oficina. Son datos públicos de Glassdoor, no una previsión nuestra: cada puesto enlaza a su ficha.",
+      salaryLabel: "Sueldo bruto anual en España · rango típico",
+      salaryNote: "Rango del percentil 25 al 75 en Glassdoor España, consultado en septiembre de 2026. Es la referencia del mercado español para cada puesto, no una estimación de lo que cobrarás al terminar el programa.",
+      roles: [
+        { name: "Product Marketing Manager", range: "35.000 – 61.750 €", url: "https://www.glassdoor.es/Sueldos/product-marketing-manager-sueldo-SRCH_KO0,25.htm" },
+        { name: "Product Manager", range: "32.000 – 59.000 €", url: "https://www.glassdoor.es/Sueldos/product-manager-sueldo-SRCH_KO0,15.htm" },
+        { name: "Sales Development Representative", range: "25.400 – 45.000 €", url: "https://www.glassdoor.es/Sueldos/sales-development-representative-sueldo-SRCH_KO0,32.htm" },
+        { name: "Analista de datos", range: "23.600 – 39.000 €", url: "https://www.glassdoor.es/Sueldos/analista-de-datos-sueldo-SRCH_KO0,17.htm" },
+        { name: "Customer Success Specialist", range: "24.000 – 38.000 €", url: "https://www.glassdoor.es/Sueldos/customer-success-specialist-sueldo-SRCH_KO0,27.htm" },
       ],
+      sectorsLabel: "Sectores de remote business",
+      sectors: ["SaaS y software", "Consultoría y servicios", "E-commerce y marketplaces", "Formación online", "Agencias de marketing", "Salud digital", "Fintech", "Contenido y medios", "Diseño y creatividad", "Automatización e IA"],
     },
     // La sede, justo antes del formulario: quien va a dejar sus datos quiere
     // saber a quién se los deja y cuándo le van a coger el teléfono.
@@ -567,18 +584,19 @@ export const adCopy = {
 
     jobs: {
       eyebrow: "Where it leads",
-      title: "The jobs and the sectors where this gets used",
-      lead: "Two quick maps of the ground: the roles hired most often remotely, and the sectors where businesses get built without an office.",
-      rows: [
-        {
-          label: "Most in-demand remote roles",
-          items: ["Customer Success", "B2B sales and SDR", "Marketing and growth", "Product design", "Software development", "Data and analytics", "Operations and project management", "Technical support", "Recruiting", "Writing and content"],
-        },
-        {
-          label: "Remote business sectors",
-          items: ["SaaS and software", "Consulting and services", "E-commerce and marketplaces", "Online education", "Marketing agencies", "Digital health", "Fintech", "Content and media", "Design and creative", "Automation and AI"],
-        },
+      title: "The roles, the sectors and what they pay",
+      lead: "Roles common in distributed teams with their reference salary in Spain, and the sectors where businesses get built without an office. Public Glassdoor data, not a forecast of ours: every role links to its page.",
+      salaryLabel: "Gross annual salary in Spain · typical range",
+      salaryNote: "25th-to-75th percentile range on Glassdoor Spain, checked in September 2026. It is the Spanish market reference for each role, not an estimate of what you will earn after the programme.",
+      roles: [
+        { name: "Product Marketing Manager", range: "€35,000 – 61,750", url: "https://www.glassdoor.es/Sueldos/product-marketing-manager-sueldo-SRCH_KO0,25.htm" },
+        { name: "Product Manager", range: "€32,000 – 59,000", url: "https://www.glassdoor.es/Sueldos/product-manager-sueldo-SRCH_KO0,15.htm" },
+        { name: "Sales Development Representative", range: "€25,400 – 45,000", url: "https://www.glassdoor.es/Sueldos/sales-development-representative-sueldo-SRCH_KO0,32.htm" },
+        { name: "Data analyst", range: "€23,600 – 39,000", url: "https://www.glassdoor.es/Sueldos/analista-de-datos-sueldo-SRCH_KO0,17.htm" },
+        { name: "Customer Success Specialist", range: "€24,000 – 38,000", url: "https://www.glassdoor.es/Sueldos/customer-success-specialist-sueldo-SRCH_KO0,27.htm" },
       ],
+      sectorsLabel: "Remote business sectors",
+      sectors: ["SaaS and software", "Consulting and services", "E-commerce and marketplaces", "Online education", "Marketing agencies", "Digital health", "Fintech", "Content and media", "Design and creative", "Automation and AI"],
     },
     office: {
       eyebrow: "Where we are",
