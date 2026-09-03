@@ -7,6 +7,7 @@ import { LeadForm } from "@/components/landing/lead-form";
 import { SlackLogo } from "@/components/slack-logo";
 import { TOOL_ICONS } from "@/components/landing/tool-icons";
 import { AdClocks, AdFx, AdHeroVideo, AdLiveVideo, AdStickyBar } from "@/components/landing/ad-fx";
+import { AdMap } from "@/components/landing/ad-map";
 import { PLACEHOLDER_LOGOS, PlaceholderLogos } from "@/components/landing/ad-logos";
 import { adCopy } from "@/app/trabajo-remoto/copy";
 import { COHORT_START, STACK_TOOLS, WHATSAPP_NUMBER } from "@/app/trabajo-remoto/contact";
@@ -642,6 +643,14 @@ export async function AdLandingView() {
           </div>
 
           <div className="axr-ad__office-card" data-spot>
+            {/* El mapa manda y los datos van debajo: una dirección de Dubái
+                con número de oficina y planta no la sitúa nadie leyéndola. */}
+            <AdMap
+              query={ENTITY.address}
+              label={c.office.mapLabel}
+              cta={c.office.mapCta}
+              notice={c.office.mapNotice}
+            />
             <dl>
               <div>
                 <dt>{c.office.addressLabel}</dt>

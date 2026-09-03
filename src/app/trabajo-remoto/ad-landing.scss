@@ -2551,9 +2551,12 @@
     background: #fff;
     border: 1px solid var(--ad-border);
     border-radius: var(--ad-radius-md);
-    padding: 1.35rem;
+    // Sin relleno arriba: el mapa llega al borde de la tarjeta y los datos
+    // llevan el suyo. Un mapa con margen alrededor parece una captura pegada.
+    padding: 0;
+    overflow: hidden;
 
-    dl { margin: 0; display: grid; gap: 1rem; }
+    dl { margin: 0; display: grid; gap: 1rem; padding: 1.25rem 1.35rem 1.35rem; }
 
     dt {
       font-size: 0.625rem;
@@ -2798,4 +2801,60 @@
 @media (prefers-reduced-motion: reduce) {
   .axr-ad__jobs-bg img { animation: none; transform: scale(1.02); }
   .axr-ad.fx-on .axr-ad__sectors li { opacity: 1; transform: none; }
+}
+
+// ── El mapa de la sede ──────────────────────────────────
+// Misma caja tenga o no permiso cargado: así la tarjeta no cambia de alto
+// cuando alguien pulsa «ver el mapa» y la página no da un salto.
+.axr-ad__map {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border: 0;
+  border-bottom: 1px solid var(--ad-border);
+  background: var(--ad-soft);
+
+  @media (min-width: 860px) { aspect-ratio: 16 / 9; }
+
+  // Estado sin permiso: el hueco enseña de qué va y cuánto va a ocupar.
+  &--off {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 1.25rem;
+    text-align: center;
+    color: var(--ad-muted);
+    background:
+      // Retícula tenue: se lee como «aquí va un mapa» sin dibujar uno falso.
+      linear-gradient(to right, var(--ad-border) 1px, transparent 1px) 0 0 / 28px 28px,
+      linear-gradient(to bottom, var(--ad-border) 1px, transparent 1px) 0 0 / 28px 28px,
+      var(--ad-soft);
+
+    svg { color: var(--ad-accent); }
+
+    button {
+      font: inherit;
+      font-size: 0.875rem;
+      font-weight: 600;
+      min-height: 40px;
+      padding: 0 1.1rem;
+      color: #fff;
+      background: var(--ad-ink);
+      border: 0;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+
+      &:hover { background: var(--ad-accent); }
+    }
+
+    p {
+      margin: 0;
+      max-width: 34ch;
+      font-size: 0.6875rem;
+      line-height: 1.5;
+    }
+  }
 }

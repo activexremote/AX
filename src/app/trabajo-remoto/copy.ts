@@ -329,6 +329,9 @@ export const adCopy = {
       hoursLabel: "Horario de atención",
       hours: "De lunes a viernes, de 9:00 a 18:00 · GST (UTC+4)",
       addressLabel: "Dirección",
+      mapLabel: "Mapa de la sede de ActiveXRemote en Dubái",
+      mapCta: "Ver el mapa",
+      mapNotice: "Al abrirlo se carga un mapa de Google, que instala sus propias cookies.",
       note: "La escuela opera desde Emiratos Árabes Unidos y el programa es 100 % online: no hay que venir a ninguna parte.",
     },
     alumni: {
@@ -604,6 +607,9 @@ export const adCopy = {
       hoursLabel: "Opening hours",
       hours: "Monday to Friday, 9:00 to 18:00 · GST (UTC+4)",
       addressLabel: "Address",
+      mapLabel: "Map of the ActiveXRemote office in Dubai",
+      mapCta: "Show the map",
+      mapNotice: "Opening it loads a Google map, which sets its own cookies.",
       note: "The school operates from the United Arab Emirates and the programme is 100% online: there is nowhere to travel to.",
     },
     alumni: {

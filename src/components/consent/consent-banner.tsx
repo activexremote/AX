@@ -19,6 +19,16 @@ import type { ConsentCopy } from "@/lib/consent/copy";
 /** Evento con el que el enlace del pie vuelve a abrir el panel. */
 export const CONSENT_OPEN_EVENT = "axr:consent-open";
 
+/**
+ * Se emite en cuanto se guarda una decisión, conceder o revocar.
+ *
+ * Lo necesita cualquier cosa que dependa del consentimiento y ya esté pintada
+ * —de momento, el mapa de la sede— para reaccionar en el acto en vez de
+ * esperar a que alguien recargue. Revocar tiene que propagarse tan rápido
+ * como conceder, y sin esto sólo se propagaba a las etiquetas.
+ */
+export const CONSENT_CHANGED_EVENT = "axr:consent-changed";
+
 declare global {
   interface Window {
     dataLayer?: unknown[];
@@ -37,6 +47,7 @@ function writeConsent(choices: ConsentChoices) {
   // revocar tienen que propagarse igual de rápido.
   window.gtag?.("consent", "update", toSignals(choices));
   window.dataLayer?.push({ event: "axr_consent_update", axr_consent: choices });
+  window.dispatchEvent(new CustomEvent(CONSENT_CHANGED_EVENT, { detail: choices }));
 }
 
 export function ConsentBanner({ copy }: { copy: ConsentCopy }) {
