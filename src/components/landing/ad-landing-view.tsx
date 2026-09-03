@@ -539,7 +539,7 @@ export async function AdLandingView() {
       {/* Los catorce módulos caben, pero desplegados son tres pantallas de
           scroll en mitad del embudo. <details> enseña la estructura y deja el
           detalle a un clic, sin JavaScript y sin sacar nada del HTML. */}
-      <section id="programa" className="axr-ad__program axr-ad__section axr-ad__wrap">
+      <section id="temario" className="axr-ad__program axr-ad__section axr-ad__wrap">
         <div className="axr-ad__program-grid">
           <div className="axr-ad__program-text" data-reveal>
             <span className="axr-ad__eyebrow">{c.program.eyebrow}</span>

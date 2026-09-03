@@ -36,6 +36,16 @@ import type { Locale } from "@/lib/i18n/config";
 //
 //  Si al añadir una frase tienes que mirar si ya está en otro sitio, va en el
 //  sitio que la tiene y no en los dos.
+//
+//  ── Cómo se llama esto ───────────────────────────────────
+//  CURSO. Siempre. Ni «programa», ni «máster», ni «formación de posgrado».
+//  En inglés, «course»; nunca «programme» ni «master».
+//
+//  No es preferencia de estilo: «máster» está reservado en España a
+//  titulaciones oficiales y a títulos propios de universidad, y esto es una
+//  certificación privada de empresa —lo dice el descargo del pie—. «Programa»
+//  es más vago y además se usaba mezclado con «curso» en la misma página, así
+//  que quien leía no sabía si eran dos cosas distintas.
 // ══════════════════════════════════════════════════════════
 
 export type AdCopy = (typeof adCopy)["es"];
@@ -45,14 +55,14 @@ export const adCopy = {
     meta: {
       title: "Formación online en directo para trabajar sin fronteras · 7 fines de semana",
       description:
-        "Programa 100 % online y en directo, en español: consigue un empleo remoto internacional o monta tu negocio global. 14 módulos, 56 h, grupos de 25 plazas.",
+        "Curso 100 % online y en directo, en español: consigue un empleo remoto internacional o monta tu negocio global. 14 módulos, 56 h, grupos de 25 plazas.",
     },
     nav: {
       // La marca sola no dice a qué nos dedicamos. Quien llega desde un
       // anuncio no nos conoce: en la barra tiene que leerse qué somos y qué
       // está mirando, en dos líneas.
       school: "Escuela de trabajo remoto",
-      course: "Programa Remote Professional & Founder",
+      course: "Curso Remote Professional · Curso Remote Founder",
       cta: "Solicita información",
       ctaShort: "Solicita info",
     },
@@ -70,7 +80,7 @@ export const adCopy = {
       titleTop: "La Escuela para conseguir tu empleo remoto internacional o crear tu propio negocio global.",
       titleBottom: "Escoge entre el Curso Remote Professional o el Curso Remote Founder.",
       lead: "Formación online y en directo. Clases de cuatro horas los fines de semana, durante siete semanas, y los recursos que necesitas al terminar cada módulo.",
-      formTitle: "Recibe el programa completo",
+      formTitle: "Recibe el curso completo",
       formLead: "Temario, fechas, horarios y condiciones. Sin compromiso.",
       // Cuatro datos, no seis: aquí van los de decisión —qué formato, cuándo
       // empieza, a qué ritmo y cuánto cuesta—. El tamaño del programa lo
@@ -116,7 +126,7 @@ export const adCopy = {
         { k: "Desde donde estés", v: "Solo hace falta conexión: da igual el país o el huso." },
         { k: "Y queda grabada", v: "En el campus, sin caducidad, por si te pierdes una." },
       ],
-      videoLabel: "Fragmento de una clase en directo del programa",
+      videoLabel: "Fragmento de una clase en directo del curso",
     },
 
     // Cuatro bloques con el formato de la referencia: un titular que se lee
@@ -136,7 +146,7 @@ export const adCopy = {
       {
         icon: "globe" as const,
         title: "Sede en Dubái, aula en todo el mundo",
-        body: "La escuela opera desde Emiratos y el programa es 100 % online: se sigue desde cualquier país y cualquier huso horario, sin mudarte a ninguna parte.",
+        body: "La escuela opera desde Emiratos y el curso es 100 % online: se sigue desde cualquier país y cualquier huso horario, sin mudarte a ninguna parte.",
       },
       {
         icon: "stack" as const,
@@ -314,7 +324,7 @@ export const adCopy = {
       title: "Los perfiles, los sectores y lo que se paga",
       lead: "Perfiles habituales en equipos distribuidos con su sueldo de referencia en España, y los sectores donde se monta negocio sin oficina. Son datos públicos de Glassdoor, no una previsión nuestra: cada puesto enlaza a su ficha.",
       salaryLabel: "Sueldo bruto anual en España · rango típico",
-      salaryNote: "Rango del percentil 25 al 75 en Glassdoor España, consultado en septiembre de 2026. Es la referencia del mercado español para cada puesto, no una estimación de lo que cobrarás al terminar el programa.",
+      salaryNote: "Rango del percentil 25 al 75 en Glassdoor España, consultado en septiembre de 2026. Es la referencia del mercado español para cada puesto, no una estimación de lo que cobrarás al terminar el curso.",
       roles: [
         { name: "Product Marketing Manager", range: "35.000 – 61.750 €", url: "https://www.glassdoor.es/Sueldos/product-marketing-manager-sueldo-SRCH_KO0,25.htm" },
         { name: "Product Manager", range: "32.000 – 59.000 €", url: "https://www.glassdoor.es/Sueldos/product-manager-sueldo-SRCH_KO0,15.htm" },
@@ -336,7 +346,7 @@ export const adCopy = {
       mapLabel: "Mapa de la sede de ActiveXRemote en Dubái",
       mapCta: "Ver el mapa",
       mapNotice: "Has rechazado las cookies de preferencias, así que el mapa de Google no se carga. Puedes abrirlo sólo para esta visita.",
-      note: "La escuela opera desde Emiratos Árabes Unidos y el programa es 100 % online: no hay que venir a ninguna parte.",
+      note: "La escuela opera desde Emiratos Árabes Unidos y el curso es 100 % online: no hay que venir a ninguna parte.",
     },
     alumni: {
       title: "Empresas donde trabajan nuestros alumnos",
@@ -350,7 +360,7 @@ export const adCopy = {
 
     whatsapp: {
       label: "Escríbenos por WhatsApp",
-      message: "Hola, me interesa el programa de ActiveXRemote. ¿Me contáis?",
+      message: "Hola, me interesa el curso de ActiveXRemote. ¿Me contáis?",
     },
 
     faculty: {
@@ -371,7 +381,7 @@ export const adCopy = {
     // tarjetas aceptadas y quién cobra), así que su texto sale de
     // bienvenida/copy.ts y aquí sólo queda lo propio de esta página.
     footer: {
-      note: "Cada marca es propiedad de su compañía: los partners aportan beneficios para nuestros alumnos, pero no acreditan el programa ni emiten el diploma. El diploma lo emite ActiveXRemote detallando los módulos superados: es una certificación privada de empresa, no un título oficial ni un grado universitario.",
+      note: "Cada marca es propiedad de su compañía: los partners aportan beneficios para nuestros alumnos, pero no acreditan el curso ni emiten el diploma. El diploma lo emite ActiveXRemote detallando los módulos superados: es una certificación privada de empresa, no un título oficial ni un grado universitario.",
     },
   },
 
@@ -379,11 +389,11 @@ export const adCopy = {
     meta: {
       title: "Live online training to work without borders · 7 weekends",
       description:
-        "A 100% online, live programme in Spanish: land an international remote job or build your own global business. 14 modules, 56 hours, cohorts of 25.",
+        "A 100% online, live course in Spanish: land an international remote job or build your own global business. 14 modules, 56 hours, cohorts of 25.",
     },
     nav: {
       school: "Remote work school",
-      course: "Remote Professional & Founder programme",
+      course: "Remote Professional course · Remote Founder course",
       cta: "Request information",
       ctaShort: "Request info",
     },
@@ -393,7 +403,7 @@ export const adCopy = {
       titleTop: "The school for landing an international remote job or building your own global business.",
       titleBottom: "Choose between the Remote Professional course and the Remote Founder course.",
       lead: "Live online training, taught in Spanish. Four-hour classes at weekends, over seven weeks, and the resources you need at the end of every module.",
-      formTitle: "Get the full programme",
+      formTitle: "Get the full course",
       formLead: "Syllabus, dates, schedule and terms. No strings attached.",
       facts: [
         { k: "Format", v: "100% online, live" },
@@ -428,7 +438,7 @@ export const adCopy = {
         { k: "From wherever you are", v: "All you need is a connection: country and time zone don't matter." },
         { k: "And it is recorded", v: "It stays in the campus, with no expiry, in case you miss one." },
       ],
-      videoLabel: "A clip from a live class of the programme",
+      videoLabel: "A clip from a live class of the course",
     },
 
     pillars: [
@@ -445,7 +455,7 @@ export const adCopy = {
       {
         icon: "globe" as const,
         title: "Based in Dubai, classroom everywhere",
-        body: "The school operates from the UAE and the programme is 100% online: follow it from any country and any time zone, without moving anywhere.",
+        body: "The school operates from the UAE and the course is 100% online: follow it from any country and any time zone, without moving anywhere.",
       },
       {
         icon: "stack" as const,
@@ -594,7 +604,7 @@ export const adCopy = {
       title: "The roles, the sectors and what they pay",
       lead: "Roles common in distributed teams with their reference salary in Spain, and the sectors where businesses get built without an office. Public Glassdoor data, not a forecast of ours: every role links to its page.",
       salaryLabel: "Gross annual salary in Spain · typical range",
-      salaryNote: "25th-to-75th percentile range on Glassdoor Spain, checked in September 2026. It is the Spanish market reference for each role, not an estimate of what you will earn after the programme.",
+      salaryNote: "25th-to-75th percentile range on Glassdoor Spain, checked in September 2026. It is the Spanish market reference for each role, not an estimate of what you will earn after the course.",
       roles: [
         { name: "Product Marketing Manager", range: "€35,000 – 61,750", url: "https://www.glassdoor.es/Sueldos/product-marketing-manager-sueldo-SRCH_KO0,25.htm" },
         { name: "Product Manager", range: "€32,000 – 59,000", url: "https://www.glassdoor.es/Sueldos/product-manager-sueldo-SRCH_KO0,15.htm" },
@@ -614,7 +624,7 @@ export const adCopy = {
       mapLabel: "Map of the ActiveXRemote office in Dubai",
       mapCta: "Show the map",
       mapNotice: "You turned down preference cookies, so the Google map is not loaded. You can open it just for this visit.",
-      note: "The school operates from the United Arab Emirates and the programme is 100% online: there is nowhere to travel to.",
+      note: "The school operates from the United Arab Emirates and the course is 100% online: there is nowhere to travel to.",
     },
     alumni: {
       title: "Where our students work",
@@ -628,7 +638,7 @@ export const adCopy = {
 
     whatsapp: {
       label: "Message us on WhatsApp",
-      message: "Hi, I'm interested in the ActiveXRemote programme. Could you tell me more?",
+      message: "Hi, I'm interested in the ActiveXRemote course. Could you tell me more?",
     },
 
     faculty: {
@@ -643,7 +653,7 @@ export const adCopy = {
     },
 
     footer: {
-      note: "Each brand belongs to its own company: partners provide benefits for our students, but they do not accredit the programme or issue the diploma. The diploma is issued by ActiveXRemote listing the modules passed: it is a private company certification, not an official qualification or a university degree.",
+      note: "Each brand belongs to its own company: partners provide benefits for our students, but they do not accredit the course or issue the diploma. The diploma is issued by ActiveXRemote listing the modules passed: it is a private company certification, not an official qualification or a university degree.",
     },
   },
 } satisfies Record<Locale, unknown>;

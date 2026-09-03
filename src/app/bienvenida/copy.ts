@@ -84,7 +84,7 @@ export const landingCopy = {
       sending: "Enviando…",
       okTitle: "Solicitud recibida.",
       okBody: "Te escribimos en menos de 24 horas laborables con toda la información.",
-      legal: "Solo usamos tus datos para enviarte información del programa. Nada de spam.",
+      legal: "Solo usamos tus datos para enviarte información del curso. Nada de spam.",
       errors: {
         missing_course: "Elige al menos un curso.",
         missing_fields: "Completa todos los campos.",
@@ -599,7 +599,7 @@ export const landingCopy = {
       sending: "Sending…",
       okTitle: "Request received.",
       okBody: "We'll get back to you within 24 business hours with all the details.",
-      legal: "We only use your data to send you program information. No spam.",
+      legal: "We only use your data to send you course information. No spam.",
       errors: {
         missing_course: "Pick at least one course.",
         missing_fields: "Please fill in every field.",
