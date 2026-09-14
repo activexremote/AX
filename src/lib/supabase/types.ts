@@ -219,6 +219,38 @@ export interface QuizAttempt {
   created_at: string;
 }
 
+export type KbKind = "faq" | "documento";
+
+/** Lo que el equipo sube para el asistente del campus. */
+export interface KbSource {
+  id: string;
+  kind: KbKind;
+  /** null = vale para todos los cursos. */
+  course: CourseKey | null;
+  /** En una FAQ, la pregunta; en un documento, el título. */
+  title: string;
+  /** En una FAQ, la respuesta; en un documento, el texto entero. */
+  body: string;
+  file_name: string | null;
+  active: boolean;
+  chunks_count: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AssistantQuestion {
+  id: string;
+  user_id: string;
+  question: string;
+  answer: string | null;
+  /** false = no se encontró nada que encajara. */
+  answered: boolean;
+  source_ids: string[];
+  reviewed: boolean;
+  created_at: string;
+}
+
 type TableDef<Row, Insert, Update> = {
   Row: Row;
   Insert: Insert;
@@ -244,6 +276,8 @@ export interface Database {
       submissions: TableDef<Submission, Partial<Submission> & { user_id: string; lesson_id: string }, Partial<Submission>>;
       unlocks: TableDef<Unlock, Partial<Unlock> & { key: string; course: CourseKey; title: string }, Partial<Unlock>>;
       user_unlocks: TableDef<UserUnlock, Partial<UserUnlock> & { user_id: string; unlock_key: string }, Partial<UserUnlock>>;
+      kb_sources: TableDef<KbSource, Partial<KbSource> & { kind: KbKind; title: string }, Partial<KbSource>>;
+      assistant_questions: TableDef<AssistantQuestion, Partial<AssistantQuestion> & { user_id: string; question: string }, Partial<AssistantQuestion>>;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

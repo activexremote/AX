@@ -37,7 +37,8 @@
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
     "sass": "^1.99.0",
-    "stripe": "^22.5.0"
+    "stripe": "^22.5.0",
+    "unpdf": "^1.8.1"
   },
   "devDependencies": {
     "@types/node": "^20",

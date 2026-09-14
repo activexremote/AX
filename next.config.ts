@@ -12,7 +12,10 @@ const nextConfig: NextConfig = {
   // PDFKit lee sus fuentes base (los .afm de Helvetica) del disco, con rutas
   // relativas a su propio paquete. Empaquetarlo rompe esas rutas y el PDF
   // falla al escribir la primera letra: se deja fuera del bundle.
-  serverExternalPackages: ["pdfkit"],
+  //
+  // unpdf (el texto de los PDF que se suben al asistente) trae su propio
+  // PDF.js y lo carga con un import dinámico: fuera del bundle también.
+  serverExternalPackages: ["pdfkit", "unpdf"],
   // Y además hay que llevarse sus .afm a la función.
   //
   // PDFKit abre las métricas de Helvetica con
@@ -25,6 +28,13 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ["@carbon/react", "@carbon/icons-react"],
+    // Los documentos del asistente (/admin/asistente) se suben por server
+    // action, y el límite por defecto es 1 MB: un PDF de calendario con
+    // cuatro imágenes ya no entraba. 4 MB, que es lo que admite Vercel en el
+    // cuerpo de una petición a una función.
+    serverActions: {
+      bodySizeLimit: "4mb",
+    },
   },
   images: {
     remotePatterns: [
