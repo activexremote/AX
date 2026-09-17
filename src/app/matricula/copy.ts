@@ -30,6 +30,7 @@ export const checkoutCopy: Record<Locale, {
   errors: Record<string, string>;
   cancelled: { title: string; body: string; retry: string; help: string };
   unavailable: { title: string; body: string };
+  closed: { title: string; body: string; cta: string };
   thanks: {
     title: string;
     body: string;
@@ -108,6 +109,11 @@ export const checkoutCopy: Record<Locale, {
     unavailable: {
       title: "El pago todavía no está activo.",
       body: "Estamos terminando de configurarlo. Déjanos tus datos desde la página del programa y te avisamos en cuanto se abra la matrícula.",
+    },
+    closed: {
+      title: "La plaza se reserva hablando con el equipo.",
+      body: "Déjanos tus datos y te enviamos el temario, las fechas, el precio y las condiciones de la convocatoria. Te escribimos en menos de 24 horas laborables, sin compromiso.",
+      cta: "Solicita información",
     },
     thanks: {
       title: "Matrícula confirmada.",
@@ -190,6 +196,11 @@ export const checkoutCopy: Record<Locale, {
     unavailable: {
       title: "Payment is not live yet.",
       body: "We're finishing the setup. Leave your details on the program page and we'll tell you the moment enrolment opens.",
+    },
+    closed: {
+      title: "Seats are booked by talking to the team.",
+      body: "Leave us your details and we'll send you the syllabus, the dates, the price and the cohort's terms. We reply within 24 working hours, no strings attached.",
+      cta: "Request information",
     },
     thanks: {
       title: "Enrolment confirmed.",

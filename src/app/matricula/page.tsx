@@ -3,6 +3,8 @@ import type { Metadata, Viewport } from "next";
 import { LandingNav } from "@/components/landing/landing-nav";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { CheckoutForm, type OfferView } from "@/components/landing/checkout-form";
+import { LocaleLink } from "@/components/locale-link";
+import { CHECKOUT_OPEN } from "@/app/bienvenida/flags";
 import { checkoutCopy } from "@/app/matricula/copy";
 import { getLocale } from "@/lib/i18n/server";
 import { alternates } from "@/lib/seo";
@@ -37,7 +39,9 @@ export default async function CheckoutPage({
   // Sin claves de Stripe no se enseña un botón de pago que va a reventar.
   const ready = stripeConfigured();
 
-  const offers: OfferView[] = availableOffers().map((o) => ({
+  // Con la matrícula cerrada no se calcula ni se envía al navegador ningún
+  // importe: tampoco en el HTML ni en los datos de la página.
+  const offers: OfferView[] = !CHECKOUT_OPEN ? [] : availableOffers().map((o) => ({
     key: o.key,
     courses: o.courses,
     amount: formatAmount(o.unitAmount, locale),
@@ -60,7 +64,7 @@ export default async function CheckoutPage({
         {/* Vuelta desde Stripe sin pagar. No se le regaña ni se le esconde el
             camino de salida: sus datos ya están guardados, así que basta con
             decirle que no se ha cobrado nada y dejar el pago a un clic. */}
-        {sp.cancelado ? (
+        {sp.cancelado && CHECKOUT_OPEN ? (
           <div className="axr-checkout__notice" role="status">
             <strong>{c.cancelled.title}</strong>
             <p>{c.cancelled.body}</p>
@@ -68,7 +72,21 @@ export default async function CheckoutPage({
           </div>
         ) : null}
 
-        {ready ? (
+        {/* Matrícula cerrada (ver CHECKOUT_OPEN): ni ofertas ni precios, sólo
+            el camino al formulario de información. */}
+        {!CHECKOUT_OPEN ? (
+          <div className="axr-checkout__notice" role="status">
+            <strong>{c.closed.title}</strong>
+            <p>{c.closed.body}</p>
+            <LocaleLink
+              href="/bienvenida#solicitar"
+              className="axr-lp__btn axr-lp__btn--solid axr-lp__btn--lg axr-checkout__closed-cta"
+            >
+              {c.closed.cta}
+              <span aria-hidden>→</span>
+            </LocaleLink>
+          </div>
+        ) : ready ? (
           <CheckoutForm
             copy={c}
             offers={offers}

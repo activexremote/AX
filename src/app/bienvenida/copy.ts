@@ -164,11 +164,11 @@ export const landingCopy = {
         ninja: "Truco:",
       },
     },
-    // ⚠︎ «Top #1» a petición expresa del equipo. Es un superlativo
-    // comparativo: la Directiva 2005/29/CE pide poder sostenerlo, así que hay
-    // que tener a mano con qué criterio o en qué ranking somos el #1.
+    // ⚠︎ Nada de «Top #1» ni «líder»: son superlativos comparativos y la
+    // Directiva 2005/29/CE pide poder demostrarlos. «Especialista» describe
+    // lo que somos sin compararnos con nadie.
     statement: {
-      top: "ActiveXRemote, Top #1 en formación práctica y 100 % actualizada en Remote Business.",
+      top: "ActiveXRemote, la escuela especialista en formación práctica y 100 % actualizada en Remote Business.",
       bottom: "Fórmate en directo y online, con una metodología diseñada para avanzar al ritmo del mercado remoto actual.",
     },
     features: [
@@ -677,7 +677,7 @@ export const landingCopy = {
       },
     },
     statement: {
-      top: "ActiveXRemote, Top #1 in hands-on, 100% up-to-date Remote Business training.",
+      top: "ActiveXRemote, the specialist school for hands-on, 100% up-to-date Remote Business training.",
       bottom: "Train live and online, with a method designed to keep pace with today's remote market.",
     },
     features: [

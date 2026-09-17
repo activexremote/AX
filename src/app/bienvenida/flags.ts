@@ -36,3 +36,13 @@ export const PROTOTYPE_ALUMNI = false;
  * una decisión comercial; por eso tampoco salen en el menú (copy.ts → nav).
  */
 export const SHOW_FLASH_COURSES = false;
+
+/**
+ * Matrícula online en /matricula.
+ * Cerrada a petición del equipo mientras los precios no sean públicos. No se
+ * puede dejar el formulario de pago sin importes: antes de cobrar hay que
+ * enseñar el precio total. Así que, cerrada, la página no enseña ofertas ni
+ * precios y manda a pedir información. El cobro en Stripe no se toca: al
+ * volver a true, todo vuelve a funcionar como estaba.
+ */
+export const CHECKOUT_OPEN = false;
