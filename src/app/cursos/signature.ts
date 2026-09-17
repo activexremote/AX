@@ -161,7 +161,7 @@ export const modelCopy: Record<Locale, ModelCopy> = {
   es: {
     eyebrow: "El cambio de modelo",
     title: "Mientras cobres por horas, tu negocio tiene un techo con fecha.",
-    lead: "No es una cuestión de tarifas. Es una cuestión de qué vendes: si vendes tiempo, cada euro más exige una hora más. Este es el salto que se construye durante las siete semanas de especialización.",
+    lead: "No es una cuestión de tarifas. Es una cuestión de qué vendes: si vendes tiempo, cada euro más exige una hora más. Este es el salto que se construye durante la especialización.",
     rowLabels: [
       "Qué vendes",
       "Cómo se fija el precio",
@@ -205,7 +205,7 @@ export const modelCopy: Record<Locale, ModelCopy> = {
   en: {
     eyebrow: "The model shift",
     title: "As long as you bill by the hour, your business has a ceiling with a date on it.",
-    lead: "It is not a question of rates. It is a question of what you sell: if you sell time, every extra euro demands an extra hour. This is the jump built during the seven weeks of specialisation.",
+    lead: "It is not a question of rates. It is a question of what you sell: if you sell time, every extra euro demands an extra hour. This is the jump built during the specialisation.",
     rowLabels: [
       "What you sell",
       "How price is set",

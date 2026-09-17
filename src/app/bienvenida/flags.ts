@@ -27,3 +27,12 @@ export const PROTOTYPE_RATINGS = false;
  * el caso más claro de publicidad engañosa de toda la página.
  */
 export const PROTOTYPE_ALUMNI = false;
+
+/**
+ * Banda de cursos relámpago en la portada.
+ * Apagada a petición del equipo: por ahora no se quiere desviar a nadie de
+ * los dos cursos largos, que son los que se venden primero. No es un dato de
+ * maqueta —los relámpago existen y /cursos-relampago sigue publicada—, sólo
+ * una decisión comercial; por eso tampoco salen en el menú (copy.ts → nav).
+ */
+export const SHOW_FLASH_COURSES = false;

@@ -73,7 +73,8 @@ export function CourseSchema({ locale, slug }: { locale: Locale; slug: CourseSlu
     hasCourseInstance: {
       "@type": "CourseInstance",
       courseMode: "online",
-      courseWorkload: "P14W",
+      // Las 56 h lectivas, repartidas en siete fines de semana.
+      courseWorkload: "PT56H",
       inLanguage: locale,
       name: l.hero.tagline,
     },

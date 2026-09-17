@@ -48,9 +48,6 @@ export type CourseCopy = {
     eyebrow: string;
     title: string;
     lead: string;
-    price: string;
-    priceNote: string;
-    bundle: string;
     items: string[];
     cta: string;
   };
@@ -69,12 +66,12 @@ const professionalEs: CourseCopy = {
   },
   hero: {
     eyebrow: "ActiveX Curso",
-    title: "Remote Professional",
+    title: "Curso Remote Professional",
     subtitle: "Construye una carrera profesional sin fronteras",
     lead: "Aprende a trabajar, crecer y ganar en el mercado global del trabajo remoto.",
     body: [
       "El mercado laboral ya no está limitado por la ciudad en la que vives.",
-      "ActiveX Remote Professional te prepara para competir por oportunidades internacionales, trabajar con equipos distribuidos y construir una carrera profesional diseñada para el mundo remoto.",
+      "La Escuela ActiveXRemote te prepara para competir por oportunidades internacionales, trabajar con equipos distribuidos y construir una carrera profesional diseñada para el mundo remoto.",
       "No se trata simplemente de encontrar un trabajo remoto. Se trata de convertirte en un profesional preparado para el mercado global.",
     ],
     cta: "Quiero prepararme para el mercado global",
@@ -82,8 +79,8 @@ const professionalEs: CourseCopy = {
     facts: [
       { value: "14", label: "módulos" },
       { value: "56h", label: "en directo" },
-      { value: "14", label: "semanas" },
-      { value: "1 Dic", label: "arranca la convocatoria" },
+      { value: "7", label: "fines de semana" },
+      { value: "9 Ene", label: "arranca la convocatoria" },
     ],
   },
   shift: {
@@ -439,11 +436,8 @@ const professionalEs: CourseCopy = {
   },
   enroll: {
     eyebrow: "Convocatoria",
-    title: "Empieza el 1 de diciembre de 2026",
-    lead: "14 semanas, una sesión en directo de 4 horas por semana, en grupos de 25 plazas.",
-    price: "2.400 €",
-    priceNote: "pago único o 3 plazos de 800 €",
-    bundle: "¿Los dos cursos? 3.900 € · matrícula anticipada de 2.100 € hasta el 31 de octubre.",
+    title: "Empieza el 9 de enero de 2027",
+    lead: "7 fines de semana, hasta el 21 de febrero: dos clases en directo de 4 horas cada fin de semana, en grupos de 25 plazas.",
     items: [
       "14 módulos en directo (56 h lectivas)",
       "Campus virtual con grabaciones y audio narrado",
@@ -524,21 +518,21 @@ const founderEs: CourseCopy = {
   },
   hero: {
     eyebrow: "ActiveX Curso",
-    title: "Remote Founder",
+    title: "Curso Remote Founder",
     subtitle: "Construye un negocio que pueda funcionar desde cualquier lugar",
     lead: "Convierte tu experiencia en una oferta global, consigue clientes internacionales y crea un negocio remoto diseñado para darte más libertad.",
     body: [
       "No necesitas construir una gran empresa para construir una gran vida.",
       "Puedes empezar con una habilidad. Convertirla en una oferta. Encontrar clientes en cualquier mercado. Automatizar lo repetitivo. Delegar lo que no necesitas hacer tú.",
-      "Y construir progresivamente un negocio que no dependa de estar físicamente en un lugar concreto. ActiveX Remote Founder te enseña a hacerlo.",
+      "Y construir progresivamente un negocio que no dependa de estar físicamente en un lugar concreto. La Escuela ActiveXRemote te enseña a hacerlo.",
     ],
     cta: "Quiero construir mi negocio remoto",
     formTitle: "Pide información del curso.",
     facts: [
       { value: "14", label: "módulos" },
       { value: "56h", label: "en directo" },
-      { value: "14", label: "semanas" },
-      { value: "1 Dic", label: "arranca la convocatoria" },
+      { value: "7", label: "fines de semana" },
+      { value: "9 Ene", label: "arranca la convocatoria" },
     ],
   },
   shift: {
@@ -905,11 +899,8 @@ const founderEs: CourseCopy = {
   },
   enroll: {
     eyebrow: "Convocatoria",
-    title: "Empieza el 1 de diciembre de 2026",
-    lead: "14 semanas, una sesión en directo de 4 horas por semana, en grupos de 25 plazas.",
-    price: "2.400 €",
-    priceNote: "pago único o 3 plazos de 800 €",
-    bundle: "¿Los dos cursos? 3.900 € · matrícula anticipada de 2.100 € hasta el 31 de octubre.",
+    title: "Empieza el 9 de enero de 2027",
+    lead: "7 fines de semana, hasta el 21 de febrero: dos clases en directo de 4 horas cada fin de semana, en grupos de 25 plazas.",
     items: [
       "14 módulos en directo (56 h lectivas)",
       "Campus virtual con grabaciones y audio narrado",
@@ -995,12 +986,12 @@ const professionalEn: CourseCopy = {
   },
   hero: {
     eyebrow: "ActiveX Course",
-    title: "Remote Professional",
+    title: "Remote Professional Course",
     subtitle: "Build a professional career without borders",
     lead: "Learn to work, grow and earn in the global remote job market.",
     body: [
       "The job market is no longer limited by the city you live in.",
-      "ActiveX Remote Professional prepares you to compete for international opportunities, work with distributed teams and build a career designed for the remote world.",
+      "The ActiveXRemote School prepares you to compete for international opportunities, work with distributed teams and build a career designed for the remote world.",
       "It's not simply about finding a remote job. It's about becoming a professional ready for the global market.",
     ],
     cta: "I want to get ready for the global market",
@@ -1008,8 +999,8 @@ const professionalEn: CourseCopy = {
     facts: [
       { value: "14", label: "modules" },
       { value: "56h", label: "live" },
-      { value: "14", label: "weeks" },
-      { value: "Dec 1", label: "cohort starts" },
+      { value: "7", label: "weekends" },
+      { value: "9 Jan", label: "cohort starts" },
     ],
   },
   shift: {
@@ -1364,11 +1355,8 @@ const professionalEn: CourseCopy = {
   },
   enroll: {
     eyebrow: "Cohort",
-    title: "Starts December 1, 2026",
-    lead: "14 weeks, one 4-hour live session per week, in groups of 25 seats.",
-    price: "€2,400",
-    priceNote: "one payment or 3 instalments of €800",
-    bundle: "Want both courses? €3,900 · early bird €2,100 until October 31.",
+    title: "Starts 9 January 2027",
+    lead: "7 weekends, until 21 February: two 4-hour live classes every weekend, in groups of 25 seats.",
     items: [
       "14 live modules (56 teaching hours)",
       "Virtual campus with recordings and narrated audio",
@@ -1449,21 +1437,21 @@ const founderEn: CourseCopy = {
   },
   hero: {
     eyebrow: "ActiveX Course",
-    title: "Remote Founder",
+    title: "Remote Founder Course",
     subtitle: "Build a business that can run from anywhere",
     lead: "Turn your experience into a global offer, win international clients and create a remote business designed to give you more freedom.",
     body: [
       "You don't need to build a huge company to build a great life.",
       "You can start with a skill. Turn it into an offer. Find clients in any market. Automate the repetitive. Delegate what you don't need to do yourself.",
-      "And progressively build a business that doesn't depend on being physically in one place. ActiveX Remote Founder teaches you how.",
+      "And progressively build a business that doesn't depend on being physically in one place. The ActiveXRemote School teaches you how.",
     ],
     cta: "I want to build my remote business",
     formTitle: "Request course information.",
     facts: [
       { value: "14", label: "modules" },
       { value: "56h", label: "live" },
-      { value: "14", label: "weeks" },
-      { value: "Dec 1", label: "cohort starts" },
+      { value: "7", label: "weekends" },
+      { value: "9 Jan", label: "cohort starts" },
     ],
   },
   shift: {
@@ -1829,11 +1817,8 @@ const founderEn: CourseCopy = {
   },
   enroll: {
     eyebrow: "Cohort",
-    title: "Starts December 1, 2026",
-    lead: "14 weeks, one 4-hour live session per week, in groups of 25 seats.",
-    price: "€2,400",
-    priceNote: "one payment or 3 instalments of €800",
-    bundle: "Want both courses? €3,900 · early bird €2,100 until October 31.",
+    title: "Starts 9 January 2027",
+    lead: "7 weekends, until 21 February: two 4-hour live classes every weekend, in groups of 25 seats.",
     items: [
       "14 live modules (56 teaching hours)",
       "Virtual campus with recordings and narrated audio",

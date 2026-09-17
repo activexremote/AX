@@ -15,7 +15,7 @@ import { HeroBackdrop } from "@/components/landing/hero-backdrop";
 import { FacultySection } from "@/components/landing/faculty-section";
 import { getLocale } from "@/lib/i18n/server";
 import { landingCopy, type LandingCopy } from "@/app/bienvenida/copy";
-import { PROTOTYPE_ALUMNI } from "@/app/bienvenida/flags";
+import { PROTOTYPE_ALUMNI, SHOW_FLASH_COURSES } from "@/app/bienvenida/flags";
 import { FlashCard } from "@/components/landing/flash-card";
 import { FLASH_COURSES } from "@/lib/relampago/catalog";
 import { stripeConfigured } from "@/lib/stripe/client";
@@ -210,7 +210,11 @@ export async function LandingView() {
           una pantalla entera en medio de la página que vende el programa.
 
           Todo lo demás —qué es un relámpago, el ciclo, la comparación— está
-          en /cursos-relampago, que es a donde lleva. */}
+          en /cursos-relampago, que es a donde lleva.
+
+          Oculta por ahora (SHOW_FLASH_COURSES en flags.ts): el equipo no
+          quiere desviar leads de los dos cursos que se venden primero. */}
+      {SHOW_FLASH_COURSES && (
       <section id="relampago" className="axr-lp__flash">
         <div className="axr-lp__flash-inner">
           <div className="axr-lp__flash-head">
@@ -240,6 +244,7 @@ export async function LandingView() {
           </LocaleLink>
         </div>
       </section>
+      )}
 
       {/* ── Statement ───────────────────────────────── */}
       <section className="axr-lp__statement">
@@ -273,9 +278,8 @@ export async function LandingView() {
       </section>
 
       {/* ── Acceso / plan ───────────────────────────── */}
-      {/* El precio, antes de pedir nada. Vivía en la sección 14 y dentro de
-          una pregunta del FAQ: esconderlo en un producto de pago genera más
-          fricción de la que evita. */}
+      {/* La convocatoria, SIN precio por ahora (ver access en copy.ts): qué
+          incluye, cuándo arranca y una sola salida, el formulario. */}
       <section id="acceso" className="axr-lp__access">
         <div className="axr-lp__access-inner">
           <div className="axr-lp__access-text">
@@ -286,10 +290,6 @@ export async function LandingView() {
           <div className="axr-lp__plan">
             <div className="axr-lp__plan-head">
               <span className="axr-lp__plan-name">{c.access.planName}</span>
-              <div className="axr-lp__plan-price">
-                <strong>{c.access.planPrice}</strong>
-                <span>{c.access.planNote}</span>
-              </div>
             </div>
             <p className="axr-lp__plan-start">{c.access.planStart}</p>
             <ul className="axr-lp__plan-features">
@@ -297,16 +297,12 @@ export async function LandingView() {
                 <li key={f}>{f}</li>
               ))}
             </ul>
-            <p className="axr-lp__plan-bundle">{c.access.planBundle}</p>
-            <LocaleLink
-              href="/matricula"
+            <a
+              href="#solicitar"
               className="axr-lp__btn axr-lp__btn--solid axr-lp__btn--lg axr-lp__plan-cta"
             >
-              {c.access.buyCta}
+              {c.access.cta}
               <span aria-hidden>→</span>
-            </LocaleLink>
-            <a href="#solicitar" className="axr-lp__plan-alt">
-              {c.access.infoCta}
             </a>
           </div>
         </div>

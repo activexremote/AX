@@ -62,9 +62,9 @@ export default async function Image() {
         <div style={{ display: "flex", gap: 28, fontSize: 22, opacity: 0.62 }}>
           <span>56 h en directo</span>
           <span>·</span>
-          <span>14 semanas</span>
+          <span>7 fines de semana</span>
           <span>·</span>
-          <span>2 caminos</span>
+          <span>2 cursos</span>
         </div>
       </div>
     ),

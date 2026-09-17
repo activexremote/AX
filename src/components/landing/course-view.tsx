@@ -1,7 +1,6 @@
 import { BrandMark } from "@/components/brand-mark";
 import { PartnerSection, PartnerStrip } from "@/components/landing/partners";
 import { LandingNav } from "@/components/landing/landing-nav";
-import { LocaleLink } from "@/components/locale-link";
 import { RatingBadges } from "@/components/landing/rating-badges";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { BlogSection } from "@/components/landing/blog-section";
@@ -284,40 +283,33 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
       {/* ── Acreditación ────────────────────────────── */}
       <PartnerSection />
 
-      {/* ── Convocatoria y precio ───────────────────── */}
+      {/* ── Convocatoria ─────────────────────────────── */}
+      {/* Sin precio por ahora, a petición del equipo: la tarjeta cuenta qué
+          incluye y cuándo arranca, y la única salida es el formulario. */}
       <section id="convocatoria" className="axr-cp__enroll">
         <div className="axr-cp__enroll-inner">
           <div className="axr-cp__enroll-text">
             <span className="axr-lp__eyebrow">{c.enroll.eyebrow}</span>
             <h2>{c.enroll.title}</h2>
             <p>{c.enroll.lead}</p>
-            <p className="axr-cp__enroll-bundle">{c.enroll.bundle}</p>
           </div>
 
           <div className="axr-lp__plan">
             <div className="axr-lp__plan-head">
               <span className="axr-lp__plan-name">{c.hero.title}</span>
-              <div className="axr-lp__plan-price">
-                <strong>{c.enroll.price}</strong>
-                <span>{c.enroll.priceNote}</span>
-              </div>
             </div>
             <ul className="axr-lp__plan-features">
               {c.enroll.items.map((item) => (
                 <li key={item}>{item}</li>
               ))}
             </ul>
-            {/* El curso ya está elegido: se lo lleva puesto al checkout para
-                que no tenga que volver a decirlo. */}
-            <LocaleLink
-              href={`/matricula?curso=${slug}`}
+            {/* Al formulario del final, que ya lleva este curso marcado. */}
+            <a
+              href="#solicitar"
               className="axr-lp__btn axr-lp__btn--solid axr-lp__btn--lg axr-lp__plan-cta"
             >
-              {landingCopy[locale].access.buyCta}
+              {c.enroll.cta}
               <span aria-hidden>→</span>
-            </LocaleLink>
-            <a href="#solicitar" className="axr-lp__plan-alt">
-              {landingCopy[locale].access.infoCta}
             </a>
           </div>
         </div>

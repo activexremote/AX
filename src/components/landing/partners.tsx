@@ -102,7 +102,7 @@ export async function PartnerStrip({
           <li key={p.key}>
             {/* Sin enlace a propósito: el héroe no está para mandar a nadie
                 fuera. El nombre viaja en el alt del logo. */}
-            <PartnerMark p={p} size={30} />
+            <PartnerMark p={p} size={48} />
           </li>
         ))}
       </ul>

@@ -8,11 +8,10 @@ import { SlackLogo } from "@/components/slack-logo";
 import { TOOL_ICONS } from "@/components/landing/tool-icons";
 import { AdClocks, AdFx, AdHeroVideo, AdLiveVideo, AdStickyBar } from "@/components/landing/ad-fx";
 import { AdMap } from "@/components/landing/ad-map";
-import { PLACEHOLDER_LOGOS, PlaceholderLogos } from "@/components/landing/ad-logos";
+import { RemoteCompanies } from "@/components/landing/ad-logos";
 import { adCopy } from "@/app/trabajo-remoto/copy";
 import { COHORT_START, STACK_TOOLS, WHATSAPP_NUMBER } from "@/app/trabajo-remoto/contact";
 import { landingCopy } from "@/app/bienvenida/copy";
-import { TEACHERS, teacherCopy } from "@/app/trabajo-remoto/faculty";
 import { PARTNERS, partnerLogo } from "@/app/bienvenida/partners";
 import { ENTITY } from "@/app/legal/entity";
 import { TOOLS, type Tool } from "@/app/bienvenida/tools";
@@ -38,8 +37,8 @@ import "@/app/trabajo-remoto/ad-landing.scss";
 //  Todo lo que se afirma sale de datos que la web ya sostiene. Lo que no
 //  tenemos verificado va marcado como maqueta EN PANTALLA, no sólo en un
 //  comentario: los rangos salariales de la referencia se han sustituido por
-//  el entregable, los logotipos de empresa son inventados y lo dicen, y el
-//  profesorado arrastra el aviso de faculty.ts.
+//  el entregable, y las empresas del cierre se presentan como referentes del
+//  trabajo remoto, nunca como empleadoras de nuestros alumnos.
 // ══════════════════════════════════════════════════════════
 
 // Alto óptico de los logotipos de partner en el héroe.
@@ -720,8 +719,8 @@ export async function AdLandingView() {
       {/* Empresas, profesorado y formulario eran tres secciones seguidas y
           entre las tres ocupaban dos pantallas y media al final de la página,
           que es justo donde ya no queda paciencia. Aquí van juntas y en
-          blanco: a la izquierda la prueba —quién imparte y dónde acaba la
-          gente—, a la derecha la única acción. Es la última pantalla, así que
+          blanco: a la izquierda la prueba —las empresas que marcan el camino
+          del trabajo remoto—, a la derecha la única acción. Es la última pantalla, así que
           tiene que caber en una. */}
       <section id="solicitar" className="axr-ad__final axr-ad__section">
         <div className="axr-ad__wrap axr-ad__final-grid">
@@ -730,41 +729,13 @@ export async function AdLandingView() {
             <h2>{c.final.title}</h2>
             <p>{c.final.body}</p>
 
-            {/* Una persona real en vez de cuatro fichas de muestra, así que
-                la ficha crece: con nombre, cargo, un párrafo y el enlace al
-                perfil. Cuatro retratos inventados ocupaban más y sostenían
-                menos. */}
-            <span className="axr-ad__proof-label">{c.faculty.title}</span>
-            <ul className="axr-ad__team">
-              {TEACHERS.map((t) => (
-                <li key={t.id}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={t.photo} alt="" width={64} height={64} loading="lazy" decoding="async" />
-                  <div>
-                    <strong>{t.name}</strong>
-                    <em>{t[locale].role}</em>
-                    <p>{t[locale].bio}</p>
-                    <ul className="axr-ad__team-tags">
-                      {t[locale].tags.map((tag) => (
-                        <li key={tag}>{tag}</li>
-                      ))}
-                    </ul>
-                    <a href={t.url} target="_blank" rel="noopener noreferrer">
-                      {teacherCopy[locale].linkLabel}
-                      <span aria-hidden> →</span>
-                    </a>
-                  </div>
-                </li>
-              ))}
-            </ul>
-
+            {/* La ficha del profesor se ha retirado a petición del equipo.
+                Queda la fila de empresas referentes: ver la cabecera de
+                ad-logos.tsx sobre cómo se pueden presentar. */}
             <span className="axr-ad__proof-label">{c.alumni.title}</span>
             <div className="axr-ad__alumni-row">
-              <PlaceholderLogos />
+              <RemoteCompanies />
             </div>
-
-            {/* El aviso ya sólo cubre los logotipos: el profesorado es real. */}
-            {PLACEHOLDER_LOGOS && <p className="axr-ad__flag">{c.faculty.notice}</p>}
           </div>
 
           <div data-reveal>

@@ -18,17 +18,19 @@ export const landingCopy = {
     },
     // Barra superior. ⚠︎ Las plazas disponibles son un dato de maqueta.
     ticker: {
-      intro: "La convocatoria arranca el 1 de diciembre",
+      intro: "La convocatoria arranca el 9 de enero",
       seats: "8 de 25 plazas disponibles",
       units: { d: "días", h: "horas", m: "min", s: "seg" },
     },
     nav: {
+      // ⚠︎ Sin «Cursos relámpago» por ahora, a petición del equipo: no se quiere
+      // desviar a nadie de los dos cursos que se venden primero. La página
+      // /cursos-relampago sigue viva; sólo deja de enlazarse desde aquí.
       courses: {
         label: "Cursos",
         items: [
           { href: "/cursos/remote-professional", label: "Curso Remote Professional" },
           { href: "/cursos/remote-founder", label: "Curso Remote Founder" },
-          { href: "/cursos-relampago", label: "Cursos relámpago · 75 €" },
         ],
       },
       links: [
@@ -55,14 +57,14 @@ export const landingCopy = {
       // pantallazo y sin scroll.
       chooseLabel: "¿Qué quieres conseguir?",
       choose: [
-        { title: "Quiero un empleo remoto internacional", name: "Remote Professional", href: "/cursos/remote-professional" },
-        { title: "Quiero montar mi negocio remoto", name: "Remote Founder", href: "/cursos/remote-founder" },
+        { title: "Quiero un empleo remoto internacional", name: "Curso Remote Professional", href: "/cursos/remote-professional" },
+        { title: "Quiero montar mi negocio remoto", name: "Curso Remote Founder", href: "/cursos/remote-founder" },
       ],
       stats: [
         { value: "14", label: "módulos" },
         { value: "56h", label: "en directo" },
-        { value: "14", label: "semanas" },
-        { value: "2", label: "caminos" },
+        { value: "7", label: "fines de semana" },
+        { value: "2", label: "cursos" },
       ],
     },
     form: {
@@ -72,8 +74,8 @@ export const landingCopy = {
       courseLabel: "¿Qué curso te interesa?",
       courseHint: "Opcional. Puedes escoger los dos.",
       courses: [
-        { key: "remote-professional", label: "Remote Professional", sub: "Career Accelerator" },
-        { key: "remote-founder", label: "Remote Founder", sub: "Global Builder" },
+        { key: "remote-professional", label: "Curso Remote Professional", sub: "Career Accelerator" },
+        { key: "remote-founder", label: "Curso Remote Founder", sub: "Global Builder" },
       ],
       firstName: "Nombre",
       lastName: "Apellidos",
@@ -162,9 +164,12 @@ export const landingCopy = {
         ninja: "Truco:",
       },
     },
+    // ⚠︎ «Top #1» a petición expresa del equipo. Es un superlativo
+    // comparativo: la Directiva 2005/29/CE pide poder sostenerlo, así que hay
+    // que tener a mano con qué criterio o en qué ranking somos el #1.
     statement: {
-      top: "El trabajo en remoto se aprende",
-      bottom: "trabajando en remoto.",
+      top: "ActiveXRemote, Top #1 en formación práctica y 100 % actualizada en Remote Business.",
+      bottom: "Fórmate en directo y online, con una metodología diseñada para avanzar al ritmo del mercado remoto actual.",
     },
     features: [
       {
@@ -201,21 +206,21 @@ export const landingCopy = {
     },
     bento: {
       stat1: { value: "+320", label: "profesionales formados en 18 países" },
-      stat2: { value: "56h", label: "en directo, en 14 semanas" },
+      stat2: { value: "56h", label: "en directo, en 7 fines de semana" },
       quote:
         "«El remoto no falla por la distancia. Falla cuando no sabemos adaptarnos a esta forma de trabajar.»",
       quoteBy: "Manifiesto ActiveXRemote",
     },
     paths: {
-      eyebrow: "Elige tu camino",
-      title: "Dos rutas. Un mismo nivel de exigencia.",
-      lead: "Comparten los 7 módulos núcleo y se separan en la especialización. Puedes hacer los dos caminos.",
+      eyebrow: "Elige tu curso",
+      title: "Dos cursos. Un mismo nivel de exigencia.",
+      lead: "Comparten los 7 módulos núcleo y se separan en la especialización. Puedes hacer los dos cursos.",
       cta: "Solicita información",
       detail: "Ver el programa completo",
       items: [
         {
-          tag: "Camino 01",
-          name: "Remote Professional",
+          tag: "Curso 01",
+          name: "Curso Remote Professional",
           sub: "Career Accelerator",
           href: "/cursos/remote-professional",
           forWho: "Para empleados y contractors",
@@ -231,8 +236,8 @@ export const landingCopy = {
           ],
         },
         {
-          tag: "Camino 02",
-          name: "Remote Founder",
+          tag: "Curso 02",
+          name: "Curso Remote Founder",
           sub: "Global Builder",
           href: "/cursos/remote-founder",
           forWho: "Para founders, freelancers y solopreneurs",
@@ -371,18 +376,14 @@ export const landingCopy = {
       title: "Una escuela. Dos cursos. Un mismo campus.",
       lead: "Cada convocatoria es un grupo reducido: clases en directo, campus virtual con las grabaciones y acompañamiento en Slack durante todo el programa.",
       planName: "Un curso · 14 módulos",
-      planPrice: "2.400 €",
-      planNote: "pago único o 3 plazos de 800 €",
-      planStart: "Arranca el 1 de diciembre de 2026 · grupos de 25 plazas",
-      planBundle: "Los dos cursos: 3.900 € · matrícula anticipada 2.100 € hasta el 31 de octubre",
-      // Dos salidas: matricularse ya, o pedir información antes de decidir.
-      // Quien tiene la decisión tomada no debería tener que pasar por un
-      // formulario de contacto para poder pagar.
-      buyCta: "Matricularme ahora",
-      infoCta: "Antes prefiero información",
+      // ⚠︎ SIN PRECIOS por ahora, a petición del equipo, y sin botón de
+      // matrícula: la única salida es pedir información. Los importes eran
+      // 2.400 € por curso (o 3 plazos de 800 €), 3.900 € los dos y 2.100 € de
+      // matrícula anticipada; si vuelven, van aquí y en el FAQ.
+      planStart: "Arranca el 9 de enero de 2027 · grupos de 25 plazas",
       features: [
         "14 módulos en directo (56 h lectivas)",
-        "Una sesión de 4h por semana, durante 14 semanas",
+        "Dos clases de 4 h por fin de semana, durante 7 fines de semana",
         "Campus virtual con grabaciones y audio narrado",
         "Frameworks y plantillas descargables",
         "Ejercicio práctico y feedback en cada módulo",
@@ -392,21 +393,23 @@ export const landingCopy = {
       cta: "Solicita información",
     },
     // Cronograma real de la convocatoria. Todo lo que se afirma aquí sale de
-    // datos que ya sostiene el resto de la página (14 módulos, 4 h por semana,
-    // 14 semanas, grupos de 25, diploma emitido por la escuela).
+    // datos que ya sostiene el resto de la página (14 módulos, dos clases de
+    // 4 h por fin de semana, 7 fines de semana del 9 de enero al 21 de febrero
+    // de 2027, grupos de 25, diploma emitido por la escuela). Es el mismo
+    // calendario que la landing de campaña (trabajo-remoto/copy.ts).
     steps: {
       eyebrow: "Cómo funciona",
-      title: "Catorce semanas, paso a paso.",
-      lead: "Una sesión de 4 horas en directo por semana. Un módulo, un ejercicio y un entregable cada vez. Esto es lo que pasa desde que solicitas plaza hasta que sales con el diploma.",
+      title: "Siete fines de semana, paso a paso.",
+      lead: "Dos clases de 4 horas en directo cada fin de semana. Un módulo, un ejercicio y un entregable por clase. Esto es lo que pasa desde que solicitas plaza hasta que sales con el diploma.",
       totalLabel: "Duración total",
-      total: "14 semanas · 56 h en directo",
+      total: "7 fines de semana · 56 h en directo",
       doesLabel: "Qué haces",
       getsLabel: "Qué te llevas",
       items: [
         {
           n: "00",
           phase: "Antes de empezar",
-          when: "Semana 0",
+          when: "Antes del 9 de enero",
           meta: "Grupos de 25 plazas",
           title: "Solicitas plaza y entras al campus",
           desc: "Nos dices qué camino te interesa y te contamos cómo funciona el programa, sin compromiso. Las convocatorias son de 25 plazas, así que el orden de solicitud importa.",
@@ -420,12 +423,12 @@ export const landingCopy = {
         {
           n: "01",
           phase: "Fase 1 · Núcleo común",
-          when: "Semanas 1 – 7",
+          when: "Fines de semana 1 – 4",
           meta: "7 módulos · 28 h",
           title: "Montas la base del trabajo remoto",
           desc: "Los siete módulos que comparten los dos caminos: mindset y mercado global, geoposicionamiento y fiscalidad, reubicación, stack tecnológico, IA aplicada, energía y anti-burnout, y legal transfronterizo.",
           does: [
-            "Un módulo por semana, 4 h en directo",
+            "Dos módulos por fin de semana, 4 h en directo cada uno",
             "Teoría, walkthrough de herramientas y workshop",
             "Un ejercicio por módulo, aplicado a tu caso",
           ],
@@ -434,7 +437,7 @@ export const landingCopy = {
         {
           n: "02",
           phase: "El cruce",
-          when: "Semana 7",
+          when: "Fin de semana 4",
           meta: "Decisión reversible",
           title: "Eliges camino con criterio",
           desc: "Con el núcleo terminado ya sabes dónde encajas: Remote Professional si vas a por el empleo remoto internacional, Remote Founder si vas a construir tu propio negocio. No es una decisión a ciegas, y puedes cambiar cuando quieras.",
@@ -448,12 +451,12 @@ export const landingCopy = {
         {
           n: "03",
           phase: "Fase 2 · Especialización",
-          when: "Semanas 8 – 14",
+          when: "Fines de semana 4 – 7",
           meta: "7 módulos · 28 h",
           title: "Construyes lo que vas a enseñar",
           desc: "Aquí ya no se estudia: se produce. Professional sale con la candidatura, el portfolio y la negociación preparados. Founder sale con la oferta validada, los clientes y la operativa documentada.",
           does: [
-            "Un módulo por semana, 4 h en directo",
+            "Dos módulos por fin de semana, 4 h en directo cada uno",
             "Entregables reales, no apuntes",
             "Feedback del equipo y seguimiento en Slack",
           ],
@@ -462,7 +465,7 @@ export const landingCopy = {
         {
           n: "04",
           phase: "Después",
-          when: "A partir de la semana 14",
+          when: "Desde el 21 de febrero",
           meta: "Acceso sin caducidad",
           title: "Te certificas y te quedas dentro",
           desc: "El programa termina, el acceso no. El campus con las grabaciones y el audio narrado sigue abierto, y el diploma detalla módulo a módulo lo que has superado.",
@@ -480,13 +483,13 @@ export const landingCopy = {
       title: "Preguntas frecuentes.",
       items: [
         { q: "¿Qué camino me conviene?", a: "Remote Professional si buscas un empleo remoto internacional; Remote Founder si quieres lanzar tu propio negocio. Y puedes hacer los dos: comparten los 7 módulos núcleo." },
-        { q: "¿Cuánto cuesta?", a: "2.400 € por curso, en pago único o en 3 plazos de 800 € sin intereses. Los dos cursos juntos son 3.900 €, y hay matrícula anticipada de 2.100 € hasta el 31 de octubre." },
+        { q: "¿Cuánto cuesta?", a: "Solicita información y te enviamos el precio, las formas de pago —pago único o a plazos— y las condiciones de la convocatoria, sin compromiso." },
         { q: "¿Cuántos módulos tiene el programa?", a: "14 en total: 7 módulos núcleo compartidos y 7 especializados según el camino que elijas (Professional o Founder)." },
         { q: "¿Cuánto dura cada clase?", a: "Cada módulo es una clase de 4 horas en vivo: teoría, walkthrough de herramientas, workshop práctico y Q&A." },
         { q: "¿Necesito conocimientos previos?", a: "No. Los 7 módulos núcleo parten de cero y la especialización sube de nivel de forma progresiva." },
         { q: "¿Qué herramientas voy a usar?", a: "Notion, Slack, Wise, Deel, Zapier y modelos de IA, entre otras. Montas tu propio stack remoto durante el programa." },
         { q: "¿Es en directo o asíncrono?", a: "Las clases son en vivo, y tienes material, audio narrado y ejercicios para avanzar a tu ritmo en asíncrono." },
-        { q: "¿Cuándo empieza la próxima convocatoria?", a: "El 1 de diciembre de 2026, con una sesión de 4h por semana durante 14 semanas. Los grupos son de 25 plazas: solicita información y te enviamos calendario y horarios." },
+        { q: "¿Cuándo empieza la próxima convocatoria?", a: "El 9 de enero de 2027. Son siete fines de semana, hasta el 21 de febrero, con dos clases de 4 h cada fin de semana. Los grupos son de 25 plazas: solicita información y te enviamos calendario y horarios." },
         { q: "¿El diploma es un título oficial?", a: "No. Es una certificación privada que emite ActiveXRemote: el diploma detalla los módulos superados y las horas lectivas. No equivale a un grado universitario ni a un título académico oficial, y no lo acredita ninguna de las plataformas que se estudian en el programa." },
       ],
     },
@@ -537,7 +540,7 @@ export const landingCopy = {
     },
     // ⚠︎ Seats left is placeholder data.
     ticker: {
-      intro: "The cohort starts on December 1",
+      intro: "The cohort starts on 9 January",
       seats: "8 of 25 seats left",
       units: { d: "days", h: "hours", m: "min", s: "sec" },
     },
@@ -547,7 +550,6 @@ export const landingCopy = {
         items: [
           { href: "/cursos/remote-professional", label: "Remote Professional Course" },
           { href: "/cursos/remote-founder", label: "Remote Founder Course" },
-          { href: "/cursos-relampago", label: "Flash courses · €75" },
         ],
       },
       links: [
@@ -570,14 +572,14 @@ export const landingCopy = {
       lead: "Land the international remote job you deserve and learn to build your own global business.",
       chooseLabel: "What do you want to achieve?",
       choose: [
-        { title: "I want an international remote job", name: "Remote Professional", href: "/cursos/remote-professional" },
-        { title: "I want to build my own remote business", name: "Remote Founder", href: "/cursos/remote-founder" },
+        { title: "I want an international remote job", name: "Remote Professional course", href: "/cursos/remote-professional" },
+        { title: "I want to build my own remote business", name: "Remote Founder course", href: "/cursos/remote-founder" },
       ],
       stats: [
         { value: "14", label: "modules" },
         { value: "56h", label: "live" },
-        { value: "14", label: "weeks" },
-        { value: "2", label: "paths" },
+        { value: "7", label: "weekends" },
+        { value: "2", label: "courses" },
       ],
     },
     form: {
@@ -587,8 +589,8 @@ export const landingCopy = {
       courseLabel: "Which course interests you?",
       courseHint: "Optional. You can pick both.",
       courses: [
-        { key: "remote-professional", label: "Remote Professional", sub: "Career Accelerator" },
-        { key: "remote-founder", label: "Remote Founder", sub: "Global Builder" },
+        { key: "remote-professional", label: "Remote Professional course", sub: "Career Accelerator" },
+        { key: "remote-founder", label: "Remote Founder course", sub: "Global Builder" },
       ],
       firstName: "First name",
       lastName: "Last name",
@@ -675,8 +677,8 @@ export const landingCopy = {
       },
     },
     statement: {
-      top: "Remote work is learned",
-      bottom: "by working remotely.",
+      top: "ActiveXRemote, Top #1 in hands-on, 100% up-to-date Remote Business training.",
+      bottom: "Train live and online, with a method designed to keep pace with today's remote market.",
     },
     features: [
       {
@@ -711,21 +713,21 @@ export const landingCopy = {
     },
     bento: {
       stat1: { value: "+320", label: "professionals trained across 18 countries" },
-      stat2: { value: "56h", label: "live, across 14 weeks" },
+      stat2: { value: "56h", label: "live, across 7 weekends" },
       quote:
         "“Remote doesn't fail because of distance. It fails when we don't adapt to this way of working.”",
       quoteBy: "ActiveXRemote Manifesto",
     },
     paths: {
-      eyebrow: "Choose your path",
-      title: "Two routes. One level of rigor.",
-      lead: "They share the 7 core modules and split at specialization. You can take both paths.",
+      eyebrow: "Choose your course",
+      title: "Two courses. One level of rigor.",
+      lead: "They share the 7 core modules and split at specialization. You can take both courses.",
       cta: "Request information",
       detail: "See the full program",
       items: [
         {
-          tag: "Path 01",
-          name: "Remote Professional",
+          tag: "Course 01",
+          name: "Remote Professional course",
           sub: "Career Accelerator",
           href: "/cursos/remote-professional",
           forWho: "For employees and contractors",
@@ -741,8 +743,8 @@ export const landingCopy = {
           ],
         },
         {
-          tag: "Path 02",
-          name: "Remote Founder",
+          tag: "Course 02",
+          name: "Remote Founder course",
           sub: "Global Builder",
           href: "/cursos/remote-founder",
           forWho: "For founders, freelancers and solopreneurs",
@@ -867,15 +869,10 @@ export const landingCopy = {
       title: "One school. Two courses. One campus.",
       lead: "Every cohort is a small group: live classes, a virtual campus with the recordings and support on Slack throughout the program.",
       planName: "One course · 14 modules",
-      planPrice: "€2,400",
-      planNote: "one payment or 3 instalments of €800",
-      planStart: "Starts December 1, 2026 · groups of 25 seats",
-      planBundle: "Both courses: €3,900 · early bird €2,100 until October 31",
-      buyCta: "Enrol now",
-      infoCta: "I'd rather get information first",
+      planStart: "Starts 9 January 2027 · groups of 25 seats",
       features: [
         "14 live modules (56 teaching hours)",
-        "One 4h session per week, for 14 weeks",
+        "Two 4h classes per weekend, over 7 weekends",
         "Virtual campus with recordings and narrated audio",
         "Downloadable frameworks and templates",
         "Hands-on exercise and feedback in every module",
@@ -886,17 +883,17 @@ export const landingCopy = {
     },
     steps: {
       eyebrow: "How it works",
-      title: "Fourteen weeks, step by step.",
-      lead: "One 4-hour live session a week. One module, one exercise and one deliverable each time. This is what happens from the moment you apply to the day you leave with the diploma.",
+      title: "Seven weekends, step by step.",
+      lead: "Two 4-hour live classes every weekend. One module, one exercise and one deliverable per class. This is what happens from the moment you apply to the day you leave with the diploma.",
       totalLabel: "Total length",
-      total: "14 weeks · 56 h live",
+      total: "7 weekends · 56 h live",
       doesLabel: "What you do",
       getsLabel: "What you walk away with",
       items: [
         {
           n: "00",
           phase: "Before you start",
-          when: "Week 0",
+          when: "Before 9 January",
           meta: "Groups of 25 seats",
           title: "You apply and get into the campus",
           desc: "You tell us which path interests you and we explain how the program works, no strings attached. Cohorts are capped at 25 seats, so when you apply matters.",
@@ -910,12 +907,12 @@ export const landingCopy = {
         {
           n: "01",
           phase: "Phase 1 · Common core",
-          when: "Weeks 1 – 7",
+          when: "Weekends 1 – 4",
           meta: "7 modules · 28 h",
           title: "You build the remote-work base",
           desc: "The seven modules both paths share: mindset and global market, geopositioning and tax, relocation, tech stack, applied AI, energy and anti-burnout, and cross-border legal.",
           does: [
-            "One module a week, 4 h live",
+            "Two modules per weekend, 4 h live each",
             "Theory, tool walkthrough and workshop",
             "One exercise per module, applied to your own case",
           ],
@@ -924,7 +921,7 @@ export const landingCopy = {
         {
           n: "02",
           phase: "The fork",
-          when: "Week 7",
+          when: "Weekend 4",
           meta: "Reversible decision",
           title: "You choose your path on evidence",
           desc: "With the core done you know where you fit: Remote Professional if you're going for an international remote job, Remote Founder if you're building your own business. It isn't a blind call, and you can switch anytime.",
@@ -938,12 +935,12 @@ export const landingCopy = {
         {
           n: "03",
           phase: "Phase 2 · Specialization",
-          when: "Weeks 8 – 14",
+          when: "Weekends 4 – 7",
           meta: "7 modules · 28 h",
           title: "You build what you'll show",
           desc: "This is no longer studying: it's producing. Professional leaves with the application, portfolio and negotiation ready. Founder leaves with a validated offer, clients and documented operations.",
           does: [
-            "One module a week, 4 h live",
+            "Two modules per weekend, 4 h live each",
             "Real deliverables, not lecture notes",
             "Team feedback and follow-up in Slack",
           ],
@@ -952,7 +949,7 @@ export const landingCopy = {
         {
           n: "04",
           phase: "Afterwards",
-          when: "From week 14",
+          when: "From 21 February",
           meta: "Access never expires",
           title: "You get certified and you stay in",
           desc: "The program ends, the access doesn't. The campus with recordings and narrated audio stays open, and the diploma lists module by module what you completed.",
@@ -970,13 +967,13 @@ export const landingCopy = {
       title: "Frequently asked.",
       items: [
         { q: "Which path suits me?", a: "Remote Professional if you want an international remote job; Remote Founder if you want to launch your own business. And you can take both: they share the 7 core modules." },
-        { q: "How much does it cost?", a: "€2,400 per course, in one payment or 3 interest-free instalments of €800. Both courses together are €3,900, and there's an early-bird price of €2,100 until October 31." },
+        { q: "How much does it cost?", a: "Request information and we'll send you the price, the payment options —one payment or instalments— and the cohort's terms, no strings attached." },
         { q: "How many modules are there?", a: "14 in total: 7 shared core modules and 7 specialized ones based on your chosen path (Professional or Founder)." },
         { q: "How long is each class?", a: "Every module is a 4-hour live class: theory, tool walkthrough, hands-on workshop and Q&A." },
         { q: "Do I need prior knowledge?", a: "No. The 7 core modules start from scratch and the specialization levels up progressively." },
         { q: "What tools will I use?", a: "Notion, Slack, Wise, Deel, Zapier and AI models, among others. You build your own remote stack during the program." },
         { q: "Is it live or async?", a: "Classes are live, and you get materials, narrated audio and exercises to progress at your own pace, async." },
-        { q: "When does the next cohort start?", a: "December 1, 2026, with one 4h session per week for 14 weeks. Groups are capped at 25 seats: request information and we'll send you the calendar and schedule." },
+        { q: "When does the next cohort start?", a: "9 January 2027. It runs over seven weekends, until 21 February, with two 4h classes each weekend. Groups are capped at 25 seats: request information and we'll send you the calendar and schedule." },
         { q: "Is the diploma an official degree?", a: "No. It is a private certification issued by ActiveXRemote: the diploma lists the modules you completed and the teaching hours. It is not equivalent to a university or official academic degree, and none of the platforms studied in the program accredits it." },
       ],
     },

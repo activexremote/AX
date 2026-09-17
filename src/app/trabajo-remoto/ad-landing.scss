@@ -1195,7 +1195,7 @@
   }
 }
 
-// ── Empresas (maqueta) ──────────────────────────────────
+// ── Empresas referentes ──────────────────────────────────
 .axr-ad__alumni-row {
   display: flex;
   flex-wrap: wrap;
@@ -1203,9 +1203,9 @@
   gap: 0.75rem 1.5rem;
 }
 
-// Wordmark inventado. Gris y sin color de marca a propósito: tiene que leerse
-// como un hueco reservado, no como una empresa de verdad.
-.axr-ad__fakelogo {
+// Empresa referente: glifo y nombre a una tinta. Gris y sin color de marca a
+// propósito: la fila acompaña al formulario, no le disputa la atención.
+.axr-ad__company {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
@@ -1213,13 +1213,29 @@
   font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--ad-muted);
-  filter: grayscale(1);
   transition: color 0.2s ease, transform 0.2s ease;
+
+  svg { flex: none; }
 
   @media (min-width: 700px) { font-size: 0.9375rem; }
   @media (hover: hover) {
     &:hover { color: var(--ad-ink); transform: translateY(-2px); }
   }
+}
+
+// Las marcas que no están en simple-icons: la inicial en una caja del mismo
+// tamaño que los glifos, para que la fila no pierda el ritmo.
+.axr-ad__company-initial {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid currentColor;
+  border-radius: 5px;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
 // Aviso de dato de maqueta. Misma pinta en todos los sitios donde aparece

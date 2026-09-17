@@ -16,11 +16,11 @@ import type { Locale } from "@/lib/i18n/config";
 //  muestra importes por ahora. Si vuelven, van en `hero.facts`, que es de
 //  donde salieron.
 //
-//  ⚠︎ El CALENDARIO de esta convocatoria es propio y no el de la portada:
-//  siete fines de semana, del 9 de enero al 21 de febrero de 2027, dos clases
-//  de cuatro horas por fin de semana. La portada sigue vendiendo la de
-//  diciembre con una clase por semana, así que la fecha vive en
-//  trabajo-remoto/contact.ts y no en la constante compartida. En particular NO hay rangos salariales ni número de alumnos: la
+//  ⚠︎ El CALENDARIO es el de toda la web: siete fines de semana, del 9 de
+//  enero al 21 de febrero de 2027, dos clases de cuatro horas por fin de
+//  semana. La fecha vive en bienvenida/cohort.ts.
+//
+//  En particular NO hay rangos salariales ni número de alumnos: la
 //  referencia los lleva, nosotros no tenemos dato verificable y publicarlo
 //  inventado es publicidad engañosa (ver src/app/bienvenida/flags.ts).
 //
@@ -28,7 +28,7 @@ import type { Locale } from "@/lib/i18n/config";
 //  Una landing que repite parece más larga de lo que es y hace dudar de si te
 //  has perdido algo. Cada dato tiene un dueño y sólo uno:
 //
-//    hero .......... qué es, para quién, cuándo empieza y cuánto cuesta
+//    hero .......... qué es, para quién y cuándo empieza
 //    statement ..... quiénes somos y cómo enseñamos, en una frase
 //    jobs .......... a qué empleos y a qué sectores lleva esto
 //    live .......... CÓMO se da la clase (en directo, irrepetible, online)
@@ -36,7 +36,7 @@ import type { Locale } from "@/lib/i18n/config";
 //    outcomes ...... la ESTRUCTURA y a dónde lleva cada camino
 //    timeline ...... QUÉ TE PASA a ti desde que dejas los datos
 //    program ....... el temario, las objeciones y las herramientas
-//    final ......... la acción, con quién imparte y dónde acaba la gente
+//    final ......... la acción y las empresas referentes del trabajo remoto
 //
 //  Si al añadir una frase tienes que mirar si ya está en otro sitio, va en el
 //  sitio que la tiene y no en los dos.
@@ -107,14 +107,13 @@ export const adCopy = {
       ],
     },
 
-    // ⚠︎ El documento de feedback traía «ActiveXRemote, Top #1 en formación
-    // práctica…». El «Top #1» se ha quitado: es un superlativo comparativo sin
-    // dato que lo sostenga, y afirmarlo sobre uno mismo entra de lleno en la
-    // Directiva 2005/29/CE de prácticas comerciales desleales. El resto de la
-    // frase se mantiene tal cual, porque describe y no compara.
+    // ⚠︎ «Top #1» vuelve a petición expresa del equipo, que es quien decide.
+    // Se había quitado porque es un superlativo comparativo y la Directiva
+    // 2005/29/CE exige poder sostenerlo con un dato: si alguien lo pregunta,
+    // hay que tener a mano en qué ranking o con qué criterio somos el #1.
     statement: {
-      top: "Formación práctica y 100 % actualizada en Remote Business.",
-      bottom: "En directo, online, y al ritmo al que se mueve el mercado.",
+      top: "ActiveXRemote, Top #1 en formación práctica y 100 % actualizada en Remote Business.",
+      bottom: "Fórmate en directo y online, con una metodología diseñada para avanzar al ritmo del mercado remoto actual.",
     },
 
     // ── CÓMO ES LA CLASE ─────────────────────────────────
@@ -122,11 +121,11 @@ export const adCopy = {
     // Nadie más lo explica, sólo lo da por sabido.
     live: {
       badge: "En directo",
-      title: "Es online, pero no es un vídeo.",
-      body: "Cada módulo es una clase de cuatro horas con el equipo delante: se explica, se abre la herramienta en pantalla y se trabaja sobre tu caso. Las preguntas son las de tu grupo, así que ninguna clase se repite igual.",
+      title: "Clases en directo de fundadores de empresas y perfiles clave que trabajan en remoto.",
+      body: "Cada módulo es una clase de cuatro horas en directo con alumnos en remoto: realizarás casos reales y prácticos, aprenderás las herramientas que utilizan las empresas más innovadoras que trabajan en remoto.",
       points: [
-        { k: "En vivo, no grabado", v: "El equipo está ahí y responde en el momento." },
-        { k: "Desde donde estés", v: "Solo hace falta conexión: da igual el país o el huso." },
+        { k: "En vivo, no grabado", v: "Tendrás una formación directa y personalizada junto a tu grupo de alumnos." },
+        { k: "Desde donde estés", v: "Solo hace falta conexión: da igual el país o el huso. Las clases son en fin de semana." },
         { k: "Y queda grabada", v: "En el campus, sin caducidad, por si te pierdes una." },
       ],
       videoLabel: "Fragmento de una clase en directo del curso",
@@ -162,7 +161,7 @@ export const adCopy = {
     // Dueña de "dos caminos" y de las cuatro salidas. El cronograma de abajo
     // no vuelve a contar los módulos: cuenta lo que te pasa a ti.
     outcomes: {
-      title: "Una base común y, después, tu camino",
+      title: "Un curso compuesto por una base común del trabajo remoto y la especialización que elijas: Remote Founder o Remote Professional",
       coreTag: "Módulos 01 – 07",
       coreName: "7 módulos de núcleo",
       coreNote: "Los mismos para todos",
@@ -403,8 +402,11 @@ export const adCopy = {
       mapNotice: "Has rechazado las cookies de preferencias, así que el mapa de Google no se carga. Puedes abrirlo sólo para esta visita.",
       note: "La escuela opera desde Emiratos Árabes Unidos y el curso es 100 % online: no hay que venir a ninguna parte.",
     },
+    // ⚠︎ NO decir «donde trabajan nuestros alumnos»: sería atribuirnos una
+    // relación con estas empresas que no existe. Son los referentes del
+    // trabajo remoto que se estudian, y el titular dice exactamente eso.
     alumni: {
-      title: "Empresas donde trabajan nuestros alumnos",
+      title: "Empresas referentes del trabajo remoto",
     },
 
     sticky: {
@@ -416,16 +418,6 @@ export const adCopy = {
     whatsapp: {
       label: "Escríbenos por WhatsApp",
       message: "Hola, me interesa el curso de ActiveXRemote. ¿Me contáis?",
-    },
-
-    faculty: {
-      title: "Quién da las clases",
-      // ⚠︎ Un solo aviso para los dos datos de maqueta de esta sección: los
-      // logotipos (PLACEHOLDER_LOGOS en ad-logos.tsx) y el profesorado
-      // (DEMO_FACULTY en bienvenida/faculty.ts).
-      // Sólo cubre los logotipos de empresa, que siguen siendo inventados.
-      // El profesorado ya no: es una persona real y su ficha enlaza al perfil.
-      notice: "Logotipos de empresa de ejemplo, pendientes de sustituir por los reales.",
     },
 
     final: {
@@ -480,17 +472,17 @@ export const adCopy = {
     },
 
     statement: {
-      top: "Hands-on training, 100% up to date on Remote Business.",
-      bottom: "Live, online, and at the speed the market actually moves.",
+      top: "ActiveXRemote, Top #1 in hands-on, 100% up-to-date Remote Business training.",
+      bottom: "Train live and online, with a method designed to keep pace with today's remote market.",
     },
 
     live: {
       badge: "Live",
-      title: "It's online, but it isn't a video.",
-      body: "Every module is a four-hour class with the team in front of you: they explain, they open the tool on screen and you work on your own case. The questions are your group's, so no class ever repeats itself.",
+      title: "Live classes from company founders and key people who work remotely.",
+      body: "Every module is a four-hour live class with students joining remotely: you'll work through real, hands-on cases and learn the tools that the most innovative remote companies use.",
       points: [
-        { k: "Live, not recorded", v: "The team is there and answers on the spot." },
-        { k: "From wherever you are", v: "All you need is a connection: country and time zone don't matter." },
+        { k: "Live, not recorded", v: "Direct, personal training alongside your group of students." },
+        { k: "From wherever you are", v: "All you need is a connection: country and time zone don't matter. Classes run at weekends." },
         { k: "And it is recorded", v: "It stays in the campus, with no expiry, in case you miss one." },
       ],
       videoLabel: "A clip from a live class of the course",
@@ -520,7 +512,7 @@ export const adCopy = {
     ],
 
     outcomes: {
-      title: "A shared base, and then your path",
+      title: "A course built on a shared base in remote work, plus the specialisation you choose: Remote Founder or Remote Professional",
       coreTag: "Modules 01 – 07",
       coreName: "7 core modules",
       coreNote: "The same for everyone",
@@ -724,7 +716,7 @@ export const adCopy = {
       note: "The school operates from the United Arab Emirates and the course is 100% online: there is nowhere to travel to.",
     },
     alumni: {
-      title: "Where our students work",
+      title: "Leading remote-first companies",
     },
 
     sticky: {
@@ -736,11 +728,6 @@ export const adCopy = {
     whatsapp: {
       label: "Message us on WhatsApp",
       message: "Hi, I'm interested in the ActiveXRemote course. Could you tell me more?",
-    },
-
-    faculty: {
-      title: "Who teaches the classes",
-      notice: "Sample company logos, to be replaced with the real ones.",
     },
 
     final: {

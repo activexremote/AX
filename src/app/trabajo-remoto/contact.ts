@@ -1,29 +1,29 @@
 // ══════════════════════════════════════════════════════════
 //  Contacto directo de la landing de campaña.
 //
-//  ⚠︎ PENDIENTE: el número es un MARCADOR DE POSICIÓN. Hay que poner el de
-//  verdad —formato internacional, sólo dígitos, sin "+" ni espacios— antes de
-//  lanzar cualquier anuncio hacia esta página: la insignia de WhatsApp es una
-//  promesa de respuesta, y una que marca a un número que no es nuestro es
-//  peor que no tenerla.
+//  ⚠︎ APAGADO a petición del equipo hasta que haya teléfono. Cuando lo haya,
+//  va aquí en formato internacional —sólo dígitos, sin "+" ni espacios— y la
+//  insignia vuelve a salir sola.
 //
-//  Con la constante vacía la insignia no se pinta, así que dejarlo en blanco
-//  también es una salida válida.
+//  Con la constante vacía la insignia no se pinta: la insignia de WhatsApp es
+//  una promesa de respuesta, y una que marca a un número que no es nuestro es
+//  peor que no tenerla.
 // ══════════════════════════════════════════════════════════
-export const WHATSAPP_NUMBER = "34600000000";
+export const WHATSAPP_NUMBER = "";
 
 // ══════════════════════════════════════════════════════════
-//  La convocatoria de ESTA landing
+//  La convocatoria
 //
-//  Propia, no la de bienvenida/cohort.ts. La portada vende la convocatoria de
-//  diciembre con su formato de una clase por semana; ésta vende la de enero,
-//  que va en fines de semana. Tocar la constante compartida habría cambiado
-//  la cuenta atrás y las fechas de la portada de rebote.
+//  La misma que la de la portada y las páginas de curso: siete fines de
+//  semana, sábado y domingo, cuatro horas cada día: 14 módulos y 56 h
+//  lectivas. Del 9 de enero al 21 de febrero de 2027.
 //
-//  Siete fines de semana, sábado y domingo, cuatro horas cada día: 14 módulos
-//  y 56 h lectivas. Del 9 de enero al 21 de febrero de 2027.
+//  Antes era propia, porque la portada vendía otra convocatoria en diciembre.
+//  Desde que la web usa las fechas de esta landing, la constante vive en
+//  bienvenida/cohort.ts y aquí sólo se reexporta: dos copias de la misma
+//  fecha acaban siempre diciendo cosas distintas.
 // ══════════════════════════════════════════════════════════
-export const COHORT_START = "2027-01-09T10:00:00+01:00";
+export { COHORT_START } from "@/app/bienvenida/cohort";
 
 /**
  * El stack que se enseña en la página, con su logotipo.

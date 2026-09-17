@@ -5,6 +5,7 @@ import { getLocale } from "@/lib/i18n/server";
 import { notify } from "@/lib/slack/notify";
 import { validateLead } from "@/lib/leads/validate";
 import { upsertZohoLead, type LeadOrigin } from "@/lib/zoho/crm";
+import { submitZohoWebForm } from "@/lib/zoho/webform";
 
 // ⚠︎ SIN `export`. Un archivo con "use server" sólo puede exportar funciones
 // async: cualquier otra cosa hace que Next tire el módulo entero en tiempo de
@@ -145,7 +146,9 @@ export async function submitLead(formData: FormData): Promise<LeadResult> {
       .update({ first_name: firstName, last_name: lastName, phone, city, courses, locale })
       .eq("id", reciente.id);
 
-    await enviarAZoho(admin, reciente.id, { firstName, lastName, email, phone, city, courses, locale, origin });
+    // Sin formulario web: el correo de confirmación ya le llegó con el primer
+    // envío, y un segundo sólo sería ruido en su bandeja.
+    await enviarAZoho(admin, reciente.id, { firstName, lastName, email, phone, city, courses, locale, origin }, { webForm: false });
     return { ok: true };
   }
 
@@ -164,7 +167,7 @@ export async function submitLead(formData: FormData): Promise<LeadResult> {
     .single();
   if (error) return { error: "db" };
 
-  await enviarAZoho(admin, fila?.id ?? null, { firstName, lastName, email, phone, city, courses, locale, origin });
+  await enviarAZoho(admin, fila?.id ?? null, { firstName, lastName, email, phone, city, courses, locale, origin }, { webForm: true });
 
   // El aviso de Slack no debe tumbar el envío: el lead ya está guardado.
   try {
@@ -199,6 +202,12 @@ function describirOrigen(o: LeadOrigin): string {
 /**
  * El lead al CRM.
  *
+ * Primero por el formulario web de Zoho —es el que manda el correo de
+ * confirmación, ver lib/zoho/webform.ts— y después por la API, que encuentra
+ * ese mismo lead por el email y le añade cursos y campaña. Van en serie y no
+ * en paralelo a propósito: si la API llegase antes, crearía la ficha y el
+ * formulario web la duplicaría.
+ *
  * Ni el CRM ni Slack pueden tumbar el envío: el lead ya está en Supabase, que
  * es la fuente de la verdad. Si Zoho está caído o mal configurado, queda el
  * aviso en el log, la persona ve su "gracias" y `npm run zoho:sync` lo
@@ -217,7 +226,18 @@ async function enviarAZoho(
     locale: string;
     origin: LeadOrigin;
   },
+  { webForm }: { webForm: boolean },
 ) {
+  if (webForm) {
+    await submitZohoWebForm({
+      firstName: lead.firstName,
+      lastName: lead.lastName,
+      email: lead.email,
+      phone: lead.phone,
+      city: lead.city,
+    });
+  }
+
   try {
     const zohoId = await upsertZohoLead({
       ...lead,
