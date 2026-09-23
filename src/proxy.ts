@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import { updateSession } from "@/lib/supabase/middleware";
+import { SITE_URL } from "@/lib/seo";
 import { LOCALE_COOKIE, isLocale, type Locale } from "@/lib/i18n/config";
 import { isBot, negotiateLocale } from "@/lib/i18n/negotiate";
 import {
@@ -17,6 +18,43 @@ import {
 
 /** Portada de cada idioma. El campus vive en "/" y no se traduce por URL. */
 const HOME = "/bienvenida";
+
+/**
+ * ══════════════════════════════════════════════════════════
+ *  Un solo dominio en producción
+ * ══════════════════════════════════════════════════════════
+ *
+ * Vercel sirve cada despliegue también en su propia URL (ax-red.vercel.app y
+ * las de cada build). Entrar por ahí funciona, pero parte la casa en dos:
+ *
+ *  · La sesión se guarda en la cookie de ESE dominio, así que quien entra por
+ *    la URL de Vercel no está identificado en activexremote.com y al revés.
+ *  · El enlace de acceso del correo se construye con el dominio desde el que
+ *    se pidió, así que un login empezado ahí te deja dentro de ahí para
+ *    siempre.
+ *  · Y esas URL pueden acabar indexadas: el mismo sitio en dos direcciones.
+ *
+ * Por eso, en producción, cualquier *.vercel.app se manda al dominio bueno.
+ * Los despliegues de vista previa NO se tocan (VERCEL_ENV vale "preview"):
+ * ahí la URL de Vercel es justamente lo que se quiere probar.
+ */
+// `SITE_URL` de respaldo: si mañana falta la variable de entorno, el dominio
+// bueno sigue siendo el mismo y no conviene que el redirector se apague solo.
+const CANONICAL_HOST = (process.env.NEXT_PUBLIC_SITE_URL || SITE_URL)
+  .replace(/^https?:\/\//, "")
+  .replace(/\/+$/, "");
+
+function canonicalizar(request: NextRequest): NextResponse | null {
+  if (process.env.VERCEL_ENV !== "production" || !CANONICAL_HOST) return null;
+  const host = request.headers.get("host") ?? "";
+  if (!host.endsWith(".vercel.app")) return null;
+
+  const url = request.nextUrl.clone();
+  url.protocol = "https:";
+  url.host = CANONICAL_HOST;
+  url.port = "";
+  return NextResponse.redirect(url, 308);
+}
 
 /** Un año: la preferencia de idioma no cambia de un día para otro. */
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
@@ -72,6 +110,11 @@ function vary(res: NextResponse): NextResponse {
 }
 
 export async function proxy(request: NextRequest) {
+  // Lo primero: si esto es la URL de Vercel en producción, se sale de aquí
+  // antes de tocar idioma o sesión.
+  const canonica = canonicalizar(request);
+  if (canonica) return canonica;
+
   const { pathname, searchParams } = request.nextUrl;
   const [, first, ...rest] = pathname.split("/");
 

@@ -17,6 +17,17 @@ import type { editorCopy } from "@/lib/i18n/editor";
 
 type Copy = (typeof editorCopy)["es"];
 
+/**
+ * Rellena el {n} de una plantilla, con su forma en singular.
+ *
+ * Los textos llegan como cadenas y no como funciones a propósito: este
+ * componente se pinta en el navegador y una función no puede viajar desde una
+ * página del servidor (ver la nota en lib/i18n/editor.ts).
+ */
+function contar(plural: string, singular: string, n: number) {
+  return n === 1 ? singular : plural.replace("{n}", String(n));
+}
+
 // ══════════════════════════════════════════════════════════
 //  El editor de la lección
 //
@@ -165,7 +176,7 @@ export function LessonBlocksEditor({
       {/* ── Barra ───────────────────────────────────────── */}
       <div className="axr-blked__bar">
         <div className="axr-blked__bar-info">
-          <strong>{copy.blocksCount(blocks.length)}</strong>
+          <strong>{contar(copy.blocksCount, copy.blocksCountOne, blocks.length)}</strong>
           {sucio ? <em className="axr-blked__dirty">{copy.unsaved}</em> : null}
           {guardado && !sucio ? <em className="axr-blked__ok">✓ {copy.saved}</em> : null}
         </div>
@@ -193,7 +204,7 @@ export function LessonBlocksEditor({
       </div>
 
       {error ? <div className="axr-login__error">{copy.saveError}: {error}</div> : null}
-      {descartados > 0 ? <p className="axr-blked__hint">{copy.dropped(descartados)}</p> : null}
+      {descartados > 0 ? <p className="axr-blked__hint">{contar(copy.dropped, copy.droppedOne, descartados)}</p> : null}
       {!aiReady ? <p className="axr-blked__hint">{copy.aiOff}</p> : null}
 
       {/* ── Panel de la IA ──────────────────────────────── */}
@@ -227,7 +238,7 @@ export function LessonBlocksEditor({
           {propuesta ? (
             <div className="axr-blked__prop">
               <div className="axr-blked__prop-head">
-                <strong>{copy.aiResult(propuesta.blocks.length)}</strong>
+                <strong>{contar(copy.aiResult, copy.aiResultOne, propuesta.blocks.length)}</strong>
                 <div className="axr-blked__prop-actions">
                   <button
                     type="button"
