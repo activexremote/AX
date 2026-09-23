@@ -15,6 +15,9 @@ import { getSubmission } from "@/lib/data/relampago";
 import { getI18n } from "@/lib/i18n/server";
 import { fmt } from "@/lib/i18n/dictionaries";
 import "@/app/(campus)/lecciones/lesson.scss";
+import { BlockList } from "@/components/content/block-view";
+import { parseBlocks } from "@/lib/content/blocks";
+import "@/components/content/content.scss";
 
 export default async function LessonPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -24,6 +27,9 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
   // Una lección relámpago se distingue por tener misión: el resto de la
   // pantalla es la misma y no hace falta un tipo de lección aparte.
   const esRelampago = Boolean(lesson.mission_md);
+  // Validado aquí y no en la consulta: lo que hay en la base es jsonb libre y
+  // puede venir de una versión anterior del catálogo de bloques.
+  const bloques = parseBlocks(lesson.content_blocks);
   const [progress, { t }, submission] = await Promise.all([
     getProgressForCurrentUser(),
     getI18n(),
@@ -173,8 +179,16 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
             </div>
           ) : null}
 
+          {/* ── El cuerpo de la lección ──
+              Con bloques se pinta el contenido visual (checklists, cuadros,
+              tablas, gráficos). Sin ellos, el Markdown de siempre: ninguna
+              lección de las que ya existen cambia de aspecto por esto. */}
           <article className="axr-lesson__content prose">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.content_md}</ReactMarkdown>
+            {bloques.length ? (
+              <BlockList blocks={bloques} storageKey={lesson.id} />
+            ) : (
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.content_md}</ReactMarkdown>
+            )}
           </article>
 
           {quiz && questions.length > 0 ? (

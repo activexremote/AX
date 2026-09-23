@@ -2,17 +2,32 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { LessonForm } from "@/components/admin/lesson-form";
+import { LessonBlocksEditor } from "@/components/admin/lesson-blocks-editor";
 import { AudioUpload } from "@/components/admin/audio-upload";
 import { QuizEditor } from "@/components/admin/quiz-editor";
 import { getLessonForView } from "@/lib/data/modules";
 import { getI18n } from "@/lib/i18n/server";
+import { editorCopy } from "@/lib/i18n/editor";
+import { aiConfigured } from "@/lib/ai/settings";
+import { parseBlocks } from "@/lib/content/blocks";
+import { ttsConfigured } from "@/lib/tts/fish";
+import "@/components/content/content.scss";
+import "@/components/admin/block-editor.scss";
+
+// Narrar una lección larga son varias llamadas a Fish encadenadas: con los 15 s
+// que trae Next por defecto, la acción moriría a medio MP3.
+export const maxDuration = 300;
 
 export default async function AdminLessonEditor({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const data = await getLessonForView(id);
   if (!data) notFound();
   const { lesson, module, questions } = data;
-  const { t } = await getI18n();
+  const { t, locale } = await getI18n();
+  const copy = editorCopy[locale];
+  // Sin clave de OpenAI el editor sale igual: lo único que no aparece es el
+  // botón de estructurar con IA.
+  const iaLista = await aiConfigured();
 
   return (
     <div className="axr-admin-page">
@@ -34,8 +49,20 @@ export default async function AdminLessonEditor({ params }: { params: Promise<{ 
       </div>
 
       <div className="axr-admin-card">
+        <h2>{copy.title}</h2>
+        <p className="axr-admin-card__lead">{copy.lead}</p>
+        <LessonBlocksEditor
+          lessonId={lesson.id}
+          initial={parseBlocks(lesson.content_blocks)}
+          draft={lesson.content_md}
+          aiReady={iaLista}
+          copy={copy}
+        />
+      </div>
+
+      <div className="axr-admin-card">
         <h2>{t.adminForm.audioSection}</h2>
-        <AudioUpload lessonId={lesson.id} currentUrl={lesson.audio_url} />
+        <AudioUpload lessonId={lesson.id} currentUrl={lesson.audio_url} ttsReady={ttsConfigured()} />
       </div>
 
       <div className="axr-admin-card">

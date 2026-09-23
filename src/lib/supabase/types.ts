@@ -109,6 +109,15 @@ export interface Lesson {
   duration_min: number | null;
   audio_url: string | null;
   content_md: string;
+  /**
+   * El contenido por bloques (ver src/lib/content/blocks.ts).
+   *
+   * `unknown` y no `Block[]` a propósito: lo que hay en la base es jsonb y
+   * puede venir de una versión anterior del catálogo, así que el único sitio
+   * donde se convierte en bloques de verdad es `parseBlocks`. Tiparlo aquí
+   * sería prometer una forma que la base no garantiza.
+   */
+  content_blocks: unknown | null;
   toc: { id: string; title: string }[] | null;
   created_at: string;
 
@@ -258,6 +267,23 @@ type TableDef<Row, Insert, Update> = {
   Relationships: [];
 };
 
+/** La configuración de IA del panel. Una sola fila, `id = "default"`. */
+export interface AiSettings {
+  id: string;
+  enabled: boolean;
+  /**
+   * ⚠︎ NUNCA se manda al navegador. Las páginas del panel reciben sólo los
+   * cuatro últimos caracteres (ver lib/ai/settings.ts → publicAiSettings).
+   */
+  openai_api_key: string | null;
+  model: string;
+  last_test_ok: boolean | null;
+  last_test_at: string | null;
+  last_test_detail: string | null;
+  updated_at: string;
+  updated_by: string | null;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -278,6 +304,7 @@ export interface Database {
       user_unlocks: TableDef<UserUnlock, Partial<UserUnlock> & { user_id: string; unlock_key: string }, Partial<UserUnlock>>;
       kb_sources: TableDef<KbSource, Partial<KbSource> & { kind: KbKind; title: string }, Partial<KbSource>>;
       assistant_questions: TableDef<AssistantQuestion, Partial<AssistantQuestion> & { user_id: string; question: string }, Partial<AssistantQuestion>>;
+      ai_settings: TableDef<AiSettings, Partial<AiSettings> & { id: string }, Partial<AiSettings>>;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

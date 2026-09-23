@@ -34,6 +34,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <Link href="/admin/matriculas">{t.admin.navOrders}</Link>
               <Link href="/admin/usuarios">{t.admin.navUsers}</Link>
               <Link href="/admin/slack">{t.admin.navSlack}</Link>
+              {/* Sin clave en el diccionario general: la página es nueva y su
+                  texto vive en lib/i18n/editor.ts. */}
+              <Link href="/admin/ia">IA</Link>
             </>
           ) : null}
         </nav>

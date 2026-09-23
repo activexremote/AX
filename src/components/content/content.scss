@@ -1,0 +1,620 @@
+// ══════════════════════════════════════════════════════════
+//  Los bloques de una lección
+//
+//  Mismo lenguaje que el resto del campus: esquina viva, filete negro de 1 px
+//  y sombra dura cuando algo tiene que destacar. Nada redondeado y ningún
+//  degradado, que aquí no pintan nada.
+//
+//  Una sola hoja para los dos sitios donde se pintan los bloques —la lección
+//  del alumno y la vista previa del panel—, que es lo que garantiza que el
+//  profesor vea exactamente lo que va a ver el alumno. Si se separaran en dos
+//  hojas, la vista previa mentiría al primer cambio.
+// ══════════════════════════════════════════════════════════
+
+.axr-blk {
+  display: flex;
+  flex-direction: column;
+  // El aire entre bloques manda más que cualquier otra medida: es lo que
+  // hace que una lección larga se lea por partes y no como un muro.
+  gap: 1.35rem;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--axr-text);
+
+  // ── Texto ──────────────────────────────────────────────
+  &__h2 {
+    margin: 1.4rem 0 0;
+    font-family: var(--axr-display);
+    font-size: 1.375rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    // Un filete arriba en vez de más espacio: separa secciones sin dejar un
+    // hueco tan grande que parezca que la página se ha partido.
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--axr-border-ink);
+
+    &:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+  }
+
+  &__h3 {
+    margin: 0.6rem 0 0;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  &__p { margin: 0; }
+
+  &__ul,
+  &__ol { margin: 0; padding: 0; list-style: none; }
+
+  &__ul li {
+    position: relative;
+    padding-left: 1.1rem;
+    margin-bottom: 0.4rem;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.62em;
+      width: 6px;
+      height: 6px;
+      background: var(--axr-text);
+    }
+  }
+
+  &__ol li {
+    display: flex;
+    gap: 0.65rem;
+    margin-bottom: 0.5rem;
+  }
+
+  &__ol-n {
+    flex: none;
+    font-family: var(--axr-code);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--axr-text-helper);
+    padding-top: 0.15em;
+  }
+
+  &__divider {
+    border: 0;
+    border-top: 1px solid var(--axr-border);
+    margin: 0.4rem 0;
+  }
+
+  // ── Checklist ──────────────────────────────────────────
+  &__check {
+    border: 1px solid var(--axr-border-ink);
+    background: #fff;
+
+    &-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.6rem 0.85rem;
+      border-bottom: 1px solid var(--axr-border-ink);
+      background: var(--axr-gray-10);
+
+      strong { font-size: 0.8125rem; letter-spacing: 0.01em; }
+      span {
+        font-family: var(--axr-code);
+        font-size: 0.75rem;
+        color: var(--axr-text-helper);
+        font-variant-numeric: tabular-nums;
+      }
+    }
+
+    ul { margin: 0; padding: 0; list-style: none; }
+
+    li + li { border-top: 1px solid var(--axr-border); }
+
+    label {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      padding: 0.6rem 0.85rem;
+      cursor: pointer;
+      // El objetivo táctil es la fila entera, no el cuadradito de 18 px.
+      min-height: 44px;
+    }
+
+    // La casilla de verdad se esconde pero sigue ahí: es la que recibe el
+    // foco del teclado y la que anuncia el lector de pantalla.
+    input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    &-box {
+      flex: none;
+      width: 18px;
+      height: 18px;
+      margin-top: 0.15em;
+      border: 1px solid var(--axr-border-ink);
+      background: #fff;
+      position: relative;
+    }
+
+    input:focus-visible + &-box { outline: 2px solid var(--axr-text); outline-offset: 2px; }
+
+    li[data-done] &-box {
+      background: var(--axr-go);
+      border-color: var(--axr-go);
+
+      &::after {
+        content: "";
+        position: absolute;
+        left: 5px;
+        top: 1px;
+        width: 5px;
+        height: 10px;
+        border: solid #fff;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+    }
+
+    li[data-done] label > span:last-child {
+      color: var(--axr-text-helper);
+      text-decoration: line-through;
+    }
+  }
+
+  // ── Punto de control ───────────────────────────────────
+  // Lleva sombra dura porque es una parada: tiene que verse desde lejos al
+  // hacer scroll, más que un cuadro cualquiera.
+  &__checkpoint {
+    border: 1px solid var(--axr-border-ink);
+    box-shadow: var(--axr-shadow-hard-sm);
+    padding: 0.9rem 1rem;
+    background: #fff;
+
+    > strong {
+      display: block;
+      font-family: var(--axr-code);
+      font-size: 0.6875rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0.55rem;
+    }
+
+    ul { margin: 0; padding: 0; list-style: none; }
+
+    li {
+      position: relative;
+      padding-left: 1.6rem;
+      margin-bottom: 0.35rem;
+      font-size: 0.875rem;
+
+      &::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.35em;
+        width: 9px;
+        height: 5px;
+        border: solid var(--axr-go);
+        border-width: 0 0 2px 2px;
+        transform: rotate(-45deg);
+      }
+    }
+  }
+
+  // ── Cuadro destacado ───────────────────────────────────
+  // El color va SÓLO en el filete izquierdo. Un cuadro entero de color a
+  // media lección se lee como un anuncio y la gente lo salta.
+  &__note {
+    border: 1px solid var(--axr-border);
+    border-left: 3px solid var(--axr-text);
+    background: var(--axr-gray-10);
+    padding: 0.8rem 0.95rem;
+
+    strong {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.875rem;
+    }
+
+    p { margin: 0; font-size: 0.875rem; white-space: pre-line; }
+
+    &[data-kind="idea"] { border-left-color: #7c5cff; }
+    &[data-kind="aviso"] { border-left-color: #f1a208; }
+    &[data-kind="error"] { border-left-color: #da1e28; }
+    &[data-kind="ejemplo"] { border-left-color: #00b3a4; }
+    &[data-kind="dato"] { border-left-color: #2f6fed; }
+  }
+
+  // ── Cita ───────────────────────────────────────────────
+  &__quote {
+    margin: 0;
+    padding-left: 1rem;
+    border-left: 3px solid var(--axr-border-ink);
+
+    blockquote {
+      margin: 0;
+      font-size: 1.0625rem;
+      line-height: 1.5;
+      font-weight: 500;
+    }
+
+    figcaption {
+      margin-top: 0.4rem;
+      font-family: var(--axr-code);
+      font-size: 0.75rem;
+      color: var(--axr-text-helper);
+    }
+  }
+
+  // ── Tabla ──────────────────────────────────────────────
+  &__table {
+    margin: 0;
+
+    &-scroll { overflow-x: auto; border: 1px solid var(--axr-border-ink); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      // Sin esto, una tabla de dos columnas se queda encogida a la izquierda
+      // en cuanto el texto es corto.
+      min-width: 100%;
+    }
+
+    th,
+    td {
+      padding: 0.5rem 0.7rem;
+      text-align: left;
+      border-bottom: 1px solid var(--axr-border);
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--axr-gray-10);
+      font-family: var(--axr-code);
+      font-size: 0.6875rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--axr-border-ink);
+      white-space: nowrap;
+    }
+
+    tbody tr:last-child td { border-bottom: 0; }
+
+    figcaption {
+      margin-top: 0.4rem;
+      font-size: 0.75rem;
+      color: var(--axr-text-helper);
+    }
+  }
+
+  // ── Pasos ──────────────────────────────────────────────
+  &__steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--axr-border-ink);
+
+    li {
+      display: flex;
+      gap: 0.85rem;
+      padding: 0.75rem 0.9rem;
+    }
+
+    li + li { border-top: 1px solid var(--axr-border); }
+
+    strong { display: block; font-size: 0.9375rem; }
+    p { margin: 0.2rem 0 0; font-size: 0.875rem; color: var(--axr-text-secondary); white-space: pre-line; }
+
+    &-n {
+      flex: none;
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--axr-border-ink);
+      font-family: var(--axr-code);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+  }
+
+  // ── Pros y contras ─────────────────────────────────────
+  &__pros {
+    &-title {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.9375rem;
+    }
+
+    &-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+
+      @media (min-width: 640px) { grid-template-columns: 1fr 1fr; }
+    }
+
+    ul {
+      margin: 0;
+      padding: 0.75rem 0.9rem;
+      list-style: none;
+      border: 1px solid var(--axr-border);
+      font-size: 0.875rem;
+    }
+
+    li {
+      position: relative;
+      padding-left: 1.3rem;
+      margin-bottom: 0.35rem;
+
+      &:last-child { margin-bottom: 0; }
+
+      &::before {
+        position: absolute;
+        left: 0;
+        font-weight: 700;
+      }
+    }
+
+    ul[data-kind="pro"] {
+      border-left: 3px solid var(--axr-go);
+      li::before { content: "+"; color: var(--axr-go); }
+    }
+
+    ul[data-kind="con"] {
+      border-left: 3px solid #da1e28;
+      li::before { content: "−"; color: #da1e28; }
+    }
+  }
+
+  // ── Comparativa ────────────────────────────────────────
+  &__compare {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    border: 1px solid var(--axr-border-ink);
+
+    @media (min-width: 640px) { grid-template-columns: 1fr 1fr; }
+
+    &-side {
+      padding: 0.85rem 0.95rem;
+
+      + .axr-blk__compare-side {
+        border-top: 1px solid var(--axr-border-ink);
+
+        @media (min-width: 640px) {
+          border-top: 0;
+          border-left: 1px solid var(--axr-border-ink);
+        }
+      }
+
+      // El lado derecho es el "después": va sobre gris para que se vea de un
+      // golpe cuál es cuál sin leer los títulos.
+      &[data-side="1"] { background: var(--axr-gray-10); }
+
+      > strong {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-family: var(--axr-code);
+        font-size: 0.6875rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      ul { margin: 0; padding: 0; list-style: none; font-size: 0.875rem; }
+
+      li {
+        position: relative;
+        padding-left: 1rem;
+        margin-bottom: 0.35rem;
+
+        &::before {
+          content: "";
+          position: absolute;
+          left: 0;
+          top: 0.6em;
+          width: 5px;
+          height: 5px;
+          background: currentColor;
+        }
+      }
+    }
+  }
+
+  // ── Cifras ─────────────────────────────────────────────
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    margin: 0;
+    border: 1px solid var(--axr-border-ink);
+
+    @media (min-width: 720px) { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+
+    > div {
+      padding: 0.85rem 0.95rem;
+      border-right: 1px solid var(--axr-border);
+      border-bottom: 1px solid var(--axr-border);
+    }
+
+    dt {
+      font-family: var(--axr-display);
+      font-size: 1.75rem;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    dd {
+      margin: 0.3rem 0 0;
+      font-size: 0.8125rem;
+      color: var(--axr-text-secondary);
+
+      em {
+        display: block;
+        margin-top: 0.15rem;
+        font-style: normal;
+        font-size: 0.75rem;
+        color: var(--axr-text-helper);
+      }
+    }
+  }
+
+  // ── Gráficos ───────────────────────────────────────────
+  &__chart {
+    margin: 0;
+    border: 1px solid var(--axr-border-ink);
+    padding: 0.9rem 1rem;
+
+    &-title {
+      display: block;
+      margin-bottom: 0.75rem;
+      font-size: 0.9375rem;
+      font-weight: 700;
+    }
+
+    &-src {
+      display: block;
+      margin-top: 0.7rem;
+      font-size: 0.6875rem;
+      color: var(--axr-text-helper);
+    }
+  }
+
+  &__bars {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      display: grid;
+      // Etiqueta, barra y cifra. La cifra va al final y alineada, que es lo
+      // que permite compararlas leyendo en vertical.
+      grid-template-columns: minmax(70px, 28%) 1fr auto;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.45rem;
+      font-size: 0.8125rem;
+    }
+
+    &-label { color: var(--axr-text-secondary); }
+
+    &-track { height: 14px; background: var(--axr-gray-10); border: 1px solid var(--axr-border); }
+
+    &-fill { display: block; height: 100%; min-width: 2px; }
+
+    &-value { font-family: var(--axr-code); font-size: 0.75rem; font-variant-numeric: tabular-nums; }
+  }
+
+  &__line {
+    svg { width: 100%; height: auto; display: block; }
+
+    &-grid { stroke: var(--axr-border); stroke-width: 1; }
+    &-path { fill: none; stroke: #7c5cff; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+    &-dot { fill: #fff; stroke: #7c5cff; stroke-width: 2.5; }
+
+    &-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 1.2rem;
+      margin: 0.5rem 0 0;
+      padding: 0;
+      list-style: none;
+
+      li { display: flex; flex-direction: column; font-size: 0.75rem; }
+      strong { font-family: var(--axr-code); font-variant-numeric: tabular-nums; }
+      span { color: var(--axr-text-helper); }
+    }
+  }
+
+  &__pie {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    gap: 1rem;
+
+    @media (min-width: 560px) { grid-template-columns: 180px 1fr; }
+
+    svg { width: 100%; max-width: 180px; height: auto; display: block; }
+
+    &-legend {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+
+      li {
+        display: grid;
+        grid-template-columns: 10px 1fr auto;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.3rem 0;
+        font-size: 0.8125rem;
+        border-bottom: 1px solid var(--axr-border);
+
+        &:last-child { border-bottom: 0; }
+      }
+
+      strong {
+        font-family: var(--axr-code);
+        font-size: 0.75rem;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+
+        em {
+          display: block;
+          font-style: normal;
+          color: var(--axr-text-helper);
+        }
+      }
+    }
+  }
+
+  &__dot { width: 10px; height: 10px; display: block; }
+
+  // ── Cronología ─────────────────────────────────────────
+  &__timeline {
+    margin: 0;
+    padding: 0 0 0 1.1rem;
+    list-style: none;
+    border-left: 1px solid var(--axr-border-ink);
+
+    li {
+      position: relative;
+      padding-bottom: 1rem;
+
+      &:last-child { padding-bottom: 0; }
+
+      &::before {
+        content: "";
+        position: absolute;
+        left: -1.35rem;
+        top: 0.35em;
+        width: 9px;
+        height: 9px;
+        background: #fff;
+        border: 1px solid var(--axr-border-ink);
+      }
+    }
+
+    strong { display: block; font-size: 0.9375rem; }
+    p { margin: 0.2rem 0 0; font-size: 0.875rem; color: var(--axr-text-secondary); }
+
+    &-when {
+      display: block;
+      font-family: var(--axr-code);
+      font-size: 0.6875rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--axr-text-helper);
+    }
+  }
+}

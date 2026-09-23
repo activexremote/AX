@@ -1,0 +1,486 @@
+// ══════════════════════════════════════════════════════════
+//  El editor de bloques del panel
+//
+//  Misma piel que el resto del panel: filete negro, esquina viva y gris muy
+//  claro para las zonas de servicio. El contenido de la vista previa NO se
+//  estiliza aquí —lo pinta content.scss, la hoja del campus—, y eso es lo que
+//  hace que la vista previa sea de fiar.
+// ══════════════════════════════════════════════════════════
+
+.axr-blked {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+
+  // ── Barra superior ─────────────────────────────────────
+  &__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 1px solid var(--axr-border);
+    // Se queda a la vista al bajar por una lección larga: el botón de guardar
+    // no puede estar a dos pantallas de donde se está escribiendo.
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: #fff;
+    padding-top: 0.4rem;
+
+    &-info {
+      display: flex;
+      align-items: baseline;
+      gap: 0.6rem;
+      font-size: 0.8125rem;
+    }
+
+    &-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  }
+
+  &__dirty { font-style: normal; font-size: 0.75rem; color: #8a6d00; }
+  &__ok { font-style: normal; font-size: 0.75rem; color: var(--axr-go); }
+
+  &__toggle {
+    display: flex;
+    border: 1px solid var(--axr-border-ink);
+
+    button {
+      appearance: none;
+      background: #fff;
+      border: 0;
+      padding: 0.4rem 0.75rem;
+      font: inherit;
+      font-size: 0.75rem;
+      cursor: pointer;
+
+      + button { border-left: 1px solid var(--axr-border-ink); }
+      &[data-on="true"] { background: var(--axr-text); color: #fff; }
+    }
+  }
+
+  &__hint {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--axr-text-helper);
+  }
+
+  // ── Lista de bloques ───────────────────────────────────
+  &__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  &__block {
+    border: 1px solid var(--axr-border);
+    background: #fff;
+
+    &[data-open] { border-color: var(--axr-border-ink); box-shadow: var(--axr-shadow-hard-sm); }
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.45rem;
+  }
+
+  &__grip {
+    cursor: grab;
+    padding: 0 0.25rem;
+    color: var(--axr-text-helper);
+    font-size: 0.9rem;
+    user-select: none;
+
+    &:active { cursor: grabbing; }
+  }
+
+  &__title {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0.3rem 0.2rem;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  &__tag {
+    flex: none;
+    font-family: var(--axr-code);
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--axr-text-helper);
+    border: 1px solid var(--axr-border);
+    padding: 0.1rem 0.3rem;
+  }
+
+  &__summary {
+    font-size: 0.8125rem;
+    color: var(--axr-text-secondary);
+    // Una línea y puntos suspensivos: la lista tiene que poder recorrerse de
+    // un vistazo, y un párrafo entero en el título lo impide.
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__tools {
+    display: flex;
+    gap: 0.15rem;
+
+    button {
+      appearance: none;
+      background: #fff;
+      border: 1px solid var(--axr-border);
+      width: 26px;
+      height: 26px;
+      font-size: 0.75rem;
+      line-height: 1;
+      cursor: pointer;
+
+      &:hover:not(:disabled) { background: var(--axr-gray-10); border-color: var(--axr-border-ink); }
+      &:disabled { opacity: 0.35; cursor: not-allowed; }
+    }
+  }
+
+  &__body {
+    border-top: 1px solid var(--axr-border);
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    background: var(--axr-gray-10);
+  }
+
+  // ── Campos ─────────────────────────────────────────────
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+
+    > span { font-weight: 600; color: var(--axr-text-secondary); }
+
+    input,
+    textarea,
+    select {
+      font: inherit;
+      font-size: 0.8125rem;
+      padding: 0.4rem 0.5rem;
+      border: 1px solid var(--axr-border-strong);
+      background: #fff;
+      width: 100%;
+    }
+
+    textarea { resize: vertical; line-height: 1.5; }
+
+    small { color: var(--axr-text-helper); }
+  }
+
+  &__cols {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+
+    @media (min-width: 720px) { grid-template-columns: 1fr 1fr; }
+  }
+
+  &__items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+
+    &-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--axr-text-secondary);
+    }
+  }
+
+  &__item {
+    display: flex;
+    gap: 0.3rem;
+
+    input {
+      flex: 1;
+      min-width: 0;
+      font: inherit;
+      font-size: 0.8125rem;
+      padding: 0.35rem 0.5rem;
+      border: 1px solid var(--axr-border-strong);
+      background: #fff;
+    }
+  }
+
+  &__sub {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.5rem;
+    border: 1px solid var(--axr-border);
+    background: #fff;
+
+    input,
+    textarea {
+      font: inherit;
+      font-size: 0.8125rem;
+      padding: 0.35rem 0.5rem;
+      border: 1px solid var(--axr-border-strong);
+      background: #fff;
+      width: 100%;
+    }
+
+    &-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      span {
+        font-family: var(--axr-code);
+        font-size: 0.6875rem;
+        color: var(--axr-text-helper);
+      }
+    }
+  }
+
+  &__table {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+
+    &-grid {
+      display: grid;
+      gap: 0.25rem;
+      overflow-x: auto;
+
+      input {
+        font: inherit;
+        font-size: 0.8125rem;
+        padding: 0.3rem 0.4rem;
+        border: 1px solid var(--axr-border-strong);
+        background: #fff;
+        min-width: 90px;
+      }
+    }
+
+    &-actions { display: flex; gap: 0.4rem; }
+  }
+
+  &__mini {
+    appearance: none;
+    background: #fff;
+    border: 1px solid var(--axr-border-strong);
+    padding: 0.25rem 0.5rem;
+    font: inherit;
+    font-size: 0.6875rem;
+    cursor: pointer;
+    align-self: flex-start;
+
+    &:hover:not(:disabled) { border-color: var(--axr-border-ink); background: var(--axr-gray-10); }
+    &:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    &--add { color: var(--axr-text); font-weight: 600; }
+  }
+
+  // Vista previa del bloque que se está editando, dentro de su propia caja.
+  &__mini-preview {
+    border-top: 1px dashed var(--axr-border-strong);
+    padding-top: 0.6rem;
+
+    > span {
+      display: block;
+      margin-bottom: 0.4rem;
+      font-family: var(--axr-code);
+      font-size: 0.625rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--axr-text-helper);
+    }
+
+    .axr-blk { background: #fff; padding: 0.7rem; border: 1px solid var(--axr-border); }
+  }
+
+  // ── Añadir bloque ──────────────────────────────────────
+  &__add {
+    border: 1px dashed var(--axr-border-strong);
+    padding: 0.5rem 0.7rem;
+
+    summary {
+      cursor: pointer;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      list-style: none;
+
+      &::-webkit-details-marker { display: none; }
+    }
+
+    > p {
+      margin: 0.5rem 0;
+      font-size: 0.75rem;
+      color: var(--axr-text-helper);
+    }
+
+    &-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 0.4rem;
+
+      button {
+        appearance: none;
+        text-align: left;
+        background: #fff;
+        border: 1px solid var(--axr-border);
+        padding: 0.5rem 0.6rem;
+        font: inherit;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+
+        strong { font-size: 0.8125rem; }
+        span { font-size: 0.6875rem; color: var(--axr-text-helper); line-height: 1.4; }
+
+        &:hover { border-color: var(--axr-border-ink); box-shadow: var(--axr-shadow-hard-sm); }
+      }
+    }
+  }
+
+  // ── Vista previa completa ──────────────────────────────
+  &__preview {
+    border: 1px solid var(--axr-border-ink);
+    padding: 1.1rem;
+    background: #fff;
+  }
+
+  // ── Panel de la IA ─────────────────────────────────────
+  &__ai {
+    border: 1px solid var(--axr-border-ink);
+    border-left: 3px solid #7c5cff;
+    padding: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    background: var(--axr-gray-10);
+
+    &-lead {
+      margin: 0;
+      font-size: 0.8125rem;
+      color: var(--axr-text-secondary);
+    }
+
+    &-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  }
+
+  // ── Propuesta ──────────────────────────────────────────
+  &__prop {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+
+    &-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    &-actions { display: flex; gap: 0.4rem; }
+
+    &-notes {
+      border: 1px solid var(--axr-border);
+      background: #fff;
+      padding: 0.5rem 0.7rem;
+      font-size: 0.75rem;
+
+      > span {
+        display: block;
+        font-family: var(--axr-code);
+        font-size: 0.625rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--axr-text-helper);
+        margin-bottom: 0.3rem;
+      }
+
+      ul { margin: 0; padding-left: 1rem; line-height: 1.6; }
+    }
+
+    &-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+
+      > li {
+        border: 1px solid var(--axr-border);
+        background: #fff;
+        padding: 0.6rem;
+
+        // Lo descartado se queda a la vista pero apagado: así se puede
+        // recuperar, y se ve cuánto se ha tirado.
+        &[data-state="rejected"] { opacity: 0.45; }
+        &[data-state="accepted"] { border-left: 3px solid var(--axr-go); }
+      }
+    }
+
+    &-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    &-preview { pointer-events: none; }
+
+    &-choice {
+      display: flex;
+      gap: 0.3rem;
+      margin-top: 0.5rem;
+
+      button {
+        appearance: none;
+        background: #fff;
+        border: 1px solid var(--axr-border-strong);
+        padding: 0.25rem 0.6rem;
+        font: inherit;
+        font-size: 0.6875rem;
+        cursor: pointer;
+
+        &[data-on="true"] { background: var(--axr-text); color: #fff; border-color: var(--axr-text); }
+      }
+    }
+  }
+}
+
+// Entradilla de la tarjeta del panel. Vive aquí porque nació con el editor;
+// si algún día la usa otra tarjeta, se sube a admin.scss.
+.axr-admin-card__lead {
+  margin: -0.25rem 0 0.9rem;
+  font-size: 0.8125rem;
+  color: var(--axr-text-helper);
+}
