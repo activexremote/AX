@@ -10,7 +10,6 @@ import { getI18n } from "@/lib/i18n/server";
 import { editorCopy } from "@/lib/i18n/editor";
 import { aiConfigured } from "@/lib/ai/settings";
 import { parseBlocks } from "@/lib/content/blocks";
-import { ttsConfigured } from "@/lib/tts/fish";
 import "@/components/content/content.scss";
 import "@/components/admin/block-editor.scss";
 
@@ -62,7 +61,10 @@ export default async function AdminLessonEditor({ params }: { params: Promise<{ 
 
       <div className="axr-admin-card">
         <h2>{t.adminForm.audioSection}</h2>
-        <AudioUpload lessonId={lesson.id} currentUrl={lesson.audio_url} ttsReady={ttsConfigured()} />
+        {/* ⚠︎ La narración automática (lib/tts) todavía no está en el repo: vive
+            sin commitear en local. Cuando entre, este componente vuelve a
+            recibir `ttsReady={ttsConfigured()}`. */}
+        <AudioUpload lessonId={lesson.id} currentUrl={lesson.audio_url} />
       </div>
 
       <div className="axr-admin-card">
