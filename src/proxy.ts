@@ -56,6 +56,46 @@ function canonicalizar(request: NextRequest): NextResponse | null {
   return NextResponse.redirect(url, 308);
 }
 
+/**
+ * ══════════════════════════════════════════════════════════
+ *  El enlace del correo que aterriza donde no debe
+ * ══════════════════════════════════════════════════════════
+ *
+ * El enlace de acceso tiene que llegar a /auth/callback, que es quien canjea
+ * el código por sesión. Pero Supabase sólo respeta la URL de retorno que le
+ * pedimos si está en su lista de URL permitidas; si no lo está, manda a la
+ * "Site URL" del proyecto —la raíz— con el código colgando:
+ *
+ *     https://www.activexremote.com/?code=9d946b43-…
+ *
+ * Ahí no hay nadie escuchando, así que la persona ve la portada y cree que el
+ * acceso ha fallado. Esto lo recoge: venga el código donde venga, se lleva a
+ * /auth/callback con el destino puesto.
+ *
+ * Es una red, no la solución: lo correcto es tener en Supabase
+ * (Authentication → URL Configuration → Redirect URLs) el dominio con y sin
+ * www. Pero la red se queda, porque esa lista se toca a mano y un despiste
+ * ahí deja a todo el mundo fuera del campus.
+ */
+function rescatarCodigo(request: NextRequest): NextResponse | null {
+  if (request.method !== "GET") return null;
+
+  const { pathname, searchParams } = request.nextUrl;
+  if (pathname === "/auth/callback") return null;
+
+  const code = searchParams.get("code");
+  if (!code) return null;
+
+  const url = request.nextUrl.clone();
+  url.pathname = "/auth/callback";
+  // El destino es donde aterrizó: si el enlace traía "next", ése manda.
+  const next = searchParams.get("next") || (pathname === "/" ? "/" : pathname);
+  url.search = "";
+  url.searchParams.set("code", code);
+  url.searchParams.set("next", next);
+  return NextResponse.redirect(url, 302);
+}
+
 /** Un año: la preferencia de idioma no cambia de un día para otro. */
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
@@ -114,6 +154,10 @@ export async function proxy(request: NextRequest) {
   // antes de tocar idioma o sesión.
   const canonica = canonicalizar(request);
   if (canonica) return canonica;
+
+  // Y si llega un código de acceso suelto, al canjeador antes que a nada.
+  const rescate = rescatarCodigo(request);
+  if (rescate) return rescate;
 
   const { pathname, searchParams } = request.nextUrl;
   const [, first, ...rest] = pathname.split("/");
