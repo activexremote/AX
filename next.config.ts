@@ -33,7 +33,9 @@ const nextConfig: NextConfig = {
     // cuatro imágenes ya no entraba. 4 MB, que es lo que admite Vercel en el
     // cuerpo de una petición a una función.
     serverActions: {
-      bodySizeLimit: "4mb",
+      // 12 MB de archivo + el sobre de multipart. Lo sube el profesor al
+      // crear una lección desde un PDF (ver lib/ingesta/formatos.ts).
+      bodySizeLimit: "14mb",
     },
   },
   images: {

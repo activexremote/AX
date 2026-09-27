@@ -20,7 +20,10 @@
     "blog:links": "node scripts/blog-links.mjs",
     "glossary:art": "node --experimental-strip-types scripts/build-glossary-art.mjs",
     "tools:payment": "node scripts/build-payment-icons.mjs",
-    "relampago:seed": "node --experimental-strip-types --import ./scripts/alias-loader.mjs scripts/build-relampago-seed.mjs"
+    "relampago:seed": "node --experimental-strip-types --import ./scripts/alias-loader.mjs scripts/build-relampago-seed.mjs",
+    "asistente:seed": "node --experimental-strip-types --import ./scripts/alias-loader.mjs scripts/asistente-seed.mjs",
+    "fish:setup": "node --experimental-strip-types --import ./scripts/alias-loader.mjs scripts/fish-setup.mjs",
+    "audio:generate": "node --experimental-strip-types --import ./scripts/alias-loader.mjs scripts/build-lesson-audio.mjs"
   },
   "dependencies": {
     "@carbon/grid": "^11.56.0",
@@ -29,6 +32,7 @@
     "@carbon/styles": "^1.107.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.1",
+    "fflate": "^0.8.3",
     "next": "16.2.6",
     "openai": "^7.5.0",
     "pdfkit": "^0.15.2",

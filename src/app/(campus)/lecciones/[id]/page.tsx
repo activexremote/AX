@@ -16,8 +16,16 @@ import { getI18n } from "@/lib/i18n/server";
 import { fmt } from "@/lib/i18n/dictionaries";
 import "@/app/(campus)/lecciones/lesson.scss";
 import { BlockList } from "@/components/content/block-view";
+import { CampusLessonEditor } from "@/components/content/campus-lesson-editor";
 import { parseBlocks } from "@/lib/content/blocks";
+import { getCurrentProfile } from "@/lib/data/profile";
+import { editorCopy } from "@/lib/i18n/editor";
 import "@/components/content/content.scss";
+import "@/components/content/inline-edit.scss";
+// Los campos del editor por dentro son los mismos que los del panel, así que
+// se traen sus estilos. A un alumno no le llegan: el componente que los usa
+// sólo se pinta para el profesorado.
+import "@/components/admin/block-editor.scss";
 
 export default async function LessonPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -30,7 +38,11 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
   // Validado aquí y no en la consulta: lo que hay en la base es jsonb libre y
   // puede venir de una versión anterior del catálogo de bloques.
   const bloques = parseBlocks(lesson.content_blocks);
-  const [progress, { t }, submission] = await Promise.all([
+  // El profesorado edita la lección aquí mismo, sin pasar por el panel. Para
+  // un alumno esto no existe: ni el componente ni su JavaScript se le mandan.
+  const perfil = await getCurrentProfile();
+  const esEquipo = perfil?.role === "profesor" || perfil?.role === "administrador";
+  const [progress, { t, locale }, submission] = await Promise.all([
     getProgressForCurrentUser(),
     getI18n(),
     esRelampago ? getSubmission(lesson.id) : Promise.resolve(null),
@@ -184,7 +196,22 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
               tablas, gráficos). Sin ellos, el Markdown de siempre: ninguna
               lección de las que ya existen cambia de aspecto por esto. */}
           <article className="axr-lesson__content prose">
-            {bloques.length ? (
+            {esEquipo ? (
+              <>
+                <CampusLessonEditor
+                  lessonId={lesson.id}
+                  initial={bloques}
+                  markdown={lesson.content_md}
+                  copy={editorCopy[locale]}
+                />
+                {/* Mientras la lección siga siendo Markdown, el profesor la ve
+                    como la ve el alumno, y arriba tiene el botón para
+                    prepararla para editar. */}
+                {bloques.length === 0 ? (
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.content_md}</ReactMarkdown>
+                ) : null}
+              </>
+            ) : bloques.length ? (
               <BlockList blocks={bloques} storageKey={lesson.id} />
             ) : (
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.content_md}</ReactMarkdown>

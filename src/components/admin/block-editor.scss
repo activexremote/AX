@@ -484,3 +484,96 @@
   font-size: 0.8125rem;
   color: var(--axr-text-helper);
 }
+
+// ══════════════════════════════════════════════════════════
+//  Crear una lección soltando un archivo
+//
+//  Es la acción principal de la pantalla, así que ocupa como tal: caja
+//  grande, borde discontinuo —la señal universal de "suéltalo aquí"— y una
+//  sola frase que diga qué hacer.
+// ══════════════════════════════════════════════════════════
+.axr-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+
+  &__zone {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+    padding: 2.25rem 1.25rem;
+    border: 2px dashed var(--axr-border-strong);
+    background: var(--axr-gray-10);
+    transition: border-color 0.15s ease, background 0.15s ease;
+
+    // Con el archivo encima, la caja entera responde: si sólo cambiara el
+    // texto, no se sabría si está soltando dentro o fuera.
+    &[data-over] {
+      border-color: var(--axr-text);
+      background: #fff;
+      box-shadow: var(--axr-shadow-hard-sm);
+    }
+
+    &[data-busy] { border-style: solid; background: #fff; }
+
+    strong { font-size: 1.0625rem; }
+
+    p {
+      margin: 0;
+      max-width: 46ch;
+      font-size: 0.8125rem;
+      color: var(--axr-text-secondary);
+      line-height: 1.55;
+    }
+  }
+
+  &__icon {
+    font-size: 1.75rem;
+    line-height: 1;
+  }
+
+  &__formats {
+    font-size: 0.6875rem;
+    color: var(--axr-text-helper);
+  }
+
+  &__file {
+    font-family: var(--axr-code);
+    font-size: 0.75rem;
+    color: var(--axr-text-helper);
+  }
+
+  // Mientras la IA piensa. Un cuadrado que gira, no un círculo: es la misma
+  // familia geométrica que el resto del campus.
+  &__spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--axr-border-strong);
+    border-top-color: var(--axr-text);
+    animation: axr-drop-spin 0.8s linear infinite;
+
+    @media (prefers-reduced-motion: reduce) { animation-duration: 2.4s; }
+  }
+
+  &__manual {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0.35rem;
+    font: inherit;
+    font-size: 0.8125rem;
+    color: var(--axr-text-secondary);
+    text-decoration: underline;
+    cursor: pointer;
+
+    &:hover { color: var(--axr-text); }
+  }
+}
+
+@keyframes axr-drop-spin {
+  to { transform: rotate(360deg); }
+}

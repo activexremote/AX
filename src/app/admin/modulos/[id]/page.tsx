@@ -7,7 +7,10 @@ import { DeleteButton } from "@/components/admin/delete-button";
 import { deleteModule } from "@/app/admin/modulos/actions";
 import { createClient } from "@/lib/supabase/server";
 import { getI18n } from "@/lib/i18n/server";
+import { aiConfigured } from "@/lib/ai/settings";
 import type { Lesson, Module } from "@/lib/supabase/types";
+import "@/components/content/content.scss";
+import "@/components/admin/block-editor.scss";
 
 export default async function AdminModuleDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -20,6 +23,8 @@ export default async function AdminModuleDetail({ params }: { params: Promise<{ 
     .select("*")
     .eq("module_id", id)
     .order("order_index");
+  // Sin clave de OpenAI la caja de arrastrar lo dice y deja el camino a mano.
+  const iaLista = await aiConfigured();
 
   return (
     <div className="axr-admin-page">
@@ -42,7 +47,7 @@ export default async function AdminModuleDetail({ params }: { params: Promise<{ 
 
       <div className="axr-admin-card">
         <h2>{t.adminForm.lessons}</h2>
-        <ManageLessons moduleId={id} lessons={(lessons ?? []) as Lesson[]} />
+        <ManageLessons moduleId={id} lessons={(lessons ?? []) as Lesson[]} aiReady={iaLista} />
       </div>
     </div>
   );

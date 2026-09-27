@@ -1,0 +1,168 @@
+// ══════════════════════════════════════════════════════════
+//  Editar la lección desde el campus
+//
+//  La regla que manda esta hoja: en modo lectura NO SE VE NADA de esto. El
+//  profesor tiene que poder comprobar cómo le queda la clase a un alumno, y
+//  eso no se puede hacer con marcos de edición por medio.
+//
+//  En modo edición, el marcado es el mínimo para saber dónde se puede pulsar:
+//  un filete al pasar por encima y la etiqueta del tipo de bloque. Ni fondos
+//  de colores ni iconos flotando sobre el texto.
+// ══════════════════════════════════════════════════════════
+
+.axr-inline {
+  // ── Barra del profesor ─────────────────────────────────
+  &__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 1.1rem;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--axr-border-ink);
+    background: var(--axr-gray-10);
+
+    &-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem;
+
+      em {
+        font-style: normal;
+        font-size: 0.75rem;
+        color: var(--axr-text-helper);
+      }
+    }
+  }
+
+  &__badge {
+    font-family: var(--axr-code);
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--axr-text-helper);
+  }
+
+  &__ok { color: var(--axr-go) !important; }
+  &__err { color: #da1e28 !important; }
+
+  &__btn {
+    appearance: none;
+    background: #fff;
+    border: 1px solid var(--axr-border-ink);
+    padding: 0.35rem 0.7rem;
+    font: inherit;
+    font-size: 0.75rem;
+    cursor: pointer;
+
+    &:hover:not(:disabled) { box-shadow: var(--axr-shadow-hard-sm); }
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    &[data-on="true"],
+    &--solid { background: var(--axr-text); color: #fff; }
+  }
+
+  &__hint {
+    margin: -0.6rem 0 1rem;
+    font-size: 0.75rem;
+    color: var(--axr-text-helper);
+  }
+
+  // ── Bloque pulsable ────────────────────────────────────
+  &__slot {
+    position: relative;
+    cursor: pointer;
+    padding: 0.35rem;
+    margin: -0.35rem;
+    border: 1px dashed transparent;
+
+    &:hover,
+    &:focus-visible {
+      border-color: var(--axr-border-strong);
+      background: rgba(0, 0, 0, 0.015);
+      outline: none;
+    }
+
+    &:focus-visible { border-color: var(--axr-text); }
+
+    // Dentro del marco no se pulsa nada: el clic es para editar. Sin esto,
+    // marcar una casilla de la checklist abriría el editor a la vez.
+    &-body { pointer-events: none; }
+
+    &-tag {
+      position: absolute;
+      top: -0.55rem;
+      right: 0.25rem;
+      padding: 0 0.3rem;
+      background: #fff;
+      border: 1px solid var(--axr-border);
+      font-family: var(--axr-code);
+      font-size: 0.5625rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--axr-text-helper);
+      opacity: 0;
+      transition: opacity 0.12s ease;
+    }
+
+    &:hover &-tag,
+    &:focus-visible &-tag { opacity: 1; }
+  }
+
+  // ── Bloque abierto ─────────────────────────────────────
+  &__editor {
+    border: 1px solid var(--axr-border-ink);
+    box-shadow: var(--axr-shadow-hard-sm);
+    background: #fff;
+    padding: 0.7rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+
+    &-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    &-foot {
+      border-top: 1px dashed var(--axr-border-strong);
+      padding-top: 0.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    &-actions { display: flex; gap: 0.4rem; }
+  }
+
+  &__mini {
+    border: 1px solid var(--axr-border);
+    padding: 0.6rem;
+    background: #fff;
+  }
+
+  &__tools {
+    display: flex;
+    gap: 0.15rem;
+
+    button {
+      appearance: none;
+      background: #fff;
+      border: 1px solid var(--axr-border);
+      width: 26px;
+      height: 26px;
+      font-size: 0.75rem;
+      line-height: 1;
+      cursor: pointer;
+
+      &:hover:not(:disabled) { border-color: var(--axr-border-ink); }
+      &:disabled { opacity: 0.35; cursor: not-allowed; }
+    }
+  }
+
+  &__add { margin-top: 1rem; }
+}
