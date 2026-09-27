@@ -6,6 +6,7 @@ import { I18nProvider } from "@/lib/i18n/provider";
 import { ConsentDefaultScript } from "@/components/consent/consent-default-script";
 import { ConsentMount } from "@/components/consent/consent-mount";
 import { ExtensionNoiseScript } from "@/components/dev/extension-noise-script";
+import { HashSessionCatcher } from "@/components/auth/hash-session-catcher";
 import { getI18n } from "@/lib/i18n/server";
 import { SITE_NAME, SITE_URL } from "@/lib/seo";
 
@@ -67,7 +68,12 @@ export default async function RootLayout({
         {/* Y calla a las extensiones del navegador, que en desarrollo tapan
             la pantalla con errores que no son de esta web. */}
         <ExtensionNoiseScript />
-        <I18nProvider value={{ locale, t }}>{children}</I18nProvider>
+        <I18nProvider value={{ locale, t }}>
+          {/* Recoge la sesión si el enlace del correo la dejó en el fragmento
+              de la URL. Ver la cabecera del componente. */}
+          <HashSessionCatcher />
+          {children}
+        </I18nProvider>
         <ConsentMount />
       </body>
     </html>

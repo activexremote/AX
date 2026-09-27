@@ -19,6 +19,9 @@ const PUBLIC_PATHS = [
   "/matricula",
   "/login",
   "/auth/callback",
+  // Recoge la sesión que llega en el fragmento de la URL. Tiene que ser
+  // pública: quien aterriza aquí todavía no tiene sesión, justo por eso viene.
+  "/auth/sesion",
   "/auth/sign-out",
 ];
 

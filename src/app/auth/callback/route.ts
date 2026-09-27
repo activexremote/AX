@@ -32,5 +32,12 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/login?error=oauth_failed`);
+  // Sin código (o con uno que ya no vale) queda una posibilidad: que los
+  // tokens vengan en el FRAGMENTO de la URL, que el servidor no puede ver
+  // —no se envía nunca—. Sólo el navegador puede recogerlo, así que se manda
+  // a la página que lo hace. El fragmento sobrevive a la redirección.
+  const recoger = new URL("/auth/sesion", origin);
+  recoger.searchParams.set("next", next);
+  if (code) recoger.searchParams.set("error_description", "El enlace ya se había usado o se abrió en otro navegador.");
+  return NextResponse.redirect(recoger);
 }
