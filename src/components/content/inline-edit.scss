@@ -1,17 +1,19 @@
 // ══════════════════════════════════════════════════════════
-//  Editar la lección desde el campus
+//  Escribir la lección dentro del campus
 //
-//  La regla que manda esta hoja: en modo lectura NO SE VE NADA de esto. El
-//  profesor tiene que poder comprobar cómo le queda la clase a un alumno, y
-//  eso no se puede hacer con marcos de edición por medio.
+//  Dos reglas mandan aquí:
 //
-//  En modo edición, el marcado es el mínimo para saber dónde se puede pulsar:
-//  un filete al pasar por encima y la etiqueta del tipo de bloque. Ni fondos
-//  de colores ni iconos flotando sobre el texto.
+//  1. En modo lectura NO SE VE NADA de esto. El profesor tiene que poder
+//     comprobar cómo le queda la clase a un alumno, y eso no se hace con
+//     marcos de edición por medio.
+//  2. En modo escritura, el texto NO CAMBIA DE SITIO NI DE TAMAÑO. Se escribe
+//     sobre la tipografía publicada; lo único que aparece es un margen a la
+//     izquierda con dos botones y, al pasar por encima, un filete tenue. Si
+//     el texto se moviera al pinchar, esto dejaría de ser escribir encima.
 // ══════════════════════════════════════════════════════════
 
-.axr-inline {
-  // ── Barra del profesor ─────────────────────────────────
+.axr-nte {
+  // ── Barra ──────────────────────────────────────────────
   &__bar {
     display: flex;
     flex-wrap: wrap;
@@ -22,6 +24,11 @@
     padding: 0.45rem 0.6rem;
     border: 1px solid var(--axr-border-ink);
     background: var(--axr-gray-10);
+    // Se queda arriba: en una lección larga, el aviso de guardado tiene que
+    // verse esté donde esté el cursor.
+    position: sticky;
+    top: 0;
+    z-index: 5;
 
     &-actions {
       display: flex;
@@ -33,6 +40,9 @@
         font-style: normal;
         font-size: 0.75rem;
         color: var(--axr-text-helper);
+
+        &[data-state="guardado"] { color: var(--axr-go); }
+        &[data-state="error"] { color: #da1e28; }
       }
     }
   }
@@ -45,9 +55,6 @@
     color: var(--axr-text-helper);
   }
 
-  &__ok { color: var(--axr-go) !important; }
-  &__err { color: #da1e28 !important; }
-
   &__btn {
     appearance: none;
     background: #fff;
@@ -59,9 +66,7 @@
 
     &:hover:not(:disabled) { box-shadow: var(--axr-shadow-hard-sm); }
     &:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    &[data-on="true"],
-    &--solid { background: var(--axr-text); color: #fff; }
+    &[data-on="true"] { background: var(--axr-text); color: #fff; }
   }
 
   &__hint {
@@ -70,99 +75,268 @@
     color: var(--axr-text-helper);
   }
 
-  // ── Bloque pulsable ────────────────────────────────────
-  &__slot {
+  // ── Una fila (un bloque) ───────────────────────────────
+  &__row {
     position: relative;
-    cursor: pointer;
-    padding: 0.35rem;
-    margin: -0.35rem;
-    border: 1px dashed transparent;
 
-    &:hover,
-    &:focus-visible {
-      border-color: var(--axr-border-strong);
-      background: rgba(0, 0, 0, 0.015);
-      outline: none;
+    // El margen de herramientas vive FUERA del texto, en el aire de la
+    // izquierda, para no desplazar ni un píxel de la lección.
+    &:hover > .axr-nte__gutter,
+    &:focus-within > .axr-nte__gutter {
+      opacity: 1;
     }
-
-    &:focus-visible { border-color: var(--axr-text); }
-
-    // Dentro del marco no se pulsa nada: el clic es para editar. Sin esto,
-    // marcar una casilla de la checklist abriría el editor a la vez.
-    &-body { pointer-events: none; }
-
-    &-tag {
-      position: absolute;
-      top: -0.55rem;
-      right: 0.25rem;
-      padding: 0 0.3rem;
-      background: #fff;
-      border: 1px solid var(--axr-border);
-      font-family: var(--axr-code);
-      font-size: 0.5625rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--axr-text-helper);
-      opacity: 0;
-      transition: opacity 0.12s ease;
-    }
-
-    &:hover &-tag,
-    &:focus-visible &-tag { opacity: 1; }
   }
 
-  // ── Bloque abierto ─────────────────────────────────────
-  &__editor {
-    border: 1px solid var(--axr-border-ink);
-    box-shadow: var(--axr-shadow-hard-sm);
-    background: #fff;
-    padding: 0.7rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-
-    &-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-    }
-
-    &-foot {
-      border-top: 1px dashed var(--axr-border-strong);
-      padding-top: 0.6rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
-    }
-
-    &-actions { display: flex; gap: 0.4rem; }
-  }
-
-  &__mini {
-    border: 1px solid var(--axr-border);
-    padding: 0.6rem;
-    background: #fff;
-  }
-
-  &__tools {
+  &__gutter {
+    position: absolute;
+    left: -3.4rem;
+    top: 0;
     display: flex;
     gap: 0.15rem;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+
+    // En pantallas estrechas no hay aire a la izquierda: los botones se
+    // quedan dentro, arriba a la derecha, y siempre visibles (en un móvil no
+    // hay ratón que pasar por encima).
+    @media (max-width: 900px) {
+      position: static;
+      opacity: 1;
+      justify-content: flex-end;
+      margin-bottom: 0.2rem;
+    }
+
+    button {
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      background: #fff;
+      border: 1px solid var(--axr-border);
+      color: var(--axr-text-helper);
+      font-size: 0.8125rem;
+      line-height: 1;
+      cursor: pointer;
+
+      &:hover { border-color: var(--axr-border-ink); color: var(--axr-text); }
+      &:last-child { cursor: grab; }
+    }
+  }
+
+  &__content {
+    // El filete al pasar por encima no empuja nada: va por dentro.
+    box-shadow: inset 0 0 0 1px transparent;
+    transition: box-shadow 0.12s ease;
+    border-radius: 1px;
+
+    .axr-nte__row:hover > & { box-shadow: inset 0 0 0 1px var(--axr-border); }
+    .axr-nte__row:focus-within > & { box-shadow: inset 0 0 0 1px var(--axr-border-strong); }
+  }
+
+  // ── El texto que se escribe ────────────────────────────
+  &__text {
+    outline: none;
+    min-height: 1.4em;
+    white-space: pre-wrap;
+    word-break: break-word;
+
+    // El texto vacío dice qué hacer. `attr()` en el contenido: la frase viene
+    // del diccionario, no del CSS.
+    &[data-empty]::before {
+      content: attr(data-placeholder);
+      color: var(--axr-text-helper);
+      pointer-events: none;
+    }
+
+    &:focus-visible { outline: none; }
+  }
+
+  // Dentro de una lista, cada punto es un trozo escribible.
+  &__lista {
+    ul { margin: 0; padding: 0; list-style: none; }
+
+    li { display: flex; gap: 0.5rem; align-items: flex-start; }
+
+    .axr-nte__text { flex: 1; min-width: 0; }
+
+    // La checklist en edición no enseña casillas: se está escribiendo qué
+    // pone en cada línea, no marcándolas.
+    &--check,
+    &--cp {
+      padding: 0.7rem 0.85rem;
+
+      li { padding: 0.15rem 0; }
+      li::before { content: none; }
+    }
+
+    &--check li { border-top: 0; }
+  }
+
+  &__cp-title,
+  &__note-title {
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+  }
+
+  &__cp-title {
+    font-family: var(--axr-code);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  // El tono del cuadro destacado, a un clic.
+  &__note-kinds {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-bottom: 0.45rem;
 
     button {
       appearance: none;
       background: #fff;
       border: 1px solid var(--axr-border);
-      width: 26px;
-      height: 26px;
-      font-size: 0.75rem;
-      line-height: 1;
+      padding: 0.1rem 0.4rem;
+      font: inherit;
+      font-size: 0.625rem;
       cursor: pointer;
 
-      &:hover:not(:disabled) { border-color: var(--axr-border-ink); }
-      &:disabled { opacity: 0.35; cursor: not-allowed; }
+      &[data-on="true"] { background: var(--axr-text); color: #fff; border-color: var(--axr-text); }
     }
   }
 
-  &__add { margin-top: 1rem; }
+  // ── Bloques que no son texto ───────────────────────────
+  &__complejo {
+    appearance: none;
+    display: block;
+    width: 100%;
+    text-align: inherit;
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+
+    // Lo de dentro no se pulsa: el clic es para abrir sus campos.
+    > * { pointer-events: none; }
+  }
+
+  &__campos {
+    margin-top: 0.5rem;
+    padding: 0.7rem;
+    border: 1px solid var(--axr-border-ink);
+    background: #fff;
+    box-shadow: var(--axr-shadow-hard-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  // ── Menús ──────────────────────────────────────────────
+  &__slash,
+  &__acciones {
+    position: absolute;
+    z-index: 10;
+    left: 0;
+    top: 100%;
+    margin-top: 0.3rem;
+    max-height: 18rem;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid var(--axr-border-ink);
+    box-shadow: var(--axr-shadow-hard-sm);
+    padding: 0.3rem;
+    min-width: 16rem;
+  }
+
+  &__slash {
+    button {
+      appearance: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: 0;
+      padding: 0.4rem 0.5rem;
+      font: inherit;
+      cursor: pointer;
+
+      strong { font-size: 0.8125rem; }
+      span { font-size: 0.6875rem; color: var(--axr-text-helper); line-height: 1.4; }
+
+      &:hover { background: var(--axr-gray-10); }
+    }
+
+    p { margin: 0; padding: 0.5rem; font-size: 0.75rem; color: var(--axr-text-helper); }
+  }
+
+  &__acciones {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+
+    > button {
+      appearance: none;
+      text-align: left;
+      background: none;
+      border: 0;
+      padding: 0.35rem 0.5rem;
+      font: inherit;
+      font-size: 0.8125rem;
+      cursor: pointer;
+
+      &:hover:not(:disabled) { background: var(--axr-gray-10); }
+      &:disabled { opacity: 0.35; cursor: not-allowed; }
+    }
+
+    &-label {
+      display: block;
+      margin: 0.35rem 0.5rem 0.2rem;
+      font-family: var(--axr-code);
+      font-size: 0.5625rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--axr-text-helper);
+    }
+
+    &-tipos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.2rem;
+      padding: 0 0.5rem 0.3rem;
+
+      button {
+        appearance: none;
+        background: #fff;
+        border: 1px solid var(--axr-border);
+        padding: 0.15rem 0.4rem;
+        font: inherit;
+        font-size: 0.6875rem;
+        cursor: pointer;
+
+        &:hover { border-color: var(--axr-border-ink); }
+        &[data-on="true"] { background: var(--axr-text); color: #fff; border-color: var(--axr-text); }
+      }
+    }
+  }
+
+  // ── Añadir al final ────────────────────────────────────
+  &__final {
+    appearance: none;
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 0.6rem;
+    background: none;
+    border: 1px dashed var(--axr-border-strong);
+    font: inherit;
+    font-size: 0.8125rem;
+    color: var(--axr-text-helper);
+    cursor: pointer;
+
+    &:hover { border-color: var(--axr-border-ink); color: var(--axr-text); }
+  }
 }
