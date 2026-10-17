@@ -96,6 +96,9 @@ export interface Module {
   estimated_minutes: number | null;
   /** A qué curso pertenece. "core" es el núcleo compartido. */
   course: CourseKey;
+  /** Versión inglesa. Vacía = se sirve la española. */
+  title_en?: string | null;
+  description_en?: string | null;
   created_at: string;
 }
 
@@ -118,6 +121,10 @@ export interface Lesson {
    * sería prometer una forma que la base no garantiza.
    */
   content_blocks: unknown | null;
+  /** Versión inglesa. Vacía = se sirve la española. */
+  title_en?: string | null;
+  subtitle_en?: string | null;
+  content_blocks_en?: unknown | null;
   toc: { id: string; title: string }[] | null;
   created_at: string;
 

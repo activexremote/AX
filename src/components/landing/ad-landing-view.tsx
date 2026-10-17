@@ -3,6 +3,7 @@ import { BrandMark } from "@/components/brand-mark";
 import { LocaleToggle } from "@/components/locale-toggle";
 import { CookieSettingsLink } from "@/components/consent/cookie-settings-link";
 import { PaymentBadges } from "@/components/landing/payment-badges";
+import { ImpactBadges } from "@/components/landing/impact-badges";
 import { LeadForm } from "@/components/landing/lead-form";
 import { SlackLogo } from "@/components/slack-logo";
 import { TOOL_ICONS } from "@/components/landing/tool-icons";
@@ -767,6 +768,7 @@ export async function AdLandingView() {
               <LocaleToggle tone="dark" />
             </div>
             <PaymentBadges copy={foot.pay} />
+            <ImpactBadges copy={foot.impact} />
           </div>
 
           <div className="axr-ad__foot-cols">

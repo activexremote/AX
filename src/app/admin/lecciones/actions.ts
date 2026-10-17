@@ -45,17 +45,27 @@ export type SaveBlocksResult = { ok: true; count: number } | { error: string };
  *
  * `content_md` NO se toca. Sigue siendo el borrador del profesor y la fuente
  * de la narración de audio; los bloques son cómo se presenta, no el original.
+ *
+ * @param lang Qué versión se guarda. El editor del campus guarda la que está
+ *   enseñando (la del idioma del profesor); el del panel, la española. Sin
+ *   esto, un profesor con el campus en inglés pisaría el español con su
+ *   traducción al guardar.
  */
-export async function saveLessonBlocks(lessonId: string, json: string): Promise<SaveBlocksResult> {
+export async function saveLessonBlocks(
+  lessonId: string,
+  json: string,
+  lang: "es" | "en" = "es",
+): Promise<SaveBlocksResult> {
   const { supabase } = await assertStaff();
 
   const blocks = parseBlocks(json);
+  const column = lang === "en" ? "content_blocks_en" : "content_blocks";
 
   const { error } = await supabase
     .from("lessons")
     // Vaciar el editor devuelve la lección a su Markdown de siempre, que es
     // lo que espera quien borra todos los bloques.
-    .update({ content_blocks: blocks.length ? blocks : null })
+    .update({ [column]: blocks.length ? blocks : null })
     .eq("id", lessonId);
 
   if (error) return { error: error.message };

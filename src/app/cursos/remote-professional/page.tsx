@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { CourseView } from "@/components/landing/course-view";
 import { CourseSchema, courseMetadata } from "@/app/cursos/seo";
 import { getLocale } from "@/lib/i18n/server";
+import { GoogleTagManager } from "@/components/analytics/google-tag-manager";
 
 const SLUG = "remote-professional" as const;
 
@@ -19,6 +20,7 @@ export default async function RemoteProfessionalPage() {
   const locale = await getLocale();
   return (
     <>
+      <GoogleTagManager />
       <CourseSchema locale={locale} slug={SLUG} />
       <CourseView slug={SLUG} />
     </>

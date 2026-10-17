@@ -18,6 +18,7 @@ import "@/app/(campus)/lecciones/lesson.scss";
 import { BlockList } from "@/components/content/block-view";
 import { CampusLessonEditor } from "@/components/content/campus-lesson-editor";
 import { parseBlocks } from "@/lib/content/blocks";
+import { EditLangSwitch, readEditLang } from "@/components/content/edit-lang-switch";
 import { getCurrentProfile } from "@/lib/data/profile";
 import { editorCopy } from "@/lib/i18n/editor";
 import "@/components/content/content.scss";
@@ -27,11 +28,18 @@ import "@/components/content/inline-edit.scss";
 // sólo se pinta para el profesorado.
 import "@/components/admin/block-editor.scss";
 
-export default async function LessonPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function LessonPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ editar?: string | string[] }>;
+}) {
   const { id } = await params;
+  const { editar } = await searchParams;
   const data = await getLessonForView(id);
   if (!data) notFound();
-  const { lesson, module, siblings, quiz, questions } = data;
+  const { lesson, module, siblings, quiz, questions, raw } = data;
   // Una lección relámpago se distingue por tener misión: el resto de la
   // pantalla es la misma y no hace falta un tipo de lección aparte.
   const esRelampago = Boolean(lesson.mission_md);
@@ -47,6 +55,11 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
     getI18n(),
     esRelampago ? getSubmission(lesson.id) : Promise.resolve(null),
   ]);
+  // Lo que edita el profesorado: siempre la versión sin traducir que elija en
+  // el selector, que por defecto es la del idioma en que tiene el campus.
+  const editLang = readEditLang(editar, locale);
+  const bloquesEs = parseBlocks(raw.lesson.content_blocks);
+  const bloquesEn = parseBlocks(raw.lesson.content_blocks_en);
   const completedSet = new Set(progress.filter((p) => p.status === "completada").map((p) => p.lesson_id));
   const moduleHref = `/modulos/${module.slug}`;
   const totalModuleLessons = siblings.length;
@@ -198,11 +211,17 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
           <article className="axr-lesson__content prose">
             {esEquipo ? (
               <>
+                <EditLangSwitch current={editLang} basePath={`/lecciones/${lesson.id}`} labels={t.adminForm} />
+                {editLang === "en" && !bloquesEn.length && bloquesEs.length ? (
+                  <p className="axr-lesson__edit-hint">{t.adminForm.enFromEs}</p>
+                ) : null}
                 <CampusLessonEditor
+                  key={editLang}
                   lessonId={lesson.id}
-                  initial={bloques}
+                  initial={editLang === "en" ? (bloquesEn.length ? bloquesEn : bloquesEs) : bloquesEs}
                   markdown={lesson.content_md}
                   copy={editorCopy[locale]}
+                  lang={editLang}
                 />
                 {/* Mientras la lección siga siendo Markdown, el profesor la ve
                     como la ve el alumno, y arriba tiene el botón para

@@ -56,6 +56,7 @@ export function LessonBlocksEditor({
   draft,
   aiReady,
   copy,
+  lang = "es",
 }: {
   lessonId: string;
   /** Lo que hay guardado en la base, ya validado en el servidor. */
@@ -64,6 +65,8 @@ export function LessonBlocksEditor({
   draft: string;
   aiReady: boolean;
   copy: Copy;
+  /** Qué versión se guarda: la española o la inglesa. */
+  lang?: "es" | "en";
 }) {
   const [blocks, setBlocks] = useState<Block[]>(initial);
   const [abierto, setAbierto] = useState<number | null>(initial.length ? null : 0);
@@ -123,7 +126,7 @@ export function LessonBlocksEditor({
     setError(null);
     setDescartados(0);
     startTransition(async () => {
-      const r = await saveLessonBlocks(lessonId, JSON.stringify(blocks));
+      const r = await saveLessonBlocks(lessonId, JSON.stringify(blocks), lang);
       if ("error" in r) {
         setError(r.error);
         return;

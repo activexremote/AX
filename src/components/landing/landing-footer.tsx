@@ -4,6 +4,7 @@ import { BrandMark } from "@/components/brand-mark";
 import { LocaleToggle } from "@/components/locale-toggle";
 import { CookieSettingsLink } from "@/components/consent/cookie-settings-link";
 import { PaymentBadges } from "@/components/landing/payment-badges";
+import { ImpactBadges } from "@/components/landing/impact-badges";
 import { landingCopy } from "@/app/bienvenida/copy";
 import { getLocale } from "@/lib/i18n/server";
 
@@ -37,6 +38,7 @@ export async function LandingFooter({ base = "" }: { base?: string } = {}) {
               columna se quedaba corta frente a las de enlaces y el pie crecía
               en vertical sin necesidad. Aquí rellena el hueco que ya había. */}
           <PaymentBadges copy={c.pay} />
+          <ImpactBadges copy={c.impact} />
         </div>
 
         <div className="axr-lp__footer-cols">

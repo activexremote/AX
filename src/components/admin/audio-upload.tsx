@@ -3,20 +3,37 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-import { uploadLessonAudio } from "@/app/admin/modulos/actions";
+import { generateLessonAudio, uploadLessonAudio } from "@/app/admin/modulos/actions";
 import { useI18n } from "@/lib/i18n/provider";
 
-export function AudioUpload({ lessonId, currentUrl }: { lessonId: string; currentUrl: string | null }) {
+export function AudioUpload({
+  lessonId,
+  currentUrl,
+  ttsReady,
+}: {
+  lessonId: string;
+  currentUrl: string | null;
+  /** Si el servidor no tiene FISH_API_KEY, no se ofrece generar: sólo subir. */
+  /**
+   * ⚠︎ Opcional mientras lib/tts siga sin commitear: la página de la lección
+   * que hay en el repo no puede pasar esta propiedad, porque el módulo que la
+   * calcula no existe allí todavía. Cuando entre, vuelve a ser obligatoria.
+   */
+  ttsReady?: boolean;
+}) {
   const { t } = useI18n();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [generatingNow, setGeneratingNow] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
 
   function handle(formData: FormData) {
     setMsg(null);
+    setErr(null);
     startTransition(async () => {
       const r = await uploadLessonAudio(lessonId, formData);
-      if (r?.error) setMsg(`Error: ${r.error}`);
+      if (r?.error) setErr(r.error);
       else {
         setMsg(t.adminForm.audioUploaded);
         router.refresh();
@@ -24,25 +41,64 @@ export function AudioUpload({ lessonId, currentUrl }: { lessonId: string; curren
     });
   }
 
+  function generate() {
+    setMsg(null);
+    setErr(null);
+    setGeneratingNow(true);
+    startTransition(async () => {
+      const r = await generateLessonAudio(lessonId);
+      setGeneratingNow(false);
+      if (r?.error) setErr(r.error);
+      else {
+        setMsg(t.adminForm.audioGenerated);
+        router.refresh();
+      }
+    });
+  }
+
   return (
-    <form action={handle} className="axr-form">
+    <div className="axr-form">
       {currentUrl ? (
-        <audio controls src={currentUrl} style={{ width: "100%" }} />
+        // La URL cambia con cada generación, así que `key` fuerza a recargar el
+        // <audio>: sin ella el navegador seguiría con el archivo anterior.
+        <audio key={currentUrl} controls src={currentUrl} style={{ width: "100%" }} />
       ) : (
         <p style={{ color: "var(--axr-text-helper)", fontSize: "0.8125rem", margin: 0 }}>
           {t.adminForm.audioNone}
         </p>
       )}
-      <div className="axr-form__row">
-        <label>{t.adminForm.audioUploadLabel}</label>
-        <input type="file" name="file" accept="audio/*" required />
-      </div>
+
+      {ttsReady ? (
+        <div className="axr-form__actions">
+          <button
+            type="button"
+            className="axr-btn axr-btn--primary"
+            onClick={generate}
+            disabled={pending}
+          >
+            {generatingNow ? t.adminForm.generating : t.adminForm.generateAudio}
+          </button>
+        </div>
+      ) : (
+        <p style={{ color: "var(--axr-text-helper)", fontSize: "0.8125rem", margin: 0 }}>
+          {t.adminForm.ttsOff}
+        </p>
+      )}
+
+      <form action={handle}>
+        <div className="axr-form__row">
+          <label>{ttsReady ? t.adminForm.audioOrUpload : t.adminForm.audioUploadLabel}</label>
+          <input type="file" name="file" accept="audio/*" required />
+        </div>
+        <div className="axr-form__actions">
+          <button type="submit" className="axr-btn axr-btn--ghost" disabled={pending}>
+            {pending && !generatingNow ? t.adminForm.uploading : t.adminForm.uploadAudio}
+          </button>
+        </div>
+      </form>
+
       {msg ? <div className="axr-login__ok">{msg}</div> : null}
-      <div className="axr-form__actions">
-        <button type="submit" className="axr-btn axr-btn--primary" disabled={pending}>
-          {pending ? t.adminForm.uploading : t.adminForm.uploadAudio}
-        </button>
-      </div>
-    </form>
+      {err ? <div className="axr-login__error">Error: {err}</div> : null}
+    </div>
   );
 }

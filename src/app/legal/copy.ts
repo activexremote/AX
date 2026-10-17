@@ -50,8 +50,8 @@ export type LegalDoc = {
 export type LegalSlug = "aviso-legal" | "privacidad" | "cookies" | "terminos";
 
 /** Fecha de última revisión de los cuatro documentos. */
-const UPDATED_ES = "18 de agosto de 2026";
-const UPDATED_EN = "18 August 2026";
+const UPDATED_ES = "17 de octubre de 2026";
+const UPDATED_EN = "17 October 2026";
 
 // ══════════════════════════════════════════════════════════
 //  ESPAÑOL
@@ -524,7 +524,7 @@ const COOKIES_ES: LegalDoc = {
           // ningún tercero por defecto, esto se reescribe otra vez: una
           // política que describe una web que ya no existe no protege a
           // nadie, y es la primera cosa que mira una inspección.
-          text: `Las cookies propias las instala ${E.name} desde el dominio ${E.domain}. De terceros hay una sola: la página del programa incrusta un mapa de Google Maps para enseñar dónde está la oficina, y Google instala sus propias cookies al cargarlo. Es la única que se carga sin haber elegido antes. Si rechazas la categoría «Preferencias» en el panel de configuración, ese mapa deja de cargarse y en su lugar aparece un botón para abrirlo sólo si tú quieres. Ningún otro servicio ajeno instala cookies en este sitio.`,
+          text: `Las cookies propias las instala ${E.name} desde el dominio ${E.domain}. De terceros hay una sola: la página del programa incrusta un mapa de Google Maps para enseñar dónde está la oficina, y Google instala sus propias cookies al cargarlo. Es la única que se carga sin haber elegido antes. Si rechazas la categoría «Preferencias» en el panel de configuración, ese mapa deja de cargarse y en su lugar aparece un botón para abrirlo sólo si tú quieres. Las páginas públicas cargan además Google Tag Manager, una herramienta que no instala cookies por sí misma y que sólo activa etiquetas de medición o de marketing de terceros si has aceptado esas categorías.`,
         },
       ],
     },
@@ -588,7 +588,7 @@ const COOKIES_ES: LegalDoc = {
         },
         {
           t: "p",
-          text: "Si en el futuro incorporamos analítica o herramientas de medición publicitaria, actualizaremos esta tabla antes de activarlas y te volveremos a pedir consentimiento.",
+          text: "Las cookies de medición y de marketing que se activen a través de Google Tag Manager (por ejemplo, las de Google Analytics o de las plataformas publicitarias) sólo se instalan si aceptas su categoría. Antes de añadir una herramienta nueva actualizaremos esta tabla y te volveremos a pedir consentimiento.",
         },
       ],
     },
@@ -1323,7 +1323,7 @@ const COOKIES_EN: LegalDoc = {
       blocks: [
         {
           t: "p",
-          text: `First-party cookies are set by ${E.name} from the ${E.domain} domain. Third-party cookies would be set by external services, and on this site they can only ever be set if you enable their category in the settings panel. Today we load no third-party cookies by default.`,
+          text: `First-party cookies are set by ${E.name} from the ${E.domain} domain. Third-party cookies would be set by external services, and on this site they can only ever be set if you enable their category in the settings panel. Public pages also load Google Tag Manager, a tool that sets no cookies by itself and only fires third-party measurement or marketing tags if you have accepted those categories.`,
         },
       ],
     },
@@ -1387,7 +1387,7 @@ const COOKIES_EN: LegalDoc = {
         },
         {
           t: "p",
-          text: "If we later add analytics or advertising measurement tools, we will update this table before switching them on and ask for your consent again.",
+          text: "Measurement and marketing cookies fired through Google Tag Manager (for example Google Analytics or advertising platforms) are only set if you accept their category. Before adding a new tool we will update this table and ask for your consent again.",
         },
       ],
     },

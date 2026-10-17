@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { localize } from "@/lib/data/localize";
+import { getLocale } from "@/lib/i18n/server";
 import type { UserLessonProgress } from "@/lib/supabase/types";
 
 export async function getProgressForCurrentUser() {
@@ -17,6 +19,7 @@ export async function getProgressForCurrentUser() {
 
 export async function getAggregatedProgress() {
   const supabase = await createClient();
+  const locale = await getLocale();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -39,13 +42,16 @@ export async function getAggregatedProgress() {
     };
   }
 
-  const [{ data: modules }, { data: lessons }, { data: progress }, { data: attempts }, { data: activity }] = await Promise.all([
-    supabase.from("modules").select("id, title, icon").order("order_index"),
-    supabase.from("lessons").select("id, module_id, title").order("module_id, order_index"),
+  const [{ data: modulesRaw }, { data: lessonsRaw }, { data: progress }, { data: attempts }, { data: activity }] = await Promise.all([
+    supabase.from("modules").select("id, title, title_en, icon").order("order_index"),
+    supabase.from("lessons").select("id, module_id, title, title_en").order("module_id, order_index"),
     supabase.from("user_lesson_progress").select("*").eq("user_id", user.id),
     supabase.from("quiz_attempts").select("score, passed, quiz_id, created_at").eq("user_id", user.id),
     supabase.from("activity_log").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
   ]);
+
+  const modules = (modulesRaw ?? []).map((m) => localize(m, locale));
+  const lessons = (lessonsRaw ?? []).map((l) => localize(l, locale));
 
   const totalLessons = (lessons ?? []).length;
   const completed = (progress ?? []).filter((p) => p.status === "completada").length;

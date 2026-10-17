@@ -21,6 +21,7 @@ import { alternates, SITE_URL, SITE_NAME } from "@/lib/seo";
 import { withLocale } from "@/lib/i18n/routing";
 import "@/app/bienvenida/landing.scss";
 import "@/app/cursos-relampago/relampago.scss";
+import { GoogleTagManager } from "@/components/analytics/google-tag-manager";
 
 export const viewport: Viewport = { themeColor: "#161326", viewportFit: "cover" };
 
@@ -132,6 +133,7 @@ export default async function FlashCoursePage({
 
   return (
     <main className="axr-lp axr-flash axr-flash--course">
+      <GoogleTagManager />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <LandingNav base="/bienvenida" ticker={false} />

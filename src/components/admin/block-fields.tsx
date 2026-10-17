@@ -485,6 +485,56 @@ export function BlockFields({
         </div>
       );
 
+    case "resources":
+      return (
+        <>
+          <Row label={copy.fTitle}>
+            <input value={block.title ?? ""} onChange={(e) => set({ title: e.target.value })} />
+          </Row>
+          <div className="axr-blked__items">
+            <span className="axr-blked__items-label">{copy.fItems}</span>
+            {block.items.map((it, i) => (
+              <div key={i} className="axr-blked__sub">
+                <div className="axr-blked__sub-head">
+                  <span>{String(i + 1).padStart(2, "0")}</span>
+                  <button
+                    type="button"
+                    className="axr-blked__mini"
+                    onClick={() => set({ items: block.items.filter((_, j) => j !== i) })}
+                    disabled={block.items.length === 1}
+                    aria-label={copy.fRemoveItem}
+                  >
+                    ✕
+                  </button>
+                </div>
+                <input
+                  placeholder={copy.fLabel}
+                  value={it.label}
+                  onChange={(e) => set({ items: block.items.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)) })}
+                />
+                <input
+                  placeholder={copy.fUrl}
+                  value={it.url}
+                  onChange={(e) => set({ items: block.items.map((x, j) => (j === i ? { ...x, url: e.target.value } : x)) })}
+                />
+                <input
+                  placeholder={copy.fNote}
+                  value={it.note ?? ""}
+                  onChange={(e) => set({ items: block.items.map((x, j) => (j === i ? { ...x, note: e.target.value } : x)) })}
+                />
+              </div>
+            ))}
+            <button
+              type="button"
+              className="axr-blked__mini axr-blked__mini--add"
+              onClick={() => set({ items: [...block.items, { label: "", url: "" }] })}
+            >
+              + {copy.fAddItem}
+            </button>
+          </div>
+        </>
+      );
+
     case "divider":
       return null;
   }
@@ -533,6 +583,7 @@ export function blockSummary(b: Block): string {
     case "stats": return b.items.map((s) => s.value).filter(Boolean).join(" · ");
     case "chart": return b.title || b.series.map((s) => s.label).filter(Boolean).join(" · ");
     case "timeline": return b.items.map((i) => i.title).filter(Boolean).slice(0, 3).join(" · ");
+    case "resources": return b.items.map((r) => r.label).filter(Boolean).slice(0, 3).join(" · ");
     case "divider": return "———";
   }
 }

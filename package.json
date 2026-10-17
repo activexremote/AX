@@ -23,7 +23,8 @@
     "relampago:seed": "node --experimental-strip-types --import ./scripts/alias-loader.mjs scripts/build-relampago-seed.mjs",
     "asistente:seed": "node --experimental-strip-types --import ./scripts/alias-loader.mjs scripts/asistente-seed.mjs",
     "fish:setup": "node --experimental-strip-types --import ./scripts/alias-loader.mjs scripts/fish-setup.mjs",
-    "audio:generate": "node --experimental-strip-types --import ./scripts/alias-loader.mjs scripts/build-lesson-audio.mjs"
+    "audio:generate": "node --experimental-strip-types --import ./scripts/alias-loader.mjs scripts/build-lesson-audio.mjs",
+    "campus:import": "node --experimental-strip-types --import ./scripts/alias-loader.mjs scripts/campus-import.mjs"
   },
   "dependencies": {
     "@carbon/grid": "^11.56.0",

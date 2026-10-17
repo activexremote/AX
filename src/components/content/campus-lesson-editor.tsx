@@ -53,12 +53,15 @@ export function CampusLessonEditor({
   initial,
   markdown,
   copy,
+  lang = "es",
 }: {
   lessonId: string;
   initial: Block[];
   /** El Markdown de la lección, si todavía no está convertida a bloques. */
   markdown: string;
   copy: Copy;
+  /** La versión que se está editando: la que ve el profesor en su idioma. */
+  lang?: "es" | "en";
 }) {
   const [blocks, setBlocks] = useState<Block[]>(initial);
   const [editando, setEditando] = useState(false);
@@ -82,7 +85,7 @@ export function CampusLessonEditor({
       setEstado("guardando");
       setError(null);
       startTransition(async () => {
-        const r = await saveLessonBlocks(lessonId, JSON.stringify(lista));
+        const r = await saveLessonBlocks(lessonId, JSON.stringify(lista), lang);
         if ("error" in r) {
           setEstado("error");
           setError(r.error);
