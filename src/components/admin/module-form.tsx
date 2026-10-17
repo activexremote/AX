@@ -64,6 +64,14 @@ export function ModuleForm({ module, onDone }: { module?: Module; onDone?: () =>
         <label>{t.adminForm.fDescription}</label>
         <textarea name="description" defaultValue={module?.description ?? ""} />
       </div>
+      <div className="axr-form__row">
+        <label>{t.adminForm.fTitleEn}</label>
+        <input name="title_en" defaultValue={module?.title_en ?? ""} />
+      </div>
+      <div className="axr-form__row">
+        <label>{t.adminForm.fDescriptionEn}</label>
+        <textarea name="description_en" defaultValue={module?.description_en ?? ""} />
+      </div>
       <div className="axr-form__cols">
         <div className="axr-form__row">
           <label>{t.adminForm.fIcon}</label>

@@ -788,3 +788,10 @@
     border: 1px solid #f6c9d5;
   }
 }
+
+// Aviso sobre el editor cuando la versión inglesa aún no existe.
+.axr-lesson__edit-hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--axr-text-secondary);
+}

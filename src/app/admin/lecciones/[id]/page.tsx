@@ -10,6 +10,7 @@ import { getI18n } from "@/lib/i18n/server";
 import { editorCopy } from "@/lib/i18n/editor";
 import { aiConfigured } from "@/lib/ai/settings";
 import { parseBlocks } from "@/lib/content/blocks";
+import { EditLangSwitch, readEditLang } from "@/components/content/edit-lang-switch";
 import "@/components/content/content.scss";
 import "@/components/admin/block-editor.scss";
 
@@ -17,12 +18,25 @@ import "@/components/admin/block-editor.scss";
 // que trae Next por defecto, la acción moriría a medio MP3.
 export const maxDuration = 300;
 
-export default async function AdminLessonEditor({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminLessonEditor({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ editar?: string | string[] }>;
+}) {
   const { id } = await params;
+  const { editar } = await searchParams;
   const data = await getLessonForView(id);
   if (!data) notFound();
-  const { lesson, module, questions } = data;
+  const { questions } = data;
+  // El panel trabaja SIEMPRE con la lección sin traducir: lo que se ve es lo
+  // que hay en cada columna, y el selector decide cuál se edita.
+  const { lesson, module } = data.raw;
   const { t, locale } = await getI18n();
+  const editLang = readEditLang(editar, "es");
+  const bloquesEs = parseBlocks(lesson.content_blocks);
+  const bloquesEn = parseBlocks(lesson.content_blocks_en);
   const copy = editorCopy[locale];
   // Sin clave de OpenAI el editor sale igual: lo único que no aparece es el
   // botón de estructurar con IA.
@@ -50,12 +64,18 @@ export default async function AdminLessonEditor({ params }: { params: Promise<{ 
       <div className="axr-admin-card">
         <h2>{copy.title}</h2>
         <p className="axr-admin-card__lead">{copy.lead}</p>
+        <EditLangSwitch current={editLang} basePath={`/admin/lecciones/${lesson.id}`} labels={t.adminForm} />
+        {editLang === "en" && !bloquesEn.length && bloquesEs.length ? (
+          <p className="axr-admin-card__lead">{t.adminForm.enFromEs}</p>
+        ) : null}
         <LessonBlocksEditor
+          key={editLang}
           lessonId={lesson.id}
-          initial={parseBlocks(lesson.content_blocks)}
+          initial={editLang === "en" ? (bloquesEn.length ? bloquesEn : bloquesEs) : bloquesEs}
           draft={lesson.content_md}
           aiReady={iaLista}
           copy={copy}
+          lang={editLang}
         />
       </div>
 

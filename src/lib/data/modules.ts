@@ -88,6 +88,10 @@ export async function getLessonForView(lessonId: string) {
   return {
     lesson: localize(lesson as Lesson, locale),
     module: localize(module as Module, locale),
+    // Sin traducir: es lo que editan los editores, que tienen su propio
+    // selector de idioma. Editar la versión traducida y guardarla en la otra
+    // columna era la forma de pisar el español con el inglés.
+    raw: { lesson: lesson as Lesson, module: module as Module },
     siblings: ((siblings ?? []) as Pick<Lesson, "id" | "slug" | "title" | "title_en" | "order_index" | "duration_min">[]).map(
       (s) => localize(s, locale),
     ),

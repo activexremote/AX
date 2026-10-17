@@ -58,6 +58,16 @@ export function LessonForm({
       </div>
       <div className="axr-form__cols">
         <div className="axr-form__row">
+          <label>{t.adminForm.fTitleEn}</label>
+          <input name="title_en" defaultValue={lesson?.title_en ?? ""} />
+        </div>
+        <div className="axr-form__row">
+          <label>{t.adminForm.fSubtitleEn}</label>
+          <input name="subtitle_en" defaultValue={lesson?.subtitle_en ?? ""} />
+        </div>
+      </div>
+      <div className="axr-form__cols">
+        <div className="axr-form__row">
           <label>{t.adminForm.fDuration}</label>
           <input name="duration_min" type="number" defaultValue={lesson?.duration_min ?? 5} />
         </div>
