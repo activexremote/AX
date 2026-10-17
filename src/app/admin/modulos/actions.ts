@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
 import { notify } from "@/lib/slack/notify";
+import { narrateLesson, ttsConfigured } from "@/lib/tts/fish";
 
 async function assertStaff() {
   const supabase = await createClient();
@@ -183,6 +184,53 @@ export async function uploadLessonAudio(lessonId: string, formData: FormData) {
   revalidatePath(`/admin/lecciones/${lessonId}`);
   revalidatePath(`/lecciones/${lessonId}`);
   return { ok: true, url: pub.publicUrl };
+}
+
+/**
+ * Genera la narración de la lección con Fish Audio a partir de su markdown.
+ *
+ * Deja el MP3 en el mismo sitio y con el mismo nombre que la subida manual,
+ * así que el reproductor del campus no se entera de cuál de las dos lo puso.
+ * El audio anterior no se borra: si la voz nueva no convence, la URL vieja
+ * sigue en Storage y se puede recuperar.
+ */
+export async function generateLessonAudio(lessonId: string) {
+  const supabase = await assertStaff();
+  if (!ttsConfigured()) return { error: "Falta FISH_API_KEY en el servidor." };
+
+  const { data: lesson, error: readErr } = await supabase
+    .from("lessons")
+    .select("id, title, content_md")
+    .eq("id", lessonId)
+    .maybeSingle();
+  if (readErr) return { error: readErr.message };
+  if (!lesson) return { error: "No existe esa lección." };
+  if (!lesson.content_md?.trim()) return { error: "La lección no tiene contenido que narrar." };
+
+  let audio: Uint8Array;
+  let characters: number;
+  try {
+    ({ audio, characters } = await narrateLesson(lesson.content_md));
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Fish Audio no respondió." };
+  }
+
+  const path = `lessons/${lessonId}/${Date.now()}-narracion.mp3`;
+  const { error: upErr } = await supabase.storage
+    .from("lesson-audio")
+    .upload(path, audio, { contentType: "audio/mpeg", upsert: false });
+  if (upErr) return { error: upErr.message };
+
+  const { data: pub } = supabase.storage.from("lesson-audio").getPublicUrl(path);
+  const { error: updErr } = await supabase
+    .from("lessons")
+    .update({ audio_url: pub.publicUrl })
+    .eq("id", lessonId);
+  if (updErr) return { error: updErr.message };
+
+  revalidatePath(`/admin/lecciones/${lessonId}`);
+  revalidatePath(`/lecciones/${lessonId}`);
+  return { ok: true, url: pub.publicUrl, characters };
 }
 
 export async function upsertQuizQuestion(input: {
