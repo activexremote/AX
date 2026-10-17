@@ -534,9 +534,9 @@ export const landingCopy = {
       // las dos frases son afirmaciones sobre terceros.
       impact: {
         label: "Nuestro impacto",
-        climate: "Destinamos parte de nuestra facturación a eliminar CO₂ de la atmósfera.",
+        climate: "Parte de nuestra facturación elimina CO₂",
         climateLink: "Cómo funciona",
-        ngo: "Colaboramos con esta ONG de Kenia que forma en liderazgo y emprendimiento a jóvenes y mujeres.",
+        ngo: "ONG aliada en Kenia · liderazgo para jóvenes y mujeres",
         ngoLink: "Conoce la fundación",
       },
     },
@@ -1023,9 +1023,9 @@ export const landingCopy = {
       },
       impact: {
         label: "Our impact",
-        climate: "We put part of our revenue towards removing CO₂ from the atmosphere.",
+        climate: "Part of our revenue removes CO₂",
         climateLink: "How it works",
-        ngo: "We work with this Kenyan NGO that trains young people and women in leadership and entrepreneurship.",
+        ngo: "Partner NGO in Kenya · leadership for young people and women",
         ngoLink: "Meet the foundation",
       },
     },

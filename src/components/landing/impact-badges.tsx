@@ -45,44 +45,61 @@ export function ImpactBadges({ copy }: { copy: ImpactCopy }) {
     <section className="axr-impact" aria-label={copy.label}>
       <span className="axr-impact__label">{copy.label}</span>
 
-      <a className="axr-impact__item" href={CLIMATE_URL} target="_blank" rel="noopener noreferrer">
-        <span className="axr-impact__mark axr-impact__mark--climate" aria-hidden>
-          <svg viewBox="0 0 24 24" width="20" height="20" focusable="false">
-            <path
-              d="M5 19c0-8 5-13 14-14-1 9-6 14-14 14Zm0 0 7-7"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </span>
-        <span className="axr-impact__text">
-          <strong>Stripe Climate</strong>
-          <span>{copy.climate}</span>
-          <em>{copy.climateLink} ↗</em>
-        </span>
-      </a>
-
-      <a className="axr-impact__item" href={NGO_URL} target="_blank" rel="noopener noreferrer">
-        <span className="axr-impact__mark axr-impact__mark--ngo">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/logos/partners/dwb-foundation.png"
-            alt="DWB Foundation"
-            width={240}
-            height={240}
-            loading="lazy"
-            decoding="async"
-          />
-        </span>
-        <span className="axr-impact__text">
-          <strong>DWB Foundation</strong>
-          <span>{copy.ngo}</span>
-          <em>{copy.ngoLink} ↗</em>
-        </span>
-      </a>
+      <ul className="axr-impact__list">
+        <li>
+          <a
+            className="axr-impact__chip"
+            href={CLIMATE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={copy.climateLink}
+          >
+            <span className="axr-impact__mark axr-impact__mark--climate" aria-hidden>
+              <svg viewBox="0 0 24 24" width="16" height="16" focusable="false">
+                <path
+                  d="M5 19c0-8 5-13 14-14-1 9-6 14-14 14Zm0 0 7-7"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+            <span className="axr-impact__text">
+              <strong>Stripe Climate</strong>
+              <span>{copy.climate}</span>
+            </span>
+            <span className="axr-impact__go" aria-hidden>↗</span>
+          </a>
+        </li>
+        <li>
+          <a
+            className="axr-impact__chip"
+            href={NGO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={copy.ngoLink}
+          >
+            <span className="axr-impact__mark axr-impact__mark--ngo">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logos/partners/dwb-foundation.png"
+                alt="DWB Foundation"
+                width={240}
+                height={240}
+                loading="lazy"
+                decoding="async"
+              />
+            </span>
+            <span className="axr-impact__text">
+              <strong>DWB Foundation</strong>
+              <span>{copy.ngo}</span>
+            </span>
+            <span className="axr-impact__go" aria-hidden>↗</span>
+          </a>
+        </li>
+      </ul>
     </section>
   );
 }
