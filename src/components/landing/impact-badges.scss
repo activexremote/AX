@@ -1,0 +1,67 @@
+// Nuestro impacto, en el pie oscuro de las páginas públicas. Mismo registro
+// que las insignias de pago: pequeño, para reconocerse, no para leerse entero.
+.axr-impact {
+  margin-top: 1.25rem;
+  display: grid;
+  gap: 0.55rem;
+  max-width: 44ch;
+
+  &__label {
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  &__item {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 0.6rem;
+    align-items: center;
+    padding: 0.5rem 0.6rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 0.18s ease, background-color 0.18s ease;
+
+    &:hover,
+    &:focus-visible {
+      border-color: rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.04);
+    }
+  }
+
+  &__mark {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    overflow: hidden;
+
+    // Hoja propia, en el verde de las insignias de seguridad del pie.
+    &--climate {
+      background: rgba(88, 214, 141, 0.14);
+      color: #58d68d;
+    }
+
+    // El logo de la ONG trae fondo blanco: va en su ficha blanca, sin tocarlo.
+    &--ngo {
+      background: #fff;
+
+      img { display: block; width: 100%; height: 100%; object-fit: contain; }
+    }
+  }
+
+  &__text {
+    display: grid;
+    gap: 0.1rem;
+    font-size: 0.75rem;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.6);
+
+    strong { font-size: 0.8125rem; font-weight: 600; color: #fff; }
+    em { font-style: normal; font-size: 0.6875rem; color: rgba(255, 255, 255, 0.45); }
+  }
+}

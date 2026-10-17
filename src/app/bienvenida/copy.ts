@@ -530,6 +530,15 @@ export const landingCopy = {
         accepted: "Métodos de pago aceptados",
         processor: "Pagos procesados por",
       },
+      // Ver components/landing/impact-badges.tsx antes de cambiar una coma:
+      // las dos frases son afirmaciones sobre terceros.
+      impact: {
+        label: "Nuestro impacto",
+        climate: "Destinamos parte de nuestra facturación a eliminar CO₂ de la atmósfera.",
+        climateLink: "Cómo funciona",
+        ngo: "Colaboramos con esta ONG de Kenia que forma en liderazgo y emprendimiento a jóvenes y mujeres.",
+        ngoLink: "Conoce la fundación",
+      },
     },
   },
   en: {
@@ -1011,6 +1020,13 @@ export const landingCopy = {
         secure: "Encrypted connection (TLS/SSL). Your card is processed by Stripe: we never see it or store it.",
         accepted: "Accepted payment methods",
         processor: "Payments processed by",
+      },
+      impact: {
+        label: "Our impact",
+        climate: "We put part of our revenue towards removing CO₂ from the atmosphere.",
+        climateLink: "How it works",
+        ngo: "We work with this Kenyan NGO that trains young people and women in leadership and entrepreneurship.",
+        ngoLink: "Meet the foundation",
       },
     },
   },
