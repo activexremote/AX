@@ -38,7 +38,6 @@ export async function LandingFooter({ base = "" }: { base?: string } = {}) {
               columna se quedaba corta frente a las de enlaces y el pie crecía
               en vertical sin necesidad. Aquí rellena el hueco que ya había. */}
           <PaymentBadges copy={c.pay} />
-          <ImpactBadges copy={c.impact} />
         </div>
 
         <div className="axr-lp__footer-cols">
@@ -56,6 +55,10 @@ export async function LandingFooter({ base = "" }: { base?: string } = {}) {
           ))}
         </div>
       </div>
+
+      {/* A todo el ancho, encima de la barra final: es una franja de
+          confianza, no otra columna de enlaces. */}
+      <ImpactBadges copy={c.impact} />
 
       <div className="axr-lp__footer-bar">
         <span>{c.access}</span>

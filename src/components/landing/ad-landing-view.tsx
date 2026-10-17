@@ -768,7 +768,6 @@ export async function AdLandingView() {
               <LocaleToggle tone="dark" />
             </div>
             <PaymentBadges copy={foot.pay} />
-            <ImpactBadges copy={foot.impact} />
           </div>
 
           <div className="axr-ad__foot-cols">
@@ -787,6 +786,8 @@ export async function AdLandingView() {
             ))}
           </div>
         </div>
+
+        <ImpactBadges copy={foot.impact} />
 
         <div className="axr-ad__foot-bar">
           <p className="axr-ad__foot-note">{c.footer.note}</p>

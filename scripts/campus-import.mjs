@@ -20,7 +20,7 @@
 //
 //  Necesita la migración 0016 aplicada y la service role en .env.local.
 // ══════════════════════════════════════════════════════════
-import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join, extname } from "node:path";
 
 for (const line of readFileSync(new URL("../.env.local", import.meta.url), "utf8").split("\n")) {
@@ -94,6 +94,22 @@ for (const it of manifest.general) {
   files.set(it.id, { ...it, key: null, section: "general", bucket: "teacher-guides", path: `general/${safeName(it.name)}` });
 }
 
+// Dos archivos con el mismo nombre en la misma hora (una copia en «Classroom
+// Rubrics» y otra en «Hour N») irían a la misma ruta y uno pisaría al otro.
+// Gana el más reciente, y el id del otro pasa a apuntar a él.
+{
+  const byPath = new Map();
+  for (const f of files.values()) {
+    const k = `${f.bucket}/${f.path}`;
+    const prev = byPath.get(k);
+    if (!prev || statSync(f.src).mtimeMs > statSync(prev.src).mtimeMs) byPath.set(k, f);
+  }
+  for (const [id, f] of files) {
+    const winner = byPath.get(`${f.bucket}/${f.path}`);
+    if (winner.id !== id) files.set(id, { ...winner, alias: true });
+  }
+}
+
 // ── 2. Validar el contenido ───────────────────────────────
 const problems = [];
 const used = new Set();
@@ -142,8 +158,9 @@ const plan = manifest.modules
     return { m, c, lessons };
   });
 
-const studentFiles = [...files.values()].filter((f) => f.bucket === "lesson-assets");
-const teacherFiles = [...files.values()].filter((f) => f.bucket === "teacher-guides");
+const unique = [...files.values()].filter((f) => !f.alias);
+const studentFiles = unique.filter((f) => f.bucket === "lesson-assets");
+const teacherFiles = unique.filter((f) => f.bucket === "teacher-guides");
 const unusedStudent = studentFiles.filter((f) => !used.has(f.id));
 
 console.log(`Módulos: ${plan.length} · Lecciones: ${plan.reduce((a, p) => a + p.lessons.length, 0)}`);
