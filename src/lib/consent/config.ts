@@ -14,7 +14,7 @@
 export const CONSENT_COOKIE = "axr_consent";
 
 /** Se sube cuando cambian las finalidades o los proveedores: vuelve a preguntar. */
-export const CONSENT_VERSION = 1;
+export const CONSENT_VERSION = 2;
 
 /** 12 meses. Pasado el plazo se pregunta de nuevo. */
 export const CONSENT_MAX_AGE = 60 * 60 * 24 * 365;
