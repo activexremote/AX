@@ -4,6 +4,8 @@
 // cobra a nadie, es una hoja de cálculo para pensar en voz alta, así que
 // prima que sea fácil de teclear ("2400") sobre la precisión de céntimos.
 
+import { defaultFunding, type LensFunding } from "@/lib/lens/financiacion";
+
 export type LensPlan = {
   id: string;
   name: string;
@@ -159,6 +161,8 @@ export type LensScenarioData = {
   dividends: LensDividends;
   /** Socios y su participación. Debería sumar 100 %. */
   partners: LensPartner[];
+  /** Equity frente a revenue-based financing, con la facturación de la previsión. */
+  funding: LensFunding;
 };
 
 /** Escenario de partida con los precios reales del programa (ver `lib/stripe/catalog.ts`). */
@@ -208,6 +212,7 @@ export function defaultLensScenario(): LensScenarioData {
       { id: "socio-1", name: "Socio 1", sharePct: 50 },
       { id: "socio-2", name: "Socio 2", sharePct: 50 },
     ],
+    funding: defaultFunding(),
   };
 }
 
@@ -253,6 +258,7 @@ export function normalizeScenario(raw: Partial<LensScenarioData> | null | undefi
       ? { ...base.dividends, ...raw.dividends }
       : { ...base.dividends, enabled: false },
     partners: raw.partners ?? base.partners,
+    funding: { ...base.funding, ...(raw.funding ?? {}) },
   };
 }
 

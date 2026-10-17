@@ -425,7 +425,7 @@
   // ── Pestañas (sólo móvil) ──
   &__tabs {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     border: 1px solid var(--axr-border-ink);
 
     button {
@@ -446,7 +446,7 @@
     // En ancho sigue haciendo falta para cambiar la columna derecha, pero
     // la pestaña de configuración sobra: está siempre visible.
     @media (min-width: 1024px) {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
 
       button:first-child { display: none; }
     }
@@ -484,7 +484,8 @@
       &[data-pane="config"] { display: grid; }
       &[data-wide-active] { display: grid; }
       &[data-pane="resultado"]:not([data-wide-active]),
-      &[data-pane="kpis"]:not([data-wide-active]) { display: none; }
+      &[data-pane="kpis"]:not([data-wide-active]),
+      &[data-pane="financiacion"]:not([data-wide-active]) { display: none; }
     }
   }
 

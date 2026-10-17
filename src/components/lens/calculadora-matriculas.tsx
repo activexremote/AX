@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { saveScenario, updateScenario, deleteScenario } from "@/app/lens/calculadora-matriculas/actions";
 import { CAT, CAT_ORDER, CashLine, MiniBars, MonthlyPL, StackedBar, TrendBars } from "@/components/lens/charts";
+import { FinanciacionPane } from "@/components/lens/financiacion";
 import {
   buildScenarioName,
   computeLensMetrics,
@@ -57,7 +58,7 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
   // ── Pantalla ──
   // En móvil sólo cabe una de las dos mitades a la vez; en escritorio se ven
   // juntas y esta pestaña no pinta nada (la oculta el CSS).
-  const [pane, setPane] = useState<"config" | "resultado" | "kpis">("config");
+  const [pane, setPane] = useState<"config" | "resultado" | "kpis" | "financiacion">("config");
   // La barra de mando ocupaba media pantalla. Ahora se pliega, y se recuerda
   // plegada: quien la cierra es porque quiere el sitio para los números.
   const [collapsed, setCollapsed] = useState(false);
@@ -463,6 +464,15 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
             onClick={() => setPane("kpis")}
           >
             KPIs
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={pane === "financiacion"}
+            data-active={pane === "financiacion" ? "" : undefined}
+            onClick={() => setPane("financiacion")}
+          >
+            Financiación
           </button>
         </div>
       </div>
@@ -1265,6 +1275,23 @@ export function CalculadoraMatriculas({ savedScenarios }: { savedScenarios: Save
               </p>
             </details>
           </div>
+        </aside>
+
+        {/* ══ Equity o revenue-based financing ══
+            Con la facturación de la propia previsión: la pregunta de cuánto
+            cuesta el dinero sólo tiene respuesta con lo que factura el negocio. */}
+        <aside
+          className="axr-calc__pane"
+          data-pane="financiacion"
+          data-active={pane === "financiacion" ? "" : undefined}
+          data-wide-active={rightPane === "financiacion" ? "" : undefined}
+        >
+          <FinanciacionPane
+            funding={scenario.funding}
+            onChange={(funding) => patch((s) => ({ ...s, funding }))}
+            months={metrics.months}
+            ebitdaMarginPct={k.ebitdaMarginPct}
+          />
         </aside>
       </div>
 
