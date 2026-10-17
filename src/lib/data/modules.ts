@@ -1,8 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
+import { localize } from "@/lib/data/localize";
+import { getLocale } from "@/lib/i18n/server";
 import type { Lesson, LearningPathStep, Module, Quiz, QuizOption, QuizQuestion } from "@/lib/supabase/types";
 
 export async function listModulesWithCounts() {
   const supabase = await createClient();
+  const locale = await getLocale();
   const { data: modules } = await supabase
     .from("modules")
     .select("*")
@@ -16,7 +19,7 @@ export async function listModulesWithCounts() {
     const ml = (lessons ?? []).filter((l) => l.module_id === m.id);
     const minutes = ml.reduce((acc, l) => acc + (l.duration_min ?? 0), 0);
     return {
-      ...m,
+      ...localize(m, locale),
       lessons_count: ml.length,
       estimated_minutes: m.estimated_minutes ?? minutes,
     } as Module & { lessons_count: number };
@@ -25,6 +28,7 @@ export async function listModulesWithCounts() {
 
 export async function getModuleBySlug(slug: string) {
   const supabase = await createClient();
+  const locale = await getLocale();
   const { data: module } = await supabase
     .from("modules")
     .select("*")
@@ -38,11 +42,15 @@ export async function getModuleBySlug(slug: string) {
     .eq("module_id", module.id)
     .order("order_index");
 
-  return { module: module as Module, lessons: (lessons ?? []) as Lesson[] };
+  return {
+    module: localize(module as Module, locale),
+    lessons: ((lessons ?? []) as Lesson[]).map((l) => localize(l, locale)),
+  };
 }
 
 export async function getLessonForView(lessonId: string) {
   const supabase = await createClient();
+  const locale = await getLocale();
   const { data: lesson } = await supabase
     .from("lessons")
     .select("*")
@@ -52,7 +60,7 @@ export async function getLessonForView(lessonId: string) {
 
   const [{ data: module }, { data: siblings }, { data: quiz }] = await Promise.all([
     supabase.from("modules").select("*").eq("id", lesson.module_id).maybeSingle(),
-    supabase.from("lessons").select("id, slug, title, order_index, duration_min")
+    supabase.from("lessons").select("id, slug, title, title_en, order_index, duration_min")
       .eq("module_id", lesson.module_id).order("order_index"),
     supabase.from("quizzes").select("*").eq("lesson_id", lesson.id).maybeSingle(),
   ]);
@@ -78,9 +86,11 @@ export async function getLessonForView(lessonId: string) {
   }
 
   return {
-    lesson: lesson as Lesson,
-    module: module as Module,
-    siblings: (siblings ?? []) as Pick<Lesson, "id" | "slug" | "title" | "order_index" | "duration_min">[],
+    lesson: localize(lesson as Lesson, locale),
+    module: localize(module as Module, locale),
+    siblings: ((siblings ?? []) as Pick<Lesson, "id" | "slug" | "title" | "title_en" | "order_index" | "duration_min">[]).map(
+      (s) => localize(s, locale),
+    ),
     quiz: quiz as Quiz | null,
     questions,
   };

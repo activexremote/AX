@@ -203,6 +203,7 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
                   initial={bloques}
                   markdown={lesson.content_md}
                   copy={editorCopy[locale]}
+                  lang={locale}
                 />
                 {/* Mientras la lección siga siendo Markdown, el profesor la ve
                     como la ve el alumno, y arriba tiene el botón para

@@ -54,3 +54,6 @@ admin 2.scss
 
 # Caché de la CLI de Supabase
 supabase/.temp/
+
+# Material del curso para el importador (copia local, no se sube)
+.campus-import/

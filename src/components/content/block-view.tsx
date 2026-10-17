@@ -331,9 +331,54 @@ export function BlockView({ block, storageKey }: { block: Block; storageKey?: st
         </ol>
       );
 
+    case "resources":
+      return (
+        <section className="axr-blk__resources">
+          {block.title ? <strong className="axr-blk__resources-title">{block.title}</strong> : null}
+          <ul>
+            {block.items.map((r, i) => {
+              const external = /^https?:\/\//i.test(r.url);
+              const ext = resourceKind(r.url);
+              return (
+                <li key={i}>
+                  <a
+                    href={r.url}
+                    {...(external ? { target: "_blank", rel: "noopener noreferrer" } : { download: "" })}
+                  >
+                    <span className="axr-blk__resources-kind" data-kind={ext.kind}>
+                      {ext.label}
+                    </span>
+                    <span className="axr-blk__resources-text">
+                      <span>{r.label}</span>
+                      {r.note ? <em>{r.note}</em> : null}
+                    </span>
+                    <span className="axr-blk__resources-go" aria-hidden>
+                      {external && ext.kind === "link" ? "↗" : "↓"}
+                    </span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      );
+
     case "divider":
       return <hr className="axr-blk__divider" />;
   }
+}
+
+/**
+ * Qué es cada recurso, por la extensión del archivo. Lo que no tiene
+ * extensión conocida es un enlace a una página.
+ */
+function resourceKind(url: string): { kind: "doc" | "sheet" | "slides" | "pdf" | "link"; label: string } {
+  const ext = url.split(/[?#]/)[0].split(".").pop()?.toLowerCase() ?? "";
+  if (ext === "pdf") return { kind: "pdf", label: "PDF" };
+  if (ext === "xlsx" || ext === "xls" || ext === "csv") return { kind: "sheet", label: ext.toUpperCase() };
+  if (ext === "docx" || ext === "doc") return { kind: "doc", label: "DOC" };
+  if (ext === "pptx" || ext === "ppt") return { kind: "slides", label: "PPT" };
+  return { kind: "link", label: "WEB" };
 }
 
 /** Ancla estable para los títulos, para que el índice pueda enlazarlos. */

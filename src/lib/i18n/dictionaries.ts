@@ -307,6 +307,7 @@ const es = {
     slackTitle: "Integración de Slack",
     slackSubtitle: "Convierte Slack en el canal único de comunicación del campus.",
     navAssistant: "Asistente del campus",
+    navTeacherGuide: "Guía para profesores",
   },
   adminForm: {
     create: "Crear",
@@ -801,6 +802,7 @@ const en: Dictionary = {
     slackTitle: "Slack integration",
     slackSubtitle: "Turn Slack into the campus's single communication channel.",
     navAssistant: "Campus assistant",
+    navTeacherGuide: "Teacher guide",
   },
   adminForm: {
     create: "Create",

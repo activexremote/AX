@@ -116,6 +116,8 @@ function textoDe(b: Block): string[] {
       return b.rows.map((f) => f.join(" · "));
     case "chart":
       return b.series.map((s) => `${s.label}: ${s.value}`);
+    case "resources":
+      return b.items.map((r) => r.label);
     case "divider":
       return [];
   }
