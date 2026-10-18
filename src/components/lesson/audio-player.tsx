@@ -3,16 +3,21 @@
 import { useEffect, useRef, useState } from "react";
 
 import { addLessonTime } from "@/app/(campus)/lecciones/actions";
+import { TeacherBubble } from "@/components/lesson/teacher-bubble";
 import { useI18n } from "@/lib/i18n/provider";
+import type { GesturePlan } from "@/lib/content/gestures";
 
 export function LessonAudioPlayer({
   src,
   lessonId,
   lessonTitle,
+  plan = [],
 }: {
   src: string | null;
   lessonId: string;
   lessonTitle: string;
+  /** Cuándo gesticula Erlik, el profe virtual que acompaña el audio. */
+  plan?: GesturePlan;
 }) {
   const { t } = useI18n();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -74,6 +79,9 @@ export function LessonAudioPlayer({
         <audio
           ref={audioRef}
           src={src}
+          // Sin CORS, el analizador de Erlik recibiría silencio: el audio vive
+          // en Supabase, que lo sirve con Access-Control-Allow-Origin: *.
+          crossOrigin="anonymous"
           preload="metadata"
           onPlay={() => setPlaying(true)}
           onPause={() => setPlaying(false)}
@@ -86,6 +94,8 @@ export function LessonAudioPlayer({
           }}
         />
       ) : null}
+
+      {src ? <TeacherBubble audioRef={audioRef} playing={playing} plan={plan} copy={t.lesson.teacher} /> : null}
     </div>
   );
 }
