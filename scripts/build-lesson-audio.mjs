@@ -68,7 +68,7 @@ const total = pendientes.reduce((n, l) => n + l.texto.length, 0);
 const proveedor = ttsProvider();
 const voz =
   proveedor === "openai"
-    ? (idioma === "en" && process.env.TTS_OPENAI_VOICE_EN) || process.env.TTS_OPENAI_VOICE || "coral"
+    ? (idioma === "en" && process.env.TTS_OPENAI_VOICE_EN) || process.env.TTS_OPENAI_VOICE || "verse"
     : voiceFor(idioma) ?? "la de Fish por defecto";
 console.log(`Proveedor: ${proveedor} · idioma: ${idioma.toUpperCase()} · voz: ${voz}`);
 console.log(`${pendientes.length} lección(es) por narrar · ${total.toLocaleString("es-ES")} caracteres.`);
