@@ -1,20 +1,29 @@
 # ActiveXRemote Campus
 
-Campus virtual de formación interna de ActiveXRemote. Inspirado en la
-plataforma de referencia, con diseño **IBM Carbon Design System**.
+Campus virtual y web pública de ActiveXRemote, The Remote Business School:
+el campus donde los alumnos siguen el programa (21 módulos, 105 lecciones en
+español e inglés) y las landings donde se venden los cursos.
 
 ## Stack
 
-- **Next.js 16** (App Router, Server Components, Server Actions)
-- **TypeScript**
-- **IBM Carbon Design System** (`@carbon/react`, `@carbon/styles`) + IBM Plex
-- **Supabase** — Auth, Postgres (con RLS) y Storage
+- **Next.js 16** (App Router, Server Components, Server Actions). Ojo: trae
+  cambios que rompen; ver `AGENTS.md`.
+- **TypeScript** y **Sass**
+- **IBM Carbon** (`@carbon/react`, `@carbon/styles`) como base de componentes,
+  con la marca propia encima: Inter y Major Mono Display (ver `docs/BRANDBOOK.md`)
+- **Supabase** — Auth (Google), Postgres con RLS y Storage
+- **Stripe** — cobro de matrículas (Checkout + webhook)
+- **OpenAI** — asistente del campus, primer borrador de lecciones y voz de reserva
+- **Fish Audio** — narración de las lecciones
+- **Zoho CRM** — leads de los formularios públicos
+- Despliegue en **Vercel**
 
 ## Roles
 
-- `alumno` — consume formación y hace quizzes
-- `profesor` — todo lo anterior + panel admin (módulos / lecciones / quizzes)
-- `administrador` — todo lo anterior + gestión de usuarios y roles
+- `alumno` — consume formación y hace quizzes; necesita matrícula para ver contenido
+- `profesor` — todo lo anterior + panel admin y guía para profesores
+- `administrador` — todo lo anterior + usuarios, matrículas y roles
+- superadmin — aparte de los roles (tabla `superadmins`): acceso a Lens
 
 ## Puesta en marcha
 
@@ -23,21 +32,29 @@ npm install
 npm run dev          # http://localhost:3000
 ```
 
-Las credenciales de Supabase están en `.env.local` (no se versiona).
+Las credenciales van en `.env.local` (no se versiona): Supabase, Stripe,
+OpenAI, Fish, Zoho, `CRON_SECRET`, `NEXT_PUBLIC_SITE_URL` y, si se usa,
+`NEXT_PUBLIC_GTM_ID`.
 
 ### Base de datos
 
-El esquema y el seed están en `supabase/migrations/`. Para aplicarlos:
+Las migraciones están en `supabase/migrations/`, numeradas. Se aplican en orden:
 
 ```bash
 PGPASSWORD='<password>' psql "<connection-string>" -f supabase/migrations/0001_initial_schema.sql
-PGPASSWORD='<password>' psql "<connection-string>" -f supabase/migrations/0002_seed_initial.sql
+# … y así hasta la última
 ```
+
+### Acceso
+
+Sólo con Google. Entrar y registrarse son lo mismo; tener cuenta no da acceso
+al contenido, que lo abre la matrícula (al pagar o a mano desde
+`/admin/usuarios`). Para cerrar del todo el acceso por correo hay que apagar el
+proveedor «Email» en Supabase (Authentication → Providers).
 
 ### Correos
 
-Las plantillas de correo con la marca del campus están en `supabase/emails/`
-(magic link, alta y acceso tras matricularse). Se generan con
+Las plantillas con la marca están en `supabase/emails/`. Se generan con
 `node scripts/build-emails.mjs` y se pegan en Authentication → Emails del panel
 de Supabase; ver `supabase/emails/README.md`.
 
@@ -47,62 +64,87 @@ de Supabase; ver `supabase/emails/README.md`.
 node scripts/create-admin.mjs <email> "<Nombre>"
 ```
 
+### Scripts de contenido
+
+```bash
+npm run campus:import     # carga el curso (módulos, lecciones ES/EN, descargas, guía)
+npm run audio:generate    # narra las lecciones sin audio (-- --idioma en para inglés)
+npm run asistente:seed    # carga el conocimiento inicial del asistente
+```
+
 ## Estructura
 
 ```
 src/
   app/
-    login/                  Acceso con enlace mágico + Google OAuth
-    verificar-telefono/     Paso 2 opcional: código SMS (apagado, NEXT_PUBLIC_PHONE_OTP)
-    auth/                   callback del enlace/OAuth + sign-out
-    (campus)/               Campus para usuarios autenticados
-      page.tsx              Home: hero + ruta + catálogo de módulos
-      modulos/[slug]        Detalle de módulo + lecciones
-      lecciones/[id]        Lección: contenido + audio + quiz
-      mi-progreso           Dashboard de progreso del usuario
-    admin/                  Panel admin (profesor/administrador)
-      modulos               CRUD módulos y lecciones
-      lecciones/[id]        Editor de lección + audio + quiz
-      usuarios              Gestión de usuarios y roles
-  components/               UI: header, tarjetas, quiz, audio player...
-  lib/supabase/             Clientes Supabase (browser/server/admin)
-  lib/data/                 Acceso a datos (módulos, progreso, perfil)
+    bienvenida/             Landing pública (la raíz sin sesión redirige aquí)
+    cursos/                 Remote Professional y Remote Founder
+    cursos-relampago/       Cursos cortos
+    trabajo-remoto/         Landing de anuncios
+    blog/  glosario/  legal/
+    matricula/              Matrícula con Stripe (cerrada: ver flags.ts)
+    lens/                   Panel de dirección y calculadora (superadmin)
+    login/  auth/           Acceso con Google y callback
+    (campus)/               Campus para alumnos con sesión
+      modulos/[slug]        Módulo y sus lecciones
+      lecciones/[id]        Lección: bloques + audio + Erlik + quiz
+      mi-progreso  mis-tareas  desbloqueos/
+    admin/                  Panel (profesor/administrador)
+      modulos  lecciones    Contenido, editor por bloques bilingüe
+      usuarios  matriculas  Personas y accesos
+      tareas  slack         Tareas e integración con Slack
+      asistente  ia         Conocimiento del asistente y ajustes de IA
+      guia-profesores       Material privado del profesorado
+    api/                    asistente, cron/[job], stripe/webhook
+  components/               UI del campus, landings, admin y Lens
+  lib/                      Supabase, datos, contenido, TTS, IA, Zoho, i18n…
 ```
+
+## Interruptores de la web pública
+
+En `src/app/bienvenida/flags.ts`. Hoy están todos apagados:
+
+- `CHECKOUT_OPEN` — matrícula online; cerrada mientras los precios no sean públicos
+- `PROTOTYPE_RATINGS`, `PROTOTYPE_ALUMNI` — valoraciones y testimonios de
+  maqueta; sólo se encienden con datos reales
+- `SHOW_FLASH_COURSES` — banda de cursos relámpago en la portada
 
 ## Integración de Slack
 
-El campus puede usar Slack como canal único de comunicación. Configúralo en
-**Admin → Integración Slack**: pega el Bot Token (`xoxb-...`), define los
-canales por rol y activa los eventos.
+Se configura en **Admin → Integración Slack**: Bot Token (`xoxb-...`), canales
+por rol y eventos (contenido publicado, lecciones y exámenes, tareas, altas,
+resúmenes de progreso y recordatorios de inactividad).
 
-Eventos: contenido publicado, lección completada, examen aprobado/suspendido,
-tarea asignada/recordatorio/vencida/completada, alta de usuario, resúmenes de
-progreso de alumnos y de cumplimiento de profesores, recordatorios de inactividad.
+### Cron
 
-### Cron (recordatorios y resúmenes periódicos)
-
-Endpoints protegidos con `CRON_SECRET`:
+Endpoints protegidos con `CRON_SECRET` y programados en `vercel.json`:
 
 ```
-GET /api/cron/reminders         # tareas próximas a vencer / vencidas
-GET /api/cron/digest-students   # resumen de progreso → profesores
-GET /api/cron/digest-teachers   # cumplimiento → administración
+GET /api/cron/reminders         # tareas próximas a vencer / vencidas (diario)
+GET /api/cron/digest-students   # resumen de progreso → profesores (lunes)
+GET /api/cron/digest-teachers   # cumplimiento → administración (viernes)
 GET /api/cron/all               # los tres
 ```
 
-Llámalos con `Authorization: Bearer <CRON_SECRET>`. En producción, prográmalos
-con Vercel Cron, GitHub Actions o cualquier servicio de cron. También se pueden
-lanzar a mano desde Admin → Integración Slack.
+Con `Authorization: Bearer <CRON_SECRET>`. También se lanzan a mano desde
+Admin → Integración Slack.
 
-## Funcionalidades
+## Telegram
 
-- Acceso sin contraseña: enlace mágico al correo y Google OAuth
-- Registro con nombre, email y teléfono (la verificación por SMS existe pero
-  está apagada: cuesta dinero por código, se enciende con `NEXT_PUBLIC_PHONE_OTP=on`)
-- Catálogo de módulos con ruta recomendada y stats
-- Lecciones con contenido Markdown, audio narrado y tabla de contenidos
-- Quizzes con corrección automática y pantalla "¡Has aprobado!"
-- Seguimiento de progreso: KPIs, progreso por módulo, actividad reciente
-- Exportar progreso a JSON / reiniciar progreso
-- Panel admin: CRUD de módulos, lecciones (editor Markdown + subida de
-  audio a Storage), quizzes, y gestión de roles de usuario
+Cada push al repo manda un parte de sus commits al tema «Commits» del grupo
+del equipo (`.github/workflows/telegram-commits.yml`). Secrets de GitHub:
+`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` y `TELEGRAM_THREAD_ID`.
+
+## Funcionalidades del campus
+
+- 21 módulos (7 núcleo, 7 Remote Professional, 7 Remote Founder) y 105
+  lecciones; cada alumno ve su idioma
+- Lecciones por bloques, con descargas, narración en audio y Erlik, el profesor
+  que acompaña la lección
+- Quizzes con corrección automática, progreso, tareas y desbloqueos
+- Asistente que responde con las FAQs y los documentos que sube el equipo
+- Editor de lecciones en el propio campus y en el panel, en los dos idiomas,
+  con IA para el primer borrador y creación a partir de un archivo
+- Guía para profesores en almacenamiento privado, con enlaces que caducan
+- Registro con teléfono; la verificación por SMS existe pero está apagada
+  (`NEXT_PUBLIC_PHONE_OTP=on` la enciende)
