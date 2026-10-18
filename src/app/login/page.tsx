@@ -77,7 +77,7 @@ export default async function LoginPage({
               </h2>
             </div>
 
-            <LoginForm mode={mode} redirectTo={sp.redirect ?? "/"} />
+            <LoginForm mode={mode} redirectTo={sp.redirect ?? "/"} initialError={sp.error ?? null} />
 
             <p className="axr-login__switch">
               {mode === "signin" ? (

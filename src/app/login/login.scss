@@ -370,3 +370,133 @@
     color: var(--axr-text-helper);
   }
 }
+
+// ---- Botón de Google: la única puerta del campus ----
+.axr-login__google {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.9375rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: #ffffff;
+  color: #161616;
+  border: 1px solid #161616;
+  box-shadow: 4px 4px 0 #161616;
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+
+  &:hover:not(:disabled) {
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0 #161616;
+  }
+
+  &:active:not(:disabled) {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 #161616;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--axr-go);
+    outline-offset: 3px;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+}
+
+// ---- Acceso pendiente (cuenta sin matrícula) ----
+.axr-pending {
+  max-width: 640px;
+
+  &__body {
+    padding: 2.5rem 2rem;
+    display: grid;
+    gap: 1.25rem;
+
+    @media (max-width: 560px) {
+      padding: 1.75rem 1.25rem;
+    }
+  }
+
+  &__steps {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    border: 1px solid #161616;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+      padding: 0.75rem 1rem;
+      font-size: 0.9375rem;
+      color: #6f6f6f;
+
+      & + li {
+        border-top: 1px solid #e0e0e0;
+      }
+
+      &.is-done {
+        color: #161616;
+      }
+
+      &.is-current {
+        color: #161616;
+        font-weight: 600;
+        background: #f4f4f4;
+      }
+    }
+  }
+
+  &__mark {
+    width: 1.75rem;
+    height: 1.75rem;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: 1px solid currentColor;
+    font-family: var(--axr-mono);
+    font-size: 0.6875rem;
+
+    .is-done & {
+      background: var(--axr-go);
+      border-color: var(--axr-go);
+      color: #ffffff;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: stretch;
+    flex-wrap: wrap;
+
+    > form {
+      display: flex;
+    }
+  }
+
+  &__cta {
+    flex: 1 1 220px;
+    margin-top: 0;
+    text-decoration: none;
+  }
+
+  &__note {
+    display: grid;
+    gap: 0.25rem;
+    padding: 0.875rem 1rem;
+    border-left: 3px solid #161616;
+    background: #f4f4f4;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #393939;
+  }
+}

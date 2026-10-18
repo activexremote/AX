@@ -65,3 +65,29 @@ export async function inviteUser(formData: FormData) {
   revalidatePath("/admin/usuarios");
   return { ok: true };
 }
+
+/** Cursos que se pueden abrir a mano. El núcleo no: lo abre cualquier camino. */
+const GRANTABLE = ["remote-professional", "remote-founder", "web-abc"] as const;
+type GrantableCourse = (typeof GRANTABLE)[number];
+
+/**
+ * Abre o cierra a mano un curso a un alumno, para quien paga fuera de Stripe
+ * (transferencia, beca) o para cortar un acceso.
+ *
+ * Cerrar no borra: deja la matrícula en `active = false`, como hace el webhook
+ * con un plazo impagado, y así el pedido que la abrió sigue enlazado. Abrir
+ * una que venía de Stripe la reactiva sin perder ese enlace.
+ */
+export async function setCourseAccess(userId: string, course: GrantableCourse, active: boolean) {
+  await assertAdmin();
+  if (!GRANTABLE.includes(course)) return { error: "Curso no válido." };
+
+  const admin = createAdminClient();
+  const { error } = active
+    ? await admin.from("enrollments").upsert({ user_id: userId, course, active: true }, { onConflict: "user_id,course" })
+    : await admin.from("enrollments").update({ active: false }).eq("user_id", userId).eq("course", course);
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/usuarios");
+  return { ok: true };
+}
