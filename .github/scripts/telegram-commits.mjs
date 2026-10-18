@@ -6,6 +6,8 @@ import { execFileSync } from "node:child_process";
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const chatId = process.env.TELEGRAM_CHAT_ID;
+// Tema del grupo (foro) donde publicar. Sin él, va a la conversación general.
+const threadId = Number(process.env.TELEGRAM_THREAD_ID) || undefined;
 if (!token || !chatId) {
   console.log("Faltan TELEGRAM_BOT_TOKEN o TELEGRAM_CHAT_ID: no se envía nada.");
   process.exit(0);
@@ -118,7 +120,7 @@ async function send(text) {
   const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML", link_preview_options: { is_disabled: true } }),
+    body: JSON.stringify({ chat_id: chatId, message_thread_id: threadId, text, parse_mode: "HTML", link_preview_options: { is_disabled: true } }),
   });
   const data = await res.json();
   // 429: Telegram pide esperar. Se respeta una vez y se reintenta.
