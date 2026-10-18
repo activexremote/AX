@@ -1,0 +1,41 @@
+# Manda al canal de Telegram un parte de cada commit que llega al repo.
+#
+# Secrets (Settings → Secrets and variables → Actions):
+#   TELEGRAM_BOT_TOKEN  el token que da @BotFather
+#   TELEGRAM_CHAT_ID    el id del canal (-100…) o @nombre_del_canal
+#   TELEGRAM_THREAD_ID  opcional: el id del tema (p. ej. «Commits») si el
+#                       grupo tiene temas
+#
+# Sin esos secrets el job no falla: avisa en el log y termina. Así un fork o
+# un repo recién clonado no se llena de ejecuciones en rojo.
+name: Telegram · commits
+
+on:
+  push:
+    branches: ["**"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: telegram-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enviar parte a Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_ID: ${{ secrets.TELEGRAM_THREAD_ID }}
+        run: node .github/scripts/telegram-commits.mjs
