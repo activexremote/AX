@@ -77,18 +77,19 @@ function options(o: TtsOptions = {}) {
  * Indicaciones de lectura para OpenAI. Las lecciones están escritas en
  * español de España y en inglés británico: sin decírselo, la voz lee el
  * español con acento latinoamericano neutro y el inglés con acento americano.
+ * La voz es la de Erlik, el profe de la burbuja: un hombre con gracia que
+ * habla como en una conversación, no como un locutor leyendo.
  */
 const OPENAI_INSTRUCTIONS = {
-  es: "Habla en español de España, con acento peninsular natural. Tono cercano, claro y profesional, como una profesora que explica a su grupo lo que van a ver en la clase. Ritmo pausado, sin dramatizar.",
-  en: "Speak in natural British English. Warm, clear and professional, like a teacher telling the group what the class will cover. Calm pace, no dramatics.",
+  es: "Eres Erlik, un profe de unos treinta y tantos, de España, con acento peninsular natural (como alguien de Madrid o Barcelona). Habla como una persona real charlando con su grupo: con energía, buen humor y complicidad, con alguna sonrisa en la voz y entonación viva. Ritmo ágil, más rápido que un locutor, sin pausas largas, pero claro. Nada de tono de anuncio ni de lectura robótica.",
+  en: "You are Erlik, a teacher in his thirties with a natural British accent. Talk like a real person chatting with his group: upbeat, witty and warm, with a smile in the voice and lively intonation. Brisk pace, faster than a narrator, no long pauses, but clear. No announcer tone, nothing robotic.",
 };
-
 async function synthesizeOpenAI(text: string, opts: TtsOptions): Promise<Uint8Array> {
   const key = process.env.OPENAI_API_KEY;
   if (!key) throw new Error("Falta OPENAI_API_KEY.");
   const lang = opts.lang ?? "es";
   const voice =
-    (lang === "en" ? process.env.TTS_OPENAI_VOICE_EN : undefined) || process.env.TTS_OPENAI_VOICE || "coral";
+    (lang === "en" ? process.env.TTS_OPENAI_VOICE_EN : undefined) || process.env.TTS_OPENAI_VOICE || "verse";
 
   const res = await fetch("https://api.openai.com/v1/audio/speech", {
     method: "POST",
@@ -98,6 +99,7 @@ async function synthesizeOpenAI(text: string, opts: TtsOptions): Promise<Uint8Ar
       voice,
       input: text,
       instructions: OPENAI_INSTRUCTIONS[lang],
+      speed: Number(process.env.TTS_OPENAI_SPEED || 1.15),
       response_format: "mp3",
     }),
   });
