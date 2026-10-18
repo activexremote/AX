@@ -10,16 +10,14 @@ export function AudioUpload({
   lessonId,
   currentUrl,
   ttsReady,
+  lang = "es",
 }: {
   lessonId: string;
   currentUrl: string | null;
   /** Si el servidor no tiene FISH_API_KEY, no se ofrece generar: sólo subir. */
-  /**
-   * ⚠︎ Opcional mientras lib/tts siga sin commitear: la página de la lección
-   * que hay en el repo no puede pasar esta propiedad, porque el módulo que la
-   * calcula no existe allí todavía. Cuando entre, vuelve a ser obligatoria.
-   */
-  ttsReady?: boolean;
+  ttsReady: boolean;
+  /** De qué versión es este audio: la española o la inglesa. */
+  lang?: "es" | "en";
 }) {
   const { t } = useI18n();
   const router = useRouter();
@@ -32,7 +30,7 @@ export function AudioUpload({
     setMsg(null);
     setErr(null);
     startTransition(async () => {
-      const r = await uploadLessonAudio(lessonId, formData);
+      const r = await uploadLessonAudio(lessonId, formData, lang);
       if (r?.error) setErr(r.error);
       else {
         setMsg(t.adminForm.audioUploaded);
@@ -46,7 +44,7 @@ export function AudioUpload({
     setErr(null);
     setGeneratingNow(true);
     startTransition(async () => {
-      const r = await generateLessonAudio(lessonId);
+      const r = await generateLessonAudio(lessonId, lang);
       setGeneratingNow(false);
       if (r?.error) setErr(r.error);
       else {

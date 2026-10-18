@@ -9,6 +9,7 @@ import { getLessonForView } from "@/lib/data/modules";
 import { getI18n } from "@/lib/i18n/server";
 import { editorCopy } from "@/lib/i18n/editor";
 import { aiConfigured } from "@/lib/ai/settings";
+import { ttsConfigured } from "@/lib/tts/fish";
 import { parseBlocks } from "@/lib/content/blocks";
 import { EditLangSwitch, readEditLang } from "@/components/content/edit-lang-switch";
 import "@/components/content/content.scss";
@@ -81,10 +82,16 @@ export default async function AdminLessonEditor({
 
       <div className="axr-admin-card">
         <h2>{t.adminForm.audioSection}</h2>
-        {/* ⚠︎ La narración automática (lib/tts) todavía no está en el repo: vive
-            sin commitear en local. Cuando entre, este componente vuelve a
-            recibir `ttsReady={ttsConfigured()}`. */}
-        <AudioUpload lessonId={lesson.id} currentUrl={lesson.audio_url} />
+        {/* Sigue al selector de idioma de arriba: genera o sube el audio de la
+            versión que se está editando. */}
+        <EditLangSwitch current={editLang} basePath={`/admin/lecciones/${lesson.id}`} labels={t.adminForm} />
+        <AudioUpload
+          key={editLang}
+          lessonId={lesson.id}
+          currentUrl={editLang === "en" ? lesson.audio_url_en ?? null : lesson.audio_url}
+          ttsReady={ttsConfigured()}
+          lang={editLang}
+        />
       </div>
 
       <div className="axr-admin-card">

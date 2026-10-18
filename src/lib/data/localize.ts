@@ -19,6 +19,8 @@ type Localizable = {
   subtitle_en?: string | null;
   content_blocks?: unknown;
   content_blocks_en?: unknown;
+  audio_url?: string | null;
+  audio_url_en?: string | null;
 };
 
 export function localize<T extends Localizable>(row: T, locale: Locale): T {
@@ -28,5 +30,6 @@ export function localize<T extends Localizable>(row: T, locale: Locale): T {
   if (row.description_en?.trim()) out.description = row.description_en;
   if (row.subtitle_en?.trim()) out.subtitle = row.subtitle_en;
   if ("content_blocks_en" in row && hasBlocks(row.content_blocks_en)) out.content_blocks = row.content_blocks_en;
+  if (row.audio_url_en?.trim()) out.audio_url = row.audio_url_en;
   return out;
 }

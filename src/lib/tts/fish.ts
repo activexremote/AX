@@ -20,6 +20,8 @@
 //    igual que antes. El campus funciona entero sin esta variable.
 // ══════════════════════════════════════════════════════════
 
+import { blocksToText, parseBlocks } from "@/lib/content/blocks";
+
 const API = "https://api.fish.audio";
 
 /** Modelo de síntesis. `s1` es el bueno; `speech-1.6` es más barato. */
@@ -95,7 +97,40 @@ export async function narrateLesson(
   contentMd: string,
   opts: TtsOptions & { onProgress?: (done: number, total: number) => void } = {},
 ): Promise<{ audio: Uint8Array; characters: number; chunks: number }> {
-  const text = contentToNarration(contentMd);
+  return narrateText(contentToNarration(contentMd), opts);
+}
+
+/**
+ * Lo que se narra de una lección, en el idioma pedido.
+ *
+ * Con bloques, salen de ellos: es donde está el contenido de las lecciones
+ * del programa, y su `content_md` está vacío. Se saltan los recursos (leer en
+ * voz alta una lista de descargas no sirve a nadie), las tablas, las cifras
+ * y los gráficos: en audio no se entienden, y el alumno los tiene en pantalla.
+ * Sin bloques, el Markdown de siempre (sólo en español: no hay otro).
+ */
+export function lessonNarrationText(
+  lesson: { content_md?: string | null; content_blocks?: unknown; content_blocks_en?: unknown },
+  lang: "es" | "en" = "es",
+): string {
+  const blocks = parseBlocks(lang === "en" ? lesson.content_blocks_en : lesson.content_blocks).filter(
+    (b) => !["resources", "table", "stats", "chart", "divider"].includes(b.t),
+  );
+  if (blocks.length) return contentToNarration(blocksToText(blocks));
+  return lang === "es" ? contentToNarration(lesson.content_md ?? "") : "";
+}
+
+/** La voz de cada idioma. La inglesa, si no hay una propia, es la misma. */
+export function voiceFor(lang: "es" | "en"): string | null {
+  if (lang === "en") return process.env.FISH_VOICE_ID_EN || process.env.FISH_VOICE_ID || null;
+  return process.env.FISH_VOICE_ID || null;
+}
+
+/** Genera el MP3 de un texto ya preparado para la voz. */
+export async function narrateText(
+  text: string,
+  opts: TtsOptions & { onProgress?: (done: number, total: number) => void } = {},
+): Promise<{ audio: Uint8Array; characters: number; chunks: number }> {
   if (!text.trim()) throw new Error("La lección no tiene texto que narrar.");
 
   const parts = splitForTts(text);
