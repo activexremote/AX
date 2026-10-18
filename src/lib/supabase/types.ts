@@ -125,6 +125,7 @@ export interface Lesson {
   title_en?: string | null;
   subtitle_en?: string | null;
   content_blocks_en?: unknown | null;
+  audio_url_en?: string | null;
   toc: { id: string; title: string }[] | null;
   created_at: string;
 

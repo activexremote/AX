@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
 import { notify } from "@/lib/slack/notify";
-import { narrateLesson, ttsConfigured } from "@/lib/tts/fish";
+import { lessonNarrationText, narrateText, ttsConfigured, voiceFor } from "@/lib/tts/fish";
 
 async function assertStaff() {
   const supabase = await createClient();
@@ -165,7 +165,7 @@ export async function deleteLesson(lessonId: string) {
   return { ok: true };
 }
 
-export async function uploadLessonAudio(lessonId: string, formData: FormData) {
+export async function uploadLessonAudio(lessonId: string, formData: FormData, lang: "es" | "en" = "es") {
   const supabase = await assertStaff();
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
@@ -185,7 +185,7 @@ export async function uploadLessonAudio(lessonId: string, formData: FormData) {
   const { data: pub } = supabase.storage.from("lesson-audio").getPublicUrl(path);
   const { error: updErr } = await supabase
     .from("lessons")
-    .update({ audio_url: pub.publicUrl })
+    .update(lang === "en" ? { audio_url_en: pub.publicUrl } : { audio_url: pub.publicUrl })
     .eq("id", lessonId);
   if (updErr) return { error: updErr.message };
 
@@ -202,28 +202,29 @@ export async function uploadLessonAudio(lessonId: string, formData: FormData) {
  * El audio anterior no se borra: si la voz nueva no convence, la URL vieja
  * sigue en Storage y se puede recuperar.
  */
-export async function generateLessonAudio(lessonId: string) {
+export async function generateLessonAudio(lessonId: string, lang: "es" | "en" = "es") {
   const supabase = await assertStaff();
   if (!ttsConfigured()) return { error: "Falta FISH_API_KEY en el servidor." };
 
   const { data: lesson, error: readErr } = await supabase
     .from("lessons")
-    .select("id, title, content_md")
+    .select("id, title, content_md, content_blocks, content_blocks_en")
     .eq("id", lessonId)
     .maybeSingle();
   if (readErr) return { error: readErr.message };
   if (!lesson) return { error: "No existe esa lección." };
-  if (!lesson.content_md?.trim()) return { error: "La lección no tiene contenido que narrar." };
+  const text = lessonNarrationText(lesson, lang);
+  if (!text.trim()) return { error: "La lección no tiene contenido que narrar." };
 
   let audio: Uint8Array;
   let characters: number;
   try {
-    ({ audio, characters } = await narrateLesson(lesson.content_md));
+    ({ audio, characters } = await narrateText(text, { referenceId: voiceFor(lang) }));
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Fish Audio no respondió." };
   }
 
-  const path = `lessons/${lessonId}/${Date.now()}-narracion.mp3`;
+  const path = `lessons/${lessonId}/${Date.now()}-narracion-${lang}.mp3`;
   const { error: upErr } = await supabase.storage
     .from("lesson-audio")
     .upload(path, audio, { contentType: "audio/mpeg", upsert: false });
@@ -232,7 +233,7 @@ export async function generateLessonAudio(lessonId: string) {
   const { data: pub } = supabase.storage.from("lesson-audio").getPublicUrl(path);
   const { error: updErr } = await supabase
     .from("lessons")
-    .update({ audio_url: pub.publicUrl })
+    .update(lang === "en" ? { audio_url_en: pub.publicUrl } : { audio_url: pub.publicUrl })
     .eq("id", lessonId);
   if (updErr) return { error: updErr.message };
 
