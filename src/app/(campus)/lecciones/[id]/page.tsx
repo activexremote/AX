@@ -6,7 +6,6 @@ import remarkGfm from "remark-gfm";
 import { CampusHeader } from "@/components/campus-header";
 import { LessonMission } from "@/components/lesson/mission";
 import { LessonAudioPlayer } from "@/components/lesson/audio-player";
-import { TeacherAvatar } from "@/components/lesson/teacher-avatar";
 import { lessonGesturePlan } from "@/lib/content/gestures";
 import { LessonQuiz } from "@/components/lesson/quiz";
 import { MarkCompleteButton } from "@/components/lesson/mark-complete-button";
@@ -206,14 +205,6 @@ export default async function LessonPage({
             </div>
           ) : null}
 
-          {/* ── Lía, la guía virtual ──
-              Lee la lección con el audio narrado, en el idioma del alumno, y
-              enfatiza con gestos lo que marcan los bloques. Sólo en el
-              programa largo y cuando la lección ya tiene audio. */}
-          {!esRelampago && lesson.audio_url && bloques.length ? (
-            <TeacherAvatar audioUrl={lesson.audio_url} plan={lessonGesturePlan(bloques)} copy={t.lesson.teacher} />
-          ) : null}
-
           {/* ── El cuerpo de la lección ──
               Con bloques se pinta el contenido visual (checklists, cuadros,
               tablas, gráficos). Sin ellos, el Markdown de siempre: ninguna
@@ -296,6 +287,7 @@ export default async function LessonPage({
               src={lesson.audio_url}
               lessonId={lesson.id}
               lessonTitle={lesson.title}
+              plan={lessonGesturePlan(bloques)}
             />
           </div>
         </div>
