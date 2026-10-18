@@ -24,7 +24,7 @@ for (const file of [".env.local", ".env"]) {
   }
 }
 
-const { lessonNarrationText, narrateText, ttsConfigured, voiceFor } = await import("@/lib/tts/fish.ts");
+const { lessonNarrationText, narrateText, ttsConfigured, ttsProvider, voiceFor } = await import("@/lib/tts/fish.ts");
 
 const aplicar = process.argv.includes("--aplicar");
 const rehacer = process.argv.includes("--rehacer");
@@ -65,7 +65,12 @@ if (!pendientes.length) {
 }
 
 const total = pendientes.reduce((n, l) => n + l.texto.length, 0);
-console.log(`Idioma: ${idioma.toUpperCase()} · voz: ${voiceFor(idioma) ?? "la de Fish por defecto"}`);
+const proveedor = ttsProvider();
+const voz =
+  proveedor === "openai"
+    ? (idioma === "en" && process.env.TTS_OPENAI_VOICE_EN) || process.env.TTS_OPENAI_VOICE || "coral"
+    : voiceFor(idioma) ?? "la de Fish por defecto";
+console.log(`Proveedor: ${proveedor} · idioma: ${idioma.toUpperCase()} · voz: ${voz}`);
 console.log(`${pendientes.length} lección(es) por narrar · ${total.toLocaleString("es-ES")} caracteres.`);
 if (vacias) console.log(`(${vacias} sin contenido, se saltan.)`);
 
@@ -82,7 +87,7 @@ let hechas = 0;
 for (const l of pendientes) {
   process.stdout.write(`→ ${l.title} … `);
   try {
-    const { audio, chunks } = await narrateText(l.texto, { referenceId: voiceFor(idioma) });
+    const { audio, chunks } = await narrateText(l.texto, { referenceId: voiceFor(idioma), lang: idioma });
     const path = `lessons/${l.id}/${Date.now()}-narracion-${idioma}.mp3`;
     const { error: upErr } = await admin.storage
       .from("lesson-audio")

@@ -34,8 +34,22 @@ const DEFAULT_MODEL = "s1";
  */
 const MAX_CHUNK = 1800;
 
+/**
+ * Quién pone la voz: Fish Audio u OpenAI.
+ *
+ * Fish dejó de vender crédito de API suelto (sólo dentro del plan Pro), así
+ * que OpenAI es la alternativa de pago por uso con la clave que el campus ya
+ * tiene para el editor con IA. Se elige con TTS_PROVIDER; sin ella, Fish si
+ * hay su clave y si no OpenAI.
+ */
+export function ttsProvider(): "fish" | "openai" {
+  const p = (process.env.TTS_PROVIDER || "").trim().toLowerCase();
+  if (p === "openai" || p === "fish") return p;
+  return process.env.FISH_API_KEY ? "fish" : "openai";
+}
+
 export function ttsConfigured(): boolean {
-  return Boolean(process.env.FISH_API_KEY);
+  return ttsProvider() === "openai" ? Boolean(process.env.OPENAI_API_KEY) : Boolean(process.env.FISH_API_KEY);
 }
 
 export type TtsOptions = {
@@ -45,6 +59,8 @@ export type TtsOptions = {
   model?: string;
   /** 64 · 128 · 192. La voz hablada no gana nada por encima de 128. */
   bitrate?: number;
+  /** Idioma del texto: con OpenAI decide la indicación de acento. */
+  lang?: "es" | "en";
 };
 
 function options(o: TtsOptions = {}) {
@@ -57,8 +73,45 @@ function options(o: TtsOptions = {}) {
 
 // ── Síntesis ──────────────────────────────────────────────
 
+/**
+ * Indicaciones de lectura para OpenAI. Las lecciones están escritas en
+ * español de España y en inglés británico: sin decírselo, la voz lee el
+ * español con acento latinoamericano neutro y el inglés con acento americano.
+ */
+const OPENAI_INSTRUCTIONS = {
+  es: "Habla en español de España, con acento peninsular natural. Tono cercano, claro y profesional, como una profesora que explica a su grupo lo que van a ver en la clase. Ritmo pausado, sin dramatizar.",
+  en: "Speak in natural British English. Warm, clear and professional, like a teacher telling the group what the class will cover. Calm pace, no dramatics.",
+};
+
+async function synthesizeOpenAI(text: string, opts: TtsOptions): Promise<Uint8Array> {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) throw new Error("Falta OPENAI_API_KEY.");
+  const lang = opts.lang ?? "es";
+  const voice =
+    (lang === "en" ? process.env.TTS_OPENAI_VOICE_EN : undefined) || process.env.TTS_OPENAI_VOICE || "coral";
+
+  const res = await fetch("https://api.openai.com/v1/audio/speech", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: process.env.TTS_OPENAI_MODEL || "gpt-4o-mini-tts",
+      voice,
+      input: text,
+      instructions: OPENAI_INSTRUCTIONS[lang],
+      response_format: "mp3",
+    }),
+  });
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`OpenAI TTS ${res.status}: ${detail.slice(0, 400) || res.statusText}`);
+  }
+  return new Uint8Array(await res.arrayBuffer());
+}
+
 /** Convierte UN fragmento de texto en MP3. Para una lección entera, usa `narrateLesson()`. */
 export async function synthesize(text: string, opts: TtsOptions = {}): Promise<Uint8Array> {
+  if (ttsProvider() === "openai") return synthesizeOpenAI(text, opts);
   const key = process.env.FISH_API_KEY;
   if (!key) throw new Error("Falta FISH_API_KEY.");
 
