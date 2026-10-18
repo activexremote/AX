@@ -795,3 +795,85 @@
   font-size: 0.8125rem;
   color: var(--axr-text-secondary);
 }
+
+// ── Lía, la guía virtual ─────────────────────────────────
+// Un escenario oscuro con el skyline de la marca detrás: es la única pieza
+// de color de la lección, y es a propósito, porque es la que habla.
+.axr-teacher {
+  margin: 0 0 1.5rem;
+  border: 1px solid var(--axr-border-ink);
+  box-shadow: var(--axr-shadow-hard-sm);
+  background: #fff;
+
+  &__stage {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    max-height: 420px;
+    width: 100%;
+    background:
+      linear-gradient(180deg, rgba(22, 18, 40, 0.15) 0%, rgba(22, 18, 40, 0.55) 100%),
+      url("/img/skyline-remoto.jpg") center bottom / cover no-repeat,
+      #241246;
+    overflow: hidden;
+
+    canvas { display: block; }
+  }
+
+  &__poster {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+  }
+
+  &__initial {
+    display: grid;
+    place-items: center;
+    width: 88px;
+    height: 88px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #fff;
+    font-size: 2.25rem;
+    font-weight: 700;
+  }
+
+  &[data-status="loading"] &__initial { animation: axr-teacher-pulse 1.2s ease-in-out infinite; }
+
+  &__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--axr-border-ink);
+  }
+
+  &__who {
+    display: grid;
+    gap: 0.1rem;
+    min-width: 0;
+
+    strong { font-size: 1rem; }
+    span { font-size: 0.8125rem; color: var(--axr-text-secondary); }
+    em { font-style: normal; font-size: 0.6875rem; color: var(--axr-text-helper); }
+  }
+
+  &__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+  &__error {
+    margin: 0;
+    padding: 0 1rem 0.75rem;
+    font-size: 0.8125rem;
+    color: #a32020;
+
+    span { color: var(--axr-text-helper); }
+  }
+}
+
+@keyframes axr-teacher-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
