@@ -204,7 +204,7 @@ export async function uploadLessonAudio(lessonId: string, formData: FormData, la
  */
 export async function generateLessonAudio(lessonId: string, lang: "es" | "en" = "es") {
   const supabase = await assertStaff();
-  if (!ttsConfigured()) return { error: "Falta FISH_API_KEY en el servidor." };
+  if (!ttsConfigured()) return { error: "Falta la clave de voz (FISH_API_KEY u OPENAI_API_KEY) en el servidor." };
 
   const { data: lesson, error: readErr } = await supabase
     .from("lessons")
@@ -219,7 +219,7 @@ export async function generateLessonAudio(lessonId: string, lang: "es" | "en" = 
   let audio: Uint8Array;
   let characters: number;
   try {
-    ({ audio, characters } = await narrateText(text, { referenceId: voiceFor(lang) }));
+    ({ audio, characters } = await narrateText(text, { referenceId: voiceFor(lang), lang }));
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Fish Audio no respondió." };
   }
