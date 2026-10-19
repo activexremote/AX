@@ -337,3 +337,76 @@ export interface ActivityLog {
   payload: Record<string, unknown>;
   created_at: string;
 }
+
+// ── Publicaciones (migración 0018) ─────────────────────────
+
+export interface SocialSettings {
+  id: string;
+  /** ⚠︎ NUNCA se manda al navegador (ver lib/social/settings.ts). */
+  deepseek_api_key: string | null;
+  deepseek_model: string;
+  /** ⚠︎ Tampoco ésta. */
+  uploadpost_api_key: string | null;
+  uploadpost_user: string | null;
+  /** Días ISO y hora de Madrid por canal (ver lib/social/calendario.ts). */
+  cadence: unknown;
+  alert_days: number;
+  monthly_quota: number;
+  min_balance_usd: number;
+  last_test_ok: boolean | null;
+  last_test_at: string | null;
+  last_test_detail: string | null;
+  updated_at: string;
+  updated_by: string | null;
+}
+
+export type SocialChannel = "x" | "linkedin" | "blog";
+export type SocialStatus = "borrador" | "nevera" | "programado" | "publicado" | "error";
+
+export interface SocialImage {
+  path: string;
+  url: string;
+  alt: string;
+}
+
+export interface SocialPost {
+  id: string;
+  title: string;
+  topic: string | null;
+  source_url: string | null;
+  source_title: string | null;
+  source_text: string | null;
+  images: SocialImage[];
+  language: "es" | "en";
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SocialVariant {
+  id: string;
+  post_id: string;
+  channel: SocialChannel;
+  /** Forma según el canal: ver lib/social/canales.ts. */
+  body: Record<string, unknown>;
+  status: SocialStatus;
+  scheduled_at: string | null;
+  published_at: string | null;
+  external_url: string | null;
+  error: string | null;
+  updated_at: string;
+}
+
+export interface SocialUsage {
+  id: string;
+  post_id: string | null;
+  channels: SocialChannel[];
+  model: string;
+  input_hit: number;
+  input_miss: number;
+  output_tokens: number;
+  peak: boolean;
+  cost_usd: number;
+  created_by: string | null;
+  created_at: string;
+}

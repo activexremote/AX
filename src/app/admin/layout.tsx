@@ -5,6 +5,7 @@ import { BrandMark } from "@/components/brand-mark";
 import { LocaleToggle } from "@/components/locale-toggle";
 import { getCurrentProfile } from "@/lib/data/profile";
 import { getI18n } from "@/lib/i18n/server";
+import { pubCopy } from "@/lib/i18n/publicaciones";
 import "@/app/admin/admin.scss";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -13,7 +14,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (profile.role !== "administrador" && profile.role !== "profesor") {
     redirect("/");
   }
-  const { t } = await getI18n();
+  const { t, locale } = await getI18n();
   const roleLabel = t.common[`role_${profile.role}` as const];
 
   return (
@@ -38,6 +39,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               {/* Sin clave en el diccionario general: la página es nueva y su
                   texto vive en lib/i18n/editor.ts. */}
               <Link href="/admin/ia">IA</Link>
+              <Link href="/admin/publicaciones">{pubCopy[locale].nav}</Link>
             </>
           ) : null}
         </nav>
