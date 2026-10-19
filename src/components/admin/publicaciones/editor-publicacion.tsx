@@ -12,54 +12,23 @@ import {
   quitarImagen,
   regenerarCanal,
 } from "@/app/admin/publicaciones/actions";
+import { EditorBlog, blogAForm, formABlog, type BlogForm } from "@/components/admin/publicaciones/editor-blog";
 import { SelectorImagenes } from "@/components/admin/publicaciones/nueva-publicacion";
+import { VistaBlog, VistaLinkedIn, VistaX } from "@/components/admin/publicaciones/vistas-previas";
+import { articuloDesdeBlog } from "@/lib/social/blog";
+import { diaMadrid } from "@/lib/social/calendario";
 import {
   LIMITE_LINKEDIN,
   LIMITE_X,
   NOMBRE_CANAL,
-  PLIEGUE_LINKEDIN,
   longitudX,
   parseBody,
   revisar,
-  type BlogBody,
   type LinkedInBody,
   type XBody,
 } from "@/lib/social/canales";
 import { fill, type PubCopy } from "@/lib/i18n/publicaciones";
 import type { SocialChannel, SocialImage, SocialVariant } from "@/lib/supabase/types";
-
-const palabras = (s: string) => s.split(/\s+/).filter(Boolean).length;
-
-// ── El blog se edita en texto ──────────────────────────────
-//
-// Los párrafos se escriben en un textarea separados por una línea en blanco.
-// Se guardan crudos mientras se escribe y sólo se trocean al guardar: si se
-// trocearan en cada tecla, la línea en blanco que separa dos párrafos
-// desaparecería antes de poder escribir el segundo.
-
-type BlogForm = Omit<BlogBody, "intro" | "sections"> & {
-  intro: string;
-  sections: { h2: string; answer: string; paragraphs: string; bullets: string }[];
-};
-
-const aParrafos = (s: string) => s.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
-const aLineas = (s: string) => s.split("\n").map((l) => l.replace(/^[-•*]\s*/, "").trim()).filter(Boolean);
-
-function blogAForm(b: BlogBody): BlogForm {
-  return {
-    ...b,
-    intro: b.intro.join("\n\n"),
-    sections: b.sections.map((s) => ({ h2: s.h2, answer: s.answer, paragraphs: s.paragraphs.join("\n\n"), bullets: s.bullets.join("\n") })),
-  };
-}
-
-function formABlog(f: BlogForm): BlogBody {
-  return parseBody("blog", {
-    ...f,
-    intro: aParrafos(f.intro),
-    sections: f.sections.map((s) => ({ h2: s.h2, answer: s.answer, paragraphs: aParrafos(s.paragraphs), bullets: aLineas(s.bullets) })),
-  });
-}
 
 /** Para `<input type="datetime-local">`, en la hora de quien mira. */
 function aLocal(d: Date): string {
@@ -119,121 +88,25 @@ function EditorLinkedIn({ body, onChange, copy, disabled }: { body: LinkedInBody
         <textarea rows={16} value={body.text} onChange={(e) => onChange({ text: e.target.value })} disabled={disabled} />
         <Contador n={n} max={LIMITE_LINKEDIN} copy={copy} />
       </div>
-      <div className="axr-form__row">
-        <label>{copy.liFold}</label>
-        <div className="axr-pub-fold">
-          {[...body.text].slice(0, PLIEGUE_LINKEDIN).join("")}
-          {n > PLIEGUE_LINKEDIN ? "…" : ""}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function EditorBlog({ form, onChange, copy, disabled }: { form: BlogForm; onChange: (f: BlogForm) => void; copy: PubCopy; disabled: boolean }) {
-  const set = <K extends keyof BlogForm>(k: K, v: BlogForm[K]) => onChange({ ...form, [k]: v });
-  const setSec = (i: number, k: keyof BlogForm["sections"][number], v: string) =>
-    set("sections", form.sections.map((s, j) => (j === i ? { ...s, [k]: v } : s)));
-  const setFaq = (i: number, k: "q" | "a", v: string) => set("faqs", form.faqs.map((f, j) => (j === i ? { ...f, [k]: v } : f)));
-
-  return (
-    <div className="axr-form">
-      <div className="axr-form__row">
-        <label>{copy.bTitle}</label>
-        <input value={form.title} onChange={(e) => set("title", e.target.value)} disabled={disabled} />
-        <Contador n={form.title.length} max={65} copy={copy} />
-      </div>
-      <div className="axr-form__cols">
-        <div className="axr-form__row">
-          <label>{copy.bSlug}</label>
-          <input value={form.slug} onChange={(e) => set("slug", e.target.value)} disabled={disabled} />
-          <small>/blog/{form.slug}</small>
-        </div>
-        <div className="axr-form__row">
-          <label>{copy.bKeyword}</label>
-          <input value={form.keyword} onChange={(e) => set("keyword", e.target.value)} disabled={disabled} />
-        </div>
-      </div>
-      <div className="axr-form__row">
-        <label>{copy.bMeta}</label>
-        <textarea rows={2} value={form.metaDescription} onChange={(e) => set("metaDescription", e.target.value)} disabled={disabled} />
-        <Contador n={form.metaDescription.length} max={155} copy={copy} />
-      </div>
-      <div className="axr-form__row">
-        <label>{copy.bIntro}</label>
-        <textarea rows={6} value={form.intro} onChange={(e) => set("intro", e.target.value)} disabled={disabled} />
-        <small>{copy.bIntroHint}</small>
-      </div>
-
-      {form.sections.map((s, i) => (
-        <div className="axr-pub-section" key={i}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <strong style={{ fontSize: "0.8125rem" }}>{fill(copy.bSection, i + 1)}</strong>
-            {!disabled ? (
-              <button type="button" className="axr-btn axr-btn--ghost" onClick={() => set("sections", form.sections.filter((_, j) => j !== i))}>
-                {copy.bRemoveSection}
-              </button>
-            ) : null}
-          </div>
-          <div className="axr-form__row">
-            <label>{copy.bH2}</label>
-            <input value={s.h2} onChange={(e) => setSec(i, "h2", e.target.value)} disabled={disabled} />
-          </div>
-          <div className="axr-form__row">
-            <label>{copy.bAnswer}</label>
-            <textarea rows={3} value={s.answer} onChange={(e) => setSec(i, "answer", e.target.value)} disabled={disabled} />
-            <div className="axr-pub-count">{fill(copy.words, palabras(s.answer))}</div>
-          </div>
-          <div className="axr-form__row">
-            <label>{copy.bParagraphs}</label>
-            <textarea rows={8} value={s.paragraphs} onChange={(e) => setSec(i, "paragraphs", e.target.value)} disabled={disabled} />
-            <small>{copy.bIntroHint}</small>
-          </div>
-          <div className="axr-form__row">
-            <label>{copy.bBullets}</label>
-            <textarea rows={3} value={s.bullets} onChange={(e) => setSec(i, "bullets", e.target.value)} disabled={disabled} />
-          </div>
-        </div>
-      ))}
-      {!disabled ? (
-        <div>
-          <button
-            type="button"
-            className="axr-btn axr-btn--ghost"
-            onClick={() => set("sections", [...form.sections, { h2: "", answer: "", paragraphs: "", bullets: "" }])}
-          >
-            + {copy.bAddSection}
-          </button>
-        </div>
-      ) : null}
-
-      <div className="axr-pub-variant__sub">{copy.bFaqs}</div>
-      {form.faqs.map((f, i) => (
-        <div className="axr-pub-section" key={i}>
-          <div className="axr-form__row">
-            <label>{copy.bQ}</label>
-            <input value={f.q} onChange={(e) => setFaq(i, "q", e.target.value)} disabled={disabled} />
-          </div>
-          <div className="axr-form__row">
-            <label>{copy.bA}</label>
-            <textarea rows={3} value={f.a} onChange={(e) => setFaq(i, "a", e.target.value)} disabled={disabled} />
-          </div>
-        </div>
-      ))}
-      {!disabled ? (
-        <div>
-          <button type="button" className="axr-btn axr-btn--ghost" onClick={() => set("faqs", [...form.faqs, { q: "", a: "" }])}>
-            + {copy.bAddFaq}
-          </button>
-        </div>
-      ) : null}
     </div>
   );
 }
 
 // ── Una versión: editar, regenerar, programar ──────────────
 
-export function EditorVariante({ variant, copy, locale }: { variant: SocialVariant; copy: PubCopy; locale: string }) {
+export function EditorVariante({
+  variant,
+  images,
+  language,
+  copy,
+  locale,
+}: {
+  variant: SocialVariant;
+  images: SocialImage[];
+  language: "es" | "en";
+  copy: PubCopy;
+  locale: string;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -246,8 +119,13 @@ export function EditorVariante({ variant, copy, locale }: { variant: SocialVaria
   const [li, setLi] = useState<LinkedInBody>(() => parseBody("linkedin", variant.body));
   const [blog, setBlog] = useState<BlogForm>(() => blogAForm(parseBody("blog", variant.body)));
 
-  const actual = channel === "x" ? x : channel === "linkedin" ? li : formABlog(blog);
+  const actual = useMemo(() => (channel === "x" ? x : channel === "linkedin" ? li : formABlog(blog)), [channel, x, li, blog]);
   const avisos = useMemo(() => revisar(channel, actual), [channel, actual]);
+  // El artículo tal como lo pintará el blog: la primera imagen hace de portada.
+  const articulo = useMemo(
+    () => (channel === "blog" ? articuloDesdeBlog(formABlog(blog), { locale: language, fecha: diaMadrid(new Date()), hero: images[0] ?? null }) : null),
+    [channel, blog, language, images],
+  );
   const publicado = variant.status === "publicado";
   const programado = variant.status === "programado";
   const enNevera = variant.status === "nevera";
@@ -314,18 +192,29 @@ export function EditorVariante({ variant, copy, locale }: { variant: SocialVaria
         </p>
       ) : null}
 
-      {channel === "x" ? <EditorX body={x} onChange={cambia(setX)} copy={copy} disabled={publicado} /> : null}
-      {channel === "linkedin" ? <EditorLinkedIn body={li} onChange={cambia(setLi)} copy={copy} disabled={publicado} /> : null}
-      {channel === "blog" ? <EditorBlog form={blog} onChange={cambia(setBlog)} copy={copy} disabled={publicado} /> : null}
+      {/* Editor a un lado y, al otro, cómo quedará publicado. En pantallas
+          estrechas, uno debajo del otro. */}
+      <div className={`axr-pub-split axr-pub-split--${channel}`}>
+        <div className="axr-pub-split__edit">
+          {channel === "x" ? <EditorX body={x} onChange={cambia(setX)} copy={copy} disabled={publicado} /> : null}
+          {channel === "linkedin" ? <EditorLinkedIn body={li} onChange={cambia(setLi)} copy={copy} disabled={publicado} /> : null}
+          {channel === "blog" ? <EditorBlog form={blog} onChange={cambia(setBlog)} copy={copy} locale={locale} disabled={publicado} /> : null}
 
-      <ul className="axr-pub-checks">
-        {avisos.length === 0 ? <li className="is-ok">{copy.checksOk}</li> : null}
-        {avisos.map((a, i) => (
-          <li key={i} className={a.nivel === "error" ? "is-error" : "is-warn"}>
-            {a.texto}
-          </li>
-        ))}
-      </ul>
+          <ul className="axr-pub-checks">
+            {avisos.length === 0 ? <li className="is-ok">{copy.checksOk}</li> : null}
+            {avisos.map((a, i) => (
+              <li key={i} className={a.nivel === "error" ? "is-error" : "is-warn"}>
+                {a.texto}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="axr-pub-split__preview">
+          {channel === "x" ? <VistaX body={x} images={images} copy={copy} /> : null}
+          {channel === "linkedin" ? <VistaLinkedIn body={li} images={images} copy={copy} /> : null}
+          {articulo ? <VistaBlog article={articulo} variantId={variant.id} copy={copy} /> : null}
+        </div>
+      </div>
 
       {msg ? (
         <div className={msg.ok ? "axr-login__ok" : "axr-login__error"} style={{ marginTop: "0.75rem" }}>

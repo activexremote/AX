@@ -1,8 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { notFound, redirect } from "next/navigation";
-import Image from "next/image";
-
-import { LocaleLink } from "@/components/locale-link";
 
 import { LandingNav } from "@/components/landing/landing-nav";
 import { LandingFooter } from "@/components/landing/landing-footer";
@@ -15,7 +12,7 @@ import { getTerm, termPath } from "@/app/glosario/terms";
 import { ALL_ARTICLES, getArticle } from "@/app/blog/registry";
 import { HREFLANG_PAIRS } from "@/app/blog/content-map";
 import { blogCopy } from "@/app/blog/copy";
-import type { Block } from "@/app/blog/types";
+import { ArticleView } from "@/app/blog/article-view";
 import "@/app/bienvenida/landing.scss";
 import "@/app/blog/blog.scss";
 
@@ -73,98 +70,6 @@ export async function generateMetadata({
     },
     twitter: { card: "summary_large_image", title: a.ogTitle, description: a.ogDescription },
   };
-}
-
-function BlockView({ block }: { block: Block }) {
-  switch (block.t) {
-    case "p":
-      return <p>{block.text}</p>;
-    case "note":
-      return <p className="axr-post__note">{block.text}</p>;
-    case "quote":
-      return (
-        <blockquote className="axr-post__quote">
-          <p>{block.text}</p>
-          {block.by && <cite>{block.by}</cite>}
-        </blockquote>
-      );
-    case "ul":
-      return (
-        <ul>
-          {block.items.map((i) => (
-            <li key={i}>{i}</li>
-          ))}
-        </ul>
-      );
-    case "ol":
-      return (
-        <ol className="axr-post__ol">
-          {block.items.map((i) => (
-            <li key={i}>{i}</li>
-          ))}
-        </ol>
-      );
-    case "steps":
-      return (
-        <ol className="axr-post__steps">
-          {block.items.map((s, i) => (
-            <li key={s.title}>
-              <span className="axr-post__step-n">{String(i + 1).padStart(2, "0")}</span>
-              <div>
-                <strong>{s.title}</strong>
-                <p>{s.text}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      );
-    case "pros":
-      return (
-        <div className="axr-post__pros">
-          <div data-kind="pro">
-            <span>+</span>
-            <ul>
-              {block.pros.map((p) => (
-                <li key={p}>{p}</li>
-              ))}
-            </ul>
-          </div>
-          <div data-kind="con">
-            <span>−</span>
-            <ul>
-              {block.cons.map((p) => (
-                <li key={p}>{p}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      );
-    case "table":
-      return (
-        <div className="axr-post__table">
-          <table>
-            <thead>
-              <tr>
-                {block.head.map((h) => (
-                  <th key={h} scope="col">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {block.rows.map((row) => (
-                <tr key={row[0]}>
-                  {row.map((cell, i) => (
-                    <td key={i}>{cell}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      );
-  }
 }
 
 export default async function ArticlePage({
@@ -301,118 +206,10 @@ export default async function ArticlePage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
 
-      <article className="axr-post__inner">
-        <nav className="axr-post__crumbs" aria-label="breadcrumb">
-          <LocaleLink href="/blog">{c.backLabel}</LocaleLink>
-          <span aria-hidden>·</span>
-          <span>{c.clusters[a.cluster]}</span>
-        </nav>
-
-        {a.hero ? (
-          <figure className="axr-post__art">
-            <Image src={a.hero.file} alt={a.hero.alt} width={800} height={450} priority />
-          </figure>
-        ) : null}
-
-        <header className="axr-post__head">
-          <h1>{a.h1}</h1>
-          <p className="axr-post__meta">
-            <span>{c.readingLabel(a.readingMinutes)}</span>
-            <span aria-hidden>·</span>
-            <span>
-              {c.updatedLabel} <time dateTime={a.updated}>{a.updated}</time>
-            </span>
-          </p>
-          {a.intro.map((p) => (
-            <p key={p} className="axr-post__intro">
-              {p}
-            </p>
-          ))}
-        </header>
-
-        {/* Índice enlazable: mejora el escaneo y da a Google los saltos de
-            sección que usa en los resultados enriquecidos. */}
-        <nav className="axr-post__toc" aria-label={c.tocLabel}>
-          <span className="axr-post__toc-label">{c.tocLabel}</span>
-          <ol>
-            {a.sections.map((s) => (
-              <li key={s.id}>
-                <a href={`#${s.id}`}>{s.h2}</a>
-              </li>
-            ))}
-            <li>
-              <a href="#faq">{c.faqTitle}</a>
-            </li>
-          </ol>
-        </nav>
-
-        <div className="axr-post__body">
-          {a.sections.map((s) => (
-            <section key={s.id} id={s.id}>
-              <h2>{s.h2}</h2>
-              {/* Respuesta directa: es el bloque que se cita. */}
-              <p className="axr-post__answer">{s.answer}</p>
-              {s.blocks.map((b, i) => (
-                <BlockView key={i} block={b} />
-              ))}
-              {s.takeaway && (
-                <p className="axr-post__takeaway">
-                  <em>{c.keyLabel}</em>
-                  {s.takeaway}
-                </p>
-              )}
-            </section>
-          ))}
-
-          <section id="faq" className="axr-post__faq">
-            <h2>{c.faqTitle}</h2>
-            {a.faqs.map((f, i) => (
-              <details key={f.q} open={i === 0}>
-                <summary>{f.q}</summary>
-                <p>{f.a}</p>
-              </details>
-            ))}
-          </section>
-        </div>
-
-        {terms.length > 0 && (
-          <section className="axr-post__terms">
-            <h2>{c.termsLabel}</h2>
-            <ul>
-              {terms.map((t) => (
-                <li key={t!.id}>
-                  <LocaleLink href={termPath(t!, a.locale)}>{t![a.locale].term}</LocaleLink>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        <section className="axr-post__sources">
-          <h2>{c.sourcesLabel}</h2>
-          <ul>
-            {a.external.map((s) => (
-              <li key={s.url}>
-                <a href={s.url} target="_blank" rel="noopener noreferrer nofollow">
-                  {s.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <aside className="axr-post__cta">
-          <h2>{c.ctaTitle}</h2>
-          <p>{c.ctaBody}</p>
-          <LocaleLink
-            href={a.course ? `/cursos/${a.course}` : "/bienvenida#solicitar"}
-            className="axr-lp__btn axr-lp__btn--solid axr-lp__btn--lg"
-          >
-            {c.ctaButton}
-            <span aria-hidden>→</span>
-          </LocaleLink>
-        </aside>
-      </article>
+      <ArticleView
+        a={a}
+        terms={terms.map((t) => ({ id: t!.id, href: termPath(t!, a.locale), label: t![a.locale].term }))}
+      />
 
       <LandingFooter base="/bienvenida" />
     </main>
