@@ -7,7 +7,8 @@ import { guardarAjustes, probarDeepseek } from "@/app/admin/publicaciones/action
 import { fill, type PubCopy } from "@/lib/i18n/publicaciones";
 import { CANALES, NOMBRE_CANAL } from "@/lib/social/canales";
 import type { RitmoCanal } from "@/lib/social/calendario";
-import type { PublicSocialSettings } from "@/lib/social/settings";
+import type { Cuentas, PublicSocialSettings } from "@/lib/social/settings";
+import { Icono } from "@/components/admin/publicaciones/iconos";
 import type { SocialChannel } from "@/lib/supabase/types";
 
 // Las claves NUNCA llegan aquí: sólo sus cuatro últimos caracteres. Un campo
@@ -56,7 +57,17 @@ function Ritmo({ canal, inicial, copy }: { canal: SocialChannel; inicial: RitmoC
   );
 }
 
-export function AjustesPublicaciones({ settings, copy, locale }: { settings: PublicSocialSettings; copy: PubCopy; locale: string }) {
+export function AjustesPublicaciones({
+  settings,
+  cuentas,
+  copy,
+  locale,
+}: {
+  settings: PublicSocialSettings;
+  cuentas: Cuentas | null;
+  copy: PubCopy;
+  locale: string;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
@@ -93,12 +104,28 @@ export function AjustesPublicaciones({ settings, copy, locale }: { settings: Pub
         ? `${copy.sKeyFromEnv} (${settings.deepseekHint})`
         : copy.sKeyNone;
 
+  const redesOk = Boolean(cuentas?.x.conectada && cuentas.linkedin.conectada);
+  const indice: [string, string, boolean | null][] = [
+    ["deepseek", copy.sDeepseek, settings.deepseekSource !== "ninguna"],
+    ["ritmo", copy.sRhythm, settings.ritmoGuardado],
+    ["alertas", copy.sAlerts, null],
+    ["upload-post", copy.sUploadpost, cuentas ? redesOk : null],
+  ];
+
   return (
     <form action={handleSave} className="axr-form">
+      <nav className="axr-pubsettings-nav" aria-label={copy.sTitle}>
+        {indice.map(([id, label, ok]) => (
+          <a key={id} href={`#${id}`} className={ok === null ? "" : ok ? "is-ok" : "is-todo"}>
+            {ok === null ? <Icono n="ajustes" size={14} /> : <Icono n={ok ? "ok" : "aviso"} size={14} />}
+            {label}
+          </a>
+        ))}
+      </nav>
       {error ? <div className="axr-login__error">{error}</div> : null}
       {saved ? <div className="axr-login__ok">{copy.sSaved}</div> : null}
 
-      <div className="axr-admin-card">
+      <div className="axr-admin-card" id="deepseek">
         <h2>{copy.sDeepseek}</h2>
         <div className="axr-form">
           <div className="axr-form__row">
@@ -151,7 +178,7 @@ export function AjustesPublicaciones({ settings, copy, locale }: { settings: Pub
         </div>
       </div>
 
-      <div className="axr-admin-card">
+      <div className="axr-admin-card" id="alertas">
         <h2>{copy.sAlerts}</h2>
         <div className="axr-form">
           <div className="axr-form__row">
@@ -173,9 +200,41 @@ export function AjustesPublicaciones({ settings, copy, locale }: { settings: Pub
         </div>
       </div>
 
-      <div className="axr-admin-card">
+      <div className="axr-admin-card" id="upload-post">
         <h2>{copy.sUploadpost}</h2>
         <p style={{ fontSize: "0.8125rem", color: "var(--axr-text-helper)", marginTop: 0 }}>{copy.sUploadpostHint}</p>
+        {cuentas ? (
+          <ul className="axr-pubaccounts">
+            {(["x", "linkedin"] as const).map((c) => {
+              const k = cuentas[c];
+              const ok = k.conectada && !k.reautorizar;
+              return (
+                <li key={c} className={ok ? "is-ok" : "is-todo"}>
+                  <span className={`axr-pub-dot axr-pub-dot--${c}`} />
+                  <strong>{NOMBRE_CANAL[c]}</strong>
+                  <span>
+                    {ok ? fill(copy.uConnectedAs, k.usuario ? `@${k.usuario}` : (k.nombre ?? "")) : k.reautorizar ? copy.uReconnect : copy.uNotConnectedLong}
+                  </span>
+                  <Icono n={ok ? "ok" : "aviso"} size={16} />
+                </li>
+              );
+            })}
+          </ul>
+        ) : settings.uploadpostHint ? (
+          <p className="axr-pub-note">{copy.uAccountsUnknown}</p>
+        ) : null}
+        {cuentas && !redesOk ? (
+          <ol className="axr-pubhowto">
+            {copy.uConnectSteps.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+            <li>
+              <a href="https://app.upload-post.com/" target="_blank" rel="noreferrer">
+                {copy.uOpenUploadPost} ↗
+              </a>
+            </li>
+          </ol>
+        ) : null}
         <div className="axr-form">
           <div className="axr-form__row">
             <label htmlFor="uploadpost_api_key">{copy.sUpKey}</label>

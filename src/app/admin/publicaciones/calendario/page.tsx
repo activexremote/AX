@@ -2,10 +2,11 @@ import Link from "next/link";
 
 import { RellenarHuecos } from "@/components/admin/publicaciones/rellenar-huecos";
 import { getLocale } from "@/lib/i18n/server";
-import { pubCopy } from "@/lib/i18n/publicaciones";
+import { fill, pubCopy } from "@/lib/i18n/publicaciones";
 import { CANALES, NOMBRE_CANAL } from "@/lib/social/canales";
-import { diaMadrid, diaSemana, duracion, huecos, sumarDias, ZONA } from "@/lib/social/calendario";
+import { diaMadrid, diaSemana, huecos, sumarDias, ZONA } from "@/lib/social/calendario";
 import { cargarPanel } from "@/lib/social/panel";
+import type { SocialChannel } from "@/lib/supabase/types";
 
 // ══════════════════════════════════════════════════════════
 //  El mes, día a día
@@ -60,27 +61,12 @@ export default async function CalendarioPage({ searchParams }: { searchParams: P
 
   return (
     <div className="axr-admin-page">
-      <div className="axr-admin-page__header">
+      <div className="axr-pubpage-head axr-pubpage-head--row">
         <div>
           <h1>{copy.calTitle}</h1>
           <p>{copy.calLead}</p>
         </div>
-      </div>
-
-      {/* Cobertura de un vistazo, para leer el mes con contexto. */}
-      <div className="axr-pub-cover-strip">
-        {CANALES.map((c) => {
-          const k = panel.cobertura[c];
-          if (!k.activo) return null;
-          const bajo = k.dias < panel.settings.alertDays;
-          return (
-            <div key={c} className={`axr-pub-cover-strip__item${bajo ? " is-low" : ""}`}>
-              <span className={`axr-pub-dot axr-pub-dot--${c}`} />
-              <strong>{NOMBRE_CANAL[c]}</strong> {k.hasta ? duracion(k.dias, locale) : copy.coverNone}
-            </div>
-          );
-        })}
-        {panel.porEstado.nevera ? <RellenarHuecos copy={copy} /> : null}
+        {panel.porEstado.nevera ? <RellenarHuecos copy={copy} label={fill(copy.uFillAll, panel.porEstado.nevera)} /> : null}
       </div>
 
       <div className="axr-admin-card">
@@ -118,16 +104,21 @@ export default async function CalendarioPage({ searchParams }: { searchParams: P
                 {items.map((v) => (
                   <Link
                     key={v.id}
-                    href={`/admin/publicaciones/${v.post_id}`}
+                    href={`/admin/publicaciones/${v.post_id}?canal=${v.channel}`}
                     className={`axr-pub-cal__item axr-pub-cal__item--${v.channel}${v.status === "publicado" ? " is-published" : ""}`}
                     title={`${NOMBRE_CANAL[v.channel]} · ${copy[`status_${v.status}`]} · ${v.title}`}
                   >
-                    <span className="axr-pub-cal__time">{hora((v.scheduled_at ?? v.published_at)!)}</span> {NOMBRE_CANAL[v.channel]} · {v.title}
+                    <span className="axr-pub-cal__time">{hora((v.scheduled_at ?? v.published_at)!)}</span> {v.title}
                   </Link>
                 ))}
                 {(vacios.get(d) ?? []).map((c) => (
-                  <Link key={c} href="/admin/publicaciones/nevera" className="axr-pub-cal__gap" title={`${copy.calGap} · ${NOMBRE_CANAL[c as keyof typeof NOMBRE_CANAL]}`}>
-                    {copy.calGap} · {NOMBRE_CANAL[c as keyof typeof NOMBRE_CANAL]}
+                  <Link
+                    key={c}
+                    href={panel.cobertura[c as SocialChannel].nevera ? "/admin/publicaciones/nevera" : `/admin/publicaciones/nueva?canal=${c}`}
+                    className={`axr-pub-cal__gap axr-pub-cal__gap--${c}`}
+                    title={`${copy.calGap} · ${NOMBRE_CANAL[c as SocialChannel]} · ${panel.cobertura[c as SocialChannel].nevera ? copy.uFillFromFridge : copy.uCreate}`}
+                  >
+                    + {NOMBRE_CANAL[c as SocialChannel]}
                   </Link>
                 ))}
               </div>
@@ -143,7 +134,7 @@ export default async function CalendarioPage({ searchParams }: { searchParams: P
             </span>
           ))}
           <span>
-            <span className="axr-pub-legend__gap" /> {copy.calGap}
+            <span className="axr-pub-legend__gap" /> {copy.uGapLegend}
           </span>
           <span>✓ {copy.status_publicado}</span>
         </div>

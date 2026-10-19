@@ -54,6 +54,8 @@ export default async function VistaPreviaBlog({ searchParams }: { searchParams: 
 
   return (
     <main className="axr-lp axr-post">
+      {/* Es una maqueta: el aviso de cookies taparía el artículo. */}
+      <style>{`.axr-consent{display:none!important}`}</style>
       <LandingNav base="/bienvenida" />
       <ArticuloEnVivo inicial={inicial} />
       <LandingFooter base="/bienvenida" />

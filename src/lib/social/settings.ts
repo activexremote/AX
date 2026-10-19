@@ -139,3 +139,56 @@ export async function saldoDeepseek(): Promise<number | null> {
     return null;
   }
 }
+
+// ── Las cuentas conectadas en Upload-Post ──────────────────
+
+export type CuentaRed = {
+  conectada: boolean;
+  /** El nombre y el usuario tal como salen en la red: los usa la vista previa. */
+  nombre: string | null;
+  usuario: string | null;
+  avatar: string | null;
+  /** La red ha caducado el permiso: hay que volver a conectarla. */
+  reautorizar: boolean;
+};
+
+export type Cuentas = { x: CuentaRed; linkedin: CuentaRed };
+
+const SIN_CUENTA: CuentaRed = { conectada: false, nombre: null, usuario: null, avatar: null, reautorizar: false };
+
+/**
+ * Qué redes tiene conectadas el perfil de Upload-Post. Sin esto, el panel no
+ * sabe si lo que se programa en LinkedIn va a poder salir. null si no hay
+ * clave o Upload-Post no contesta: el panel no se cae por eso.
+ */
+export async function cuentasUploadPost(): Promise<Cuentas | null> {
+  const row = await readRow();
+  const key = (row?.uploadpost_api_key || process.env.UPLOADPOST_API_KEY || "").trim();
+  if (!key) return null;
+  try {
+    const res = await fetch("https://api.upload-post.com/api/uploadposts/users", {
+      headers: { Authorization: `Apikey ${key}` },
+      signal: AbortSignal.timeout(5_000),
+      // Cambia cuando alguien conecta una red, no a cada visita.
+      next: { revalidate: 120 },
+    });
+    if (!res.ok) return null;
+    type Cuenta = { display_name?: string; handle?: string; username?: string; social_images?: string; reauth_required?: boolean };
+    const data = (await res.json()) as { profiles?: { username: string; social_accounts?: Record<string, Cuenta | string | null> }[] };
+    const usuario = row?.uploadpost_user || "default";
+    const perfil = data.profiles?.find((p) => p.username === usuario) ?? data.profiles?.[0];
+    const leer = (raw: Cuenta | string | null | undefined): CuentaRed => {
+      if (!raw || typeof raw !== "object") return SIN_CUENTA;
+      return {
+        conectada: true,
+        nombre: raw.display_name ?? null,
+        usuario: raw.handle ?? raw.username ?? null,
+        avatar: raw.social_images ?? null,
+        reautorizar: Boolean(raw.reauth_required),
+      };
+    };
+    return { x: leer(perfil?.social_accounts?.x), linkedin: leer(perfil?.social_accounts?.linkedin) };
+  } catch {
+    return null;
+  }
+}

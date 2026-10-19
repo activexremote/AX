@@ -25,8 +25,19 @@ import type { SocialImage } from "@/lib/supabase/types";
 const NOMBRE = "ActiveXRemote";
 const USUARIO = "@ActiveXRemote";
 
-/** El ΔX de la marca, en blanco sobre negro: el avatar de las cuentas. */
-function Avatar({ size, square }: { size: number; square?: boolean }) {
+type Cuenta = { nombre: string | null; usuario: string | null; avatar: string | null } | null | undefined;
+
+/**
+ * La foto de la cuenta conectada en Upload-Post o, si no hay, el ΔX de la
+ * marca en blanco sobre negro.
+ */
+function Avatar({ size, square, src }: { size: number; square?: boolean; src?: string | null }) {
+  if (src) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- foto de perfil de la red
+      <img src={src} alt="" width={size} height={size} className="axr-pv-avatar" style={{ borderRadius: square ? 4 : "50%", objectFit: "cover" }} />
+    );
+  }
   return (
     <span className="axr-pv-avatar" style={{ width: size, height: size, borderRadius: square ? 4 : "50%" }} aria-hidden>
       <svg viewBox="0 0 32 32" width={size * 0.62} height={size * 0.62}>
@@ -164,7 +175,9 @@ function Icono({ d, size = 18 }: { d: ReactNode; size?: number }) {
 
 // ── X ──────────────────────────────────────────────────────
 
-export function VistaX({ body, images, copy }: { body: XBody; images: SocialImage[]; copy: PubCopy }) {
+export function VistaX({ body, images, copy, cuenta }: { body: XBody; images: SocialImage[]; copy: PubCopy; cuenta?: Cuenta }) {
+  const nombre = cuenta?.nombre || NOMBRE;
+  const usuario = cuenta?.usuario ? `@${cuenta.usuario.replace(/^@/, "")}` : USUARIO;
   const [tema, setTema] = useState<"light" | "dark">("light");
   const posts = [body.text, ...body.thread].filter((p, i) => i === 0 || p.trim());
 
@@ -178,14 +191,14 @@ export function VistaX({ body, images, copy }: { body: XBody; images: SocialImag
         {posts.map((p, i) => (
           <article key={i} className="axr-pv-x__post">
             <div className="axr-pv-x__rail">
-              <Avatar size={40} />
+              <Avatar size={40} src={cuenta?.avatar} />
               {i < posts.length - 1 ? <span className="axr-pv-x__line" /> : null}
             </div>
             <div className="axr-pv-x__main">
               <div className="axr-pv-x__who">
-                <strong>{NOMBRE}</strong>
+                <strong>{nombre}</strong>
                 <span>
-                  {USUARIO} · {copy.pvNow}
+                  {usuario} · {copy.pvNow}
                 </span>
                 <span className="axr-pv-x__more">
                   <Icono d={Ico.more} />
@@ -227,7 +240,7 @@ function pliegue(text: string, lineas: number): number {
   return Math.min(text.length, PLIEGUE_LINKEDIN);
 }
 
-export function VistaLinkedIn({ body, images, copy }: { body: LinkedInBody; images: SocialImage[]; copy: PubCopy }) {
+export function VistaLinkedIn({ body, images, copy, cuenta }: { body: LinkedInBody; images: SocialImage[]; copy: PubCopy; cuenta?: Cuenta }) {
   const [abierto, setAbierto] = useState(false);
   const [disp, setDisp] = useState<"desktop" | "mobile">("desktop");
   const text = body.text;
@@ -243,9 +256,9 @@ export function VistaLinkedIn({ body, images, copy }: { body: LinkedInBody; imag
     >
       <div className={`axr-pv-li axr-pv-li--${disp}`}>
         <div className="axr-pv-li__head">
-          <Avatar size={48} square />
+          <Avatar size={48} square src={cuenta?.avatar} />
           <div className="axr-pv-li__who">
-            <strong>{NOMBRE}</strong>
+            <strong>{cuenta?.nombre || NOMBRE}</strong>
             <span>The Remote Business School</span>
             <span className="axr-pv-li__when">
               {copy.pvNow} · <Icono d={Ico.globe} size={14} />
