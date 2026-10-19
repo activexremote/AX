@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { crearPublicacion } from "@/app/admin/publicaciones/actions";
 import { CANALES, NOMBRE_CANAL } from "@/lib/social/canales";
 import { estimar, formatoUsd } from "@/lib/social/costes";
+import { Icono } from "@/components/admin/publicaciones/iconos";
 import { fill, type PubCopy } from "@/lib/i18n/publicaciones";
 import type { SocialChannel } from "@/lib/supabase/types";
 
@@ -40,26 +41,77 @@ export function SelectorImagenes({ copy, max }: { copy: PubCopy; max: number }) 
   );
 }
 
+/** Lo que va diciendo la pantalla de espera, con los segundos a los que aparece cada paso. */
+function pasosEspera(copy: PubCopy, canales: SocialChannel[], conEnlace: boolean): [number, string][] {
+  const out: [number, string][] = [];
+  let t = 0;
+  if (conEnlace) {
+    out.push([t, copy.uWaitLink]);
+    t += 3;
+  }
+  out.push([t, copy.uWaitThinking]);
+  t += 3;
+  if (canales.includes("x")) out.push([(t += 2), copy.uWaitX]);
+  if (canales.includes("linkedin")) out.push([(t += 3), copy.uWaitLinkedIn]);
+  if (canales.includes("blog")) out.push([(t += 3), copy.uWaitBlog]);
+  out.push([t + (canales.includes("blog") ? 12 : 4), copy.uWaitChecks]);
+  return out;
+}
+
+function Espera({ copy, canales, conEnlace }: { copy: PubCopy; canales: SocialChannel[]; conEnlace: boolean }) {
+  const [s, setS] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setS((n) => n + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const pasos = pasosEspera(copy, canales, conEnlace);
+  const actual = pasos.reduce((i, [t], j) => (s >= t ? j : i), 0);
+  return (
+    <div className="axr-pubwait" role="status" aria-live="polite">
+      <div className="axr-pubwait__card">
+        <span className="axr-pubwait__spark">
+          <Icono n="chispa" size={26} />
+        </span>
+        <strong>{copy.uWaitTitle}</strong>
+        <ol>
+          {pasos.map(([, label], j) => (
+            <li key={label} className={j < actual ? "is-done" : j === actual ? "is-now" : ""}>
+              <span>{j < actual ? <Icono n="ok" size={14} /> : null}</span>
+              {label}
+            </li>
+          ))}
+        </ol>
+        <small>{fill(copy.uWaitSeconds, s)}</small>
+      </div>
+    </div>
+  );
+}
+
 export function NuevaPublicacion({
   copy,
   defaultLanguage,
   model,
   locale,
+  canalInicial,
 }: {
   copy: PubCopy;
   defaultLanguage: "es" | "en";
   model: string;
   locale: string;
+  canalInicial?: SocialChannel;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [topic, setTopic] = useState("");
   const [url, setUrl] = useState("");
-  const [canales, setCanales] = useState<SocialChannel[]>([...CANALES]);
+  const [canales, setCanales] = useState<SocialChannel[]>(canalInicial ? [canalInicial] : [...CANALES]);
+  const [idioma, setIdioma] = useState<"es" | "en">(defaultLanguage);
 
-  const listo = (topic.trim() || url.trim()) && canales.length > 0;
+  const listo = Boolean(topic.trim() || url.trim()) && canales.length > 0;
   const coste = estimar(model, canales, Boolean(url.trim()));
+  const segundos = (url.trim() ? 5 : 0) + (canales.includes("blog") ? 25 : 10);
+  const falta = !topic.trim() && !url.trim() ? copy.uNeedTopic : !canales.length ? copy.uNeedChannel : null;
 
   function handle(formData: FormData) {
     setError(null);
@@ -72,101 +124,108 @@ export function NuevaPublicacion({
     });
   }
 
+  const alternar = (c: SocialChannel) =>
+    setCanales((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : CANALES.filter((x) => x === c || prev.includes(x))));
+
   return (
-    <form action={handle} className="axr-form">
+    <form action={handle} className="axr-pubnew">
+      {pending ? <Espera copy={copy} canales={canales} conEnlace={Boolean(url.trim())} /> : null}
       {error ? <div className="axr-login__error">{error}</div> : null}
 
-      {/* ── 1 · Qué contar ── */}
-      <div className="axr-admin-card">
-        <h2>{copy.step1}</h2>
-        <p className="axr-pub-lead">{copy.step1Hint}</p>
-        <div className="axr-form">
-          <div className="axr-form__row">
-            <label htmlFor="topic">{copy.fTopic}</label>
-            <textarea
-              id="topic"
-              name="topic"
-              rows={5}
-              placeholder={copy.fTopicPlaceholder}
-              maxLength={4000}
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-            />
-            <small>{copy.fTopicHint}</small>
+      <section className="axr-pubcard axr-pubnew__card">
+        {/* ── Qué contar ── */}
+        <label htmlFor="topic" className="axr-pubnew__q">
+          <span className="axr-pubnew__n">1</span> {copy.uWhat}
+        </label>
+        <textarea
+          id="topic"
+          name="topic"
+          rows={4}
+          className="axr-pubnew__topic"
+          placeholder={copy.fTopicPlaceholder}
+          maxLength={4000}
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          autoFocus
+        />
+        {!topic ? (
+          <div className="axr-pub-examples">
+            <span>{copy.uTry}</span>
+            {copy.examples.map((ej) => (
+              <button key={ej} type="button" onClick={() => setTopic(ej)}>
+                {ej}
+              </button>
+            ))}
           </div>
-          {!topic ? (
-            <div className="axr-pub-examples">
-              <span>{copy.examplesTitle}</span>
-              {copy.examples.map((ej) => (
-                <button key={ej} type="button" onClick={() => setTopic(ej)}>
-                  {ej}
-                </button>
-              ))}
+        ) : (
+          <small className="axr-pubnew__hint">{copy.fTopicHint}</small>
+        )}
+        <div className="axr-pubnew__link">
+          <Icono n="enlace" />
+          <input
+            id="source_url"
+            name="source_url"
+            type="url"
+            placeholder={copy.uLinkPlaceholder}
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            aria-label={copy.fUrl}
+          />
+        </div>
+
+        {/* ── Dónde ── */}
+        <div className="axr-pubnew__q">
+          <span className="axr-pubnew__n">2</span> {copy.uWhere}
+        </div>
+        <div className="axr-pubnew__where">
+          <div className="axr-pubnew__channels" role="group" aria-label={copy.fChannels}>
+            {CANALES.map((c) => (
+              <label key={c} className={`axr-pubnew__channel axr-pubnew__channel--${c}${canales.includes(c) ? " is-on" : ""}`}>
+                <input type="checkbox" name="channels" value={c} checked={canales.includes(c)} onChange={() => alternar(c)} />
+                <span className="axr-pubnew__check">{canales.includes(c) ? <Icono n="ok" size={12} /> : null}</span>
+                <strong>{NOMBRE_CANAL[c]}</strong>
+                <small>{copy[`uWhat_${c}`]}</small>
+              </label>
+            ))}
+          </div>
+          <div className="axr-pv-switch axr-pubnew__lang" role="group" aria-label={copy.fLanguage}>
+            <input type="hidden" name="language" value={idioma} />
+            {(["es", "en"] as const).map((l) => (
+              <button key={l} type="button" aria-pressed={idioma === l} onClick={() => setIdioma(l)}>
+                {l === "es" ? "Español" : "English"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Opcional ── */}
+        <details className="axr-pubnew__more">
+          <summary>
+            <Icono n="imagen" /> {copy.uMore}
+          </summary>
+          <div className="axr-form">
+            <div className="axr-form__row">
+              <label>{copy.fImages}</label>
+              <SelectorImagenes copy={copy} max={4} />
+              <small>{copy.fImagesHint}</small>
             </div>
-          ) : null}
-          <div className="axr-form__row">
-            <label htmlFor="source_url">{copy.fUrl}</label>
-            <input id="source_url" name="source_url" type="url" placeholder="https://…" value={url} onChange={(e) => setUrl(e.target.value)} />
-            <small>{copy.fUrlHint}</small>
-          </div>
-        </div>
-      </div>
-
-      {/* ── 2 · Dónde ── */}
-      <div className="axr-admin-card">
-        <h2>{copy.step2}</h2>
-        <div className="axr-form__cols">
-          <div className="axr-form__row">
-            <label>{copy.fChannels}</label>
-            <div className="axr-pub-channels">
-              {CANALES.map((c) => (
-                <label key={c}>
-                  <input
-                    type="checkbox"
-                    name="channels"
-                    value={c}
-                    checked={canales.includes(c)}
-                    onChange={(e) => setCanales((prev) => (e.target.checked ? CANALES.filter((x) => x === c || prev.includes(x)) : prev.filter((x) => x !== c)))}
-                  />
-                  {NOMBRE_CANAL[c]}
-                </label>
-              ))}
+            <div className="axr-form__row">
+              <label htmlFor="title">{copy.fTitle}</label>
+              <input id="title" name="title" maxLength={200} />
+              <small>{copy.fTitleHint}</small>
             </div>
-            <small>{copy.fChannelsHint}</small>
           </div>
-          <div className="axr-form__row">
-            <label htmlFor="language">{copy.fLanguage}</label>
-            <select id="language" name="language" defaultValue={defaultLanguage}>
-              <option value="es">Español</option>
-              <option value="en">English</option>
-            </select>
-          </div>
-        </div>
-      </div>
+        </details>
+      </section>
 
-      {/* ── 3 · Imágenes ── */}
-      <div className="axr-admin-card">
-        <h2>{copy.step3}</h2>
-        <div className="axr-form">
-          <div className="axr-form__row">
-            <SelectorImagenes copy={copy} max={4} />
-            <small>{copy.fImagesHint}</small>
-          </div>
-          <div className="axr-form__row">
-            <label htmlFor="title">{copy.fTitle}</label>
-            <input id="title" name="title" maxLength={200} />
-            <small>{copy.fTitleHint}</small>
-          </div>
+      <div className="axr-pubnew__bar">
+        <div className="axr-pubnew__est">
+          <strong>{fill(copy.uEstimate, formatoUsd(coste, locale))}</strong>
+          <span>{fill(copy.uEstimateTime, segundos)}</span>
         </div>
-      </div>
-
-      <div className="axr-pub-submit">
-        <div>
-          <strong>{fill(copy.estimate, formatoUsd(coste, locale))}</strong>
-          <small>{copy.estimateHint}</small>
-        </div>
-        <button type="submit" className="axr-btn" disabled={pending || !listo}>
-          {pending ? copy.generating : copy.generate}
+        {falta ? <span className="axr-pubnew__missing">{falta}</span> : null}
+        <button type="submit" className="axr-btn axr-pubnew__go" disabled={pending || !listo}>
+          <Icono n="chispa" /> {pending ? copy.generating : copy.uGenerate}
         </button>
       </div>
     </form>

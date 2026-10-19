@@ -6,6 +6,7 @@ import { LocaleToggle } from "@/components/locale-toggle";
 import { getCurrentProfile } from "@/lib/data/profile";
 import { getI18n } from "@/lib/i18n/server";
 import { pubCopy } from "@/lib/i18n/publicaciones";
+import { contarPendientes } from "@/lib/social/panel";
 import "@/app/admin/admin.scss";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -16,6 +17,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
   const { t, locale } = await getI18n();
   const roleLabel = t.common[`role_${profile.role}` as const];
+  const pc = pubCopy[locale];
+  const pendientes = profile.role === "administrador" ? await contarPendientes() : null;
 
   return (
     <div className="axr-admin">
@@ -39,7 +42,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               {/* Sin clave en el diccionario general: la página es nueva y su
                   texto vive en lib/i18n/editor.ts. */}
               <Link href="/admin/ia">IA</Link>
-              <Link href="/admin/publicaciones">{pubCopy[locale].nav}</Link>
+              {/* Publicaciones lleva sus apartados a la vista, con lo que
+                  espera en cada uno: nada de secciones escondidas. */}
+              <Link href="/admin/publicaciones">{pc.nav}</Link>
+              <div className="axr-admin__sub">
+                <Link href="/admin/publicaciones/revisar">
+                  {pc.uReview}
+                  {pendientes!.revisar ? <span className="axr-admin__badge axr-admin__badge--alert">{pendientes!.revisar}</span> : null}
+                </Link>
+                <Link href="/admin/publicaciones/calendario">{pc.tabCalendar}</Link>
+                <Link href="/admin/publicaciones/nevera">
+                  {pc.tabFridge}
+                  {pendientes!.nevera ? <span className="axr-admin__badge">{pendientes!.nevera}</span> : null}
+                </Link>
+                <Link href="/admin/publicaciones/nueva">+ {pc.new}</Link>
+              </div>
             </>
           ) : null}
         </nav>

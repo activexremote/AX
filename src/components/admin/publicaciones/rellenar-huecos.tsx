@@ -7,16 +7,16 @@ import { rellenarHuecos } from "@/app/admin/publicaciones/actions";
 import { fill, type PubCopy } from "@/lib/i18n/publicaciones";
 
 /** Reparte la nevera por los huecos vacíos y dice cuántas ha colocado. */
-export function RellenarHuecos({ copy, label }: { copy: PubCopy; label?: string }) {
+export function RellenarHuecos({ copy, label, ghost }: { copy: PubCopy; label?: string; ghost?: boolean }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [msg, setMsg] = useState<string | null>(null);
 
   return (
-    <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
+    <span className="axr-pubfill">
       <button
         type="button"
-        className="axr-btn"
+        className={`axr-btn${ghost ? " axr-btn--ghost" : ""}`}
         disabled={pending}
         onClick={() =>
           startTransition(async () => {
@@ -29,7 +29,7 @@ export function RellenarHuecos({ copy, label }: { copy: PubCopy; label?: string 
       >
         {pending ? copy.fridgeFilling : (label ?? copy.calFill)}
       </button>
-      {msg ? <span style={{ fontSize: "0.8125rem" }}>{msg}</span> : null}
-    </div>
+      {msg ? <span className="axr-pubfill__msg" role="status">{msg}</span> : null}
+    </span>
   );
 }

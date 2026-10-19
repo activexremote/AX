@@ -8,11 +8,13 @@ import {
   borrarPublicacion,
   guardarEnNevera,
   guardarVariante,
+  programarEnProximoHueco,
   programarVariante,
   quitarImagen,
   regenerarCanal,
 } from "@/app/admin/publicaciones/actions";
 import { EditorBlog, blogAForm, formABlog, type BlogForm } from "@/components/admin/publicaciones/editor-blog";
+import { Icono } from "@/components/admin/publicaciones/iconos";
 import { SelectorImagenes } from "@/components/admin/publicaciones/nueva-publicacion";
 import { VistaBlog, VistaLinkedIn, VistaX } from "@/components/admin/publicaciones/vistas-previas";
 import { articuloDesdeBlog } from "@/lib/social/blog";
@@ -94,18 +96,44 @@ function EditorLinkedIn({ body, onChange, copy, disabled }: { body: LinkedInBody
 
 // ── Una versión: editar, regenerar, programar ──────────────
 
+export type EstadoCanal = { errores: number; avisos: number; dirty: boolean };
+export type CuentaVista = { nombre: string | null; usuario: string | null; avatar: string | null };
+
+/** Escrita → revisada → con fecha (o en la nevera) → publicada. */
+function Progreso({ status, copy }: { status: SocialVariant["status"]; copy: PubCopy }) {
+  const paso = status === "publicado" ? 4 : status === "programado" || status === "nevera" ? 3 : 1;
+  const pasos = [copy.uStepWritten, copy.uStepReviewed, status === "nevera" ? copy.status_nevera : copy.uStepScheduled, copy.uStepPublished];
+  return (
+    <ol className="axr-studio__steps" aria-label={copy.uProgress}>
+      {pasos.map((p, i) => (
+        <li key={p} className={i < paso ? "is-done" : i === paso ? "is-now" : ""}>
+          <span>{i < paso ? <Icono n="ok" size={12} /> : i + 1}</span>
+          {p}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 export function EditorVariante({
   variant,
   images,
   language,
   copy,
   locale,
+  proximoHueco,
+  cuenta,
+  onEstado,
 }: {
   variant: SocialVariant;
   images: SocialImage[];
   language: "es" | "en";
   copy: PubCopy;
   locale: string;
+  /** Primer hueco libre del ritmo de este canal (ISO), si lo hay. */
+  proximoHueco: string | null;
+  cuenta?: CuentaVista | null;
+  onEstado?: (e: EstadoCanal) => void;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -113,6 +141,7 @@ export function EditorVariante({
   const [dirty, setDirty] = useState(false);
   const [instr, setInstr] = useState("");
   const [cuando, setCuando] = useState("");
+  const [panel, setPanel] = useState<"regenerar" | "programar" | null>(null);
 
   const channel = variant.channel;
   const [x, setX] = useState<XBody>(() => parseBody("x", variant.body));
@@ -129,19 +158,34 @@ export function EditorVariante({
   const publicado = variant.status === "publicado";
   const programado = variant.status === "programado";
   const enNevera = variant.status === "nevera";
-  const hayErrores = avisos.some((a) => a.nivel === "error");
+  const errores = avisos.filter((a) => a.nivel === "error").length;
+  const hayErrores = errores > 0;
+
+  // Las pestañas enseñan si el canal tiene errores o cambios sin guardar.
+  useEffect(() => {
+    onEstado?.({ errores, avisos: avisos.length - errores, dirty });
+  }, [errores, avisos.length, dirty, onEstado]);
 
   // La fecha por defecto se calcula en el navegador, en su hora: en el
   // servidor (UTC) saldría otra y React se quejaría al hidratar.
   useEffect(() => {
-    if (variant.scheduled_at) setCuando(aLocal(new Date(variant.scheduled_at)));
+    const base = variant.scheduled_at ?? proximoHueco;
+    if (base) setCuando(aLocal(new Date(base)));
     else {
       const d = new Date();
       d.setDate(d.getDate() + 1);
       d.setHours(10, 0, 0, 0);
       setCuando(aLocal(d));
     }
-  }, [variant.scheduled_at]);
+  }, [variant.scheduled_at, proximoHueco]);
+
+  // Avisar antes de salir con cambios sin guardar.
+  useEffect(() => {
+    if (!dirty) return;
+    const h = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", h);
+    return () => window.removeEventListener("beforeunload", h);
+  }, [dirty]);
 
   function cambia<T>(set: (v: T) => void) {
     return (v: T) => {
@@ -151,55 +195,64 @@ export function EditorVariante({
     };
   }
 
-  function ejecutar(fn: () => Promise<{ ok?: boolean; error?: string }>, okText?: string) {
+  /**
+   * Ejecuta una acción guardando antes lo que haya sin guardar: programar
+   * lo que se ve en pantalla, no la última versión guardada.
+   */
+  function ejecutar(fn: () => Promise<{ ok?: boolean; error?: string; cuando?: string }>, okText?: string | ((r: { cuando?: string }) => string)) {
     setMsg(null);
     startTransition(async () => {
+      if (dirty) {
+        const g = await guardarVariante(variant.id, actual);
+        if (g.error) {
+          setMsg({ ok: false, text: g.error });
+          return;
+        }
+        setDirty(false);
+      }
       const r = await fn();
       if (r.error) setMsg({ ok: false, text: r.error });
       else {
-        if (okText) setMsg({ ok: true, text: okText });
+        setPanel(null);
+        if (okText) setMsg({ ok: true, text: typeof okText === "function" ? okText(r) : okText });
         router.refresh();
       }
     });
   }
 
-  const guardar = () =>
-    ejecutar(async () => {
-      const r = await guardarVariante(variant.id, actual);
-      if (!r.error) setDirty(false);
-      return r;
-    }, copy.saved);
-
-  const fecha = (iso: string) => new Date(iso).toLocaleString(locale, { dateStyle: "full", timeStyle: "short" });
+  const guardar = () => ejecutar(async () => ({ ok: true }), copy.saved);
+  const fecha = (iso: string) => new Date(iso).toLocaleString(locale, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
   return (
-    <div className="axr-admin-card axr-pub-variant">
-      <div className="axr-pub-variant__head">
-        <h2>{NOMBRE_CANAL[channel]}</h2>
-        <span className={`axr-pub-pill axr-pub-pill--${variant.status}`}>
-          {copy[`status_${variant.status}`]}
-          {programado && variant.scheduled_at ? ` · ${fecha(variant.scheduled_at)}` : null}
-          {publicado && variant.published_at ? ` · ${fecha(variant.published_at)}` : null}
-        </span>
+    <div className="axr-studio">
+      <div className="axr-studio__top">
+        <Progreso status={variant.status} copy={copy} />
+        {programado && variant.scheduled_at ? (
+          <span className="axr-studio__when">
+            <Icono n="reloj" size={14} /> {fill(copy.uGoesOut, fecha(variant.scheduled_at))}
+          </span>
+        ) : null}
+        {publicado && variant.published_at ? (
+          <span className="axr-studio__when">
+            <Icono n="ok" size={14} /> {fill(copy.uWentOut, fecha(variant.published_at))}
+            {variant.external_url ? (
+              <a href={variant.external_url} target="_blank" rel="noreferrer">
+                {copy.uSeePost} ↗
+              </a>
+            ) : null}
+          </span>
+        ) : null}
       </div>
 
       {variant.status === "error" && variant.error ? <div className="axr-login__error">{variant.error}</div> : null}
-      {publicado && variant.external_url ? (
-        <p className="axr-pub-meta">
-          <a href={variant.external_url} target="_blank" rel="noreferrer">
-            {variant.external_url}
-          </a>
-        </p>
-      ) : null}
 
-      {/* Editor a un lado y, al otro, cómo quedará publicado. En pantallas
-          estrechas, uno debajo del otro. */}
       <div className={`axr-pub-split axr-pub-split--${channel}`}>
         <div className="axr-pub-split__edit">
           {channel === "x" ? <EditorX body={x} onChange={cambia(setX)} copy={copy} disabled={publicado} /> : null}
           {channel === "linkedin" ? <EditorLinkedIn body={li} onChange={cambia(setLi)} copy={copy} disabled={publicado} /> : null}
           {channel === "blog" ? <EditorBlog form={blog} onChange={cambia(setBlog)} copy={copy} locale={locale} disabled={publicado} /> : null}
-
+        </div>
+        <div className="axr-pub-split__preview">
           <ul className="axr-pub-checks">
             {avisos.length === 0 ? <li className="is-ok">{copy.checksOk}</li> : null}
             {avisos.map((a, i) => (
@@ -208,77 +261,142 @@ export function EditorVariante({
               </li>
             ))}
           </ul>
-        </div>
-        <div className="axr-pub-split__preview">
-          {channel === "x" ? <VistaX body={x} images={images} copy={copy} /> : null}
-          {channel === "linkedin" ? <VistaLinkedIn body={li} images={images} copy={copy} /> : null}
+          {channel === "x" ? <VistaX body={x} images={images} copy={copy} cuenta={cuenta} /> : null}
+          {channel === "linkedin" ? <VistaLinkedIn body={li} images={images} copy={copy} cuenta={cuenta} /> : null}
           {articulo ? <VistaBlog article={articulo} variantId={variant.id} copy={copy} /> : null}
         </div>
       </div>
 
-      {msg ? (
-        <div className={msg.ok ? "axr-login__ok" : "axr-login__error"} style={{ marginTop: "0.75rem" }}>
-          {msg.text}
-        </div>
-      ) : null}
-
       {!publicado ? (
-        <>
-          <div className="axr-pub-variant__sub">{copy.regenHint}</div>
-          <div className="axr-pub-variant__bar" style={{ marginTop: 0, paddingTop: 0, border: 0 }}>
-            <button type="button" className="axr-btn" onClick={guardar} disabled={pending || !dirty}>
-              {pending ? copy.saving : dirty ? copy.save : copy.saved}
-            </button>
-            <input type="text" value={instr} onChange={(e) => setInstr(e.target.value)} placeholder={copy.regenPlaceholder} maxLength={1000} />
-            <button
-              type="button"
-              className="axr-btn axr-btn--ghost"
-              disabled={pending}
-              onClick={() => ejecutar(() => regenerarCanal(variant.post_id, channel, instr))}
-            >
-              {pending ? copy.regenerating : copy.regenerate}
-            </button>
-          </div>
-          <div className="axr-pub-variant__sub">{copy.scheduleHint}</div>
-          <div className="axr-pub-variant__bar" style={{ marginTop: 0, paddingTop: 0, border: 0 }}>
-            {/* Programada: sólo se puede deshacer. Por revisar o en la nevera:
-                se le pone fecha; y lo que está por revisar puede ir a la nevera. */}
-            {programado ? (
-              <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={() => ejecutar(() => programarVariante(variant.id, null))}>
-                {copy.unschedule}
-              </button>
-            ) : (
-              <>
-                <input type="datetime-local" value={cuando} onChange={(e) => setCuando(e.target.value)} />
+        <div className="axr-studio__bar">
+          {panel === "regenerar" ? (
+            <div className="axr-studio__drawer">
+              <label htmlFor={`regen-${variant.id}`}>{copy.regenHint}</label>
+              <div>
+                <input
+                  id={`regen-${variant.id}`}
+                  type="text"
+                  value={instr}
+                  onChange={(e) => setInstr(e.target.value)}
+                  placeholder={copy.regenPlaceholder}
+                  maxLength={1000}
+                  autoFocus
+                />
                 <button
                   type="button"
                   className="axr-btn"
-                  disabled={pending || dirty || !cuando || hayErrores}
-                  title={dirty ? copy.saveFirst : undefined}
-                  onClick={() => ejecutar(() => programarVariante(variant.id, new Date(cuando).toISOString()))}
+                  disabled={pending}
+                  onClick={() => {
+                    setMsg(null);
+                    startTransition(async () => {
+                      const r = await regenerarCanal(variant.post_id, channel, instr);
+                      if (r.error) setMsg({ ok: false, text: r.error });
+                      else router.refresh();
+                    });
+                  }}
+                >
+                  <Icono n="chispa" /> {pending ? copy.regenerating : copy.regenerate}
+                </button>
+              </div>
+              {dirty ? <small>{copy.uRegenLoses}</small> : null}
+            </div>
+          ) : null}
+
+          {panel === "programar" ? (
+            <div className="axr-studio__drawer">
+              {proximoHueco ? (
+                <button
+                  type="button"
+                  className="axr-studio__slot"
+                  disabled={pending || hayErrores}
+                  onClick={() => ejecutar(() => programarEnProximoHueco(variant.id), (r) => fill(copy.uScheduledOk, r.cuando ? fecha(r.cuando) : ""))}
+                >
+                  <Icono n="chispa" size={18} />
+                  <span>
+                    <strong>{copy.uNextSlot}</strong>
+                    <em>{fecha(proximoHueco)}</em>
+                  </span>
+                  <Icono n="flecha" size={16} />
+                </button>
+              ) : null}
+              <div className="axr-studio__custom">
+                <label htmlFor={`cuando-${variant.id}`}>{copy.uOrPick}</label>
+                <input id={`cuando-${variant.id}`} type="datetime-local" value={cuando} onChange={(e) => setCuando(e.target.value)} />
+                <button
+                  type="button"
+                  className="axr-btn axr-btn--ghost"
+                  disabled={pending || !cuando || hayErrores}
+                  onClick={() => ejecutar(() => programarVariante(variant.id, new Date(cuando).toISOString()), fill(copy.uScheduledOk, fecha(new Date(cuando).toISOString())))}
                 >
                   {copy.schedule}
                 </button>
+              </div>
+            </div>
+          ) : null}
+
+          {msg ? (
+            <div className={`axr-studio__msg ${msg.ok ? "is-ok" : "is-error"}`} role="status">
+              <Icono n={msg.ok ? "ok" : "error"} size={14} /> {msg.text}
+            </div>
+          ) : null}
+
+          <div className="axr-studio__actions">
+            <span className={`axr-studio__state${dirty ? " is-dirty" : ""}`}>
+              {dirty ? copy.unsaved : copy.uAllSaved}
+              {hayErrores ? <em> · {fill(copy.uErrors, errores)}</em> : null}
+            </span>
+            <button type="button" className="axr-btn axr-btn--ghost" onClick={guardar} disabled={pending || !dirty}>
+              {pending && dirty ? copy.saving : copy.save}
+            </button>
+            <button
+              type="button"
+              className={`axr-btn axr-btn--ghost${panel === "regenerar" ? " is-on" : ""}`}
+              onClick={() => setPanel(panel === "regenerar" ? null : "regenerar")}
+              aria-expanded={panel === "regenerar"}
+            >
+              <Icono n="chispa" /> {copy.regenerate}
+            </button>
+            <span className="axr-studio__spacer" />
+            {programado ? (
+              <>
+                <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={() => setPanel(panel === "programar" ? null : "programar")}>
+                  {copy.uChangeDate}
+                </button>
+                <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={() => ejecutar(() => programarVariante(variant.id, null), copy.uUnscheduled)}>
+                  {copy.uRemoveDate}
+                </button>
+              </>
+            ) : (
+              <>
                 {enNevera ? (
-                  <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={() => ejecutar(() => programarVariante(variant.id, null))}>
-                    {copy.unschedule}
+                  <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={() => ejecutar(() => programarVariante(variant.id, null), copy.uOutOfFridge)}>
+                    {copy.uTakeOut}
                   </button>
                 ) : (
                   <button
                     type="button"
                     className="axr-btn axr-btn--ghost"
-                    disabled={pending || dirty || hayErrores}
-                    onClick={() => ejecutar(() => guardarEnNevera(variant.id))}
+                    disabled={pending || hayErrores}
+                    title={hayErrores ? copy.uFixFirst : copy.uFridgeHint}
+                    onClick={() => ejecutar(() => guardarEnNevera(variant.id), copy.uInFridge)}
                   >
-                    {copy.toFridge}
+                    <Icono n="nevera" /> {copy.toFridge}
                   </button>
                 )}
-                {dirty ? <span className="axr-pub-count">{copy.saveFirst}</span> : null}
+                <button
+                  type="button"
+                  className="axr-btn"
+                  disabled={pending || hayErrores}
+                  title={hayErrores ? copy.uFixFirst : undefined}
+                  onClick={() => setPanel(panel === "programar" ? null : "programar")}
+                  aria-expanded={panel === "programar"}
+                >
+                  <Icono n="calendario" /> {copy.schedule}
+                </button>
               </>
             )}
           </div>
-          <p className="axr-pub-note">{copy.publishNote}</p>
-        </>
+        </div>
       ) : null}
     </div>
   );
@@ -292,12 +410,11 @@ export function GenerarCanal({ postId, channel, copy }: { postId: string; channe
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <div className="axr-admin-card axr-pub-variant">
-      <div className="axr-pub-variant__head">
-        <h2>{NOMBRE_CANAL[channel]}</h2>
-      </div>
+    <div className="axr-pubempty axr-pubempty--big">
+      <Icono n="chispa" size={28} />
+      <strong>{fill(copy.uNotGenerated, NOMBRE_CANAL[channel])}</strong>
+      <span>{copy.uNotGeneratedHint}</span>
       {error ? <div className="axr-login__error">{error}</div> : null}
-      <p style={{ margin: "0 0 1rem", color: "var(--axr-text-helper)", fontSize: "0.875rem" }}>{copy.notGenerated}</p>
       <button
         type="button"
         className="axr-btn"
@@ -311,10 +428,123 @@ export function GenerarCanal({ postId, channel, copy }: { postId: string; channe
           })
         }
       >
-        {pending ? copy.regenerating : copy.generateChannel}
+        <Icono n="chispa" /> {pending ? copy.regenerating : fill(copy.uGenerateFor, NOMBRE_CANAL[channel])}
       </button>
     </div>
   );
+}
+
+// ── Las pestañas de canal ──────────────────────────────────
+
+export type CanalEstudio = {
+  channel: SocialChannel;
+  variant: SocialVariant | null;
+  /** Comprobaciones de la versión guardada, para la pestaña antes de que el editor monte. */
+  inicial: EstadoCanal;
+};
+
+export function Estudio({
+  postId,
+  canales,
+  inicial,
+  images,
+  language,
+  copy,
+  locale,
+  proximoHueco,
+  cuentas,
+}: {
+  postId: string;
+  canales: CanalEstudio[];
+  inicial: SocialChannel;
+  images: SocialImage[];
+  language: "es" | "en";
+  copy: PubCopy;
+  locale: string;
+  proximoHueco: Record<SocialChannel, string | null>;
+  cuentas: Partial<Record<SocialChannel, CuentaVista | null>>;
+}) {
+  const [activo, setActivo] = useState<SocialChannel>(inicial);
+  const [estados, setEstados] = useState<Record<string, EstadoCanal>>(() => Object.fromEntries(canales.map((c) => [c.channel, c.inicial])));
+  const setters = useMemo(
+    () =>
+      Object.fromEntries(
+        canales.map((c) => [c.channel, (e: EstadoCanal) => setEstados((prev) => (sameEstado(prev[c.channel], e) ? prev : { ...prev, [c.channel]: e }))]),
+      ) as Record<SocialChannel, (e: EstadoCanal) => void>,
+    [canales],
+  );
+
+  const elegir = (c: SocialChannel) => {
+    setActivo(c);
+    // La pestaña queda en la URL (para volver o compartirla) sin recargar.
+    const url = new URL(window.location.href);
+    url.searchParams.set("canal", c);
+    window.history.replaceState(null, "", url);
+  };
+
+  return (
+    <section className="axr-studio-wrap">
+      <div className="axr-studio-tabs" role="tablist" aria-label={copy.fChannels}>
+        {canales.map(({ channel, variant }) => {
+          const e = estados[channel];
+          const icono = !variant ? null : variant.status === "error" || e?.errores ? "error" : e?.avisos ? "aviso" : "ok";
+          return (
+            <button
+              key={channel}
+              type="button"
+              role="tab"
+              id={`tab-${channel}`}
+              aria-selected={activo === channel}
+              aria-controls={`panel-${channel}`}
+              className={`axr-studio-tab axr-studio-tab--${channel}${activo === channel ? " is-active" : ""}`}
+              onClick={() => elegir(channel)}
+            >
+              <span className={`axr-pub-dot axr-pub-dot--${channel}`} />
+              <strong>{NOMBRE_CANAL[channel]}</strong>
+              {variant ? (
+                <span className={`axr-pubstate axr-pubstate--${variant.status}`}>{copy[`status_${variant.status}`]}</span>
+              ) : (
+                <span className="axr-pubstate">{copy.uNotYet}</span>
+              )}
+              {icono ? (
+                <span className={`axr-studio-tab__check is-${icono}`} title={e?.errores ? fill(copy.uErrors, e.errores) : e?.avisos ? fill(copy.uWarnings, e.avisos) : copy.uReady}>
+                  <Icono n={icono} size={14} />
+                </span>
+              ) : null}
+              {e?.dirty ? <span className="axr-studio-tab__dirty" title={copy.unsaved} /> : null}
+            </button>
+          );
+        })}
+      </div>
+
+      {canales.map(({ channel, variant }) => (
+        // Todos montados y sólo uno a la vista: cambiar de pestaña no pierde lo escrito.
+        <div key={channel} role="tabpanel" id={`panel-${channel}`} aria-labelledby={`tab-${channel}`} hidden={activo !== channel} className="axr-studio-panel">
+          {variant ? (
+            <EditorVariante
+              // La clave cambia cuando cambia el contenido guardado: tras
+              // regenerar, el editor se vuelve a montar con el texto nuevo.
+              key={`${variant.id}-${variant.updated_at}`}
+              variant={variant}
+              images={images}
+              language={language}
+              copy={copy}
+              locale={locale}
+              proximoHueco={proximoHueco[channel]}
+              cuenta={cuentas[channel]}
+              onEstado={setters[channel]}
+            />
+          ) : (
+            <GenerarCanal postId={postId} channel={channel} copy={copy} />
+          )}
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function sameEstado(a: EstadoCanal | undefined, b: EstadoCanal) {
+  return a !== undefined && a.errores === b.errores && a.avisos === b.avisos && a.dirty === b.dirty;
 }
 
 // ── Imágenes y borrado ─────────────────────────────────────

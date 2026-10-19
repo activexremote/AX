@@ -298,18 +298,21 @@ async function diasOcupados(supabase: Supabase, channel: SocialChannel): Promise
  * Sólo mira los próximos 90 días: más allá, mejor decidir con calma.
  * Con `soloId`, coloca sólo esa versión en el primer hueco libre de su canal.
  */
-async function colocar(supabase: Supabase, soloId?: string): Promise<{ colocadas: number; sinHueco: number }> {
+async function colocar(supabase: Supabase, soloId?: string): Promise<{ colocadas: number; sinHueco: number; cuando?: string }> {
   const settings = await publicSocialSettings();
   const ritmo = parseRitmo(settings.ritmo);
   const ahora = new Date();
 
-  let q = supabase.from("social_variants").select("*").eq("status", "nevera").order("updated_at", { ascending: true });
-  if (soloId) q = q.eq("id", soloId);
+  // Sin `soloId`, se reparte la nevera. Con él, esa versión vaya de donde
+  // venga (por revisar, nevera o con error): es el «al próximo hueco» del editor.
+  let q = supabase.from("social_variants").select("*").order("updated_at", { ascending: true });
+  q = soloId ? q.eq("id", soloId).in("status", ["nevera", "borrador", "error"]) : q.eq("status", "nevera");
   const { data } = await q;
   const nevera = (data ?? []) as SocialVariant[];
 
   let colocadas = 0;
   let sinHueco = 0;
+  let cuando: string | undefined;
   for (const c of CANALES) {
     const cola = nevera.filter((v) => v.channel === c && !revisar(c, v.body).some((a) => a.nivel === "error"));
     if (!cola.length) continue;
@@ -321,11 +324,12 @@ async function colocar(supabase: Supabase, soloId?: string): Promise<{ colocadas
         sinHueco++;
         continue;
       }
-      await supabase.from("social_variants").update({ status: "programado", scheduled_at: h.instante.toISOString() }).eq("id", v.id);
+      cuando = h.instante.toISOString();
+      await supabase.from("social_variants").update({ status: "programado", scheduled_at: cuando, error: null }).eq("id", v.id);
       colocadas++;
     }
   }
-  return { colocadas, sinHueco };
+  return { colocadas, sinHueco, cuando };
 }
 
 export async function rellenarHuecos() {
@@ -339,11 +343,14 @@ export async function programarEnProximoHueco(id: string) {
   const { supabase } = await assertAdmin();
   const v = await variante(supabase, id);
   if (!v) return { error: "No existe." };
-  if (v.status !== "nevera") return { error: "Sólo se coloca automáticamente lo que está en la nevera." };
+  if (v.status === "publicado" || v.status === "programado") return { error: "Ya tiene fecha." };
+  const errores = revisar(v.channel, v.body).filter((a) => a.nivel === "error");
+  if (errores.length) return { error: `Corrige antes: ${errores.map((a) => a.texto).join(" ")}` };
   const r = await colocar(supabase, id);
+  revalidatePath(`/admin/publicaciones/${v.post_id}`);
   revalidatePath("/admin/publicaciones", "layout");
   if (!r.colocadas) return { error: "No hay ningún hueco libre en los próximos 90 días. Revisa el ritmo o ponle fecha a mano." };
-  return { ok: true };
+  return { ok: true, cuando: r.cuando };
 }
 
 // ── Imágenes ──────────────────────────────────────────────
