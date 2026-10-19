@@ -348,6 +348,11 @@ export interface SocialSettings {
   /** ⚠︎ Tampoco ésta. */
   uploadpost_api_key: string | null;
   uploadpost_user: string | null;
+  /** Días ISO y hora de Madrid por canal (ver lib/social/calendario.ts). */
+  cadence: unknown;
+  alert_days: number;
+  monthly_quota: number;
+  min_balance_usd: number;
   last_test_ok: boolean | null;
   last_test_at: string | null;
   last_test_detail: string | null;
@@ -356,7 +361,7 @@ export interface SocialSettings {
 }
 
 export type SocialChannel = "x" | "linkedin" | "blog";
-export type SocialStatus = "borrador" | "programado" | "publicado" | "error";
+export type SocialStatus = "borrador" | "nevera" | "programado" | "publicado" | "error";
 
 export interface SocialImage {
   path: string;
@@ -390,4 +395,18 @@ export interface SocialVariant {
   external_url: string | null;
   error: string | null;
   updated_at: string;
+}
+
+export interface SocialUsage {
+  id: string;
+  post_id: string | null;
+  channels: SocialChannel[];
+  model: string;
+  input_hit: number;
+  input_miss: number;
+  output_tokens: number;
+  peak: boolean;
+  cost_usd: number;
+  created_by: string | null;
+  created_at: string;
 }

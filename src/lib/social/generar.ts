@@ -1,6 +1,7 @@
 import "server-only";
 
 import { CANALES, GUIA, parseBody, type BodyFor } from "@/lib/social/canales";
+import { costeUsd, esHoraPunta, type Uso } from "@/lib/social/costes";
 import { deepseekClient } from "@/lib/social/settings";
 import type { SocialChannel } from "@/lib/supabase/types";
 
@@ -83,6 +84,8 @@ export type Material = {
 export type Resultado = {
   bodies: Partial<{ [C in SocialChannel]: BodyFor[C] }>;
   error?: string;
+  /** Lo que ha costado la llamada. Llega aunque la respuesta no sirva: se paga igual. */
+  gasto?: { model: string; uso: Uso; peak: boolean; usd: number };
 };
 
 function sistema(canales: SocialChannel[], language: "es" | "en"): string {
@@ -154,17 +157,28 @@ export async function generar(m: Material, canales: SocialChannel[]): Promise<Re
       ...({ thinking: { type: "disabled" } } as object),
     });
 
+    // DeepSeek separa la entrada que ya tenía en caché (casi gratis) de la
+    // que no. El SDK de OpenAI no conoce esos campos: se leen a mano.
+    const u = (res.usage ?? {}) as { prompt_tokens?: number; completion_tokens?: number; prompt_cache_hit_tokens?: number; prompt_cache_miss_tokens?: number };
+    const uso: Uso = {
+      hit: u.prompt_cache_hit_tokens ?? 0,
+      miss: u.prompt_cache_miss_tokens ?? Math.max(0, (u.prompt_tokens ?? 0) - (u.prompt_cache_hit_tokens ?? 0)),
+      out: u.completion_tokens ?? 0,
+    };
+    const peak = esHoraPunta(new Date());
+    const gasto = { model: cfg.model, uso, peak, usd: costeUsd(cfg.model, uso, peak) };
+
     const choice = res.choices[0];
     const texto = choice?.message?.content ?? "";
     if (choice?.finish_reason === "length") {
-      return { bodies: {}, error: "La respuesta se ha cortado por larga. Vuelve a intentarlo o genera los canales por separado." };
+      return { bodies: {}, gasto, error: "La respuesta se ha cortado por larga. Vuelve a intentarlo o genera los canales por separado." };
     }
 
     let json: Record<string, unknown>;
     try {
       json = JSON.parse(texto);
     } catch {
-      return { bodies: {}, error: "DeepSeek no ha devuelto un JSON válido. Vuelve a intentarlo." };
+      return { bodies: {}, gasto, error: "DeepSeek no ha devuelto un JSON válido. Vuelve a intentarlo." };
     }
 
     const bodies: Resultado["bodies"] = {};
@@ -172,7 +186,7 @@ export async function generar(m: Material, canales: SocialChannel[]): Promise<Re
       if (json[c]) (bodies as Record<string, unknown>)[c] = parseBody(c, json[c]);
     }
     const faltan = lista.filter((c) => !bodies[c]);
-    return faltan.length ? { bodies, error: `No ha llegado la versión de: ${faltan.join(", ")}.` } : { bodies };
+    return faltan.length ? { bodies, gasto, error: `No ha llegado la versión de: ${faltan.join(", ")}.` } : { bodies, gasto };
   } catch (e) {
     const err = e as { status?: number; message?: string };
     const porEstado: Record<number, string> = {

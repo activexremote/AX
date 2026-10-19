@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   anadirImagenes,
   borrarPublicacion,
+  guardarEnNevera,
   guardarVariante,
   programarVariante,
   quitarImagen,
@@ -24,10 +25,9 @@ import {
   type LinkedInBody,
   type XBody,
 } from "@/lib/social/canales";
-import type { PubCopy } from "@/lib/i18n/publicaciones";
+import { fill, type PubCopy } from "@/lib/i18n/publicaciones";
 import type { SocialChannel, SocialImage, SocialVariant } from "@/lib/supabase/types";
 
-const fill = (tpl: string, n: number) => tpl.replace("{n}", n.toLocaleString());
 const palabras = (s: string) => s.split(/\s+/).filter(Boolean).length;
 
 // ── El blog se edita en texto ──────────────────────────────
@@ -250,6 +250,8 @@ export function EditorVariante({ variant, copy, locale }: { variant: SocialVaria
   const avisos = useMemo(() => revisar(channel, actual), [channel, actual]);
   const publicado = variant.status === "publicado";
   const programado = variant.status === "programado";
+  const enNevera = variant.status === "nevera";
+  const hayErrores = avisos.some((a) => a.nivel === "error");
 
   // La fecha por defecto se calcula en el navegador, en su hora: en el
   // servidor (UTC) saldría otra y React se quejaría al hidratar.
@@ -333,7 +335,8 @@ export function EditorVariante({ variant, copy, locale }: { variant: SocialVaria
 
       {!publicado ? (
         <>
-          <div className="axr-pub-variant__bar">
+          <div className="axr-pub-variant__sub">{copy.regenHint}</div>
+          <div className="axr-pub-variant__bar" style={{ marginTop: 0, paddingTop: 0, border: 0 }}>
             <button type="button" className="axr-btn" onClick={guardar} disabled={pending || !dirty}>
               {pending ? copy.saving : dirty ? copy.save : copy.saved}
             </button>
@@ -347,7 +350,10 @@ export function EditorVariante({ variant, copy, locale }: { variant: SocialVaria
               {pending ? copy.regenerating : copy.regenerate}
             </button>
           </div>
-          <div className="axr-pub-variant__bar">
+          <div className="axr-pub-variant__sub">{copy.scheduleHint}</div>
+          <div className="axr-pub-variant__bar" style={{ marginTop: 0, paddingTop: 0, border: 0 }}>
+            {/* Programada: sólo se puede deshacer. Por revisar o en la nevera:
+                se le pone fecha; y lo que está por revisar puede ir a la nevera. */}
             {programado ? (
               <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={() => ejecutar(() => programarVariante(variant.id, null))}>
                 {copy.unschedule}
@@ -358,12 +364,26 @@ export function EditorVariante({ variant, copy, locale }: { variant: SocialVaria
                 <button
                   type="button"
                   className="axr-btn"
-                  disabled={pending || dirty || !cuando || avisos.some((a) => a.nivel === "error")}
+                  disabled={pending || dirty || !cuando || hayErrores}
                   title={dirty ? copy.saveFirst : undefined}
                   onClick={() => ejecutar(() => programarVariante(variant.id, new Date(cuando).toISOString()))}
                 >
                   {copy.schedule}
                 </button>
+                {enNevera ? (
+                  <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={() => ejecutar(() => programarVariante(variant.id, null))}>
+                    {copy.unschedule}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="axr-btn axr-btn--ghost"
+                    disabled={pending || dirty || hayErrores}
+                    onClick={() => ejecutar(() => guardarEnNevera(variant.id))}
+                  >
+                    {copy.toFridge}
+                  </button>
+                )}
                 {dirty ? <span className="axr-pub-count">{copy.saveFirst}</span> : null}
               </>
             )}

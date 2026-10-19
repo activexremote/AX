@@ -6,7 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { CANALES, parseBody, revisar, slugify } from "@/lib/social/canales";
 import { leerFuente } from "@/lib/social/fuente";
 import { generar } from "@/lib/social/generar";
-import { testDeepseekKey } from "@/lib/social/settings";
+import { HORIZONTE, huecos, diaMadrid, parseRitmo } from "@/lib/social/calendario";
+import { publicSocialSettings, testDeepseekKey } from "@/lib/social/settings";
 import type { SocialChannel, SocialImage, SocialPost, SocialVariant } from "@/lib/supabase/types";
 
 // ══════════════════════════════════════════════════════════
@@ -69,6 +70,7 @@ function imagenesDe(formData: FormData): { files: File[]; alts: string[] } {
 /** Escribe con DeepSeek las versiones de los canales pedidos y las guarda. */
 async function escribirVariantes(
   supabase: Supabase,
+  userId: string,
   post: SocialPost,
   canales: SocialChannel[],
   opts: { instruction?: string; current?: Partial<Record<SocialChannel, unknown>> } = {},
@@ -84,6 +86,21 @@ async function escribirVariantes(
     },
     canales,
   );
+
+  // El gasto se apunta aunque la respuesta no haya servido: DeepSeek lo cobra.
+  if (r.gasto) {
+    await supabase.from("social_usage").insert({
+      post_id: post.id,
+      channels: canales,
+      model: r.gasto.model,
+      input_hit: r.gasto.uso.hit,
+      input_miss: r.gasto.uso.miss,
+      output_tokens: r.gasto.uso.out,
+      peak: r.gasto.peak,
+      cost_usd: r.gasto.usd,
+      created_by: userId,
+    });
+  }
 
   const filas = canales
     .filter((c) => r.bodies[c])
@@ -149,7 +166,7 @@ export async function crearPublicacion(formData: FormData): Promise<{ id?: strin
 
   // Si DeepSeek falla, la publicación queda creada igual: el editor ofrece
   // volver a generar sin repetir la subida ni la lectura del enlace.
-  const fallo = await escribirVariantes(supabase, conImagenes, canales);
+  const fallo = await escribirVariantes(supabase, userId, conImagenes, canales);
 
   revalidatePath("/admin/publicaciones");
   return { id: post.id, error: subida.error ?? fallo };
@@ -158,7 +175,7 @@ export async function crearPublicacion(formData: FormData): Promise<{ id?: strin
 // ── Regenerar un canal ────────────────────────────────────
 
 export async function regenerarCanal(postId: string, channel: SocialChannel, instruction: string) {
-  const { supabase } = await assertAdmin();
+  const { supabase, userId } = await assertAdmin();
   if (!CANALES.includes(channel)) return { error: "Canal desconocido." };
 
   const { data: post } = await supabase.from("social_posts").select("*").eq("id", postId).maybeSingle();
@@ -172,7 +189,7 @@ export async function regenerarCanal(postId: string, channel: SocialChannel, ins
     .maybeSingle();
   if (actual?.status === "publicado") return { error: "Ya está publicada: no se puede regenerar." };
 
-  const error = await escribirVariantes(supabase, post as SocialPost, [channel], {
+  const error = await escribirVariantes(supabase, userId, post as SocialPost, [channel], {
     instruction: instruction.trim().slice(0, 1_000) || undefined,
     current: actual?.body && Object.keys(actual.body).length ? { [channel]: actual.body } : undefined,
   });
@@ -238,7 +255,94 @@ export async function programarVariante(id: string, cuando: string | null) {
   }
 
   revalidatePath(`/admin/publicaciones/${v.post_id}`);
-  revalidatePath("/admin/publicaciones");
+  revalidatePath("/admin/publicaciones", "layout");
+  return { ok: true };
+}
+
+// ── La nevera ─────────────────────────────────────────────
+//
+// Lo que está revisado y listo pero aún no tiene fecha. Se le pone fecha a
+// mano, o se reparte sola por los huecos del ritmo con `rellenarHuecos`.
+
+export async function guardarEnNevera(id: string) {
+  const { supabase } = await assertAdmin();
+  const v = await variante(supabase, id);
+  if (!v) return { error: "No existe." };
+  if (v.status === "publicado") return { error: "Ya está publicada." };
+  const errores = revisar(v.channel, v.body).filter((a) => a.nivel === "error");
+  if (errores.length) return { error: `Corrige antes: ${errores.map((a) => a.texto).join(" ")}` };
+
+  await supabase.from("social_variants").update({ status: "nevera", scheduled_at: null, error: null }).eq("id", id);
+  revalidatePath(`/admin/publicaciones/${v.post_id}`);
+  revalidatePath("/admin/publicaciones", "layout");
+  return { ok: true };
+}
+
+/** Días de Madrid que ya tienen algo de ese canal (programado o publicado). */
+async function diasOcupados(supabase: Supabase, channel: SocialChannel): Promise<Set<string>> {
+  const { data } = await supabase
+    .from("social_variants")
+    .select("status, scheduled_at, published_at")
+    .eq("channel", channel)
+    .in("status", ["programado", "publicado"]);
+  return new Set(
+    ((data ?? []) as Pick<SocialVariant, "status" | "scheduled_at" | "published_at">[])
+      .map((v) => (v.status === "publicado" ? v.published_at : v.scheduled_at))
+      .filter((d): d is string => Boolean(d))
+      .map(diaMadrid),
+  );
+}
+
+/**
+ * Reparte la nevera por los huecos vacíos del ritmo, la más antigua primero.
+ * Sólo mira los próximos 90 días: más allá, mejor decidir con calma.
+ * Con `soloId`, coloca sólo esa versión en el primer hueco libre de su canal.
+ */
+async function colocar(supabase: Supabase, soloId?: string): Promise<{ colocadas: number; sinHueco: number }> {
+  const settings = await publicSocialSettings();
+  const ritmo = parseRitmo(settings.ritmo);
+  const ahora = new Date();
+
+  let q = supabase.from("social_variants").select("*").eq("status", "nevera").order("updated_at", { ascending: true });
+  if (soloId) q = q.eq("id", soloId);
+  const { data } = await q;
+  const nevera = (data ?? []) as SocialVariant[];
+
+  let colocadas = 0;
+  let sinHueco = 0;
+  for (const c of CANALES) {
+    const cola = nevera.filter((v) => v.channel === c && !revisar(c, v.body).some((a) => a.nivel === "error"));
+    if (!cola.length) continue;
+    const ocupados = await diasOcupados(supabase, c);
+    const libres = huecos(ritmo[c], ahora, Math.min(90, HORIZONTE)).filter((h) => !ocupados.has(h.dia));
+    for (const v of cola) {
+      const h = libres.shift();
+      if (!h) {
+        sinHueco++;
+        continue;
+      }
+      await supabase.from("social_variants").update({ status: "programado", scheduled_at: h.instante.toISOString() }).eq("id", v.id);
+      colocadas++;
+    }
+  }
+  return { colocadas, sinHueco };
+}
+
+export async function rellenarHuecos() {
+  const { supabase } = await assertAdmin();
+  const r = await colocar(supabase);
+  revalidatePath("/admin/publicaciones", "layout");
+  return { ok: true, ...r };
+}
+
+export async function programarEnProximoHueco(id: string) {
+  const { supabase } = await assertAdmin();
+  const v = await variante(supabase, id);
+  if (!v) return { error: "No existe." };
+  if (v.status !== "nevera") return { error: "Sólo se coloca automáticamente lo que está en la nevera." };
+  const r = await colocar(supabase, id);
+  revalidatePath("/admin/publicaciones", "layout");
+  if (!r.colocadas) return { error: "No hay ningún hueco libre en los próximos 90 días. Revisa el ritmo o ponle fecha a mano." };
   return { ok: true };
 }
 
@@ -306,7 +410,21 @@ export async function borrarPublicacion(postId: string) {
 export async function guardarAjustes(formData: FormData) {
   const { supabase, userId } = await assertAdmin();
 
+  const entero = (k: string, min: number, max: number, def: number) => {
+    const n = Number(formData.get(k));
+    return Number.isFinite(n) ? Math.min(max, Math.max(min, Math.round(n))) : def;
+  };
+  const cadence = parseRitmo(
+    Object.fromEntries(
+      CANALES.map((c) => [c, { days: formData.getAll(`days_${c}`).map(Number), hour: entero(`hour_${c}`, 0, 23, 10) }]),
+    ),
+  );
+
   const cambios: Record<string, unknown> = {
+    cadence,
+    alert_days: entero("alert_days", 1, 180, 14),
+    monthly_quota: entero("monthly_quota", 0, 100_000, 10),
+    min_balance_usd: Math.max(0, Number(formData.get("min_balance_usd")) || 0),
     deepseek_model: String(formData.get("deepseek_model") ?? "").trim() || "deepseek-flash",
     uploadpost_user: String(formData.get("uploadpost_user") ?? "").trim() || null,
     updated_at: new Date().toISOString(),
@@ -331,7 +449,7 @@ export async function guardarAjustes(formData: FormData) {
   const { error } = await supabase.from("social_settings").update(cambios).eq("id", "default");
   if (error) return { error: error.message };
 
-  revalidatePath("/admin/publicaciones/ajustes");
+  revalidatePath("/admin/publicaciones", "layout");
   return { ok: true };
 }
 

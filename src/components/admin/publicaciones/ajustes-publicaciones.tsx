@@ -4,13 +4,57 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { guardarAjustes, probarDeepseek } from "@/app/admin/publicaciones/actions";
-import type { PubCopy } from "@/lib/i18n/publicaciones";
+import { fill, type PubCopy } from "@/lib/i18n/publicaciones";
+import { CANALES, NOMBRE_CANAL } from "@/lib/social/canales";
+import type { RitmoCanal } from "@/lib/social/calendario";
 import type { PublicSocialSettings } from "@/lib/social/settings";
+import type { SocialChannel } from "@/lib/supabase/types";
 
 // Las claves NUNCA llegan aquí: sólo sus cuatro últimos caracteres. Un campo
 // vacío al guardar significa «déjala como está» (ver admin/ia).
 
 const MODELOS = ["deepseek-flash", "deepseek-v4-pro"];
+
+/** Los días y la hora de un canal. Los días van como casillas: L M X J V S D. */
+function Ritmo({ canal, inicial, copy }: { canal: SocialChannel; inicial: RitmoCanal; copy: PubCopy }) {
+  const [dias, setDias] = useState<number[]>(inicial.days);
+  return (
+    <div className="axr-pub-rhythm__row">
+      <strong>
+        <span className={`axr-pub-dot axr-pub-dot--${canal}`} /> {NOMBRE_CANAL[canal]}
+      </strong>
+      <div className="axr-pub-days" role="group" aria-label={copy.sDays}>
+        {copy.sWeekdays.map((d, i) => {
+          const n = i + 1;
+          const on = dias.includes(n);
+          return (
+            <label key={n} className={on ? "is-on" : undefined}>
+              <input
+                type="checkbox"
+                name={`days_${canal}`}
+                value={n}
+                checked={on}
+                onChange={(e) => setDias((prev) => (e.target.checked ? [...prev, n] : prev.filter((x) => x !== n)))}
+              />
+              {d}
+            </label>
+          );
+        })}
+      </div>
+      <label className="axr-pub-hour">
+        {copy.sHour}
+        <select name={`hour_${canal}`} defaultValue={inicial.hour}>
+          {Array.from({ length: 24 }, (_, h) => (
+            <option key={h} value={h}>
+              {String(h).padStart(2, "0")}:00
+            </option>
+          ))}
+        </select>
+      </label>
+      <small>{fill(copy.sPerMonth, Math.round((dias.length * 52) / 12))}</small>
+    </div>
+  );
+}
 
 export function AjustesPublicaciones({ settings, copy, locale }: { settings: PublicSocialSettings; copy: PubCopy; locale: string }) {
   const router = useRouter();
@@ -94,6 +138,38 @@ export function AjustesPublicaciones({ settings, copy, locale }: { settings: Pub
               ? `${new Date(settings.lastTestAt).toLocaleString(locale, { dateStyle: "short", timeStyle: "short" })} · ${settings.lastTestOk ? "✓" : "✕"} ${settings.lastTestDetail ?? ""}`
               : copy.sNever}
           </p>
+        </div>
+      </div>
+
+      <div className="axr-admin-card" id="ritmo">
+        <h2>{copy.sRhythm}</h2>
+        <p className="axr-pub-lead">{copy.sRhythmHint}</p>
+        <div className="axr-pub-rhythm">
+          {CANALES.map((c) => (
+            <Ritmo key={c} canal={c} inicial={settings.ritmo[c]} copy={copy} />
+          ))}
+        </div>
+      </div>
+
+      <div className="axr-admin-card">
+        <h2>{copy.sAlerts}</h2>
+        <div className="axr-form">
+          <div className="axr-form__row">
+            <label htmlFor="alert_days">{copy.sAlertDays}</label>
+            <input id="alert_days" name="alert_days" type="number" min={1} max={180} defaultValue={settings.alertDays} />
+            <small>{copy.sAlertDaysHint}</small>
+          </div>
+          <div className="axr-form__cols">
+            <div className="axr-form__row">
+              <label htmlFor="min_balance_usd">{copy.sMinBalance}</label>
+              <input id="min_balance_usd" name="min_balance_usd" type="number" min={0} step="0.5" defaultValue={settings.minBalanceUsd} />
+            </div>
+            <div className="axr-form__row">
+              <label htmlFor="monthly_quota">{copy.sQuota}</label>
+              <input id="monthly_quota" name="monthly_quota" type="number" min={0} defaultValue={settings.monthlyQuota} />
+              <small>{copy.sQuotaHint}</small>
+            </div>
+          </div>
         </div>
       </div>
 

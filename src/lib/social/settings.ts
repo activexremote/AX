@@ -2,6 +2,7 @@ import "server-only";
 
 import OpenAI from "openai";
 
+import { parseRitmo, type Ritmo } from "@/lib/social/calendario";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { SocialSettings } from "@/lib/supabase/types";
 
@@ -30,6 +31,12 @@ export type PublicSocialSettings = {
   deepseekSource: "panel" | "entorno" | "ninguna";
   uploadpostHint: string | null;
   uploadpostUser: string;
+  ritmo: Ritmo;
+  /** ¿Alguien ha guardado ya los ajustes? Hasta entonces, el ritmo es el de serie. */
+  ritmoGuardado: boolean;
+  alertDays: number;
+  monthlyQuota: number;
+  minBalanceUsd: number;
   lastTestOk: boolean | null;
   lastTestAt: string | null;
   lastTestDetail: string | null;
@@ -71,6 +78,11 @@ export async function publicSocialSettings(): Promise<PublicSocialSettings> {
     deepseekSource: propia ? "panel" : entorno ? "entorno" : "ninguna",
     uploadpostHint: up ? `…${up.slice(-4)}` : null,
     uploadpostUser: row?.uploadpost_user ?? "",
+    ritmo: parseRitmo(row?.cadence),
+    ritmoGuardado: Boolean(row?.updated_by),
+    alertDays: row?.alert_days ?? 14,
+    monthlyQuota: row?.monthly_quota ?? 10,
+    minBalanceUsd: Number(row?.min_balance_usd ?? 2),
     lastTestOk: row?.last_test_ok ?? null,
     lastTestAt: row?.last_test_at ?? null,
     lastTestDetail: row?.last_test_detail ?? null,
@@ -102,5 +114,28 @@ export async function testDeepseekKey(): Promise<{ ok: boolean; detail: string }
       429: "Demasiadas peticiones: prueba en un minuto.",
     };
     return { ok: false, detail: porEstado[err.status ?? 0] ?? `No se pudo conectar: ${err.message ?? "error desconocido"}` };
+  }
+}
+
+/**
+ * El saldo que queda en la cuenta de DeepSeek, en USD. null si no hay clave
+ * o DeepSeek no contesta: el panel no se cae por no poder enseñarlo.
+ */
+export async function saldoDeepseek(): Promise<number | null> {
+  const row = await readRow();
+  const key = (row?.deepseek_api_key || process.env.DEEPSEEK_API_KEY || "").trim();
+  if (!key) return null;
+  try {
+    const res = await fetch(`${DEEPSEEK_URL}/user/balance`, {
+      headers: { Authorization: `Bearer ${key}` },
+      signal: AbortSignal.timeout(5_000),
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { balance_infos?: { currency: string; total_balance: string }[] };
+    const usd = data.balance_infos?.find((b) => b.currency === "USD");
+    return usd ? Number(usd.total_balance) : null;
+  } catch {
+    return null;
   }
 }

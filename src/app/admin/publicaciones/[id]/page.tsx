@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 import {
   BorrarPublicacion,
@@ -7,13 +7,12 @@ import {
   GenerarCanal,
   ImagenesPublicacion,
 } from "@/components/admin/publicaciones/editor-publicacion";
-import { getCurrentProfile } from "@/lib/data/profile";
 import { getLocale } from "@/lib/i18n/server";
-import { pubCopy } from "@/lib/i18n/publicaciones";
+import { fill, pubCopy } from "@/lib/i18n/publicaciones";
 import { CANALES } from "@/lib/social/canales";
+import { formatoUsd } from "@/lib/social/costes";
 import { createClient } from "@/lib/supabase/server";
 import type { SocialPost, SocialVariant } from "@/lib/supabase/types";
-import "@/app/admin/publicaciones/publicaciones.scss";
 
 // Regenerar el artículo del blog es una llamada larga a DeepSeek.
 export const maxDuration = 180;
@@ -25,19 +24,18 @@ export default async function PublicacionPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ aviso?: string }>;
 }) {
-  const profile = await getCurrentProfile();
-  if (profile?.role !== "administrador") redirect("/admin");
-
   const { id } = await params;
   const { aviso } = await searchParams;
   const locale = await getLocale();
   const copy = pubCopy[locale];
   const supabase = await createClient();
 
-  const [{ data: post }, { data: variants }] = await Promise.all([
+  const [{ data: post }, { data: variants }, { data: usos }] = await Promise.all([
     supabase.from("social_posts").select("*").eq("id", id).maybeSingle(),
     supabase.from("social_variants").select("*").eq("post_id", id),
+    supabase.from("social_usage").select("cost_usd").eq("post_id", id),
   ]);
+  const coste = (usos ?? []).reduce((n, u) => n + Number(u.cost_usd), 0);
   if (!post) notFound();
 
   const p = post as SocialPost;
@@ -57,6 +55,11 @@ export default async function PublicacionPage({
       </div>
 
       {aviso ? <div className="axr-login__error" style={{ marginBottom: "1.25rem" }}>{aviso}</div> : null}
+
+      <div className="axr-pub-guide">
+        <span>{copy.editGuide}</span>
+        <span className="axr-pub-guide__cost">{fill(copy.postCost, formatoUsd(coste, locale))}</span>
+      </div>
 
       <div className="axr-admin-card">
         <div className="axr-pub-meta">
