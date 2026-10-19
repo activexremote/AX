@@ -9,6 +9,10 @@ export const blogCopy: Record<Locale, {
   tocLabel: string;
   faqTitle: string;
   keyLabel: string;
+  /** Cabeceras de los bloques enriquecidos (ver types.ts). */
+  checkLabel: string;
+  disclaimerLabel: string;
+  sourceLabel: string;
   sourcesLabel: string;
   relatedLabel: string;
   termsLabel: string;
@@ -39,6 +43,9 @@ export const blogCopy: Record<Locale, {
     tocLabel: "En esta guía",
     faqTitle: "Preguntas frecuentes",
     keyLabel: "En corto",
+    checkLabel: "Checklist",
+    disclaimerLabel: "Importante",
+    sourceLabel: "Fuente",
     sourcesLabel: "Fuentes",
     relatedLabel: "Seguir leyendo",
     termsLabel: "Términos que aparecen",
@@ -70,6 +77,9 @@ export const blogCopy: Record<Locale, {
     tocLabel: "In this guide",
     faqTitle: "Frequently asked questions",
     keyLabel: "In short",
+    checkLabel: "Checklist",
+    disclaimerLabel: "Important",
+    sourceLabel: "Source",
     sourcesLabel: "Sources",
     relatedLabel: "Keep reading",
     termsLabel: "Terms that appear",

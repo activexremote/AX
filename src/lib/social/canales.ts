@@ -1,4 +1,7 @@
+import { palabras, palabrasBlog, parseBlog, slugify, type BlogBody } from "@/lib/social/blog";
 import type { SocialChannel } from "@/lib/supabase/types";
+
+export { slugify, type BlogBody };
 
 // ══════════════════════════════════════════════════════════
 //  Los canales y sus buenas prácticas
@@ -36,24 +39,6 @@ export type LinkedInBody = {
   text: string;
 };
 
-export type BlogSection = {
-  h2: string;
-  /** Respuesta directa de 40-60 palabras: va primero, como en el blog. */
-  answer: string;
-  paragraphs: string[];
-  bullets: string[];
-};
-
-export type BlogBody = {
-  slug: string;
-  title: string;
-  metaDescription: string;
-  keyword: string;
-  intro: string[];
-  sections: BlogSection[];
-  faqs: { q: string; a: string }[];
-};
-
 export type BodyFor = { x: XBody; linkedin: LinkedInBody; blog: BlogBody };
 
 // ── Lo que sabe DeepSeek de cada canal ─────────────────────
@@ -89,23 +74,64 @@ export const GUIA: Record<SocialChannel, string> = {
 - Nada de listas con emojis como viñetas ni de frases sueltas de una palabra
   ("Spoiler:", "Resultado:") encadenadas.`,
 
-  blog: `Blog de ActiveXRemote (artículo SEO):
+  blog: `Blog de ActiveXRemote (artículo SEO enriquecido):
 - Pensado para tres lectores: la persona que escanea, el buscador y los
-  modelos de lenguaje que citan bloques sueltos.
+  modelos de lenguaje que citan bloques sueltos. Tiene que ser BONITO de leer:
+  un muro de párrafos no sirve. Cada sección mezcla párrafos con piezas
+  visuales que se entienden solas.
 - "keyword": la búsqueda principal, tal como la escribiría alguien en Google.
 - "title": con la keyword, máximo 65 caracteres, sin clickbait.
 - "slug": la keyword en minúsculas, sin tildes, palabras separadas por guiones,
   máximo 60 caracteres.
 - "metaDescription": entre 120 y 155 caracteres, con la keyword y un motivo
   para hacer clic.
-- "intro": dos o tres párrafos que planteen el problema del lector.
-- "sections": entre 4 y 7. Cada una con un "h2" que sea una pregunta o una
-  afirmación que alguien buscaría, y un "answer" de 40 a 60 palabras que
-  responda solo, sin depender del resto del artículo. Después, 2 a 4
-  "paragraphs" que desarrollen, y "bullets" sólo si hay una lista real (si no,
-  lista vacía).
-- "faqs": 3 a 5 preguntas reales con respuestas de 2 o 3 frases.
-- Entre 1.200 y 2.000 palabras en total.`,
+- "cluster": uno de empleo | fiscalidad | legal | negocio | metodo | herramientas.
+- "course": "remote-professional" si el tema es encontrar o hacer bien un
+  trabajo remoto para una empresa; "remote-founder" si es montar o hacer
+  crecer un negocio propio; null si no encaja con ninguno.
+- "intro": dos o tres párrafos cortos que planteen el problema del lector.
+- "sections": entre 5 y 7. Cada una con:
+  · "h2": una pregunta o afirmación que alguien buscaría;
+  · "answer": 40 a 60 palabras que respondan solas, sin depender del resto;
+  · "blocks": de 2 a 5 bloques (ver abajo), empezando casi siempre por un
+    párrafo "p" y nunca con dos bloques visuales iguales seguidos;
+  · "takeaway": una frase de cierre, lo que hay que recordar.
+- Bloques disponibles (campo "t" y sus campos):
+  · "p" {text}: párrafo de 2 a 4 frases. Nunca más de dos "p" seguidos.
+  · "ul" {items} / "ol" {items}: lista; "ol" sólo si el orden importa.
+  · "check" {title, items}: checklist accionable que el lector puede ir
+    marcando ("Antes de enviar tu CV, comprueba…"). 4 a 8 puntos.
+  · "steps" {items: [{title, text}]}: proceso en 3 a 6 pasos con nombre.
+  · "table" {head, rows}: comparativa; 2 a 4 columnas, 3 a 6 filas, celdas
+    cortas.
+  · "pros" {pros, cons}: ventajas e inconvenientes.
+  · "stats" {items: [{value, label}], source}: 2 a 4 cifras grandes ("1
+    página", "6-8 s").
+  · "chart" {title, unit, bars: [{label, value}], source}: barras horizontales
+    con 3 a 6 valores numéricos comparables.
+  · "note" {text}: consejo práctico o matiz importante, destacado.
+  · "disclaimer" {text}: aviso de que no es asesoramiento profesional.
+  · "quote" {text}: una frase memorable nuestra (sin atribuirla a nadie).
+  · "cta" {title, text, button, href}: llamada al producto en el punto donde
+    encaja con lo que se acaba de leer. "href" es uno de:
+    /cursos/remote-professional, /cursos/remote-founder, /cursos-relampago,
+    /bienvenida#solicitar. Título que conecte con la sección, texto de una
+    frase sin promesas, botón de 2 a 4 palabras ("Ver el programa").
+- En el artículo entero tiene que haber, como mínimo: una "table" o "pros",
+  un "check", un "steps", un "note" y entre 1 y 2 "cta" (nunca en la primera
+  sección; el último, en la penúltima o la última).
+- "stats" y "chart" SÓLO con cifras que estén en el material o que sean datos
+  públicos y verificables de organismos oficiales, con el organismo en
+  "source". Si no tienes datos así, no los uses: usa otro bloque.
+- "disclaimer" OBLIGATORIO si el tema toca impuestos, contratos, visados,
+  seguridad social o dinero: "Esta guía es informativa y no sustituye el
+  asesoramiento de un profesional…", adaptado al tema.
+- "faqs": 4 a 6 preguntas reales con respuestas de 2 o 3 frases.
+- "external": 2 a 4 fuentes oficiales o de autoridad {label, url}. Sólo la
+  página de inicio de organismos que existen seguro (https://europa.eu,
+  https://www.agenciatributaria.es…) o el enlace de origen. Nunca inventes
+  rutas profundas.
+- Entre 1.400 y 2.200 palabras en total.`,
 };
 
 // ── Leer lo que llega (de la IA o del formulario) ──────────
@@ -123,38 +149,7 @@ export function parseBody<C extends SocialChannel>(channel: C, raw: unknown): Bo
   if (channel === "linkedin") {
     return { text: str(o.text, 6_000) } as BodyFor[C];
   }
-  const sections = (Array.isArray(o.sections) ? o.sections : [])
-    .map((s) => {
-      const so = (s && typeof s === "object" ? s : {}) as Record<string, unknown>;
-      return { h2: str(so.h2, 200), answer: str(so.answer, 1_500), paragraphs: strs(so.paragraphs), bullets: strs(so.bullets, 500) };
-    })
-    .filter((s) => s.h2 || s.answer || s.paragraphs.length);
-  const faqs = (Array.isArray(o.faqs) ? o.faqs : [])
-    .map((f) => {
-      const fo = (f && typeof f === "object" ? f : {}) as Record<string, unknown>;
-      return { q: str(fo.q, 300), a: str(fo.a, 1_500) };
-    })
-    .filter((f) => f.q && f.a);
-  return {
-    slug: slugify(str(o.slug, 120) || str(o.title, 120)),
-    title: str(o.title, 200),
-    metaDescription: str(o.metaDescription, 400),
-    keyword: str(o.keyword, 120),
-    intro: strs(o.intro),
-    sections,
-    faqs,
-  } as BodyFor[C];
-}
-
-export function slugify(s: string): string {
-  return s
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60)
-    .replace(/-+$/g, "");
+  return parseBlog(raw) as BodyFor[C];
 }
 
 // ── Comprobaciones para quien revisa ───────────────────────
@@ -177,8 +172,6 @@ export const PLIEGUE_LINKEDIN = 210;
 const PROHIBIDAS = /\b(gratis|gratuit[oa]s?|free|sin coste)\b/i;
 
 export type Aviso = { nivel: "error" | "aviso"; texto: string };
-
-const palabras = (s: string) => s.split(/\s+/).filter(Boolean).length;
 
 export function revisar(channel: SocialChannel, body: unknown): Aviso[] {
   const avisos: Aviso[] = [];
@@ -215,9 +208,30 @@ export function revisar(channel: SocialChannel, body: unknown): Aviso[] {
     b.sections.forEach((s, i) => {
       const n = palabras(s.answer);
       if (n < 30 || n > 75) avisos.push({ nivel: "aviso", texto: `La respuesta de la sección ${i + 1} tiene ${n} palabras; lo ideal es 40-60.` });
+      if (!s.blocks.length) avisos.push({ nivel: "aviso", texto: `La sección ${i + 1} sólo tiene la respuesta: le falta desarrollo.` });
     });
-    const total = palabras([...b.intro, ...b.sections.flatMap((s) => [s.answer, ...s.paragraphs, ...s.bullets]), ...b.faqs.map((f) => f.a)].join(" "));
+    const total = palabrasBlog(b);
     if (total < 800) avisos.push({ nivel: "aviso", texto: `Son ${total} palabras; un artículo que posicione suele pasar de 1.200.` });
+
+    // Un artículo que se lea bien no es un muro de párrafos.
+    const bloques = b.sections.flatMap((s) => s.blocks);
+    const visuales = bloques.filter((x) => x.t !== "p").length;
+    if (b.sections.length && visuales < b.sections.length) {
+      avisos.push({ nivel: "aviso", texto: "Hay pocos bloques visuales (tablas, checklist, pasos…): el artículo se lee como un muro de texto." });
+    }
+    if (!bloques.some((x) => x.t === "cta")) avisos.push({ nivel: "aviso", texto: "No hay ninguna llamada al producto dentro del artículo." });
+    if (bloques.filter((x) => x.t === "cta").length > 2) avisos.push({ nivel: "aviso", texto: "Hay más de dos llamadas al producto: resta credibilidad." });
+    if (b.sections[0]?.blocks.some((x) => x.t === "cta")) avisos.push({ nivel: "aviso", texto: "Hay una llamada al producto en la primera sección: todavía no se ha ganado la atención." });
+    bloques.forEach((x) => {
+      if ((x.t === "stats" || x.t === "chart") && !x.source) {
+        avisos.push({ nivel: "aviso", texto: `Un bloque de ${x.t === "chart" ? "gráfico" : "cifras"} no dice de dónde salen los datos: añade la fuente o quítalo.` });
+      }
+    });
+    const delicado = /\b(impuest|fiscal|hacienda|irpf|iva|visado|contrato|seguridad social|cotiz|tax|visa|contract)/i;
+    if (delicado.test(JSON.stringify(b)) && !bloques.some((x) => x.t === "disclaimer")) {
+      avisos.push({ nivel: "aviso", texto: "Habla de impuestos, contratos o visados y no lleva aviso de «no es asesoramiento»." });
+    }
+    if (b.external.length) avisos.push({ nivel: "aviso", texto: "Abre las fuentes y comprueba que existen antes de programar." });
     const todo = JSON.stringify(b);
     if (PROHIBIDAS.test(todo)) avisos.push({ nivel: "aviso", texto: "Usa una palabra que la marca evita (gratis, free…)." });
   }

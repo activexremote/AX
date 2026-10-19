@@ -65,9 +65,14 @@ const FORMA: Record<SocialChannel, string> = {
   x: `"x": { "text": "primer post", "thread": ["post 2", "post 3"] }   (thread vacío si es un post suelto)`,
   linkedin: `"linkedin": { "text": "el post completo, con saltos de línea \\n" }`,
   blog: `"blog": { "keyword": "…", "title": "…", "slug": "…", "metaDescription": "…",
+           "cluster": "empleo", "course": "remote-professional",
            "intro": ["párrafo", "párrafo"],
-           "sections": [{ "h2": "…", "answer": "…", "paragraphs": ["…"], "bullets": ["…"] }],
-           "faqs": [{ "q": "…", "a": "…" }] }`,
+           "sections": [{ "h2": "…", "answer": "…", "takeaway": "…",
+                          "blocks": [{ "t": "p", "text": "…" },
+                                     { "t": "check", "title": "…", "items": ["…"] },
+                                     { "t": "table", "head": ["…", "…"], "rows": [["…", "…"]] }] }],
+           "faqs": [{ "q": "…", "a": "…" }],
+           "external": [{ "label": "…", "url": "https://…" }] }`,
 };
 
 export type Material = {
@@ -149,8 +154,8 @@ export async function generar(m: Material, canales: SocialChannel[]): Promise<Re
       ],
       response_format: { type: "json_object" },
       temperature: 0.7,
-      // Un artículo de blog completo ronda los 4.000 tokens; con margen.
-      max_tokens: lista.includes("blog") ? 12_000 : 3_000,
+      // Un artículo enriquecido ronda los 6.000-8.000 tokens; con margen.
+      max_tokens: lista.includes("blog") ? 16_000 : 3_000,
       // DeepSeek piensa por defecto. Para escribir posts no aporta y
       // multiplica el tiempo y el coste: se apaga. No está en los tipos del
       // SDK de OpenAI, pero el SDK manda tal cual lo que no conoce.

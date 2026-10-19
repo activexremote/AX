@@ -42,7 +42,7 @@ export default async function PublicacionPage({
   const porCanal = new Map(((variants ?? []) as SocialVariant[]).map((v) => [v.channel, v]));
 
   return (
-    <div className="axr-admin-page">
+    <div className="axr-admin-page axr-pub-wide">
       <div className="axr-admin-page__header">
         <div>
           <Link href="/admin/publicaciones" style={{ fontSize: "0.8125rem" }}>
@@ -87,7 +87,7 @@ export default async function PublicacionPage({
         // regenerar, el editor se vuelve a montar con el texto nuevo en vez
         // de quedarse con el que tenía en memoria.
         return v ? (
-          <EditorVariante key={`${v.id}-${v.updated_at}`} variant={v} copy={copy} locale={locale} />
+          <EditorVariante key={`${v.id}-${v.updated_at}`} variant={v} images={p.images} language={p.language} copy={copy} locale={locale} />
         ) : (
           <GenerarCanal key={c} postId={p.id} channel={c} copy={copy} />
         );

@@ -16,7 +16,17 @@ export type Block =
   | { t: "quote"; text: string; by?: string }
   | { t: "table"; head: string[]; rows: string[][] }
   | { t: "steps"; items: { title: string; text: string }[] }
-  | { t: "pros"; pros: string[]; cons: string[] };
+  | { t: "pros"; pros: string[]; cons: string[] }
+  /** Lista de comprobación: lo que el lector puede ir marcando. */
+  | { t: "check"; title?: string; items: string[] }
+  /** Dos a cuatro cifras grandes. Sólo con datos reales y su fuente. */
+  | { t: "stats"; items: { value: string; label: string }[]; source?: string }
+  /** Gráfico de barras horizontal. Mismo criterio que `stats`. */
+  | { t: "chart"; title: string; unit?: string; bars: { label: string; value: number }[]; source?: string }
+  /** «Esto no es asesoramiento»: fiscalidad, legal, visados, dinero. */
+  | { t: "disclaimer"; text: string }
+  /** Llamada al producto en mitad del texto, donde encaja con lo que se lee. */
+  | { t: "cta"; title: string; text: string; button: string; href: string };
 
 export type ArticleSection = {
   /** Ancla del índice. */
