@@ -45,6 +45,12 @@ export const LOCALIZED_ROOTS = [
 /** Cabecera con la que el proxy le cuenta a la app qué idioma pide la URL. */
 export const LOCALE_HEADER = "x-axr-locale";
 
+/**
+ * Cabecera con la que el proxy marca una página pública: sólo ésas llevan
+ * etiquetas de marketing (ver components/analytics/marketing-tags.tsx).
+ */
+export const TRACKING_HEADER = "x-axr-public";
+
 // ══════════════════════════════════════════════════════════
 //  Segmentos traducidos.
 //

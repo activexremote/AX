@@ -1,13 +1,17 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Inter, IBM_Plex_Mono } from "next/font/google";
 
 import "@/styles/globals.scss";
 import { I18nProvider } from "@/lib/i18n/provider";
 import { ConsentDefaultScript } from "@/components/consent/consent-default-script";
 import { ConsentMount } from "@/components/consent/consent-mount";
+import { MarketingBody, MarketingHead } from "@/components/analytics/marketing-tags";
 import { ExtensionNoiseScript } from "@/components/dev/extension-noise-script";
 import { HashSessionCatcher } from "@/components/auth/hash-session-catcher";
 import { getI18n } from "@/lib/i18n/server";
+import { TRACKING_HEADER } from "@/lib/i18n/routing";
+import { TRACKING_ENABLED } from "@/lib/analytics/config";
 import { SITE_NAME, SITE_URL } from "@/lib/seo";
 
 // Texto y UI — tipografía del sistema de marca
@@ -51,20 +55,28 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const { locale, t } = await getI18n();
+  // Etiquetas de marketing: sólo en producción y sólo en páginas públicas
+  // (el proxy marca cuáles). El campus y el panel no llevan ninguna.
+  const tracking = TRACKING_ENABLED && (await headers()).get(TRACKING_HEADER) === "1";
 
   return (
     <html
       lang={locale}
       className={`${inter.variable} ${plexMono.variable}`}
     >
+      <head>
+        {/* Antes que nada: deja todo denegado hasta que haya decisión. Tiene
+            que ir antes que GTM y que la etiqueta de Google. */}
+        <ConsentDefaultScript />
+        {tracking && <MarketingHead />}
+      </head>
       {/* Las extensiones del navegador escriben atributos en <body> antes de
           que React hidrate —ColorZilla pone `cz-shortcut-listen`, Grammarly
           los suyos— y React lo denuncia como una diferencia entre servidor y
           cliente. No lo es: es la vía oficial de React para este caso y sólo
           calla los ATRIBUTOS de esta etiqueta, no lo que hay dentro. */}
       <body suppressHydrationWarning>
-        {/* Antes que nada: deja todo denegado hasta que haya decisión. */}
-        <ConsentDefaultScript />
+        {tracking && <MarketingBody />}
         {/* Y calla a las extensiones del navegador, que en desarrollo tapan
             la pantalla con errores que no son de esta web. */}
         <ExtensionNoiseScript />

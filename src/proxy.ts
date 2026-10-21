@@ -8,6 +8,7 @@ import { isBot, negotiateLocale } from "@/lib/i18n/negotiate";
 import {
   LOCALE_HEADER,
   LOCALIZED_ROOTS,
+  TRACKING_HEADER,
   translatePath,
   untranslatePath,
 } from "@/lib/i18n/routing";
@@ -238,6 +239,11 @@ export async function proxy(request: NextRequest) {
   // fijarla aquí a "es" bloqueaba a `getLocale()`: ni la cookie ni el idioma
   // del navegador llegaban a mirarse, y el login salía en español siempre.
   if (publica) headers.set(LOCALE_HEADER, prefixed ? "en" : "es");
+  // Las etiquetas de marketing van en las mismas páginas públicas y en la
+  // raíz cuando la ve un invitado, que es la portada. Se borra antes por si
+  // la cabecera llegara puesta desde fuera.
+  headers.delete(TRACKING_HEADER);
+  if (publica || (pathname === "/" && !session.hasUser)) headers.set(TRACKING_HEADER, "1");
 
   let response: NextResponse;
   if (prefixed) {

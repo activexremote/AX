@@ -50,8 +50,8 @@ export type LegalDoc = {
 export type LegalSlug = "aviso-legal" | "privacidad" | "cookies" | "terminos";
 
 /** Fecha de última revisión de los cuatro documentos. */
-const UPDATED_ES = "17 de octubre de 2026";
-const UPDATED_EN = "17 October 2026";
+const UPDATED_ES = "21 de octubre de 2026";
+const UPDATED_EN = "21 October 2026";
 
 // ══════════════════════════════════════════════════════════
 //  ESPAÑOL
@@ -524,7 +524,7 @@ const COOKIES_ES: LegalDoc = {
           // ningún tercero por defecto, esto se reescribe otra vez: una
           // política que describe una web que ya no existe no protege a
           // nadie, y es la primera cosa que mira una inspección.
-          text: `Las cookies propias las instala ${E.name} desde el dominio ${E.domain}. De terceros hay una sola: la página del programa incrusta un mapa de Google Maps para enseñar dónde está la oficina, y Google instala sus propias cookies al cargarlo. Es la única que se carga sin haber elegido antes. Si rechazas la categoría «Preferencias» en el panel de configuración, ese mapa deja de cargarse y en su lugar aparece un botón para abrirlo sólo si tú quieres. Las páginas públicas cargan además Google Tag Manager, una herramienta que no instala cookies por sí misma y que sólo activa etiquetas de medición o de marketing de terceros si has aceptado esas categorías.`,
+          text: `Las cookies propias las instala ${E.name} desde el dominio ${E.domain}. De terceros hay una sola: la página del programa incrusta un mapa de Google Maps para enseñar dónde está la oficina, y Google instala sus propias cookies al cargarlo. Es la única que se carga sin haber elegido antes. Si rechazas la categoría «Preferencias» en el panel de configuración, ese mapa deja de cargarse y en su lugar aparece un botón para abrirlo sólo si tú quieres. Las páginas públicas cargan además Google Tag Manager y la etiqueta de Google Ads, que funcionan en modo de consentimiento: sin tu permiso de marketing no instalan cookies ni te identifican. El píxel de Meta (Facebook e Instagram) ni siquiera se descarga hasta que aceptas la categoría «Marketing».`,
         },
       ],
     },
@@ -552,7 +552,7 @@ const COOKIES_ES: LegalDoc = {
             ],
             [
               "Marketing",
-              "Permitirían medir la eficacia de las campañas y mostrar anuncios ajustados a tus intereses en plataformas de terceros.",
+              "Miden la eficacia de nuestras campañas en Google Ads y en Meta (Facebook e Instagram) —por ejemplo, si una solicitud de información vino de un anuncio— y permiten mostrarte anuncios ajustados a tus intereses en esas plataformas.",
               "Sí. Desactivadas mientras no las actives.",
             ],
           ],
@@ -584,11 +584,23 @@ const COOKIES_ES: LegalDoc = {
               "Sesión de acceso al campus virtual, gestionada por Supabase Auth. Sólo existe si has iniciado sesión.",
               "Sesión / hasta cerrar sesión",
             ],
+            [
+              "_gcl_au",
+              "Marketing",
+              "Google Ads. Relaciona una conversión (enviar el formulario) con el anuncio en el que hiciste clic. Sólo si aceptas «Marketing».",
+              "90 días",
+            ],
+            [
+              "_fbp, _fbc",
+              "Marketing",
+              "Píxel de Meta (Facebook e Instagram). Mide las visitas y las solicitudes que llegan desde sus anuncios. Sólo si aceptas «Marketing».",
+              "90 días",
+            ],
           ],
         },
         {
           t: "p",
-          text: "Las cookies de medición y de marketing que se activen a través de Google Tag Manager (por ejemplo, las de Google Analytics o de las plataformas publicitarias) sólo se instalan si aceptas su categoría. Antes de añadir una herramienta nueva actualizaremos esta tabla y te volveremos a pedir consentimiento.",
+          text: "Las cookies de medición y de marketing, las de la tabla y las que se activen a través de Google Tag Manager, sólo se instalan si aceptas su categoría. Antes de añadir una herramienta nueva actualizaremos esta tabla y te volveremos a pedir consentimiento.",
         },
       ],
     },
@@ -1323,7 +1335,7 @@ const COOKIES_EN: LegalDoc = {
       blocks: [
         {
           t: "p",
-          text: `First-party cookies are set by ${E.name} from the ${E.domain} domain. Third-party cookies would be set by external services, and on this site they can only ever be set if you enable their category in the settings panel. Public pages also load Google Tag Manager, a tool that sets no cookies by itself and only fires third-party measurement or marketing tags if you have accepted those categories.`,
+          text: `First-party cookies are set by ${E.name} from the ${E.domain} domain. Third-party cookies would be set by external services, and on this site they can only ever be set if you enable their category in the settings panel. Public pages also load Google Tag Manager and the Google Ads tag, which run in consent mode: without your marketing permission they set no cookies and do not identify you. The Meta pixel (Facebook and Instagram) is not even downloaded until you accept the "Marketing" category.`,
         },
       ],
     },
@@ -1351,7 +1363,7 @@ const COOKIES_EN: LegalDoc = {
             ],
             [
               "Marketing",
-              "Would let us measure campaign performance and show you ads matched to your interests on third-party platforms.",
+              "Measure how our Google Ads and Meta (Facebook and Instagram) campaigns perform —for example, whether an information request came from an ad— and allow ads matched to your interests on those platforms.",
               "Yes. Off until you turn them on.",
             ],
           ],
@@ -1383,11 +1395,23 @@ const COOKIES_EN: LegalDoc = {
               "Campus sign-in session, handled by Supabase Auth. Only exists once you have signed in.",
               "Session / until sign-out",
             ],
+            [
+              "_gcl_au",
+              "Marketing",
+              "Google Ads. Links a conversion (sending the form) to the ad you clicked. Only if you accept \"Marketing\".",
+              "90 days",
+            ],
+            [
+              "_fbp, _fbc",
+              "Marketing",
+              "Meta pixel (Facebook and Instagram). Measures visits and requests coming from its ads. Only if you accept \"Marketing\".",
+              "90 days",
+            ],
           ],
         },
         {
           t: "p",
-          text: "Measurement and marketing cookies fired through Google Tag Manager (for example Google Analytics or advertising platforms) are only set if you accept their category. Before adding a new tool we will update this table and ask for your consent again.",
+          text: "Measurement and marketing cookies, those in the table and any fired through Google Tag Manager, are only set if you accept their category. Before adding a new tool we will update this table and ask for your consent again.",
         },
       ],
     },

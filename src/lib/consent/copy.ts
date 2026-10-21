@@ -54,7 +54,7 @@ export const consentCopy: Record<Locale, ConsentCopy> = {
       },
       marketing: {
         name: "Marketing",
-        desc: "Permiten medir la eficacia de nuestras campañas y mostrar anuncios ajustados a tus intereses en plataformas de terceros.",
+        desc: "Permiten medir la eficacia de nuestras campañas en Google Ads y en Meta (Facebook e Instagram) y mostrarte anuncios ajustados a tus intereses en esas plataformas.",
       },
     },
     settingsLink: "Configurar cookies",
@@ -90,7 +90,7 @@ export const consentCopy: Record<Locale, ConsentCopy> = {
       },
       marketing: {
         name: "Marketing",
-        desc: "They let us measure how our campaigns perform and show you ads matched to your interests on third-party platforms.",
+        desc: "They let us measure how our Google Ads and Meta (Facebook and Instagram) campaigns perform and show you ads matched to your interests on those platforms.",
       },
     },
     settingsLink: "Cookie settings",

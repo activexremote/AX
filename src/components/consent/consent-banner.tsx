@@ -10,11 +10,12 @@ import {
   CONSENT_VERSION,
   DENY_ALL,
   OPTIONAL_CATEGORIES,
-  parseConsent,
   toSignals,
   type ConsentChoices,
 } from "@/lib/consent/config";
+import { readConsent } from "@/lib/consent/client";
 import type { ConsentCopy } from "@/lib/consent/copy";
+import "@/components/consent/consent.scss";
 
 /** Evento con el que el enlace del pie vuelve a abrir el panel. */
 export const CONSENT_OPEN_EVENT = "axr:consent-open";
@@ -58,9 +59,7 @@ export function ConsentBanner({ copy }: { copy: ConsentCopy }) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const saved = parseConsent(
-      document.cookie.match(new RegExp(`(?:^|;\\s*)${CONSENT_COOKIE}=([^;]*)`))?.[1],
-    );
+    const saved = readConsent();
     if (saved) setChoices(saved.c);
     setOpen(!saved);
 
