@@ -24,7 +24,6 @@ import "@/app/bienvenida/landing.scss";
 // estilos viven en su propio archivo justo por eso (ver la cabecera de esa
 // hoja): sin este import salía sin formato en la home.
 import "@/components/landing/flash-card.scss";
-import { GoogleTagManager } from "@/components/analytics/google-tag-manager";
 
 // Mockups brutalistas del campus — hacen de "captura de producto" sin
 // depender de fotos externas. Uno por feature (índice 0-2).
@@ -92,7 +91,6 @@ export async function LandingView() {
 
   return (
     <main className="axr-lp">
-      <GoogleTagManager />
       <LandingNav />
 
       {/* ── Hero ────────────────────────────────────── */}

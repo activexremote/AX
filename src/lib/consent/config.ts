@@ -13,8 +13,11 @@
 
 export const CONSENT_COOKIE = "axr_consent";
 
-/** Se sube cuando cambian las finalidades o los proveedores: vuelve a preguntar. */
-export const CONSENT_VERSION = 2;
+/**
+ * Se sube cuando cambian las finalidades o los proveedores: vuelve a preguntar.
+ * v3: entran el píxel de Meta y la etiqueta de Google Ads (marketing).
+ */
+export const CONSENT_VERSION = 3;
 
 /** 12 meses. Pasado el plazo se pregunta de nuevo. */
 export const CONSENT_MAX_AGE = 60 * 60 * 24 * 365;

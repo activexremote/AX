@@ -4,7 +4,6 @@ import { AdLandingView } from "@/components/landing/ad-landing-view";
 import { adCopy } from "@/app/trabajo-remoto/copy";
 import { getLocale } from "@/lib/i18n/server";
 import { absolute, OG_LOCALE, SITE_NAME } from "@/lib/seo";
-import { GoogleTagManager } from "@/components/analytics/google-tag-manager";
 
 const PATH = "/trabajo-remoto";
 
@@ -50,7 +49,6 @@ export const viewport: Viewport = { themeColor: "#161326", viewportFit: "cover" 
 export default function AdLandingPage() {
   return (
     <>
-      <GoogleTagManager />
       <AdLandingView />
     </>
   );

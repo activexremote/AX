@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState, useTransition } from "react";
 
 import { submitLead } from "@/app/bienvenida/actions";
 import type { LandingCopy } from "@/app/bienvenida/copy";
+import { trackLead } from "@/lib/analytics/events";
 
 type FormCopy = LandingCopy["form"];
 
@@ -88,6 +89,7 @@ export function LeadForm({ copy, variant = "hero", preselect = [], submitLabel }
         setError(copy.errors[result.error as keyof FormCopy["errors"]] ?? copy.errors.db);
         return;
       }
+      trackLead({ courses: formData.getAll("courses").map(String) });
       setDone(true);
     });
   }
