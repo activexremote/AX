@@ -243,7 +243,7 @@ export function revisar(c: BannerCopy, opts: { imagenIa?: boolean } = {}): Flag[
     out.push({
       level: "aviso",
       rule: "Imagen de IA",
-      text: "La imagen es de IA: la pieza lleva la etiqueta «Imagen generada con IA» (AI Act). Nunca la presentes como un alumno real.",
+      text: "La imagen es de IA: nunca la presentes como un alumno, un profesor o un testimonio real.",
     });
   }
 
@@ -327,10 +327,10 @@ export const GUIA: { titulo: string; bien: string[]; mal: string[]; porque: stri
     porque: "Desde Andromeda, Meta agrupa las creatividades casi idénticas como un único anuncio: no se prueba nada.",
   },
   {
-    titulo: "Imagen de IA, etiquetada",
-    bien: ["Escenas ilustrativas con la etiqueta «Imagen generada con IA»", "Mejor aún: fotos reales del equipo o de las clases"],
-    mal: ["Una persona de IA presentada como alumna", "Quitar la etiqueta para que «parezca real»"],
-    porque: "Desde agosto de 2026 el AI Act obliga a avisar de imágenes realistas generadas con IA. Meta, además, las detecta por sus metadatos.",
+    titulo: "Imagen de IA, sólo ilustrativa",
+    bien: ["Escenas ilustrativas de trabajo en remoto", "Mejor aún: fotos reales del equipo o de las clases"],
+    mal: ["Una persona de IA presentada como alumna", "Una cara de IA junto a un testimonio"],
+    porque: "Una persona generada nunca es un alumno real. Meta, además, detecta las imágenes de IA por sus metadatos y puede añadir su propia marca «Info de IA».",
   },
 ];
 

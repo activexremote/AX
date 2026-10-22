@@ -3,7 +3,7 @@ import "server-only";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-import { ACENTO, ETIQUETA_IA, FORMATOS, VERDE, type BannerCopy, type FormatoId, type Plantilla } from "@/lib/banners/formatos";
+import { ACENTO, FORMATOS, VERDE, type BannerCopy, type FormatoId, type Plantilla } from "@/lib/banners/formatos";
 import type { AdCourse } from "@/lib/supabase/types";
 
 // ══════════════════════════════════════════════════════════
@@ -18,8 +18,7 @@ import type { AdCourse } from "@/lib/supabase/types";
 //   · el titular en Inter 800, tamaño según su longitud;
 //   · la llamada a la acción en verde de acción, con flecha: es una etiqueta,
 //     no imita ningún botón de la interfaz de Meta;
-//   · todo lo importante dentro de la zona segura del formato;
-//   · la etiqueta «Imagen generada con IA» cuando la foto es de IA.
+//   · todo lo importante dentro de la zona segura del formato.
 //
 //  Las fuentes van en el repositorio (fonts/, Inter estática: Satori no
 //  entiende fuentes variables). next.config.ts las incluye en la función.
@@ -49,7 +48,6 @@ export type Pieza = {
   formato: FormatoId;
   /** data: URL de la foto, o null. */
   imagen: string | null;
-  imagenIa: boolean;
 };
 
 /** Tamaño del titular según cuánto texto lleva. */
@@ -120,24 +118,6 @@ function Kicker({ texto, fondo, color = "#ffffff" }: { texto: string; fondo: str
   );
 }
 
-function EtiquetaIa({ texto, oscuro }: { texto: string; oscuro: boolean }) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        fontSize: 20,
-        fontWeight: 500,
-        color: oscuro ? "rgba(255,255,255,0.86)" : "#514D69",
-        background: oscuro ? "rgba(22,19,38,0.45)" : "rgba(255,255,255,0.85)",
-        padding: "6px 14px",
-        borderRadius: 999,
-      }}
-    >
-      {texto}
-    </div>
-  );
-}
-
 function Fondo({ imagen, w, h }: { imagen: string; w: number; h: number }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element -- Satori, no el navegador
@@ -150,10 +130,9 @@ export function Banner(p: Pieza) {
   const a = ACENTO[p.course];
   const { w, h, safe } = f;
   const c = p.copy;
-  const etiqueta = ETIQUETA_IA[p.language];
   const plantilla: Plantilla = p.imagen ? p.template : "marca";
   const titular = tamTitular(c.headline, plantilla, p.formato);
-  // Lo de arriba (logo, etiqueta de IA) y lo de abajo (texto) respetan la zona segura.
+  // Lo de arriba (logo) y lo de abajo (texto) respetan la zona segura.
   const pad = { top: safe.top, bottom: safe.bottom, side: safe.side + 12 };
 
   const raiz = {
@@ -165,10 +144,9 @@ export function Banner(p: Pieza) {
     overflow: "hidden" as const,
   };
 
-  const cabecera = (color: string, oscuro: boolean) => (
-    <div style={{ position: "absolute", top: pad.top, left: pad.side, right: pad.side, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+  const cabecera = (color: string) => (
+    <div style={{ position: "absolute", top: pad.top, left: pad.side, right: pad.side, display: "flex", alignItems: "center" }}>
       <Lockup color={color} />
-      {p.imagen && p.imagenIa ? <EtiquetaIa texto={etiqueta} oscuro={oscuro} /> : <div style={{ display: "flex" }} />}
     </div>
   );
 
@@ -186,7 +164,7 @@ export function Banner(p: Pieza) {
             backgroundImage: `linear-gradient(180deg, rgba(22,19,38,0.6) 0%, rgba(22,19,38,0) ${Math.round((pad.top / h) * 100) + 12}%, rgba(22,19,38,0) 28%, rgba(22,19,38,0.78) 54%, rgba(22,19,38,0.94) ${Math.round(((h - pad.bottom) / h) * 100)}%, rgba(22,19,38,0.96) 100%)`,
           }}
         />
-        {cabecera("#ffffff", true)}
+        {cabecera("#ffffff")}
         <div style={{ position: "absolute", left: pad.side, right: pad.side, bottom: pad.bottom, display: "flex", flexDirection: "column", gap: 26 }}>
           <Kicker texto={c.kicker} fondo={a.accent} />
           <div style={{ display: "flex", fontSize: titular, fontWeight: 800, lineHeight: 1.04, letterSpacing: -titular * 0.025, color: "#ffffff", textShadow: "0 2px 24px rgba(0,0,0,0.35)" }}>{c.headline}</div>
@@ -203,7 +181,7 @@ export function Banner(p: Pieza) {
       <div style={{ ...raiz, background: "#161326" }}>
         <Fondo imagen={p.imagen} w={w} h={h} />
         <div style={{ position: "absolute", inset: 0, display: "flex", backgroundImage: "linear-gradient(180deg, rgba(22,19,38,0.5) 0%, rgba(22,19,38,0) 22%)" }} />
-        {cabecera("#ffffff", true)}
+        {cabecera("#ffffff")}
         <div
           style={{
             position: "absolute",
@@ -246,7 +224,7 @@ export function Banner(p: Pieza) {
         <path d="M26 2 L44 2 L35 14 Z" />
         <path d="M26 26 L44 26 L35 14 Z" />
       </svg>
-      {cabecera("#ffffff", true)}
+      {cabecera("#ffffff")}
       <div style={{ position: "absolute", left: pad.side, right: pad.side, bottom: pad.bottom, display: "flex", flexDirection: "column", gap: 30 }}>
         <Kicker texto={c.kicker} fondo="rgba(255,255,255,0.16)" />
         <div style={{ display: "flex", fontSize: titular, fontWeight: 800, lineHeight: 1.02, letterSpacing: -titular * 0.03, color: "#ffffff" }}>{c.headline}</div>

@@ -228,7 +228,6 @@ export function EditorBanner({ banner, campaign, n, copy }: { banner: AdBanner; 
               <Icono n="descarga" /> {copy.download}
             </a>
           </div>
-          {imagenIa ? <small className="axr-ban-note">{copy.aiLabelNote}</small> : null}
 
           <details className="axr-ban-feedwrap">
             <summary>{copy.previewFeed}</summary>
