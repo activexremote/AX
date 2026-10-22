@@ -6,6 +6,7 @@ import { LocaleToggle } from "@/components/locale-toggle";
 import { getCurrentProfile } from "@/lib/data/profile";
 import { getI18n } from "@/lib/i18n/server";
 import { pubCopy } from "@/lib/i18n/publicaciones";
+import { banCopy } from "@/lib/i18n/banners";
 import { contarPendientes } from "@/lib/social/panel";
 import "@/app/admin/admin.scss";
 
@@ -56,6 +57,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   {pendientes!.nevera ? <span className="axr-admin__badge">{pendientes!.nevera}</span> : null}
                 </Link>
                 <Link href="/admin/publicaciones/nueva">+ {pc.new}</Link>
+              </div>
+              {/* Anuncios para Meta: misma forma que publicaciones. */}
+              <Link href="/admin/banners">{banCopy[locale].nav}</Link>
+              <div className="axr-admin__sub">
+                <Link href="/admin/banners/normas">{banCopy[locale].tabRules}</Link>
+                <Link href="/admin/banners/nueva">+ {banCopy[locale].new}</Link>
               </div>
             </>
           ) : null}

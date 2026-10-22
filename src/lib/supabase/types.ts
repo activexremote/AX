@@ -410,3 +410,51 @@ export interface SocialUsage {
   created_by: string | null;
   created_at: string;
 }
+
+// ── Banners (0020) ───────────────────────────────────────
+export type AdCourse = "escuela" | "remote-professional" | "remote-founder";
+export type AdObjective = "leads" | "alcance" | "retargeting";
+export type AdBannerStatus = "borrador" | "aprobado" | "descartado";
+
+export interface AdCampaign {
+  id: string;
+  name: string;
+  course: AdCourse;
+  objective: AdObjective;
+  language: "es" | "en";
+  style: string;
+  angles: string[];
+  audience: string | null;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdBanner {
+  id: string;
+  campaign_id: string;
+  position: number;
+  angle: string | null;
+  copy: Record<string, string>;
+  template: string;
+  image_path: string | null;
+  image_prompt: string | null;
+  image_source: "ia" | "subida" | "ninguna";
+  review: { flags?: { level: "bloquea" | "aviso"; rule: string; text: string }[]; checkedAt?: string };
+  status: AdBannerStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdUsage {
+  id: string;
+  campaign_id: string | null;
+  kind: "texto" | "imagen";
+  model: string;
+  input_tokens: number;
+  output_tokens: number;
+  cost_usd: number;
+  created_by: string | null;
+  created_at: string;
+}

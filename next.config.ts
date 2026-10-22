@@ -25,6 +25,10 @@ const nextConfig: NextConfig = {
   // al escribir la primera letra, y sólo allí, nunca en local.
   outputFileTracingIncludes: {
     "/lens/calculadora-matriculas/pdf": ["./node_modules/pdfkit/js/data/**"],
+    // Las piezas de banners se componen con Inter estática leída del disco
+    // (Satori no entiende fuentes variables): misma historia que los .afm.
+    "/admin/banners/render/[id]/[formato]": ["./src/lib/banners/fonts/**"],
+    "/admin/banners/[id]/zip": ["./src/lib/banners/fonts/**"],
   },
   experimental: {
     optimizePackageImports: ["@carbon/react", "@carbon/icons-react"],
