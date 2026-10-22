@@ -137,7 +137,7 @@ const es = {
   regenImage: "Otra imagen",
   regenImageHint: "Describe la escena (en inglés funciona mejor) o deja la actual",
   uploadImage: "Subir foto propia",
-  uploadHint: "Las fotos reales del equipo o de las clases funcionan mejor que la IA y no llevan etiqueta.",
+  uploadHint: "Las fotos reales del equipo o de las clases funcionan mejor que la IA.",
   removeImage: "Quitar imagen",
   rewrite: "Reescribir textos",
   rewritePh: "Indicaciones: «más corto», «otro gancho», «habla del directo»…",
@@ -151,7 +151,6 @@ const es = {
   previewFeed: "Así se verá en el feed",
   sponsored: "Publicidad",
   seeMore: "… más",
-  aiLabelNote: "La pieza lleva la etiqueta «Imagen generada con IA».",
   spent: "Gastado en esta campaña: {n}",
 
   // Normas
@@ -330,7 +329,7 @@ const en: typeof es = {
   regenImage: "Another image",
   regenImageHint: "Describe the scene or keep the current one",
   uploadImage: "Upload own photo",
-  uploadHint: "Real photos of the team or classes beat AI and need no label.",
+  uploadHint: "Real photos of the team or classes beat AI.",
   removeImage: "Remove image",
   rewrite: "Rewrite copy",
   rewritePh: "Directions: “shorter”, “another hook”, “talk about live classes”…",
@@ -344,7 +343,6 @@ const en: typeof es = {
   previewFeed: "How it will look in the feed",
   sponsored: "Sponsored",
   seeMore: "… more",
-  aiLabelNote: "The piece carries the “AI-generated image” label.",
   spent: "Spent on this campaign: {n}",
 
   rulesTitle: "Meta's rules and the law, plainly",

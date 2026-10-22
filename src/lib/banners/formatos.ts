@@ -117,9 +117,6 @@ export const CTAS = {
   en: ["Learn more", "Get information", "See the programme", "Sign up"],
 } as const;
 
-/** Etiqueta obligatoria cuando la imagen es de IA (AI Act art. 50 · Meta «Info de IA»). */
-export const ETIQUETA_IA = { es: "Imagen generada con IA", en: "AI-generated image" } as const;
-
 export type BannerCopy = {
   kicker: string;
   headline: string;

@@ -39,7 +39,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     for (const f of FORMATO_IDS) {
       const { w, h, label, file } = FORMATOS[f];
       const res = new ImageResponse(
-        <Banner copy={copy} template={b.template as Plantilla} course={c.course} language={c.language} formato={f} imagen={imagen} imagenIa={b.image_source === "ia"} />,
+        <Banner copy={copy} template={b.template as Plantilla} course={c.course} language={c.language} formato={f} imagen={imagen} />,
         { width: w, height: h, fonts },
       );
       files[`${label}/${file}_v${n}.png`] = new Uint8Array(await res.arrayBuffer());
@@ -52,7 +52,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         `Descripción: ${copy.description}`,
         `Botón: ${copy.cta}`,
         `Texto alternativo: ${copy.alt}`,
-        b.image_source === "ia" ? "Imagen generada con IA: la pieza ya lleva la etiqueta." : "",
       ]
         .filter(Boolean)
         .join("\n"),
