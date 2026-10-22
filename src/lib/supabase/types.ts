@@ -426,9 +426,25 @@ export interface AdCampaign {
   angles: string[];
   audience: string | null;
   notes: string | null;
+  kind: "brief" | "clon";
+  reference_path: string | null;
+  reference_prompt: string | null;
+  reference_analysis: AdReferenceAnalysis | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
+}
+
+/** Lo que el clonador entiende de un anuncio de referencia. */
+export interface AdReferenceAnalysis {
+  summary: string;
+  hook: string;
+  layout: string;
+  scene: string;
+  mood: string;
+  keep: string[];
+  change: string[];
+  avoided: string[];
 }
 
 export interface AdBanner {

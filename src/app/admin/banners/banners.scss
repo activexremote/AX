@@ -522,3 +522,126 @@ $professional: #5b4bf5;
     &--story { aspect-ratio: 9 / 16; }
   }
 }
+
+// ── Clonador ──────────────────────────────────────────────
+.axr-banclone__top {
+  display: grid;
+  gap: 1rem;
+  @media (min-width: 900px) { grid-template-columns: minmax(260px, 360px) minmax(0, 1fr); }
+}
+.axr-banclone__side { display: grid; gap: 0.6rem; align-content: start; }
+
+.axr-ban-drop {
+  position: relative;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 0.5rem;
+  min-height: 320px;
+  padding: 1.5rem;
+  border: 2px dashed #c6c6c6;
+  border-radius: var(--pub-radius);
+  background: #fafafa;
+  color: var(--pub-muted);
+  text-align: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.15s, background 0.15s;
+  strong { color: var(--pub-ink); font-size: 0.9375rem; max-width: 24ch; }
+  small { font-size: 0.6875rem; }
+  &:hover, &:focus-visible { border-color: var(--pub-ink); outline: none; }
+  &.is-over { border-color: var(--axr-go, #038632); background: #f0faf3; }
+
+  &.has-file { padding: 0; border-style: solid; background: repeating-conic-gradient(#f4f4f4 0 25%, #ffffff 0 50%) 0 0 / 16px 16px; }
+  img { display: block; max-width: 100%; max-height: 480px; object-fit: contain; }
+  &__change {
+    position: absolute;
+    left: 50%;
+    bottom: 0.75rem;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(22, 22, 22, 0.8);
+    color: #ffffff;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+}
+
+.axr-ban-count-pick {
+  display: inline-flex;
+  gap: 0.35rem;
+  button {
+    width: 2.6rem;
+    height: 2.6rem;
+    border: 1px solid var(--pub-line);
+    border-radius: 8px;
+    background: #ffffff;
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--pub-ink);
+    cursor: pointer;
+    &:hover { border-color: var(--pub-ink); }
+    &.is-on { background: var(--pub-ink); border-color: var(--pub-ink); color: #ffffff; }
+  }
+}
+
+.axr-ban-never {
+  margin-top: 0.4rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 8px;
+  background: #f4f3fb;
+  strong { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8125rem; margin-bottom: 0.35rem; }
+  ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.2rem; }
+  li { font-size: 0.75rem; line-height: 1.45; color: #514d69; }
+}
+
+.axr-ban-choices--4 { @media (min-width: 900px) { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+.axr-ban-swatch--auto {
+  display: grid;
+  place-items: center;
+  background: #f4f3fb;
+  color: var(--pub-ink);
+  border: 1px dashed #c6c6c6;
+}
+
+// La referencia de un clon, plegable encima de las variantes.
+.axr-ban-ref {
+  margin-bottom: 1rem;
+  summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+  &__sum { font-weight: 400; color: var(--pub-muted); font-size: 0.8125rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  &__grid {
+    display: grid;
+    gap: 1rem;
+    margin-top: 0.85rem;
+    @media (min-width: 900px) { grid-template-columns: minmax(200px, 280px) minmax(0, 1fr); }
+    img { width: 100%; border-radius: 8px; border: 1px solid var(--pub-line); }
+  }
+  dl { margin: 0; display: grid; gap: 0.6rem; align-content: start; }
+  dt { font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--pub-muted); }
+  dd { margin: 0.1rem 0 0; font-size: 0.8125rem; line-height: 1.5; }
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.2rem;
+    li { display: flex; gap: 0.35rem; align-items: flex-start; svg { flex: none; margin-top: 0.2rem; } }
+    &--ok li { color: #0e6027; }
+    &--error li { color: #750e13; }
+  }
+}
+
+.axr-ban-pop__body textarea { width: 100%; padding: 0.5rem 0.65rem; border: 1px solid var(--pub-line); border-radius: 8px; font: inherit; font-size: 0.8125rem; resize: vertical; }

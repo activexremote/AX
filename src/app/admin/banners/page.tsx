@@ -60,6 +60,7 @@ export default async function BannersPage() {
                       {copy.course[c.course]} · {copy.objective[c.objective]} · {c.language.toUpperCase()}
                     </small>
                     <span className="axr-ban-card__meta">
+                      {c.kind === "clon" ? <span className="axr-ban-pill">{copy.tabClone}</span> : null}
                       <span>{fill(copy.variants, vivos.length)}</span>
                       {aprobadas ? <span className="axr-ban-pill axr-ban-pill--ok">{fill(copy.approvedN, aprobadas)}</span> : null}
                     </span>

@@ -61,6 +61,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               {/* Anuncios para Meta: misma forma que publicaciones. */}
               <Link href="/admin/banners">{banCopy[locale].nav}</Link>
               <div className="axr-admin__sub">
+                <Link href="/admin/banners/clonar">{banCopy[locale].tabClone}</Link>
                 <Link href="/admin/banners/normas">{banCopy[locale].tabRules}</Link>
                 <Link href="/admin/banners/nueva">+ {banCopy[locale].new}</Link>
               </div>

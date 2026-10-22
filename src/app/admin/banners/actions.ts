@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 
 import type { Calidad } from "@/lib/banners/costes";
 import { ANGULOS, CTAS, CURSOS, OBJETIVOS, PLANTILLAS, leerCopy, usaImagen, type Angulo, type Plantilla } from "@/lib/banners/formatos";
-import { generarVariantes, type Brief, type Gasto } from "@/lib/banners/generar";
-import { BUCKET, borrarImagen, generarImagen } from "@/lib/banners/imagen";
+import { generarClones, generarVariantes, type Brief, type Gasto, type Variante } from "@/lib/banners/generar";
+import { BUCKET, borrarImagen, generarImagen, leerImagen } from "@/lib/banners/imagen";
 import { bloquea, revisar, type Flag } from "@/lib/banners/normas";
 import { createClient } from "@/lib/supabase/server";
 import type { AdBanner, AdBannerStatus, AdCampaign, AdCourse, AdObjective } from "@/lib/supabase/types";
@@ -96,20 +96,31 @@ async function crearVariantes(
   const r = await generarVariantes(brief);
   await apuntarGasto(supabase, userId, campaign.id, "texto", r.gastos);
   if (!r.variantes.length) return { error: r.error ?? "No se ha generado ninguna variante." };
+  return guardarVariantes(supabase, userId, campaign, r.variantes, campaign.style, calidad);
+}
 
+/** Guarda variantes ya escritas y les pinta la foto si la plantilla la lleva. */
+async function guardarVariantes(
+  supabase: Supabase,
+  userId: string,
+  campaign: AdCampaign,
+  variantes: Variante[],
+  template: string,
+  calidad: Calidad,
+): Promise<{ error?: string }> {
   const { count } = await supabase.from("ad_banners").select("id", { count: "exact", head: true }).eq("campaign_id", campaign.id);
   const desde = count ?? 0;
-  const conFoto = usaImagen(campaign.style);
+  const conFoto = usaImagen(template);
 
   const { data: filas, error } = await supabase
     .from("ad_banners")
     .insert(
-      r.variantes.map((v, i) => ({
+      variantes.map((v, i) => ({
         campaign_id: campaign.id,
         position: desde + i,
         angle: v.angle,
         copy: v.copy,
-        template: campaign.style,
+        template,
         image_prompt: v.imagePrompt,
         review: { flags: revisar(v.copy, { imagenIa: conFoto }), checkedAt: new Date().toISOString() },
       })),
@@ -336,4 +347,97 @@ export async function borrarCampana(id: string): Promise<{ error?: string }> {
   if (error) return { error: error.message };
   revalidatePath("/admin/banners");
   return {};
+}
+
+// ── Clonador ──────────────────────────────────────────────
+const CLON_TIPOS: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+
+export async function clonarBanner(formData: FormData): Promise<{ id?: string; error?: string }> {
+  const { supabase, userId } = await assertAdmin();
+
+  const file = formData.get("reference");
+  if (!(file instanceof File) || !file.size) return { error: "Arrastra o elige la imagen del banner que quieres clonar." };
+  const ext = CLON_TIPOS[file.type];
+  if (!ext) return { error: "La imagen tiene que ser JPG, PNG o WebP." };
+  if (file.size > MAX_BYTES) return { error: "La imagen pesa más de 8 MB." };
+
+  const course = String(formData.get("course") ?? "escuela") as AdCourse;
+  const language = formData.get("language") === "en" ? "en" : "es";
+  const calidad = String(formData.get("quality") ?? "medium") as Calidad;
+  const count = Math.max(1, Math.min(5, Number(formData.get("count")) || 3));
+  const indicacion = String(formData.get("prompt") ?? "").trim().slice(0, 1500);
+  const plantillaPedida = String(formData.get("style") ?? "auto");
+  if (!CURSOS.includes(course) || !CALIDADES.includes(calidad)) return { error: "Hay un valor del formulario que no se reconoce." };
+
+  // La campaña se crea antes de llamar a la IA: así la referencia queda
+  // guardada aunque OpenAI falle, y se puede reintentar.
+  const { data, error } = await supabase
+    .from("ad_campaigns")
+    .insert({
+      name: String(formData.get("name") ?? "").trim().slice(0, 120) || `Clon · ${file.name.replace(/\.[^.]+$/, "").slice(0, 40)} · ${new Date().toLocaleDateString("es-ES")}`,
+      kind: "clon",
+      course,
+      objective: "leads",
+      language,
+      style: (PLANTILLAS as string[]).includes(plantillaPedida) ? plantillaPedida : "foto",
+      angles: [],
+      reference_prompt: indicacion || null,
+      created_by: userId,
+    })
+    .select("*")
+    .single();
+  if (error || !data) return { error: `No se pudo crear la campaña: ${error?.message ?? ""}` };
+  const campaign = data as AdCampaign;
+
+  const bytes = Buffer.from(await file.arrayBuffer());
+  const refPath = `${campaign.id}/referencia.${ext}`;
+  const subida = await supabase.storage.from(BUCKET).upload(refPath, bytes, { contentType: file.type, upsert: true });
+  if (subida.error) return { id: campaign.id, error: `No se pudo guardar la referencia: ${subida.error.message}` };
+  await supabase.from("ad_campaigns").update({ reference_path: refPath }).eq("id", campaign.id);
+
+  const r = await generarClones(
+    { course, objective: "leads", language, audience: undefined, notes: undefined },
+    `data:${file.type};base64,${bytes.toString("base64")}`,
+    count,
+    indicacion,
+  );
+  await apuntarGasto(supabase, userId, campaign.id, "texto", r.gastos);
+  if (!r.variantes.length) {
+    revalidatePath("/admin/banners");
+    return { id: campaign.id, error: r.error ?? "No se ha generado ninguna variante." };
+  }
+
+  // Si se pidió «la que mejor encaje», manda el análisis.
+  const template = (PLANTILLAS as string[]).includes(plantillaPedida) ? plantillaPedida : r.analisis?.template ?? "foto";
+  const { angle: _a, template: _t, ...analisis } = r.analisis ?? ({} as NonNullable<typeof r.analisis>);
+  await supabase
+    .from("ad_campaigns")
+    .update({ reference_analysis: r.analisis ? analisis : null, style: template, angles: r.analisis ? [r.analisis.angle] : [] })
+    .eq("id", campaign.id);
+
+  const g = await guardarVariantes(supabase, userId, { ...campaign, style: template }, r.variantes, template, calidad);
+  revalidatePath("/admin/banners");
+  return { id: campaign.id, error: g.error ?? r.error };
+}
+
+/** Más clones de la misma referencia, para una campaña que ya es un clon. */
+export async function masClones(campaignId: string, count: number, indicacion: string): Promise<{ error?: string }> {
+  const { supabase, userId } = await assertAdmin();
+  const { data } = await supabase.from("ad_campaigns").select("*").eq("id", campaignId).maybeSingle();
+  const c = data as AdCampaign | null;
+  if (!c?.reference_path) return { error: "Esta campaña no tiene imagen de referencia." };
+  const ref = await leerImagen(c.reference_path);
+  if (!ref) return { error: "No se encuentra la imagen de referencia." };
+
+  const r = await generarClones(
+    { course: c.course, objective: c.objective, language: c.language },
+    ref,
+    count,
+    [c.reference_prompt, indicacion.trim().slice(0, 1500)].filter(Boolean).join("\n"),
+  );
+  await apuntarGasto(supabase, userId, c.id, "texto", r.gastos);
+  if (!r.variantes.length) return { error: r.error ?? "No se ha generado ninguna variante." };
+  const g = await guardarVariantes(supabase, userId, c, r.variantes, c.style, "medium");
+  revalidatePath(`/admin/banners/${c.id}`);
+  return { error: g.error };
 }
