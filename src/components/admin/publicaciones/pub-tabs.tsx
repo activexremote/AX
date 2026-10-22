@@ -21,7 +21,22 @@ import { Icono, type NombreIcono } from "@/components/admin/publicaciones/iconos
 export type Tab = { href: string; label: string; icon: NombreIcono; exact?: boolean; badge?: number; tono?: "alerta" | "neutro"; punto?: boolean };
 export type Chip = { tono: "ok" | "aviso" | "mal" | "neutro"; label: string; valor: string; href: string; externo?: boolean; canal?: string };
 
-export function PubHeader({ tabs, nueva, chips, estadoLabel }: { tabs: Tab[]; nueva: string; chips: Chip[]; estadoLabel: string }) {
+// La usa también la sección de banners: `nuevaHref` y `label` cambian de una a otra.
+export function PubHeader({
+  tabs,
+  nueva,
+  chips,
+  estadoLabel,
+  nuevaHref = "/admin/publicaciones/nueva",
+  label = "Publicaciones",
+}: {
+  tabs: Tab[];
+  nueva: string;
+  chips: Chip[];
+  estadoLabel: string;
+  nuevaHref?: string;
+  label?: string;
+}) {
   const path = usePathname();
   // Una publicación abierta (/admin/publicaciones/<id>) cuelga del inicio.
   const propias = tabs.filter((t) => !t.exact).map((t) => t.href);
@@ -31,7 +46,7 @@ export function PubHeader({ tabs, nueva, chips, estadoLabel }: { tabs: Tab[]; nu
   return (
     <header className="axr-pubh">
       <div className="axr-pubh__top">
-        <nav className="axr-pubh__tabs" aria-label="Publicaciones">
+        <nav className="axr-pubh__tabs" aria-label={label}>
           {tabs.map((t) => (
             <Link key={t.href} href={t.href} className={`axr-pubh__tab${activa(t) ? " is-active" : ""}`} aria-current={activa(t) ? "page" : undefined}>
               <Icono n={t.icon} />
@@ -41,7 +56,7 @@ export function PubHeader({ tabs, nueva, chips, estadoLabel }: { tabs: Tab[]; nu
             </Link>
           ))}
         </nav>
-        <Link href="/admin/publicaciones/nueva" className={`axr-pubh__new${path.endsWith("/nueva") ? " is-active" : ""}`}>
+        <Link href={nuevaHref} className={`axr-pubh__new${path.endsWith("/nueva") ? " is-active" : ""}`}>
           <Icono n="mas" />
           {nueva}
         </Link>

@@ -57,6 +57,10 @@ const D = {
     </>
   ),
   euro: <path d="M17 6.5A6 6 0 1 0 17 17.5M4 10h9M4 14h9" />,
+  // Banners
+  escudo: <path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6zM8.5 12l2.5 2.5 4.5-5" />,
+  descarga: <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />,
+  capas: <path d="M12 3l9 5-9 5-9-5zM3 13l9 5 9-5" />,
 };
 
 export type NombreIcono = keyof typeof D;
