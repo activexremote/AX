@@ -28,20 +28,18 @@ export default async function AdminLessonEditor({
 }) {
   const { id } = await params;
   const { editar } = await searchParams;
-  const data = await getLessonForView(id);
+  // Sin clave de OpenAI el editor sale igual: lo único que no aparece es el
+  // botón de estructurar con IA.
+  const [data, { t, locale }, iaLista] = await Promise.all([getLessonForView(id), getI18n(), aiConfigured()]);
   if (!data) notFound();
   const { questions } = data;
   // El panel trabaja SIEMPRE con la lección sin traducir: lo que se ve es lo
   // que hay en cada columna, y el selector decide cuál se edita.
   const { lesson, module } = data.raw;
-  const { t, locale } = await getI18n();
   const editLang = readEditLang(editar, "es");
   const bloquesEs = parseBlocks(lesson.content_blocks);
   const bloquesEn = parseBlocks(lesson.content_blocks_en);
   const copy = editorCopy[locale];
-  // Sin clave de OpenAI el editor sale igual: lo único que no aparece es el
-  // botón de estructurar con IA.
-  const iaLista = await aiConfigured();
 
   return (
     <div className="axr-admin-page">

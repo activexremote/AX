@@ -16,10 +16,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (profile.role !== "administrador" && profile.role !== "profesor") {
     redirect("/");
   }
-  const { t, locale } = await getI18n();
+  const [{ t, locale }, pendientes] = await Promise.all([
+    getI18n(),
+    profile.role === "administrador" ? contarPendientes() : null,
+  ]);
   const roleLabel = t.common[`role_${profile.role}` as const];
   const pc = pubCopy[locale];
-  const pendientes = profile.role === "administrador" ? await contarPendientes() : null;
 
   return (
     <div className="axr-admin">

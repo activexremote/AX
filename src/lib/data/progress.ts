@@ -1,3 +1,4 @@
+import { usuarioActual } from "@/lib/data/usuario";
 import { createClient } from "@/lib/supabase/server";
 import { localize } from "@/lib/data/localize";
 import { getLocale } from "@/lib/i18n/server";
@@ -5,9 +6,7 @@ import type { UserLessonProgress } from "@/lib/supabase/types";
 
 export async function getProgressForCurrentUser() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await usuarioActual();
   if (!user) return [];
 
   const { data } = await supabase
@@ -20,9 +19,7 @@ export async function getProgressForCurrentUser() {
 export async function getAggregatedProgress() {
   const supabase = await createClient();
   const locale = await getLocale();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await usuarioActual();
   if (!user) {
     return {
       totalLessons: 0,

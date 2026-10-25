@@ -1,3 +1,4 @@
+import { usuarioActual } from "@/lib/data/usuario";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type {
@@ -40,9 +41,7 @@ export async function listSubmissions(): Promise<Submission[]> {
  */
 export async function getFlashProgress(course: CourseKey) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await usuarioActual();
 
   const { data: modules } = await supabase
     .from("modules")
@@ -120,9 +119,7 @@ export async function getFlashProgress(course: CourseKey) {
 /** El catálogo de premios del curso, con su estado para el alumno. */
 export async function getUnlocks(course: CourseKey) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await usuarioActual();
 
   const { data: unlocks } = await supabase
     .from("unlocks")

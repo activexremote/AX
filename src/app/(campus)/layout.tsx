@@ -11,9 +11,15 @@ export default async function CampusLayout({ children }: { children: React.React
   // resto de rutas del campus): les servimos la landing pública en esa URL.
   if (!profile) return <LandingView />;
 
+  // Las dos consultas a la vez: no dependen la una de la otra.
+  const [matriculas, conAsistente] = await Promise.all([
+    profile.role === "alumno" ? getMyEnrollments() : null,
+    hasKnowledge(),
+  ]);
+
   // Un alumno sin matrícula activa tiene cuenta, pero no campus: se le explica
   // qué le falta en vez de enseñarle módulos vacíos. El equipo entra siempre.
-  if (profile.role === "alumno" && (await getMyEnrollments()).length === 0) {
+  if (matriculas && matriculas.length === 0) {
     return <PendingAccess profile={profile} />;
   }
 
@@ -21,7 +27,7 @@ export default async function CampusLayout({ children }: { children: React.React
     <div className="axr-page">
       {children}
       {/* Sin nada subido desde el panel, el chat no sabría contestar nada. */}
-      {(await hasKnowledge()) ? <AssistantWidget /> : null}
+      {conAsistente ? <AssistantWidget /> : null}
     </div>
   );
 }

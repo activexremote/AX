@@ -1,5 +1,5 @@
 import { SlackLogo } from "@/components/slack-logo";
-import { ToolLogo } from "@/components/landing/tools-section";
+import { ToolLogo, ToolSprite } from "@/components/landing/tools-section";
 import { ToolTooltip } from "@/components/landing/tool-tooltip";
 import { getLocale } from "@/lib/i18n/server";
 import { landingCopy } from "@/app/bienvenida/copy";
@@ -45,6 +45,7 @@ export async function StackBand() {
 
   return (
     <section id="herramientas" className="axr-stack">
+      <ToolSprite tools={shown} />
       <div className="axr-stack__head">
         <span className="axr-lp__eyebrow">{c.eyebrow}</span>
         <h2>{lp.proof.title}</h2>

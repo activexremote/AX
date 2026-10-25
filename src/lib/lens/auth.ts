@@ -1,11 +1,12 @@
+import { usuarioActual } from "@/lib/data/usuario";
 import { createClient } from "@/lib/supabase/server";
 
 /** Perfil + condición de superadmin de la sesión actual, o null si no hay sesión. */
 export async function getLensSession() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Sin ida al servidor de Supabase: ver lib/data/usuario.ts. Las acciones
+  // (assertSuperAdmin) siguen con getUser().
+  const user = await usuarioActual();
   if (!user) return null;
 
   const [{ data: profile }, { data: superadmin }] = await Promise.all([

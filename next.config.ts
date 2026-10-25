@@ -32,6 +32,12 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ["@carbon/react", "@carbon/icons-react"],
+    // Volver a una sección que se acaba de ver (ir y venir entre Módulos y
+    // Tareas, o entre las pestañas de Publicaciones) sale de la memoria del
+    // navegador durante 30 s en vez de pedirse otra vez al servidor. Lo que
+    // cambia desde la propia web no queda viejo: las acciones del servidor
+    // (revalidatePath) y router.refresh() vacían esa memoria.
+    staleTimes: { dynamic: 30 },
     // Los documentos del asistente (/admin/asistente) se suben por server
     // action, y el límite por defecto es 1 MB: un PDF de calendario con
     // cuatro imágenes ya no entraba. 4 MB, que es lo que admite Vercel en el

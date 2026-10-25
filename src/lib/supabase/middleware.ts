@@ -94,9 +94,16 @@ export async function updateSession(
     },
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // ¿Hay sesión? `getClaims()` verifica la firma del token con las claves
+  // públicas del proyecto (ES256), que guarda en memoria: no pregunta al
+  // servidor de Supabase en cada petición, como hacía `getUser()`. Si el
+  // token ha caducado, lo refresca (eso sí es una llamada) y deja las cookies
+  // nuevas en `cookies`.
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const hayUsuario = typeof claimsData?.claims?.sub === "string";
+  // El usuario completo sólo hace falta para el candado del SMS (mira si el
+  // teléfono está confirmado). Con el SMS apagado, no se pide.
+  const user = hayUsuario && PHONE_OTP_ENABLED ? (await supabase.auth.getUser()).data.user : null;
 
   // La raíz "/" es pública: sirve la landing a invitados y el campus a
   // usuarios con sesión (el reparto lo hace (campus)/layout.tsx).
@@ -115,7 +122,7 @@ export async function updateSession(
     isCrawlerFile ||
     PUBLIC_PATHS.some((p) => path.startsWith(p));
 
-  if (!user && !isPublic) {
+  if (!hayUsuario && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     // Se vuelve a la URL que la persona veía, con su prefijo de idioma.
@@ -137,19 +144,19 @@ export async function updateSession(
 
   // Y al revés: quien no tiene nada pendiente no se queda encallado en la
   // pantalla del SMS si vuelve a ella con el botón de atrás.
-  if (user && !faltaVerificarTelefono(user) && path === VERIFY_PATH) {
+  if (hayUsuario && !(user && faltaVerificarTelefono(user)) && path === VERIFY_PATH) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     url.search = "";
     return { redirect: NextResponse.redirect(url), cookies, hasUser: true };
   }
 
-  if (user && path === "/login") {
+  if (hayUsuario && path === "/login") {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     url.search = "";
     return { redirect: NextResponse.redirect(url), cookies, hasUser: true };
   }
 
-  return { cookies, hasUser: Boolean(user) };
+  return { cookies, hasUser: hayUsuario };
 }

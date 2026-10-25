@@ -1,3 +1,4 @@
+import { usuarioActual } from "@/lib/data/usuario";
 import { createClient } from "@/lib/supabase/server";
 import type { AssignmentStatus } from "@/lib/supabase/types";
 
@@ -72,9 +73,7 @@ export async function listAssignments() {
 
 export async function getMyAssignments() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await usuarioActual();
   if (!user) return [] as AssignmentRow[];
 
   const { data } = await supabase

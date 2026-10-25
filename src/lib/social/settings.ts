@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import OpenAI from "openai";
 
 import { parseRitmo, type Ritmo } from "@/lib/social/calendario";
@@ -44,14 +46,15 @@ export type PublicSocialSettings = {
   lastTestDetail: string | null;
 };
 
-async function readRow(): Promise<SocialSettings | null> {
+// Una lectura por petición: el panel la pide desde varios sitios a la vez.
+const readRow = cache(async (): Promise<SocialSettings | null> => {
   const { data } = await createAdminClient()
     .from("social_settings")
     .select("*")
     .eq("id", "default")
     .maybeSingle();
   return (data as SocialSettings | null) ?? null;
-}
+});
 
 export async function deepseekClient(): Promise<{ client: OpenAI; model: string } | null> {
   const row = await readRow();
@@ -139,7 +142,9 @@ export async function saldoDeepseek(): Promise<number | null> {
     const res = await fetch(`${DEEPSEEK_URL}/user/balance`, {
       headers: { Authorization: `Bearer ${key}` },
       signal: AbortSignal.timeout(5_000),
-      cache: "no-store",
+      // El saldo no cambia de un clic a otro: cinco minutos de caché le
+      // ahorran a cada página de publicaciones una llamada a DeepSeek.
+      next: { revalidate: 300 },
     });
     if (!res.ok) return null;
     const data = (await res.json()) as { balance_infos?: { currency: string; total_balance: string }[] };

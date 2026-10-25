@@ -1,0 +1,31 @@
+// Bloques grises con un brillo que pasa: «está llegando», sin spinner.
+.axr-esq {
+  padding: 1.5rem 0;
+  &--campus { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+
+  &__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+  &__titulo,
+  &__linea,
+  &__tarjeta,
+  &__fila {
+    border-radius: 10px;
+    background: linear-gradient(90deg, #efeff3 0%, #f7f7fa 40%, #efeff3 80%) 0 0 / 300% 100%;
+    animation: axr-esq-brillo 1.3s ease-in-out infinite;
+  }
+  &__titulo { width: min(320px, 70%); height: 2rem; margin-bottom: 0.75rem; }
+  &__linea { width: min(520px, 90%); height: 0.9rem; margin-bottom: 1.75rem; }
+  &__rejilla { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+  &__tarjeta { height: 160px; }
+  &__filas { display: grid; gap: 0.6rem; }
+  &__fila { height: 64px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    &__titulo, &__linea, &__tarjeta, &__fila { animation: none; }
+  }
+}
+
+@keyframes axr-esq-brillo {
+  from { background-position: 100% 0; }
+  to { background-position: 0 0; }
+}
