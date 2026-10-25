@@ -257,6 +257,31 @@ export function AjustesPublicaciones({
         </div>
       </div>
 
+      <div className="axr-admin-card" id="giphy">
+        <h2>{copy.sGiphy}</h2>
+        <p style={{ fontSize: "0.8125rem", color: "var(--axr-text-helper)", marginTop: 0 }}>
+          {copy.sGiphyLead}{" "}
+          <a href="https://developers.giphy.com/dashboard/" target="_blank" rel="noreferrer">
+            developers.giphy.com ↗
+          </a>
+        </p>
+        <div className="axr-form">
+          <div className="axr-form__row">
+            <label htmlFor="giphy_api_key">{copy.sGiphyKey}</label>
+            <input id="giphy_api_key" name="giphy_api_key" type="password" autoComplete="off" spellCheck={false} />
+            <small>{settings.giphyHint ? `${copy.sUpSaved}: ${settings.giphyHint}` : copy.sKeyNone}</small>
+          </div>
+          {settings.giphyHint ? (
+            <div className="axr-form__row">
+              <label style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                <input type="checkbox" name="clear_giphy" style={{ width: "auto" }} />
+                {copy.sGiphyClear}
+              </label>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
       <div className="axr-form__actions">
         <button type="submit" className="axr-btn" disabled={pending}>
           {pending ? copy.sSaving : copy.sSave}

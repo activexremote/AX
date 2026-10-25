@@ -348,6 +348,8 @@ export interface SocialSettings {
   /** ⚠︎ Tampoco ésta. */
   uploadpost_api_key: string | null;
   uploadpost_user: string | null;
+  /** ⚠︎ Tampoco ésta (0024). */
+  giphy_api_key: string | null;
   /** Días ISO y hora de Madrid por canal (ver lib/social/calendario.ts). */
   cadence: unknown;
   alert_days: number;

@@ -36,16 +36,23 @@ const otroModelo = (status?: number, msg = "") =>
 
 export type ImagenGenerada = { path: string; prompt: string; gasto: Gasto };
 
+export type TamanoImagen = "1024x1024" | "1536x1024" | "1024x1536";
+
+/**
+ * También la usan las publicaciones (lib/social/medios.ts), con su bucket,
+ * su tamaño y su dirección visual; por defecto, lo de los banners.
+ */
 export async function generarImagen(
   escena: string,
   destino: string,
   calidad: Calidad = "medium",
+  opts: { bucket?: string; size?: TamanoImagen; estilo?: string } = {},
 ): Promise<{ ok: true; imagen: ImagenGenerada } | { ok: false; error: string }> {
   const cfg = await resolveAi();
   if (!cfg) return { ok: false, error: "Falta la clave de OpenAI: configúrala en el panel → IA." };
   const client = new OpenAI({ apiKey: cfg.key });
 
-  const prompt = `${escena.trim()}\n\n${ESTILO_IMAGEN}`;
+  const prompt = `${escena.trim()}\n\n${opts.estilo ?? ESTILO_IMAGEN}`;
   let ultimo = "";
 
   for (const model of MODELOS) {
@@ -53,7 +60,7 @@ export async function generarImagen(
       const res = await client.images.generate({
         model,
         prompt,
-        size: "1024x1536",
+        size: opts.size ?? "1024x1536",
         quality: calidad,
         output_format: "jpeg",
         output_compression: 88,
@@ -63,7 +70,7 @@ export async function generarImagen(
       if (!b64) return { ok: false, error: "OpenAI no ha devuelto ninguna imagen." };
 
       const { error } = await createAdminClient()
-        .storage.from(BUCKET)
+        .storage.from(opts.bucket ?? BUCKET)
         .upload(destino, Buffer.from(b64, "base64"), { contentType: "image/jpeg", upsert: true });
       if (error) return { ok: false, error: `No se pudo guardar la imagen: ${error.message}` };
 
