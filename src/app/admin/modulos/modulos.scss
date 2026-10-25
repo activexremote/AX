@@ -1,0 +1,239 @@
+// ══════════════════════════════════════════════════════════
+//  Módulos y lecciones
+//
+//  La lista agrupada por curso, el detalle de un módulo con sus lecciones y
+//  la cabecera del editor de lecciones. Lo común está en admin.scss.
+// ══════════════════════════════════════════════════════════
+
+// ── Barra: buscador y filtro ──
+.axr-modlist {
+  &__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  &__search {
+    flex: 1 1 280px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.75rem;
+    background: #ffffff;
+    border: 1px solid var(--adm-line-strong);
+    border-radius: 10px;
+    color: var(--adm-muted);
+    &:focus-within { border-color: var(--adm-accent); box-shadow: 0 0 0 3px rgba(91, 75, 245, 0.16); }
+    input {
+      flex: 1;
+      min-width: 0;
+      padding: 0.6rem 0;
+      border: 0;
+      background: transparent;
+      font: inherit;
+      font-size: 0.875rem;
+      color: var(--adm-ink);
+      outline: none;
+    }
+  }
+  &__filters {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid var(--adm-line);
+    border-radius: 10px;
+    background: #ffffff;
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.4rem 0.75rem;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      font: inherit;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--adm-muted);
+      cursor: pointer;
+      span { font-weight: 500; opacity: 0.7; }
+      &[aria-pressed="true"] { background: var(--adm-ink); color: #ffffff; }
+    }
+  }
+
+  // ── Un curso ──
+  &__group { margin-bottom: 1rem; }
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.9rem 1.1rem;
+    border-bottom: 1px solid var(--adm-line);
+    background: #fcfcfd;
+    > div { flex: 1; min-width: 0; }
+    h2 { margin: 0; font-size: 0.9375rem; }
+    small { font-size: 0.75rem; color: var(--adm-muted); }
+  }
+  &__dot {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--adm-accent);
+    &--remote-professional { background: #2f6bff; }
+    &--remote-founder { background: #e4462f; }
+    &--web-abc { background: #f59e0b; }
+  }
+
+  &__rows { list-style: none; margin: 0; padding: 0; }
+  &__rows li + li { border-top: 1px solid var(--adm-line); }
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.75rem 1.1rem;
+    color: var(--adm-ink);
+    text-decoration: none !important;
+    transition: background 0.1s;
+    &:hover { background: #fafafb; color: var(--adm-ink); }
+    &:hover .axr-modlist__go { color: var(--adm-accent); transform: translateX(2px); }
+  }
+  &__n {
+    flex: none;
+    width: 2.6rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--adm-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  &__main {
+    flex: 1;
+    min-width: 0;
+    display: grid;
+    gap: 0.1rem;
+    strong { font-size: 0.875rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    small { font-size: 0.6875rem; color: var(--adm-muted); letter-spacing: 0.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  }
+  &__meta { display: flex; align-items: center; gap: 0.9rem; flex: none; }
+  &__fact {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    min-width: 5.5rem;
+    font-size: 0.75rem;
+    color: var(--adm-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  &__go { flex: none; color: #b9b9c1; transition: color 0.12s, transform 0.12s; display: inline-flex; }
+
+  @media (max-width: 720px) {
+    &__row { flex-wrap: wrap; gap: 0.4rem 0.75rem; }
+    &__n { width: auto; }
+    &__meta { flex-basis: 100%; padding-left: 0; gap: 0.75rem; flex-wrap: wrap; }
+    &__fact { min-width: 0; }
+    &__go { display: none; }
+  }
+}
+
+// ── Detalle de un módulo y editor de lecciones ──
+.axr-moddetail {
+  &__crumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.8125rem;
+    color: var(--adm-muted);
+    a { color: var(--adm-muted); &:hover { color: var(--adm-ink); } }
+    span[aria-hidden] { opacity: 0.6; }
+  }
+  &__pills { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+  &__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+
+  &__grid {
+    display: grid;
+    gap: 1.25rem;
+    align-items: start;
+    @media (min-width: 1100px) { grid-template-columns: minmax(0, 1.35fr) minmax(320px, 1fr); }
+    > .axr-admin-card { margin-bottom: 0; }
+  }
+  &__cardhead {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    h2 { margin: 0 0 0.2rem; }
+    p { margin: 0; font-size: 0.8125rem; color: var(--adm-muted); }
+  }
+}
+
+// Las lecciones de un módulo
+.axr-lessonlist {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  border: 1px solid var(--adm-line);
+  border-radius: 10px;
+  overflow: hidden;
+
+  li { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.85rem; background: #ffffff; }
+  li + li { border-top: 1px solid var(--adm-line); }
+  li:hover { background: #fafafb; }
+
+  &__n { flex: none; width: 1.75rem; height: 1.75rem; display: grid; place-items: center; border-radius: 8px; background: #f1f1f4; font-size: 0.75rem; font-weight: 700; color: #3d3d44; }
+  &__main {
+    flex: 1;
+    min-width: 0;
+    display: grid;
+    gap: 0.15rem;
+    a { font-size: 0.875rem; font-weight: 600; color: var(--adm-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    span { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; font-size: 0.75rem; color: var(--adm-muted); }
+  }
+  &__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.35rem; flex: none; }
+  &__empty { padding: 1.5rem 1rem; text-align: center; color: var(--adm-muted); font-size: 0.875rem; }
+
+  @media (max-width: 560px) {
+    li { flex-wrap: wrap; }
+    &__actions { flex-basis: 100%; justify-content: flex-start; padding-left: 2.5rem; }
+  }
+}
+
+.axr-lessonnew {
+  margin-top: 0.25rem;
+  padding: 1rem;
+  border: 1px dashed var(--adm-line-strong);
+  border-radius: 10px;
+  background: #fcfcfd;
+  h3 { margin: 0 0 0.75rem; font-size: 0.875rem; }
+}
+
+// Índice de secciones del editor de lecciones
+.axr-lessonnav {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  gap: 0.35rem;
+  margin: 0 0 1.25rem;
+  padding: 0.5rem 0;
+  overflow-x: auto;
+  background: var(--adm-bg);
+  a {
+    flex: none;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid var(--adm-line);
+    border-radius: 999px;
+    background: #ffffff;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #3d3d44;
+    &:hover { border-color: var(--adm-accent); color: var(--adm-accent); text-decoration: none; }
+  }
+  @media (max-width: 900px) { top: 52px; }
+}
+.axr-lessoned .axr-admin-card { scroll-margin-top: 4rem; }
+
+// Borrar, en rojo de texto: se ve como lo que es sin gritar.
+.axr-moddetail .axr-btn--delete,
+.axr-lessonlist .axr-btn--delete { color: var(--adm-bad); }

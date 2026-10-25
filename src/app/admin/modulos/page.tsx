@@ -1,59 +1,39 @@
-import Link from "next/link";
-
-import { listModulesWithCounts } from "@/lib/data/modules";
+import { ListaModulos, type FilaModulo } from "@/components/admin/lista-modulos";
 import { NewModuleButton } from "@/components/admin/new-module-button";
+import { listModulesWithCounts } from "@/lib/data/modules";
+import { adminACopy } from "@/lib/i18n/admin-v2-a";
 import { getI18n } from "@/lib/i18n/server";
+import "@/app/admin/modulos/modulos.scss";
 
-export default async function AdminModulesPage() {
-  const [modules, { t }] = await Promise.all([listModulesWithCounts(), getI18n()]);
+export default async function AdminModulesPage({ searchParams }: { searchParams: Promise<{ nuevo?: string; estado?: string }> }) {
+  const [modules, { locale }, sp] = await Promise.all([listModulesWithCounts(), getI18n(), searchParams]);
+  const c = adminACopy[locale];
+
+  // Sólo lo que pinta la lista: el resto del módulo no viaja al navegador.
+  const filas: FilaModulo[] = modules.map((m) => ({
+    id: m.id,
+    slug: m.slug,
+    code: m.code ?? null,
+    title: m.title,
+    course: m.course,
+    available: m.available,
+    order_index: m.order_index,
+    lessons_count: m.lessons_count,
+    estimated_minutes: m.estimated_minutes ?? null,
+  }));
 
   return (
     <div className="axr-admin-page">
       <div className="axr-admin-page__header">
         <div>
-          <h1>{t.admin.modulesTitle}</h1>
-          <p>{t.admin.modulesSubtitle}</p>
+          <h1>{c.modTitle}</h1>
+          <p>{c.modLead}</p>
         </div>
-        <NewModuleButton />
+        {/* El atajo del resumen llega con ?nuevo=1 y abre directamente el formulario. */}
+        <NewModuleButton abierto={sp.nuevo === "1"} />
       </div>
 
-      <div className="axr-admin-card">
-        <table className="axr-admin-table">
-          <thead>
-            <tr>
-              <th>{t.admin.colOrder}</th>
-              <th>{t.admin.colCode}</th>
-              <th>{t.admin.colTitle}</th>
-              <th>{t.admin.colLessons}</th>
-              <th>{t.admin.colTime}</th>
-              <th>{t.admin.colAvailable}</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {modules.length === 0 ? (
-              <tr><td colSpan={7} style={{ textAlign: "center", color: "var(--axr-text-helper)" }}>{t.admin.noModules}</td></tr>
-            ) : null}
-            {modules.map((m) => (
-              <tr key={m.id}>
-                <td>{m.order_index}</td>
-                <td>{m.code ?? "—"}</td>
-                <td>
-                  <Link href={`/admin/modulos/${m.id}`}>{m.title}</Link>
-                </td>
-                <td>{m.lessons_count}</td>
-                <td>{m.estimated_minutes ?? "—"} min</td>
-                <td>{m.available ? "✓" : "—"}</td>
-                <td className="axr-admin-table__actions">
-                  <Link className="axr-btn axr-btn--ghost" href={`/admin/modulos/${m.id}`}>
-                    {t.admin.edit}
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <ListaModulos modulos={filas} copy={c} filtroInicial={sp.estado === "ocultos" ? "ocultos" : "todos"} />
     </div>
   );
 }
