@@ -347,6 +347,7 @@ const es = {
     navOpenMenu: "Abrir el menú",
     navCloseMenu: "Cerrar el menú",
     navViewCampus: "Ver el campus",
+    navManual: "Manual del profesor",
   },
   adminForm: {
     create: "Crear",
@@ -887,6 +888,7 @@ const en: Dictionary = {
     navOpenMenu: "Open menu",
     navCloseMenu: "Close menu",
     navViewCampus: "View campus",
+    navManual: "Teacher handbook",
   },
   adminForm: {
     create: "Create",

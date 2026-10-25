@@ -18,6 +18,7 @@ const D = {
   ),
   almohadilla: <path d="M9 3L7 21M17 3l-2 18M4 8.5h17M3 15.5h17" />,
   megafono: <path d="M3 10v4h3l7 4V6L6 10zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" />,
+  manual: <path d="M12 6.5C10 5 7 4.5 3 5v13c4-.5 7 0 9 1.5 2-1.5 5-2 9-1.5V5c-4-.5-7 0-9 1.5zM12 6.5V19.5" />,
   menu: <path d="M4 6h16M4 12h16M4 18h16" />,
   cerrar: <path d="M6 6l12 12M18 6L6 18" />,
   salir: <path d="M10 5H5v14h5M14 8l4 4-4 4M18 12H9" />,

@@ -26,6 +26,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     {
       label: a.navGroupTeaching,
       items: [
+        { href: "/admin/manual", label: a.navManual, icon: "manual" },
         { href: "/admin/modulos", label: a.navModulesShort, icon: "libro" },
         { href: "/admin/tareas", label: a.navTasksShort, icon: "tareas" },
         { href: "/admin/guia-profesores", label: a.navTeacherGuideShort, icon: "birrete" },
