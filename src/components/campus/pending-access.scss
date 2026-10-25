@@ -1,0 +1,95 @@
+// Acceso pendiente (v2): una tarjeta centrada, sin la cabecera del campus
+// (todavía no hay campus que navegar). Los tokens y piezas comunes vienen de
+// campus.scss a través de `.axr-page`.
+.axr-pend {
+  // Aquí no hay cabecera fija: fuera el hueco que deja `.axr-page`.
+  padding: 1.25rem clamp(1rem, 4vw, 2rem) 3rem !important;
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: 2rem;
+  background:
+    radial-gradient(60% 50% at 50% 0%, rgba(109, 92, 255, 0.12) 0%, transparent 70%),
+    var(--cmp-bg);
+
+  &__top {
+    width: 100%;
+    max-width: 1080px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  &__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    svg { color: var(--cmp-accent); }
+  }
+
+  &__card {
+    width: 100%;
+    max-width: 560px;
+    display: grid;
+    gap: 1.1rem;
+    justify-items: start;
+    padding: 2rem 2.1rem;
+    background: #ffffff;
+    border: 1px solid var(--cmp-line);
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(20, 16, 40, 0.08);
+    @media (max-width: 520px) { padding: 1.5rem 1.25rem; }
+
+    h1 { margin: 0; font-size: clamp(1.45rem, 4vw, 1.85rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+    .axr-c-note { width: 100%; }
+  }
+  &__lead { margin: -0.35rem 0 0; color: var(--cmp-muted); font-size: 0.9375rem; line-height: 1.6; }
+
+  &__steps {
+    list-style: none;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+    li {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.7rem 0.85rem;
+      border-radius: 12px;
+      border: 1px solid var(--cmp-line);
+      background: #fafafb;
+      font-size: 0.9375rem;
+      color: var(--cmp-muted);
+      &[data-state="done"] { color: var(--cmp-text); }
+      &[data-state="current"] { border-color: var(--cmp-accent); background: var(--cmp-accent-bg); color: var(--cmp-accent-ink); font-weight: 600; }
+    }
+  }
+  &__mark {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #ececf0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    [data-state="done"] > & { background: var(--cmp-ok-bg); color: var(--cmp-ok); }
+    [data-state="current"] > & { background: var(--cmp-accent); color: #ffffff; }
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    width: 100%;
+    form { margin: 0; }
+    @media (max-width: 520px) {
+      > * { flex: 1 1 100%; }
+      .axr-btn { width: 100%; }
+    }
+  }
+}
