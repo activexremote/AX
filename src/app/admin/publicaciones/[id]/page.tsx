@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BorrarPublicacion, Estudio, ImagenesPublicacion, type CanalEstudio } from "@/components/admin/publicaciones/editor-publicacion";
+import { ParejaIdioma, PildoraIdioma } from "@/components/admin/publicaciones/desechar";
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import { getLocale } from "@/lib/i18n/server";
 import { fill, pubCopy } from "@/lib/i18n/publicaciones";
@@ -11,8 +12,9 @@ import { cargarPanel } from "@/lib/social/panel";
 import { createClient } from "@/lib/supabase/server";
 import type { SocialChannel, SocialPost, SocialVariant } from "@/lib/supabase/types";
 
-// Regenerar el artículo del blog es una llamada larga a DeepSeek.
-export const maxDuration = 180;
+// Regenerar el artículo del blog, o adaptarlo al otro idioma, es una llamada
+// larga a DeepSeek.
+export const maxDuration = 300;
 
 // ══════════════════════════════════════════════════════════
 //  Una publicación
@@ -74,14 +76,17 @@ export default async function PublicacionPage({
           </Link>
           <h1>{p.title}</h1>
           <div className="axr-pubpost-head__meta">
-            <span>{p.language === "en" ? "English" : "Español"}</span>
+            <PildoraIdioma language={p.language} />
             <span>{fill(copy.uWrittenOn, new Date(p.created_at).toLocaleDateString(locale, { day: "numeric", month: "long" }))}</span>
             <span>
               <Icono n="euro" size={13} /> {fill(copy.uAiCost, formatoUsd(coste, locale))}
             </span>
           </div>
         </div>
-        <BorrarPublicacion postId={p.id} copy={copy} />
+        <div className="axr-pubpost-head__actions">
+          <ParejaIdioma postId={p.id} pairId={p.pair_id} language={p.language} copy={copy} />
+          <BorrarPublicacion postId={p.id} copy={copy} />
+        </div>
       </div>
 
       {aviso ? <div className="axr-login__error" style={{ marginBottom: "1rem" }}>{aviso}</div> : null}

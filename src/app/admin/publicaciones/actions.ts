@@ -61,6 +61,24 @@ async function subirImagenes(
   return { images };
 }
 
+/**
+ * Borra del almacén las imágenes que ya no usa nadie. Las dos publicaciones
+ * de una pareja comparten los mismos archivos: quitar una imagen de una (o
+ * borrarla entera) no puede dejar a la otra sin ella.
+ */
+async function liberarImagenes(supabase: Supabase, paths: string[], salvoPost: string) {
+  const libres: string[] = [];
+  for (const path of paths) {
+    const { count } = await supabase
+      .from("social_posts")
+      .select("id", { count: "exact", head: true })
+      .neq("id", salvoPost)
+      .contains("images", [{ path }]);
+    if (!count) libres.push(path);
+  }
+  if (libres.length) await supabase.storage.from(BUCKET).remove(libres);
+}
+
 function imagenesDe(formData: FormData): { files: File[]; alts: string[] } {
   const files = formData.getAll("images").filter((f): f is File => f instanceof File && f.size > 0);
   const alts = formData.getAll("alts").map(String);
@@ -73,7 +91,11 @@ async function escribirVariantes(
   userId: string,
   post: SocialPost,
   canales: SocialChannel[],
-  opts: { instruction?: string; current?: Partial<Record<SocialChannel, unknown>> } = {},
+  opts: {
+    instruction?: string;
+    current?: Partial<Record<SocialChannel, unknown>>;
+    translateFrom?: { language: "es" | "en"; bodies: Partial<Record<SocialChannel, unknown>> };
+  } = {},
 ): Promise<string | undefined> {
   const r = await generar(
     {
@@ -83,6 +105,7 @@ async function escribirVariantes(
       imageCount: post.images.length,
       instruction: opts.instruction,
       current: opts.current,
+      translateFrom: opts.translateFrom,
     },
     canales,
   );
@@ -119,7 +142,10 @@ export async function crearPublicacion(formData: FormData): Promise<{ id?: strin
 
   const topic = String(formData.get("topic") ?? "").trim().slice(0, 4_000);
   const sourceUrl = String(formData.get("source_url") ?? "").trim();
-  const language = formData.get("language") === "en" ? "en" : "es";
+  // «ambos»: se escribe en español y se adapta al inglés en una segunda publicación enlazada.
+  const pedido = String(formData.get("language") ?? "es");
+  const ambos = pedido === "ambos";
+  const language = pedido === "en" ? "en" : "es";
   const canales = canalesDe(formData);
   const { files, alts } = imagenesDe(formData);
 
@@ -168,8 +194,72 @@ export async function crearPublicacion(formData: FormData): Promise<{ id?: strin
   // volver a generar sin repetir la subida ni la lectura del enlace.
   const fallo = await escribirVariantes(supabase, userId, conImagenes, canales);
 
-  revalidatePath("/admin/publicaciones");
-  return { id: post.id, error: subida.error ?? fallo };
+  // La versión en inglés sale de la española ya escrita: si ésa ha fallado,
+  // no hay nada que adaptar y se puede crear luego desde el editor.
+  let falloPareja: string | undefined;
+  if (ambos && !fallo) falloPareja = (await crearPareja(supabase, userId, conImagenes, "en")).error;
+
+  revalidatePath("/admin/publicaciones", "layout");
+  return { id: post.id, error: subida.error ?? fallo ?? falloPareja };
+}
+
+// ── La versión en el otro idioma ──────────────────────────
+
+/**
+ * Crea la publicación gemela en `language`, enlazada en las dos direcciones,
+ * con el mismo material y las mismas imágenes, y la escribe adaptando las
+ * versiones que ya tiene la original (sólo esos canales).
+ */
+async function crearPareja(
+  supabase: Supabase,
+  userId: string,
+  post: SocialPost,
+  language: "es" | "en",
+): Promise<{ id?: string; error?: string }> {
+  const { data: vs } = await supabase.from("social_variants").select("channel, body").eq("post_id", post.id);
+  const bodies: Partial<Record<SocialChannel, unknown>> = {};
+  for (const v of (vs ?? []) as Pick<SocialVariant, "channel" | "body">[]) {
+    if (v.body && Object.keys(v.body).length) bodies[v.channel] = v.body;
+  }
+  const canales = CANALES.filter((c) => bodies[c]);
+  if (!canales.length) return { error: "La publicación no tiene ningún canal escrito que adaptar." };
+
+  const base = post.title.replace(/ · (ES|EN)$/, "");
+  const { data: gemela, error } = await supabase
+    .from("social_posts")
+    .insert({
+      title: `${base} · ${language.toUpperCase()}`.slice(0, 200),
+      topic: post.topic,
+      source_url: post.source_url,
+      source_title: post.source_title,
+      source_text: post.source_text,
+      images: post.images,
+      language,
+      pair_id: post.id,
+      created_by: userId,
+    })
+    .select("*")
+    .single();
+  if (error || !gemela) return { error: error?.message ?? "No se pudo crear la versión en el otro idioma." };
+  await supabase.from("social_posts").update({ pair_id: gemela.id }).eq("id", post.id);
+
+  const fallo = await escribirVariantes(supabase, userId, gemela as SocialPost, canales, {
+    translateFrom: { language: post.language, bodies },
+  });
+  return { id: gemela.id, error: fallo };
+}
+
+export async function crearVersionIdioma(postId: string): Promise<{ id?: string; error?: string }> {
+  const { supabase, userId } = await assertAdmin();
+  const { data: post } = await supabase.from("social_posts").select("*").eq("id", postId).maybeSingle();
+  if (!post) return { error: "La publicación no existe." };
+  const p = post as SocialPost;
+  if (p.pair_id) return { id: p.pair_id };
+
+  const r = await crearPareja(supabase, userId, p, p.language === "es" ? "en" : "es");
+  revalidatePath(`/admin/publicaciones/${postId}`);
+  revalidatePath("/admin/publicaciones", "layout");
+  return r;
 }
 
 // ── Regenerar un canal ────────────────────────────────────
@@ -380,8 +470,8 @@ export async function quitarImagen(postId: string, path: string) {
   if (!post) return { error: "La publicación no existe." };
 
   const restantes = ((post.images ?? []) as SocialImage[]).filter((i) => i.path !== path);
-  await supabase.storage.from(BUCKET).remove([path]);
   await supabase.from("social_posts").update({ images: restantes, updated_at: new Date().toISOString() }).eq("id", postId);
+  await liberarImagenes(supabase, [path], postId);
 
   revalidatePath(`/admin/publicaciones/${postId}`);
   return { ok: true };
@@ -404,11 +494,37 @@ export async function borrarPublicacion(postId: string) {
   if (count) return { error: "Tiene canales ya publicados: no se puede borrar." };
 
   const paths = ((post.images ?? []) as SocialImage[]).map((i) => i.path);
-  if (paths.length) await supabase.storage.from(BUCKET).remove(paths);
   const { error } = await supabase.from("social_posts").delete().eq("id", postId);
   if (error) return { error: error.message };
+  if (paths.length) await liberarImagenes(supabase, paths, postId);
 
-  revalidatePath("/admin/publicaciones");
+  revalidatePath("/admin/publicaciones", "layout");
+  return { ok: true };
+}
+
+/**
+ * Desecha UN canal de una publicación (lo que se ve en la nevera es eso: un
+ * canal). Si era el último, la publicación ya no tiene nada y se va entera.
+ */
+export async function desecharVariante(id: string) {
+  const { supabase } = await assertAdmin();
+  const v = await variante(supabase, id);
+  if (!v) return { error: "No existe." };
+  if (v.status === "publicado") return { error: "Ya está publicada: no se puede desechar." };
+
+  const { error } = await supabase.from("social_variants").delete().eq("id", id);
+  if (error) return { error: error.message };
+
+  const { count } = await supabase.from("social_variants").select("id", { count: "exact", head: true }).eq("post_id", v.post_id);
+  if (!count) {
+    const { data: post } = await supabase.from("social_posts").select("images").eq("id", v.post_id).maybeSingle();
+    await supabase.from("social_posts").delete().eq("id", v.post_id);
+    const paths = ((post?.images ?? []) as SocialImage[]).map((i) => i.path);
+    if (paths.length) await liberarImagenes(supabase, paths, v.post_id);
+  }
+
+  revalidatePath(`/admin/publicaciones/${v.post_id}`);
+  revalidatePath("/admin/publicaciones", "layout");
   return { ok: true };
 }
 

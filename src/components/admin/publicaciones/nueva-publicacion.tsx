@@ -106,11 +106,13 @@ export function NuevaPublicacion({
   const [topic, setTopic] = useState("");
   const [url, setUrl] = useState("");
   const [canales, setCanales] = useState<SocialChannel[]>(canalInicial ? [canalInicial] : [...CANALES]);
-  const [idioma, setIdioma] = useState<"es" | "en">(defaultLanguage);
+  const [idioma, setIdioma] = useState<"es" | "en" | "ambos">(defaultLanguage);
+  const ambos = idioma === "ambos";
 
   const listo = Boolean(topic.trim() || url.trim()) && canales.length > 0;
-  const coste = estimar(model, canales, Boolean(url.trim()));
-  const segundos = (url.trim() ? 5 : 0) + (canales.includes("blog") ? 25 : 10);
+  // Con «ambos» se escribe dos veces (la segunda, adaptando la primera).
+  const coste = estimar(model, canales, Boolean(url.trim())) * (ambos ? 2 : 1);
+  const segundos = (url.trim() ? 5 : 0) + (canales.includes("blog") ? 25 : 10) * (ambos ? 2 : 1);
   const falta = !topic.trim() && !url.trim() ? copy.uNeedTopic : !canales.length ? copy.uNeedChannel : null;
 
   function handle(formData: FormData) {
@@ -190,12 +192,13 @@ export function NuevaPublicacion({
           </div>
           <div className="axr-pv-switch axr-pubnew__lang" role="group" aria-label={copy.fLanguage}>
             <input type="hidden" name="language" value={idioma} />
-            {(["es", "en"] as const).map((l) => (
-              <button key={l} type="button" aria-pressed={idioma === l} onClick={() => setIdioma(l)}>
-                {l === "es" ? "Español" : "English"}
+            {(["es", "en", "ambos"] as const).map((l) => (
+              <button key={l} type="button" aria-pressed={idioma === l} onClick={() => setIdioma(l)} title={l === "ambos" ? copy.langBothHint : undefined}>
+                {l === "es" ? "Español" : l === "en" ? "English" : copy.langBoth}
               </button>
             ))}
           </div>
+          {ambos ? <small className="axr-pubnew__hint">{copy.langBothHint}</small> : null}
         </div>
 
         {/* ── Opcional ── */}

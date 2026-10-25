@@ -26,7 +26,7 @@ import type { SocialChannel, SocialStatus, SocialVariant } from "@/lib/supabase/
 export type VarianteConPost = Pick<
   SocialVariant,
   "id" | "post_id" | "channel" | "status" | "scheduled_at" | "published_at" | "updated_at" | "error"
-> & { title: string };
+> & { title: string; language: "es" | "en" };
 
 export type Nivel = "bloquea" | "urgente" | "pendiente" | "mejora";
 
@@ -78,16 +78,17 @@ export const cargarPanel = cache(async (locale: string): Promise<Panel> => {
     cuentasUploadPost(),
     supabase
       .from("social_variants")
-      .select("id, post_id, channel, status, scheduled_at, published_at, updated_at, error, social_posts(title)")
+      .select("id, post_id, channel, status, scheduled_at, published_at, updated_at, error, social_posts(title, language)")
       .order("scheduled_at", { ascending: true, nullsFirst: false }),
     supabase.from("social_posts").select("id, created_at"),
     supabase.from("social_usage").select("post_id, cost_usd, created_at"),
   ]);
 
-  type Fila = Omit<VarianteConPost, "title"> & { social_posts: { title: string } | null };
+  type Fila = Omit<VarianteConPost, "title" | "language"> & { social_posts: { title: string; language: "es" | "en" } | null };
   const variantes: VarianteConPost[] = ((vs ?? []) as unknown as Fila[]).map(({ social_posts, ...v }) => ({
     ...v,
     title: social_posts?.title ?? "—",
+    language: social_posts?.language ?? "es",
   }));
 
   // ── Publicaciones y estados ──

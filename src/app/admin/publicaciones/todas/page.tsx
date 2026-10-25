@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { Desechar, PildoraIdioma } from "@/components/admin/publicaciones/desechar";
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import { getLocale } from "@/lib/i18n/server";
 import { fill, pubCopy } from "@/lib/i18n/publicaciones";
@@ -85,6 +86,7 @@ export default async function TodasPage({ searchParams }: { searchParams: Promis
                 ))}
                 <th className="axr-pubtable__num">{copy.costPerPost}</th>
                 <th className="axr-pubtable__num">{copy.colCreated}</th>
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -96,7 +98,7 @@ export default async function TodasPage({ searchParams }: { searchParams: Promis
                       <Link href={`/admin/publicaciones/${p.id}`} className="axr-pubtable__title">
                         {p.title}
                       </Link>
-                      <span className="axr-pubtable__lang">{p.language.toUpperCase()}</span>
+                      <PildoraIdioma language={p.language} />
                     </td>
                     {CANALES.map((c) => {
                       const v = vs.find((x) => x.channel === c);
@@ -116,6 +118,8 @@ export default async function TodasPage({ searchParams }: { searchParams: Promis
                     })}
                     <td className="axr-pubtable__num">{formatoUsd(panel.gasto.porPost.get(p.id) ?? 0, locale)}</td>
                     <td className="axr-pubtable__num">{new Date(p.created_at).toLocaleDateString(locale, { day: "numeric", month: "short" })}</td>
+                    {/* Lo publicado no se desecha: sigue en la red y su registro importa. */}
+                    <td className="axr-pubtable__act">{vs.some((v) => v.status === "publicado") ? null : <Desechar que="post" id={p.id} copy={copy} />}</td>
                   </tr>
                 );
               })}
