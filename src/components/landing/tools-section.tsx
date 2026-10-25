@@ -28,11 +28,29 @@ export function ToolLogo({ tool }: { tool: Tool }) {
 
   // Sólo entran herramientas con logotipo: el listado de tools.ts no tiene
   // ninguna sin `icon` ni `logo`.
-  const icon = tool.icon ? TOOL_ICONS[tool.icon] : undefined;
-  if (!icon) return null;
+  //
+  // El trazo no va aquí: cada logo se dibuja una vez en <ToolSprite> y aquí
+  // sólo se referencia. La banda del stack pinta los 75 logos tres veces
+  // (dos en la marquesina y otra en la rejilla) y los trazos de simple-icons
+  // son largos: repetidos inflaban la portada en más de 200 KB.
+  if (!tool.icon || !TOOL_ICONS[tool.icon]) return null;
   return (
     <svg viewBox="0 0 24 24" width={22} height={22} aria-hidden focusable="false">
-      <path d={icon.path} fill={icon.hex} />
+      <use href={`#axr-tool-${tool.icon}`} />
+    </svg>
+  );
+}
+
+/** Los trazos de los logos, una sola vez por página. Va antes que cualquier <ToolLogo>. */
+export function ToolSprite({ tools }: { tools: readonly Tool[] }) {
+  const iconos = [...new Set(tools.map((t) => t.icon).filter((i): i is NonNullable<Tool["icon"]> => Boolean(i && TOOL_ICONS[i])))];
+  return (
+    <svg width="0" height="0" aria-hidden focusable="false" style={{ position: "absolute", overflow: "hidden" }}>
+      {iconos.map((i) => (
+        <symbol key={i} id={`axr-tool-${i}`} viewBox="0 0 24 24">
+          <path d={TOOL_ICONS[i].path} fill={TOOL_ICONS[i].hex} />
+        </symbol>
+      ))}
     </svg>
   );
 }
@@ -60,6 +78,7 @@ export async function ToolsSection({ only }: Props) {
 
   return (
     <section id="herramientas" className="axr-lp__tools axr-tools">
+      <ToolSprite tools={shown} />
       <header className="axr-tools__head">
         <span className="axr-lp__eyebrow">{c.eyebrow}</span>
         <h2>{c.title}</h2>
