@@ -204,9 +204,9 @@
     inset: 0 auto 0 0;
     width: min(300px, 86vw);
     transform: translateX(-102%);
-    transition: transform 0.2s ease;
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.18);
-    &.is-open { transform: none; }
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    // La sombra sólo con el cajón abierto: cerrado asomaba por el borde.
+    &.is-open { transform: none; box-shadow: 0 0 40px rgba(0, 0, 0, 0.18); }
     &__close { display: inline-grid; }
   }
 }
