@@ -25,61 +25,54 @@ export async function listModulesWithCounts() {
 
 export async function getModuleBySlug(slug: string) {
   const supabase = await createClient();
-  const locale = await getLocale();
-  const { data: module } = await supabase
-    .from("modules")
-    .select("*")
-    .eq("slug", slug)
-    .maybeSingle();
-  if (!module) return null;
-
-  const { data: lessons } = await supabase
-    .from("lessons")
-    .select("*")
-    .eq("module_id", module.id)
-    .order("order_index");
+  // El módulo y sus lecciones en una sola consulta (antes eran dos, una
+  // detrás de otra). El orden se pone aquí: es una lista corta.
+  const [locale, { data: fila }] = await Promise.all([
+    getLocale(),
+    supabase.from("modules").select("*, lecciones:lessons(*)").eq("slug", slug).maybeSingle(),
+  ]);
+  if (!fila) return null;
+  const { lecciones, ...module } = fila as Module & { lecciones: Lesson[] | null };
 
   return {
     module: localize(module as Module, locale),
-    lessons: ((lessons ?? []) as Lesson[]).map((l) => localize(l, locale)),
+    lessons: [...(lecciones ?? [])].sort((a, b) => a.order_index - b.order_index).map((l) => localize(l, locale)),
   };
 }
 
+type Hermana = Pick<Lesson, "id" | "slug" | "title" | "title_en" | "order_index" | "duration_min">;
+
 export async function getLessonForView(lessonId: string) {
   const supabase = await createClient();
-  const locale = await getLocale();
-  const { data: lesson } = await supabase
-    .from("lessons")
-    .select("*")
-    .eq("id", lessonId)
-    .maybeSingle();
-  if (!lesson) return null;
-
-  const [{ data: module }, { data: siblings }, { data: quiz }] = await Promise.all([
-    supabase.from("modules").select("*").eq("id", lesson.module_id).maybeSingle(),
-    supabase.from("lessons").select("id, slug, title, title_en, order_index, duration_min")
-      .eq("module_id", lesson.module_id).order("order_index"),
-    supabase.from("quizzes").select("*").eq("lesson_id", lesson.id).maybeSingle(),
+  // Todo en una ida al servidor: la lección con su módulo y las lecciones
+  // hermanas, y el test con sus preguntas y opciones. Antes eran cuatro
+  // consultas en cadena (lección → módulo/hermanas/test → preguntas → opciones).
+  const [locale, { data: fila }, { data: quizFila }] = await Promise.all([
+    getLocale(),
+    supabase
+      .from("lessons")
+      .select("*, modulo:modules(*, hermanas:lessons(id, slug, title, title_en, order_index, duration_min))")
+      .eq("id", lessonId)
+      .maybeSingle(),
+    supabase.from("quizzes").select("*, preguntas:quiz_questions(*, opciones:quiz_options(*))").eq("lesson_id", lessonId).maybeSingle(),
   ]);
+  if (!fila) return null;
 
+  const { modulo, ...lesson } = fila as Lesson & { modulo: (Module & { hermanas: Hermana[] | null }) | null };
+  const { hermanas, ...module } = (modulo ?? {}) as Module & { hermanas: Hermana[] | null };
+  const siblings = [...(hermanas ?? [])].sort((a, b) => a.order_index - b.order_index);
+
+  let quiz: Quiz | null = null;
   let questions: (QuizQuestion & { options: QuizOption[] })[] = [];
-  if (quiz) {
-    const { data: qs } = await supabase
-      .from("quiz_questions")
-      .select("*")
-      .eq("quiz_id", quiz.id)
-      .order("order_index");
-    if (qs?.length) {
-      const { data: opts } = await supabase
-        .from("quiz_options")
-        .select("*")
-        .in("question_id", qs.map((q) => q.id))
-        .order("order_index");
-      questions = qs.map((q) => ({
+  if (quizFila) {
+    const { preguntas, ...resto } = quizFila as Quiz & { preguntas: (QuizQuestion & { opciones: QuizOption[] | null })[] | null };
+    quiz = resto as Quiz;
+    questions = [...(preguntas ?? [])]
+      .sort((a, b) => a.order_index - b.order_index)
+      .map(({ opciones, ...q }) => ({
         ...(q as QuizQuestion),
-        options: (opts ?? []).filter((o) => o.question_id === q.id) as QuizOption[],
+        options: [...(opciones ?? [])].sort((a, b) => a.order_index - b.order_index),
       }));
-    }
   }
 
   return {
@@ -89,10 +82,8 @@ export async function getLessonForView(lessonId: string) {
     // selector de idioma. Editar la versión traducida y guardarla en la otra
     // columna era la forma de pisar el español con el inglés.
     raw: { lesson: lesson as Lesson, module: module as Module },
-    siblings: ((siblings ?? []) as Pick<Lesson, "id" | "slug" | "title" | "title_en" | "order_index" | "duration_min">[]).map(
-      (s) => localize(s, locale),
-    ),
-    quiz: quiz as Quiz | null,
+    siblings: siblings.map((s) => localize(s, locale)),
+    quiz,
     questions,
   };
 }

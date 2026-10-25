@@ -7,6 +7,9 @@ import "./esqueleto.scss";
 //  parte fija (barra lateral, cabecera) y este esqueleto en el hueco de la
 //  página; sin ellos, un clic no hacía nada visible hasta que el servidor
 //  terminaba, y la web parecía colgada.
+//
+//  Están en app/loading.tsx (toda la web), admin/, admin/publicaciones/,
+//  admin/banners/ y (campus)/.
 // ══════════════════════════════════════════════════════════
 
 export function Esqueleto({ variante = "panel" }: { variante?: "panel" | "lista" | "campus" }) {

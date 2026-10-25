@@ -15,16 +15,15 @@ import "@/components/admin/block-editor.scss";
 export default async function AdminModuleDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  const { t } = await getI18n();
-  const { data: module } = await supabase.from("modules").select("*").eq("id", id).maybeSingle();
+  // Todo a la vez: nada de esto depende de lo anterior. Sin clave de OpenAI
+  // la caja de arrastrar lo dice y deja el camino a mano.
+  const [{ t }, { data: module }, { data: lessons }, iaLista] = await Promise.all([
+    getI18n(),
+    supabase.from("modules").select("*").eq("id", id).maybeSingle(),
+    supabase.from("lessons").select("*").eq("module_id", id).order("order_index"),
+    aiConfigured(),
+  ]);
   if (!module) notFound();
-  const { data: lessons } = await supabase
-    .from("lessons")
-    .select("*")
-    .eq("module_id", id)
-    .order("order_index");
-  // Sin clave de OpenAI la caja de arrastrar lo dice y deja el camino a mano.
-  const iaLista = await aiConfigured();
 
   return (
     <div className="axr-admin-page">

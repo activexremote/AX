@@ -38,7 +38,8 @@ export default async function LessonPage({
 }) {
   const { id } = await params;
   const { editar } = await searchParams;
-  const data = await getLessonForView(id);
+  // La lección y quién la mira, a la vez.
+  const [data, perfil] = await Promise.all([getLessonForView(id), getCurrentProfile()]);
   if (!data) notFound();
   const { lesson, module, siblings, quiz, questions, raw } = data;
   // Una lección relámpago se distingue por tener misión: el resto de la
@@ -49,7 +50,6 @@ export default async function LessonPage({
   const bloques = parseBlocks(lesson.content_blocks);
   // El profesorado edita la lección aquí mismo, sin pasar por el panel. Para
   // un alumno esto no existe: ni el componente ni su JavaScript se le mandan.
-  const perfil = await getCurrentProfile();
   const esEquipo = perfil?.role === "profesor" || perfil?.role === "administrador";
   const [progress, { t, locale }, submission] = await Promise.all([
     getProgressForCurrentUser(),

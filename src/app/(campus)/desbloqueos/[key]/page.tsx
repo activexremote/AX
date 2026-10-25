@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 
 import { CampusHeader } from "@/components/campus-header";
 import { UnlockDownload } from "@/components/campus/unlock-download";
+import { usuarioActual } from "@/lib/data/usuario";
 import { createClient } from "@/lib/supabase/server";
 import { unlockContent, unlockFilename } from "@/lib/relampago/unlocks";
 import { getI18n } from "@/lib/i18n/server";
@@ -22,10 +23,7 @@ export default async function UnlockPage({ params }: { params: Promise<{ key: st
   const contenido = unlockContent(key);
   if (!contenido) notFound();
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [supabase, user, { t }] = await Promise.all([createClient(), usuarioActual(), getI18n()]);
   if (!user) notFound();
 
   // Tres consultas. Para un alumno tienen que decir que sí las dos primeras:
@@ -52,7 +50,6 @@ export default async function UnlockPage({ params }: { params: Promise<{ key: st
 
   if (!unlock || (!ganado && !revisando)) notFound();
 
-  const { t } = await getI18n();
 
   return (
     <>
