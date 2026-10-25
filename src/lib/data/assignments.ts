@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { usuarioActual } from "@/lib/data/usuario";
 import { createClient } from "@/lib/supabase/server";
 import type { AssignmentStatus } from "@/lib/supabase/types";
@@ -83,3 +85,16 @@ export async function getMyAssignments() {
     .order("due_date", { ascending: true, nullsFirst: false });
   return hydrate(data ?? []);
 }
+
+/** Cuántas tareas tiene abiertas quien está dentro (el aviso de la cabecera). Una consulta de recuento, sin traer filas. */
+export const contarMisTareasAbiertas = cache(async (): Promise<number> => {
+  const user = await usuarioActual();
+  if (!user) return 0;
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("assignments")
+    .select("id", { count: "exact", head: true })
+    .eq("student_id", user.id)
+    .neq("status", "completada");
+  return count ?? 0;
+});

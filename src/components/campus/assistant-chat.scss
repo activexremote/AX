@@ -201,6 +201,9 @@
   bottom: 1.25rem;
   z-index: 90;
 
+  // En el móvil, por encima de la barra de navegación del campus.
+  @media (max-width: 760px) { right: 1rem; bottom: calc(76px + env(safe-area-inset-bottom)); }
+
   &__launcher {
     display: inline-flex;
     align-items: center;
@@ -235,7 +238,7 @@
 
   @media (max-width: 480px) {
     right: 0.75rem;
-    bottom: 0.75rem;
+    bottom: calc(72px + env(safe-area-inset-bottom));
 
     &__panel {
       width: calc(100vw - 1.5rem);

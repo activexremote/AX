@@ -1,186 +1,204 @@
+// La cabecera del campus (v2): blanca, fija, con la navegación en pastillas.
+// En el móvil la navegación pasa a una barra abajo.
 .axr-header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 48px;
-  background: #ffffff;
-  border-bottom: 1px solid var(--axr-border-ink);
+  height: 60px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid #e6e6ea;
   z-index: 50;
 
   &__inner {
     height: 100%;
-    max-width: 1440px;
+    max-width: 1280px;
     margin: 0 auto;
-    padding: 0 1.5rem;
+    padding: 0 clamp(1rem, 3vw, 2rem);
     display: flex;
     align-items: center;
-    gap: 2rem;
+    gap: 1.5rem;
   }
 
   &__logo {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--axr-text);
-
-    &:hover {
-      text-decoration: none;
-      color: var(--axr-blue-60);
-    }
-
-    span {
-      font-family: var(--axr-display);
-      font-size: 0.8125rem;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-    }
-
-    &-mark {
-      color: var(--axr-blue-60);
-    }
+    color: #161616;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    letter-spacing: -0.01em;
+    &:hover { text-decoration: none; color: #161616; }
+    &-mark { color: #5b4bf5; }
   }
 
   &__nav {
     display: flex;
-    gap: 1.5rem;
-    margin-left: auto;
+    align-items: center;
+    gap: 0.25rem;
   }
 
   &__link {
-    color: var(--axr-text-secondary);
-    font-family: var(--axr-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    height: 48px;
+    position: relative;
     display: inline-flex;
     align-items: center;
-    border-bottom: 2px solid transparent;
-    transition: color 0.15s, border-color 0.15s;
+    gap: 0.45rem;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    color: #55555c;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none !important;
+    transition: background 0.12s, color 0.12s;
+    svg { color: #8d8d95; }
 
-    &:hover {
-      color: var(--axr-text);
-      text-decoration: none;
-    }
-
+    &:hover { background: #f3f3f6; color: #161616; svg { color: #161616; } }
     &.is-active {
-      color: #161616;
-      border-bottom-color: #161616;
+      background: #f1efff;
+      color: #3a2fd0;
+      svg { color: #5b4bf5; }
     }
+    &--panel { margin-left: 0.35rem; border: 1px solid #e6e6ea; }
+  }
+
+  &__badge {
+    min-width: 1.15rem;
+    padding: 0 0.35rem;
+    border-radius: 999px;
+    background: #da1e28;
+    color: #ffffff;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1.15rem;
+    text-align: center;
   }
 
   &__meta {
+    margin-left: auto;
     display: flex;
     align-items: center;
-    gap: 1rem;
-  }
-
-  &__lang {
-    font-family: var(--axr-mono);
-    font-size: 0.6875rem;
-    color: var(--axr-text-secondary);
-    letter-spacing: 0.08em;
+    gap: 0.75rem;
   }
 
   &__user {
     position: relative;
-
     summary {
-      list-style: none;
-      cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.25rem;
-
-      &::-webkit-details-marker {
-        display: none;
-      }
+      padding: 0.2rem 0.6rem 0.2rem 0.2rem;
+      border-radius: 999px;
+      cursor: pointer;
+      list-style: none;
+      &::-webkit-details-marker { display: none; }
+      &:hover { background: #f3f3f6; }
     }
   }
 
   &__avatar {
-    width: 30px;
-    height: 30px;
-    background: #161616;
-    color: #ffffff;
     display: grid;
     place-items: center;
-    font-family: var(--axr-mono);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(140deg, #6d5cff, #a855f7);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    &--big { width: 40px; height: 40px; font-size: 0.875rem; flex: none; }
+  }
+  &__user-name { font-size: 0.875rem; font-weight: 500; color: #161616; }
+
+  &__menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    width: 280px;
+    padding: 0.5rem;
+    background: #ffffff;
+    border: 1px solid #e6e6ea;
+    border-radius: 14px;
+    box-shadow: 0 16px 40px rgba(20, 16, 40, 0.14);
+    display: grid;
+    gap: 2px;
+
+    > a,
+    form button {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      width: 100%;
+      padding: 0.55rem 0.65rem;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #3d3d44;
+      font: inherit;
+      font-size: 0.875rem;
+      text-align: left;
+      text-decoration: none;
+      cursor: pointer;
+      svg { color: #8d8d95; }
+      &:hover { background: #f3f3f6; color: #161616; text-decoration: none; }
+    }
+    form { margin: 0; }
+    form button { color: #da1e28; svg { color: #da1e28; } }
+  }
+
+  &__menu-head {
+    display: flex;
+    gap: 0.65rem;
+    align-items: center;
+    padding: 0.5rem 0.65rem 0.75rem;
+    margin-bottom: 0.25rem;
+    border-bottom: 1px solid #ececf0;
+    > span:last-child { display: grid; min-width: 0; }
+    strong { font-size: 0.875rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    small { font-size: 0.75rem; color: #6f6f76; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  }
+  &__role {
+    justify-self: start;
+    margin-top: 0.25rem;
+    padding: 0.05rem 0.45rem;
+    border-radius: 999px;
+    background: #f1efff;
+    color: #3a2fd0;
     font-size: 0.6875rem;
     font-weight: 600;
   }
 
-  &__user-name {
-    font-size: 0.8125rem;
-    color: var(--axr-text);
-
-    @media (max-width: 640px) {
-      display: none;
-    }
-  }
-
-  &__menu {
-    position: absolute;
-    top: calc(100% + 6px);
-    right: 0;
-    min-width: 260px;
+  // ── Móvil: navegación abajo ──
+  @media (max-width: 760px) {
+    height: 56px;
+    // Sin desenfoque: `backdrop-filter` convierte la cabecera en el marco de
+    // los `position: fixed` de dentro, y la barra de abajo se quedaba arriba.
+    backdrop-filter: none;
     background: #ffffff;
-    border: 1px solid var(--axr-border-ink);
-    box-shadow: var(--axr-shadow-hard-sm);
-    padding: 0.5rem 0;
-    z-index: 60;
-
-    a,
-    button {
-      display: block;
-      width: 100%;
-      text-align: left;
-      padding: 0.625rem 1rem;
-      color: var(--axr-text);
-      font-size: 0.875rem;
-      background: transparent;
-      border: 0;
-      cursor: pointer;
-      font-family: inherit;
-
-      &:hover {
-        background: var(--axr-gray-10);
-        text-decoration: none;
-      }
+    &__user-name { display: none; }
+    &__nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 50;
+      justify-content: space-around;
+      gap: 0;
+      padding: 0.35rem 0.5rem calc(0.35rem + env(safe-area-inset-bottom));
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid #e6e6ea;
     }
-  }
-
-  &__menu-head {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--axr-border);
-    margin-bottom: 0.375rem;
-
-    strong {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 600;
+    &__link {
+      flex: 1;
+      flex-direction: column;
+      gap: 0.15rem;
+      padding: 0.35rem 0.25rem;
+      border-radius: 10px;
+      font-size: 0.6875rem;
+      &.is-active { background: transparent; }
+      &--panel { margin: 0; border: 0; }
     }
-
-    span {
-      display: block;
-      font-size: 0.75rem;
-      color: var(--axr-text-helper);
-    }
-  }
-
-  &__role {
-    display: inline-block !important;
-    margin-top: 0.5rem;
-    background: #161616;
-    color: #ffffff;
-    padding: 0.1875rem 0.5rem;
-    font-family: var(--axr-mono);
-    font-size: 0.625rem !important;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    &__badge { position: absolute; top: 0.1rem; left: calc(50% + 0.35rem); }
   }
 }
