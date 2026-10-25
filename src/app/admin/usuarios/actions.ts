@@ -32,7 +32,8 @@ export async function inviteUser(formData: FormData) {
   await assertAdmin();
   const email = String(formData.get("email") ?? "").trim();
   const fullName = String(formData.get("full_name") ?? "").trim();
-  const role = String(formData.get("role") ?? "alumno") as UserRole;
+  const pedido = String(formData.get("role") ?? "alumno");
+  const role: UserRole = pedido === "profesor" || pedido === "administrador" ? pedido : "alumno";
 
   if (!email) return { error: "El email es obligatorio." };
 
@@ -46,7 +47,11 @@ export async function inviteUser(formData: FormData) {
     email_confirm: true,
     user_metadata: { full_name: fullName || email.split("@")[0] },
   });
-  if (error) return { error: error.message };
+  if (error) {
+    // Supabase lo dice en inglés; es el error que más se va a ver.
+    if (/already|registered|exists/i.test(error.message)) return { error: "Ya hay una cuenta con ese email." };
+    return { error: error.message };
+  }
 
   if (data.user) {
     await admin.from("profiles").update({ role, full_name: fullName || null }).eq("id", data.user.id);

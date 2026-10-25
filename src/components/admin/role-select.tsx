@@ -7,7 +7,8 @@ import { changeUserRole } from "@/app/admin/usuarios/actions";
 import { useI18n } from "@/lib/i18n/provider";
 import type { UserRole } from "@/lib/supabase/types";
 
-export function RoleSelect({ userId, role }: { userId: string; role: UserRole }) {
+/** El rol de un usuario, que se cambia al elegirlo. Si falla, vuelve al de antes. */
+export function RoleSelect({ userId, role, disabled, label }: { userId: string; role: UserRole; disabled?: boolean; label?: string }) {
   const { t } = useI18n();
   const router = useRouter();
   const [current, setCurrent] = useState<UserRole>(role);
@@ -15,10 +16,11 @@ export function RoleSelect({ userId, role }: { userId: string; role: UserRole })
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <span style={{ display: "inline-flex", flexDirection: "column", gap: "0.125rem" }}>
+    <span className="axr-al-role">
       <select
         value={current}
-        disabled={pending}
+        disabled={pending || disabled}
+        aria-label={label}
         onChange={(e) => {
           const next = e.target.value as UserRole;
           const prev = current;
@@ -34,19 +36,12 @@ export function RoleSelect({ userId, role }: { userId: string; role: UserRole })
             }
           });
         }}
-        style={{
-          padding: "0.375rem 0.5rem",
-          border: "1px solid var(--axr-border-strong)",
-          borderRadius: "2px",
-          fontSize: "0.8125rem",
-          fontFamily: "inherit",
-        }}
       >
         <option value="alumno">{t.common.role_alumno}</option>
         <option value="profesor">{t.common.role_profesor}</option>
         <option value="administrador">{t.common.role_administrador}</option>
       </select>
-      {error ? <span style={{ color: "#da1e28", fontSize: "0.6875rem" }}>{error}</span> : null}
+      {error ? <small>{error}</small> : null}
     </span>
   );
 }
