@@ -1,26 +1,43 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 
 import type { QuizOption, QuizQuestion } from "@/lib/supabase/types";
 import { submitQuizAttempt } from "@/app/(campus)/lecciones/actions";
 import { useI18n } from "@/lib/i18n/provider";
 import { fmt } from "@/lib/i18n/dictionaries";
+import type { CampusLessonCopy } from "@/lib/i18n/campus-v2-b";
 
 type Q = QuizQuestion & { options: QuizOption[] };
+
+// ══════════════════════════════════════════════════════════
+//  El test de la lección
+//
+//  Una tarjeta por pregunta con las opciones como botones grandes (se tocan
+//  bien en el móvil). Al comprobar, cada opción dice si era la buena o la
+//  tuya, y abajo sale el resultado con la nota y lo que pide el aprobado.
+//  Aprobado: la lección cuenta como completada y se ofrece la siguiente.
+//  Suspenso: se puede repetir tantas veces como haga falta.
+// ══════════════════════════════════════════════════════════
 
 export function LessonQuiz({
   quizId,
   lessonId,
   questions,
-  moduleHref,
   passScore,
+  nextHref,
+  nextLabel,
+  copy,
 }: {
   quizId: string;
   lessonId: string;
   questions: Q[];
-  moduleHref: string;
   passScore: number;
+  /** A dónde seguir al aprobar; null cuando después viene la misión. */
+  nextHref: string | null;
+  nextLabel: string;
+  copy: CampusLessonCopy;
 }) {
   const { t } = useI18n();
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -45,7 +62,8 @@ export function LessonQuiz({
     };
   }, [validated, questions, answers, passScore]);
 
-  const allAnswered = questions.every((q) => answers[q.id]);
+  const respondidas = questions.filter((q) => answers[q.id]).length;
+  const allAnswered = respondidas === questions.length;
 
   function handleValidate() {
     if (!allAnswered) return;
@@ -78,34 +96,31 @@ export function LessonQuiz({
         const selected = answers[q.id];
         return (
           <fieldset key={q.id} className="axr-quiz__question">
-            <legend className="axr-quiz__legend">
-              {fmt(t.lesson.quizQuestion, { n: qi + 1, total: questions.length })}
-            </legend>
+            <legend className="axr-quiz__legend">{fmt(t.lesson.quizQuestion, { n: qi + 1, total: questions.length })}</legend>
             <p className="axr-quiz__prompt">{q.prompt}</p>
             <div className="axr-quiz__options">
-              {q.options.map((o) => {
+              {q.options.map((o, oi) => {
                 let state: "default" | "selected" | "correct" | "wrong" = "default";
                 if (validated) {
                   if (o.is_correct) state = "correct";
                   else if (selected === o.id) state = "wrong";
                 } else if (selected === o.id) state = "selected";
                 return (
-                  <label
-                    key={o.id}
-                    className="axr-quiz__option"
-                    data-state={state}
-                  >
+                  <label key={o.id} className="axr-quiz__option" data-state={state}>
                     <input
                       type="radio"
                       name={q.id}
                       value={o.id}
                       checked={selected === o.id}
-                      onChange={(e) =>
-                        setAnswers((prev) => ({ ...prev, [q.id]: e.target.value }))
-                      }
+                      onChange={(e) => setAnswers((prev) => ({ ...prev, [q.id]: e.target.value }))}
                       disabled={validated}
                     />
-                    <span>{o.label}</span>
+                    <span className="axr-quiz__letter" aria-hidden>
+                      {String.fromCharCode(65 + oi)}
+                    </span>
+                    <span className="axr-quiz__label">{o.label}</span>
+                    {state === "correct" ? <span className="axr-quiz__tag axr-quiz__tag--ok">{copy.quizCorrect}</span> : null}
+                    {state === "wrong" ? <span className="axr-quiz__tag axr-quiz__tag--bad">{copy.quizYours}</span> : null}
                   </label>
                 );
               })}
@@ -116,53 +131,48 @@ export function LessonQuiz({
 
       {!validated ? (
         <div className="axr-quiz__actions">
-          <button
-            type="button"
-            className="axr-btn axr-btn--primary"
-            disabled={!allAnswered || pending}
-            onClick={handleValidate}
-          >
+          <small>{fmt(copy.quizAnswered, { n: respondidas, total: questions.length })}</small>
+          <button type="button" className="axr-btn axr-btn--primary" disabled={!allAnswered || pending} onClick={handleValidate}>
             {t.lesson.quizCheck}
           </button>
         </div>
       ) : (
-        <div className={`axr-quiz__result ${result?.passed ? "is-pass" : "is-fail"}`}>
-          <div className="axr-quiz__result-icon" aria-hidden>
-            {result?.passed ? "🎉" : "❌"}
+        <div className={`axr-quiz__result ${result?.passed ? "is-pass" : "is-fail"}`} role="status">
+          <div className="axr-quiz__score">
+            <strong>{fmt(copy.quizScore, { n: Math.round(result?.score ?? 0) })}</strong>
+            <small>{fmt(copy.quizNeed, { n: Math.round(passScore * 100) })}</small>
           </div>
-          <div className="axr-quiz__result-title">
-            {result?.passed ? t.lesson.quizPassed : t.lesson.quizFailed}
+          <div className="axr-quiz__result-text">
+            <div className="axr-quiz__result-title">{result?.passed ? t.lesson.quizPassed : t.lesson.quizFailed}</div>
+            <div className="axr-quiz__result-detail">
+              {fmt(t.lesson.quizResultDetail, {
+                correct: result?.correct ?? 0,
+                total: result?.total ?? 0,
+              })}
+            </div>
           </div>
-          <div className="axr-quiz__result-detail">
-            {fmt(t.lesson.quizResultDetail, {
-              correct: result?.correct ?? 0,
-              total: result?.total ?? 0,
-            })}
+          <div className="axr-quiz__result-actions">
+            {!result?.passed ? (
+              <button
+                type="button"
+                className="axr-btn axr-btn--ghost"
+                disabled={!stored}
+                onClick={() => {
+                  setAnswers({});
+                  setValidated(false);
+                  setStored(false);
+                }}
+              >
+                {t.lesson.quizRetry}
+              </button>
+            ) : nextHref ? (
+              <Link className="axr-btn axr-btn--primary" href={nextHref}>
+                {nextLabel} →
+              </Link>
+            ) : null}
           </div>
-          {stored && !result?.passed ? (
-            <button
-              type="button"
-              className="axr-btn axr-btn--ghost"
-              onClick={() => {
-                setAnswers({});
-                setValidated(false);
-              }}
-            >
-              {t.lesson.quizRetry}
-            </button>
-          ) : null}
         </div>
       )}
-
-      <hr className="axr-divider" />
-      <div className="axr-quiz__footer">
-        <a className="axr-btn axr-btn--ghost" href={moduleHref}>← {t.lesson.backToModule}</a>
-        {result?.passed ? (
-          <span className="axr-btn axr-btn--success" aria-disabled>
-            ✓ {t.lesson.markedDone}
-          </span>
-        ) : null}
-      </div>
     </div>
   );
 }
