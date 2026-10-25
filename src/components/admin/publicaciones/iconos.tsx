@@ -4,6 +4,23 @@
 
 const D = {
   inicio: <path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" />,
+  // Menú del panel
+  libro: <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5" />,
+  tareas: <path d="M9 4h6v3H9zM7 5.5H5V21h14V5.5h-2M8.5 13l2.5 2.5 4.5-5" />,
+  birrete: <path d="M2 9l10-5 10 5-10 5zM6 11v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5M22 9v6" />,
+  chat: <path d="M4 5h16v11H9l-5 4zM8 9.5h8M8 12.5h5" />,
+  tarjeta: <path d="M3 6h18v12H3zM3 10h18M7 15h4" />,
+  usuarios: (
+    <>
+      <circle cx="9" cy="8.5" r="3.5" />
+      <path d="M2.5 20c.6-3.4 3.2-5.5 6.5-5.5s5.9 2.1 6.5 5.5M16 5.2a3.5 3.5 0 0 1 0 6.6M18.5 14.8c1.7.8 2.8 2.6 3 5.2" />
+    </>
+  ),
+  almohadilla: <path d="M9 3L7 21M17 3l-2 18M4 8.5h17M3 15.5h17" />,
+  megafono: <path d="M3 10v4h3l7 4V6L6 10zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" />,
+  menu: <path d="M4 6h16M4 12h16M4 18h16" />,
+  cerrar: <path d="M6 6l12 12M18 6L6 18" />,
+  salir: <path d="M10 5H5v14h5M14 8l4 4-4 4M18 12H9" />,
   revisar: (
     <>
       <path d="M4 5h16v14H4z" />
