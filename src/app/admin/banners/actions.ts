@@ -3,10 +3,23 @@
 import { revalidatePath } from "next/cache";
 
 import type { Calidad } from "@/lib/banners/costes";
-import { ANGULOS, CTAS, CURSOS, OBJETIVOS, PLANTILLAS, leerCopy, usaImagen, type Angulo, type Plantilla } from "@/lib/banners/formatos";
-import { generarClones, generarVariantes, type Brief, type Gasto, type Variante } from "@/lib/banners/generar";
+import {
+  ANGULOS,
+  CTAS,
+  CURSOS,
+  OBJETIVOS,
+  PLANTILLAS,
+  difElementos,
+  leerCopy,
+  leerElementos,
+  otroIdioma,
+  usaImagen,
+  type Angulo,
+  type Plantilla,
+} from "@/lib/banners/formatos";
+import { generarClones, generarVariantes, traducirCopias, type Brief, type Gasto, type Variante } from "@/lib/banners/generar";
 import { BUCKET, borrarImagen, generarImagen, leerImagen } from "@/lib/banners/imagen";
-import { bloquea, revisar, type Flag } from "@/lib/banners/normas";
+import { bloquea, revisar, revisarVariante, type Flag } from "@/lib/banners/normas";
 import { createClient } from "@/lib/supabase/server";
 import type { AdBanner, AdBannerStatus, AdCampaign, AdCourse, AdObjective } from "@/lib/supabase/types";
 
@@ -51,6 +64,60 @@ async function apuntarGasto(supabase: Supabase, userId: string, campaignId: stri
       created_by: userId,
     })),
   );
+}
+
+/** La revisión de una variante tal como está guardada (o como va a quedar). */
+function flagsDe(b: Pick<AdBanner, "copy" | "copy_alt" | "elements" | "image_source" | "template">, c: Pick<AdCampaign, "language">): Flag[] {
+  return revisarVariante({
+    copy: leerCopy(b.copy),
+    copyAlt: b.copy_alt ? leerCopy(b.copy_alt) : null,
+    altLang: otroIdioma(c.language),
+    imagenIa: b.image_source === "ia" && usaImagen(b.template),
+    elementos: leerElementos(b.elements),
+  });
+}
+
+const ahora = () => new Date().toISOString();
+
+/**
+ * Escribe la versión en el otro idioma de las variantes que se le pasen, en
+ * una sola llamada. La imagen no se toca: es la misma pieza.
+ */
+async function traducir(supabase: Supabase, userId: string, campaign: AdCampaign, banners: AdBanner[]): Promise<{ error?: string }> {
+  if (!banners.length) return {};
+  const r = await traducirCopias(
+    banners.map((b) => leerCopy(b.copy)),
+    campaign.language,
+    otroIdioma(campaign.language),
+    campaign.course,
+  );
+  await apuntarGasto(supabase, userId, campaign.id, "texto", r.gastos);
+  if (!r.copias.length) return { error: r.error ?? "No se ha podido escribir la otra versión." };
+  await Promise.all(
+    banners.map((b, i) => {
+      const nueva = { ...b, copy_alt: r.copias[i] };
+      return supabase
+        .from("ad_banners")
+        .update({ copy_alt: r.copias[i], review: { flags: flagsDe(nueva, campaign), checkedAt: ahora() }, updated_at: ahora() })
+        .eq("id", b.id);
+    }),
+  );
+  if (!campaign.bilingual) await supabase.from("ad_campaigns").update({ bilingual: true }).eq("id", campaign.id);
+  return {};
+}
+
+/** Las variantes de una campaña bilingüe que aún no tienen la otra versión. */
+async function traducirPendientes(supabase: Supabase, userId: string, campaignId: string): Promise<{ error?: string }> {
+  const { data: c } = await supabase.from("ad_campaigns").select("*").eq("id", campaignId).maybeSingle();
+  if (!c?.bilingual) return {};
+  const { data } = await supabase.from("ad_banners").select("*").eq("campaign_id", campaignId).is("copy_alt", null);
+  return traducir(supabase, userId, c as AdCampaign, (data ?? []) as AdBanner[]);
+}
+
+/** «es», «en» o «ambos» (el principal es el español). */
+function leerIdioma(v: FormDataEntryValue | null): { language: "es" | "en"; bilingual: boolean } {
+  if (v === "ambos") return { language: "es", bilingual: true };
+  return { language: v === "en" ? "en" : "es", bilingual: false };
 }
 
 const ruta = (campaignId: string, bannerId: string) => `${campaignId}/${bannerId}-${Date.now()}.jpg`;
@@ -145,7 +212,7 @@ export async function crearCampana(formData: FormData): Promise<{ id?: string; e
 
   const course = String(formData.get("course") ?? "escuela") as AdCourse;
   const objective = String(formData.get("objective") ?? "leads") as AdObjective;
-  const language = formData.get("language") === "en" ? "en" : "es";
+  const { language, bilingual } = leerIdioma(formData.get("language"));
   const style = String(formData.get("style") ?? "foto") as Plantilla;
   const calidad = String(formData.get("quality") ?? "medium") as Calidad;
   const angles = ANGULOS.filter((a) => formData.getAll("angles").map(String).includes(a)).slice(0, MAX_VARIANTES);
@@ -163,6 +230,7 @@ export async function crearCampana(formData: FormData): Promise<{ id?: string; e
       course,
       objective,
       language,
+      bilingual,
       style,
       angles,
       audience: String(formData.get("audience") ?? "").trim().slice(0, 1000) || null,
@@ -174,10 +242,11 @@ export async function crearCampana(formData: FormData): Promise<{ id?: string; e
   if (error || !data) return { error: `No se pudo crear la campaña: ${error?.message ?? ""}` };
 
   const r = await crearVariantes(supabase, userId, data as AdCampaign, angles, calidad);
+  const t = r.error ? {} : await traducirPendientes(supabase, userId, data.id);
   revalidatePath("/admin/banners");
   // Con id, la campaña existe aunque la IA haya fallado: el aviso se ve en
   // la campaña, donde se puede reintentar.
-  return { id: data.id, error: r.error };
+  return { id: data.id, error: r.error ?? t.error };
 }
 
 export async function anadirVariantes(campaignId: string, angles: string[]): Promise<{ error?: string }> {
@@ -187,8 +256,9 @@ export async function anadirVariantes(campaignId: string, angles: string[]): Pro
   const lista = ANGULOS.filter((a) => angles.includes(a)).slice(0, MAX_VARIANTES);
   if (!lista.length) return { error: "Elige al menos un ángulo." };
   const r = await crearVariantes(supabase, userId, data as AdCampaign, lista, "medium");
+  const t = await traducirPendientes(supabase, userId, campaignId);
   revalidatePath(`/admin/banners/${campaignId}`);
-  return r;
+  return { error: r.error ?? t.error };
 }
 
 async function cargar(supabase: Supabase, id: string) {
@@ -198,26 +268,74 @@ async function cargar(supabase: Supabase, id: string) {
   return c ? { banner: b as AdBanner, campaign: c as AdCampaign } : null;
 }
 
-export async function guardarBanner(id: string, input: { copy: unknown; template: string }): Promise<{ flags?: Flag[]; error?: string }> {
+export async function guardarBanner(
+  id: string,
+  input: { copy: unknown; copyAlt?: unknown; template: string; elements?: unknown },
+): Promise<{ flags?: Flag[]; error?: string }> {
   const { supabase } = await assertAdmin();
   const x = await cargar(supabase, id);
   if (!x) return { error: "La variante no existe." };
 
-  const copy = leerCopy(input.copy);
-  for (const k of Object.keys(copy) as (keyof typeof copy)[]) copy[k] = copy[k].slice(0, k === "primaryText" ? 2000 : 300);
+  const limpiar = (raw: unknown) => {
+    const copy = leerCopy(raw);
+    for (const k of Object.keys(copy) as (keyof typeof copy)[]) copy[k] = copy[k].slice(0, k === "primaryText" ? 2000 : 300);
+    return copy;
+  };
+  const copy = limpiar(input.copy);
+  // La otra versión sólo se guarda si ya existía: crearla es `traducirBanner`.
+  const copyAlt = x.banner.copy_alt && input.copyAlt ? limpiar(input.copyAlt) : x.banner.copy_alt;
   const template = (PLANTILLAS as string[]).includes(input.template) ? input.template : x.banner.template;
-  const flags = revisar(copy, { imagenIa: x.banner.image_source === "ia" && usaImagen(template) });
+  const elements = input.elements === undefined ? x.banner.elements : difElementos(leerElementos(input.elements));
+  const flags = flagsDe({ copy, copy_alt: copyAlt, elements, image_source: x.banner.image_source, template }, x.campaign);
 
   // Un aprobado que deja de cumplir vuelve a revisión: lo aprobado tiene que
   // seguir siendo publicable.
   const status = x.banner.status === "aprobado" && bloquea(flags) ? "borrador" : x.banner.status;
   const { error } = await supabase
     .from("ad_banners")
-    .update({ copy, template, status, review: { flags, checkedAt: new Date().toISOString() }, updated_at: new Date().toISOString() })
+    .update({ copy, copy_alt: copyAlt, template, elements, status, review: { flags, checkedAt: ahora() }, updated_at: ahora() })
     .eq("id", id);
   if (error) return { error: error.message };
   revalidatePath(`/admin/banners/${x.campaign.id}`);
   return { flags };
+}
+
+/** Escribe (o reescribe) la versión en el otro idioma de una variante. */
+export async function traducirBanner(id: string): Promise<{ error?: string }> {
+  const { supabase, userId } = await assertAdmin();
+  const x = await cargar(supabase, id);
+  if (!x) return { error: "La variante no existe." };
+  const r = await traducir(supabase, userId, x.campaign, [x.banner]);
+  revalidatePath(`/admin/banners/${x.campaign.id}`);
+  revalidatePath("/admin/banners");
+  return r;
+}
+
+/** Quita la versión en el otro idioma de una variante. */
+export async function quitarTraduccion(id: string): Promise<{ error?: string }> {
+  const { supabase } = await assertAdmin();
+  const x = await cargar(supabase, id);
+  if (!x) return { error: "La variante no existe." };
+  const sin = { ...x.banner, copy_alt: null };
+  await supabase
+    .from("ad_banners")
+    .update({ copy_alt: null, review: { flags: flagsDe(sin, x.campaign), checkedAt: ahora() }, updated_at: ahora() })
+    .eq("id", id);
+  revalidatePath(`/admin/banners/${x.campaign.id}`);
+  return {};
+}
+
+/** Borra una variante y su imagen. Las demás de la campaña no se tocan. */
+export async function borrarBanner(id: string): Promise<{ error?: string }> {
+  const { supabase } = await assertAdmin();
+  const x = await cargar(supabase, id);
+  if (!x) return { error: "La variante no existe." };
+  const { error } = await supabase.from("ad_banners").delete().eq("id", id);
+  if (error) return { error: error.message };
+  await borrarImagen(x.banner.image_path);
+  revalidatePath(`/admin/banners/${x.campaign.id}`);
+  revalidatePath("/admin/banners");
+  return {};
 }
 
 export async function estadoBanner(id: string, status: AdBannerStatus): Promise<{ error?: string }> {
@@ -225,8 +343,7 @@ export async function estadoBanner(id: string, status: AdBannerStatus): Promise<
   const x = await cargar(supabase, id);
   if (!x) return { error: "La variante no existe." };
   if (status === "aprobado") {
-    const flags = revisar(leerCopy(x.banner.copy), { imagenIa: x.banner.image_source === "ia" });
-    if (bloquea(flags)) return { error: "Tiene fallos que bloquean: corrígelos antes de aprobar." };
+    if (bloquea(flagsDe(x.banner, x.campaign))) return { error: "Tiene fallos que bloquean: corrígelos antes de aprobar." };
   }
   await supabase.from("ad_banners").update({ status, updated_at: new Date().toISOString() }).eq("id", id);
   revalidatePath(`/admin/banners/${x.campaign.id}`);
@@ -262,17 +379,15 @@ export async function reescribirBanner(id: string, instruccion: string): Promise
 
   const copy = v.copy;
   if (!(CTAS[campaign.language] as readonly string[]).includes(copy.cta)) copy.cta = CTAS[campaign.language][0];
+  const nueva = { ...banner, copy };
   await supabase
     .from("ad_banners")
-    .update({
-      copy,
-      status: "borrador",
-      review: { flags: revisar(copy, { imagenIa: banner.image_source === "ia" }), checkedAt: new Date().toISOString() },
-      updated_at: new Date().toISOString(),
-    })
+    .update({ copy, status: "borrador", review: { flags: flagsDe(nueva, campaign), checkedAt: ahora() }, updated_at: ahora() })
     .eq("id", id);
+  // La otra versión era de los textos de antes: se rehace con los nuevos.
+  const t = banner.copy_alt ? await traducir(supabase, userId, campaign, [nueva]) : {};
   revalidatePath(`/admin/banners/${campaign.id}`);
-  return {};
+  return t;
 }
 
 export async function nuevaImagen(id: string, escena: string): Promise<{ error?: string }> {
@@ -307,7 +422,7 @@ export async function subirFoto(id: string, formData: FormData): Promise<{ error
       image_path: path,
       image_source: "subida",
       template: usaImagen(x.banner.template) ? x.banner.template : "foto",
-      review: { flags: revisar(leerCopy(x.banner.copy)), checkedAt: new Date().toISOString() },
+      review: { flags: flagsDe({ ...x.banner, image_source: "subida" }, x.campaign), checkedAt: ahora() },
       updated_at: new Date().toISOString(),
     })
     .eq("id", id);
@@ -327,7 +442,7 @@ export async function quitarImagen(id: string): Promise<{ error?: string }> {
       image_path: null,
       image_source: "ninguna",
       template: "marca",
-      review: { flags: revisar(leerCopy(x.banner.copy)), checkedAt: new Date().toISOString() },
+      review: { flags: flagsDe({ ...x.banner, image_source: "ninguna", template: "marca" }, x.campaign), checkedAt: ahora() },
       updated_at: new Date().toISOString(),
     })
     .eq("id", id);
@@ -362,7 +477,7 @@ export async function clonarBanner(formData: FormData): Promise<{ id?: string; e
   if (file.size > MAX_BYTES) return { error: "La imagen pesa más de 8 MB." };
 
   const course = String(formData.get("course") ?? "escuela") as AdCourse;
-  const language = formData.get("language") === "en" ? "en" : "es";
+  const { language, bilingual } = leerIdioma(formData.get("language"));
   const calidad = String(formData.get("quality") ?? "medium") as Calidad;
   const count = Math.max(1, Math.min(5, Number(formData.get("count")) || 3));
   const indicacion = String(formData.get("prompt") ?? "").trim().slice(0, 1500);
@@ -379,6 +494,7 @@ export async function clonarBanner(formData: FormData): Promise<{ id?: string; e
       course,
       objective: "leads",
       language,
+      bilingual,
       style: (PLANTILLAS as string[]).includes(plantillaPedida) ? plantillaPedida : "foto",
       angles: [],
       reference_prompt: indicacion || null,
@@ -416,8 +532,9 @@ export async function clonarBanner(formData: FormData): Promise<{ id?: string; e
     .eq("id", campaign.id);
 
   const g = await guardarVariantes(supabase, userId, { ...campaign, style: template }, r.variantes, template, calidad);
+  const t = await traducirPendientes(supabase, userId, campaign.id);
   revalidatePath("/admin/banners");
-  return { id: campaign.id, error: g.error ?? r.error };
+  return { id: campaign.id, error: g.error ?? r.error ?? t.error };
 }
 
 /** Más clones de la misma referencia, para una campaña que ya es un clon. */
@@ -438,6 +555,7 @@ export async function masClones(campaignId: string, count: number, indicacion: s
   await apuntarGasto(supabase, userId, c.id, "texto", r.gastos);
   if (!r.variantes.length) return { error: r.error ?? "No se ha generado ninguna variante." };
   const g = await guardarVariantes(supabase, userId, c, r.variantes, c.style, "medium");
+  const t = await traducirPendientes(supabase, userId, c.id);
   revalidatePath(`/admin/banners/${c.id}`);
-  return { error: g.error };
+  return { error: g.error ?? t.error };
 }

@@ -117,11 +117,18 @@ export const CTAS = {
   en: ["Learn more", "Get information", "See the programme", "Sign up"],
 } as const;
 
+/** Etiqueta de imagen de IA (AI Act art. 50 · Meta «Info de IA»). Apagada por defecto: se enciende desde el editor. */
+export const ETIQUETA_IA = { es: "Imagen generada con IA", en: "AI-generated image" } as const;
+
 export type BannerCopy = {
   kicker: string;
   headline: string;
   sub: string;
   cta: string;
+  /** Línea destacada opcional («Empieza el 9 de enero»). */
+  extra: string;
+  /** Puntos opcionales, uno por línea (máximo 3). */
+  points: string;
   primaryText: string;
   adHeadline: string;
   description: string;
@@ -133,6 +140,8 @@ export const COPY_VACIO: BannerCopy = {
   headline: "",
   sub: "",
   cta: "",
+  extra: "",
+  points: "",
   primaryText: "",
   adHeadline: "",
   description: "",
@@ -148,6 +157,44 @@ export function leerCopy(raw: unknown): BannerCopy {
   }
   return out;
 }
+
+/** Los puntos como lista, sin vacíos. */
+export const puntos = (c: BannerCopy) => c.points.split("\n").map((x) => x.trim()).filter(Boolean).slice(0, 3);
+
+// ── Elementos de la pieza ─────────────────────────────────
+// Lo que se puede encender y apagar desde el editor sin tocar la imagen.
+// En la base de datos sólo se guarda lo que cambia respecto a esto.
+export const ELEMENTOS = ["logo", "kicker", "headline", "sub", "extra", "points", "cta", "aiLabel"] as const;
+export type Elemento = (typeof ELEMENTOS)[number];
+export type Elementos = Record<Elemento, boolean>;
+
+export const ELEMENTOS_POR_DEFECTO: Elementos = {
+  logo: true,
+  kicker: true,
+  headline: true,
+  sub: true,
+  extra: false,
+  points: false,
+  cta: true,
+  aiLabel: false,
+};
+
+export function leerElementos(raw: unknown): Elementos {
+  const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const out = { ...ELEMENTOS_POR_DEFECTO };
+  for (const k of ELEMENTOS) if (typeof o[k] === "boolean") out[k] = o[k] as boolean;
+  return out;
+}
+
+/** Lo que se guarda: sólo las diferencias con lo de por defecto. */
+export function difElementos(e: Elementos): Partial<Elementos> {
+  const out: Partial<Elementos> = {};
+  for (const k of ELEMENTOS) if (e[k] !== ELEMENTOS_POR_DEFECTO[k]) out[k] = e[k];
+  return out;
+}
+
+/** El otro idioma de una campaña bilingüe. */
+export const otroIdioma = (l: "es" | "en"): "es" | "en" => (l === "es" ? "en" : "es");
 
 /** Límites recomendados para los textos de Meta (los que se ven sin «Ver más»). */
 export const LIMITES = {

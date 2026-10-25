@@ -43,10 +43,13 @@ export default async function CampanaPage({
   const gasto = (usos ?? []).reduce((n, u) => n + Number(u.cost_usd ?? 0), 0);
   const aprobadas = lista.filter((b) => b.status === "aprobado").length;
 
-  // La referencia de un clon vive en el bucket privado: enlace firmado de una hora.
-  const refUrl = c.reference_path
-    ? (await createAdminClient().storage.from(BUCKET).createSignedUrl(c.reference_path, 3600)).data?.signedUrl ?? null
-    : null;
+  // La referencia de un clon y las fotos viven en el bucket privado: enlaces
+  // firmados de una hora. Las fotos las pinta el editor en el navegador.
+  const bucket = createAdminClient().storage.from(BUCKET);
+  const refUrl = c.reference_path ? (await bucket.createSignedUrl(c.reference_path, 3600)).data?.signedUrl ?? null : null;
+  const rutas = lista.map((b) => b.image_path).filter((p): p is string => Boolean(p));
+  const firmadas = rutas.length ? (await bucket.createSignedUrls(rutas, 3600)).data ?? [] : [];
+  const urlDe = new Map(firmadas.filter((x) => x.signedUrl && x.path).map((x) => [x.path as string, x.signedUrl]));
   const a = c.reference_analysis;
 
   return (
@@ -58,7 +61,7 @@ export default async function CampanaPage({
         <div>
           <h1>{c.name}</h1>
           <p>
-            {copy.course[c.course]} · {copy.objective[c.objective]} · {c.language === "en" ? "English" : "Español"} ·{" "}
+            {copy.course[c.course]} · {copy.objective[c.objective]} · {c.bilingual ? copy.bilingual : c.language === "en" ? "English" : "Español"} ·{" "}
             {fill(copy.spent, formatoUsd(gasto, locale))}
           </p>
           {c.audience || c.notes ? <p className="axr-bancamp__brief">{[c.audience, c.notes].filter(Boolean).join(" · ")}</p> : null}
@@ -134,7 +137,7 @@ export default async function CampanaPage({
 
       <div className="axr-ban-list">
         {lista.map((b, i) => (
-          <EditorBanner key={b.id} banner={b} campaign={c} n={i + 1} copy={copy} />
+          <EditorBanner key={b.id} banner={b} campaign={c} n={i + 1} copy={copy} imagenUrl={b.image_path ? urlDe.get(b.image_path) ?? null : null} />
         ))}
       </div>
     </div>

@@ -27,7 +27,7 @@
 //  Sin nada de servidor: el editor revisa mientras se escribe.
 // ══════════════════════════════════════════════════════════
 
-import { LIMITES, type BannerCopy } from "@/lib/banners/formatos";
+import { ELEMENTOS_POR_DEFECTO, LIMITES, type BannerCopy, type Elemento, type Elementos } from "@/lib/banners/formatos";
 
 export type Nivel = "bloquea" | "aviso";
 export type Flag = { level: Nivel; rule: string; text: string };
@@ -60,7 +60,7 @@ const REGLAS: Regla[] = [
     rule: "Atributos personales",
     level: "bloquea",
     donde: "todo",
-    re: w("(?:tienes|si tienes|con) (?:más|menos) de \\d+ años|over \\d+|under \\d+|tu edad|your age|ansiedad|depresi[oó]n|anxiety|depression"),
+    re: w("(?:tienes|si tienes|con) (?:más|menos) de \\d+ años|(?:over|under) \\d+(?!\\s*(?:%|h\\b|hours?|weekends?|weeks?|modules?|countries|days?|months?|students?|people|clients?))|tu edad|your age|ansiedad|depresi[oó]n|anxiety|depression"),
     text: "Alude a la edad o la salud de quien lo ve. Es un atributo personal: Meta lo rechaza.",
   },
   {
@@ -180,7 +180,7 @@ const REGLAS: Regla[] = [
 ];
 
 /** Textos de la pieza (lo que va pintado en la imagen). */
-const PIEZA: (keyof BannerCopy)[] = ["kicker", "headline", "sub", "cta"];
+const PIEZA = ["kicker", "headline", "sub", "extra", "points", "cta"] as const satisfies readonly (keyof BannerCopy & Elemento)[];
 /** Textos que van en los campos del anuncio en Meta. */
 const META: (keyof BannerCopy)[] = ["primaryText", "adHeadline", "description"];
 
@@ -190,10 +190,13 @@ const palabras = (s: string) => s.split(/\s+/).filter(Boolean).length;
  * Revisión fija, sin IA. Devuelve una lista de avisos: lo que «bloquea» no se
  * puede aprobar; lo que «avisa» se puede aprobar sabiendo lo que se hace.
  */
-export function revisar(c: BannerCopy, opts: { imagenIa?: boolean } = {}): Flag[] {
+export function revisar(c: BannerCopy, opts: { imagenIa?: boolean; elementos?: Elementos } = {}): Flag[] {
   const out: Flag[] = [];
+  // Sólo cuenta lo que se ve: un texto apagado no está en la pieza.
+  const el = opts.elementos ?? ELEMENTOS_POR_DEFECTO;
+  const visibles = PIEZA.filter((k) => el[k]);
   const textos = {
-    pieza: PIEZA.map((k) => c[k]).join("\n"),
+    pieza: visibles.map((k) => c[k]).join("\n"),
     meta: META.map((k) => c[k]).join("\n"),
   };
   const vistos = new Set<string>();
@@ -211,11 +214,11 @@ export function revisar(c: BannerCopy, opts: { imagenIa?: boolean } = {}): Flag[
   // ── Cantidad de texto en la imagen ──
   // El 20 % ya no existe, pero menos texto sigue rindiendo más: se lee en un
   // segundo o no se lee.
-  if (!c.headline.trim()) out.push({ level: "bloquea", rule: "Titular", text: "Falta el titular de la pieza." });
+  if (el.headline && !c.headline.trim()) out.push({ level: "bloquea", rule: "Titular", text: "Falta el titular de la pieza." });
   if (palabras(c.headline) > LIMITES.headlineWords) {
     out.push({ level: "aviso", rule: "Demasiado texto", text: `El titular tiene ${palabras(c.headline)} palabras. Por encima de ${LIMITES.headlineWords} no se lee de un vistazo en el móvil.` });
   }
-  const total = PIEZA.reduce((n, k) => n + palabras(c[k]), 0);
+  const total = visibles.reduce((n, k) => n + palabras(c[k]), 0);
   if (total > 28) {
     out.push({ level: "aviso", rule: "Demasiado texto", text: `La imagen lleva ${total} palabras. Lo que no cabe en el titular va en el texto principal del anuncio.` });
   }
@@ -243,7 +246,9 @@ export function revisar(c: BannerCopy, opts: { imagenIa?: boolean } = {}): Flag[
     out.push({
       level: "aviso",
       rule: "Imagen de IA",
-      text: "La imagen es de IA: nunca la presentes como un alumno, un profesor o un testimonio real.",
+      text: el.aiLabel
+        ? "La imagen es de IA y lleva la etiqueta. Nunca la presentes como un alumno, un profesor o un testimonio real."
+        : "La imagen es de IA y va sin etiqueta. Si es realista (personas, lugares), el AI Act pide avisar: enciende «Etiqueta de IA» en los elementos. Y nunca la presentes como un alumno real.",
     });
   }
 
@@ -251,6 +256,25 @@ export function revisar(c: BannerCopy, opts: { imagenIa?: boolean } = {}): Flag[
 }
 
 export const bloquea = (flags: Flag[]) => flags.some((f) => f.level === "bloquea");
+
+/**
+ * Las dos versiones de una variante bilingüe: los avisos de la segunda llevan
+ * el idioma delante («EN · Titular») y el de la imagen sale una sola vez.
+ */
+export function revisarVariante(v: {
+  copy: BannerCopy;
+  copyAlt?: BannerCopy | null;
+  altLang?: "es" | "en";
+  imagenIa?: boolean;
+  elementos?: Elementos;
+}): Flag[] {
+  const out = revisar(v.copy, { imagenIa: v.imagenIa, elementos: v.elementos });
+  if (v.copyAlt) {
+    const tag = (v.altLang ?? "en").toUpperCase();
+    for (const f of revisar(v.copyAlt, { elementos: v.elementos })) out.push({ ...f, rule: `${tag} · ${f.rule}` });
+  }
+  return out;
+}
 
 /** Las normas, tal cual se le dan a la IA. */
 export const REGLAS_PROMPT = `NORMAS DE PUBLICIDAD DE META Y LEY ESPAÑOLA (no se negocian; un anuncio que
@@ -328,7 +352,7 @@ export const GUIA: { titulo: string; bien: string[]; mal: string[]; porque: stri
   },
   {
     titulo: "Imagen de IA, sólo ilustrativa",
-    bien: ["Escenas ilustrativas de trabajo en remoto", "Mejor aún: fotos reales del equipo o de las clases"],
+    bien: ["Escenas ilustrativas de trabajo en remoto", "Si es realista, la etiqueta «Imagen generada con IA» encendida (Elementos)", "Mejor aún: fotos reales del equipo o de las clases"],
     mal: ["Una persona de IA presentada como alumna", "Una cara de IA junto a un testimonio"],
     porque: "Una persona generada nunca es un alumno real. Meta, además, detecta las imágenes de IA por sus metadatos y puede añadir su propia marca «Info de IA».",
   },
