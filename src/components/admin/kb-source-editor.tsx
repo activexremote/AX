@@ -12,7 +12,6 @@ import {
   setSourceActive,
   updateSource,
 } from "@/app/admin/asistente/actions";
-import { DeleteButton } from "@/components/admin/delete-button";
 import { ALL_COURSES } from "@/lib/asistente/courses";
 import { useI18n } from "@/lib/i18n/provider";
 import type { KbKind, KbSource } from "@/lib/supabase/types";
@@ -33,6 +32,7 @@ export function KbSourceButton({
   initialTitle,
   label,
   variant = "primary",
+  small = false,
 }: {
   kind: KbKind;
   source?: Editable;
@@ -40,6 +40,8 @@ export function KbSourceButton({
   initialTitle?: string;
   label: string;
   variant?: "primary" | "ghost";
+  /** Botón pequeño, para las filas de una lista. */
+  small?: boolean;
 }) {
   const { t } = useI18n();
   const router = useRouter();
@@ -87,7 +89,7 @@ export function KbSourceButton({
 
   return (
     <>
-      <button type="button" className={`axr-btn axr-btn--${variant}`} onClick={openForm}>
+      <button type="button" className={`axr-btn axr-btn--${variant}${small ? " axr-btn--small" : ""}`} onClick={openForm}>
         {label}
       </button>
 
@@ -178,27 +180,46 @@ export function KbRowActions({ source }: { source: Editable }) {
   const { t } = useI18n();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [borrando, setBorrando] = useState(false);
 
+  // Antes el error sólo iba a la consola: quien pulsaba no se enteraba de que
+  // no se había guardado.
   function run(fn: () => Promise<{ error?: string }>) {
+    setError(null);
     startTransition(async () => {
       const r = await fn();
-      if (r.error) console.error(r.error);
+      if (r.error) setError(r.error);
       router.refresh();
     });
   }
 
   return (
-    <span className="axr-admin-table__actions">
-      <KbSourceButton kind={source.kind} source={source} label={t.admin.edit} variant="ghost" />
+    <span className="axr-kb-actions">
+      <KbSourceButton kind={source.kind} source={source} label={t.admin.edit} variant="ghost" small />
       <button
         type="button"
-        className="axr-btn axr-btn--ghost"
+        className="axr-btn axr-btn--ghost axr-btn--small"
         disabled={pending}
         onClick={() => run(() => setSourceActive(source.id, !source.active))}
       >
         {source.active ? t.kb.deactivate : t.kb.activate}
       </button>
-      <DeleteButton action={() => deleteSource(source.id)} />
+      {borrando ? (
+        <>
+          <button type="button" className="axr-btn axr-btn--danger axr-btn--small" disabled={pending} onClick={() => run(() => deleteSource(source.id))}>
+            {t.admin.confirmDelete}
+          </button>
+          <button type="button" className="axr-btn axr-btn--ghost axr-btn--small" disabled={pending} onClick={() => setBorrando(false)}>
+            {t.common.cancel}
+          </button>
+        </>
+      ) : (
+        <button type="button" className="axr-btn axr-btn--ghost axr-btn--small axr-kb-danger" disabled={pending} onClick={() => setBorrando(true)}>
+          {t.admin.delete}
+        </button>
+      )}
+      {error ? <small className="axr-kb-error">{error}</small> : null}
     </span>
   );
 }
@@ -208,23 +229,27 @@ export function KbQuestionActions({ id, question }: { id: string; question: stri
   const { t } = useI18n();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   return (
-    <span className="axr-admin-table__actions">
-      <KbSourceButton kind="faq" questionId={id} initialTitle={question} label={t.kb.createFaq} />
+    <span className="axr-kb-actions">
+      <KbSourceButton kind="faq" questionId={id} initialTitle={question} label={t.kb.createFaq} small />
       <button
         type="button"
-        className="axr-btn axr-btn--ghost"
+        className="axr-btn axr-btn--ghost axr-btn--small"
         disabled={pending}
         onClick={() =>
           startTransition(async () => {
-            await dismissQuestion(id);
+            setError(null);
+            const r = await dismissQuestion(id);
+            if (r.error) setError(r.error);
             router.refresh();
           })
         }
       >
         {t.kb.dismiss}
       </button>
+      {error ? <small className="axr-kb-error">{error}</small> : null}
     </span>
   );
 }

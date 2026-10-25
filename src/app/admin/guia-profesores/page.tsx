@@ -1,15 +1,19 @@
+import { GuiaDocente, type GrupoGuia, type TipoRecurso } from "@/components/admin/guia-docente";
+import { Icono } from "@/components/admin/publicaciones/iconos";
+import { adminCCopy } from "@/lib/i18n/admin-v2-c";
 import { getI18n } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import { localize } from "@/lib/data/localize";
 import type { Module } from "@/lib/supabase/types";
+import "./guia.scss";
 
 // ══════════════════════════════════════════════════════════
 //  Guía para profesores
 //
 //  Lo que el alumno NO debe ver: solucionarios, guiones de diapositivas, kits
 //  de preguntas, tests con respuestas y las diapositivas de la clase. Vive en
-//  el bucket privado `teacher-guides` y se sirve con URL firmada de una hora:
-//  un enlace que se reenvía a un alumno deja de abrir esa misma tarde.
+//  el bucket privado `teacher-guides` y se abre por abrir/[id], que firma el
+//  enlace en el momento (una hora) y exige sesión de profesor.
 //
 //  El panel ya exige rol de profesor o administrador (admin/layout.tsx), y la
 //  tabla y el bucket lo vuelven a exigir por RLS: si alguien llegara aquí sin
@@ -53,29 +57,62 @@ const COPY = {
 
 type Resource = { id: string; module_id: string | null; section: string; label: string; path: string; lang: string | null; order_index: number };
 
+/** El tipo de archivo, por la extensión. */
+function tipoDe(path: string): TipoRecurso {
+  const ext = path.split(".").pop()?.toLowerCase() ?? "";
+  if (ext === "pdf") return "pdf";
+  if (["ppt", "pptx", "key", "odp"].includes(ext)) return "slides";
+  if (["doc", "docx", "odt", "rtf"].includes(ext)) return "doc";
+  if (["xls", "xlsx", "csv", "ods"].includes(ext)) return "sheet";
+  if (["md", "markdown", "txt"].includes(ext)) return "md";
+  if (["png", "jpg", "jpeg", "webp", "gif", "svg"].includes(ext)) return "image";
+  if (["mp4", "mov", "webm"].includes(ext)) return "video";
+  return "other";
+}
+
 export default async function TeacherGuidePage() {
   const supabase = await createClient();
   const { locale } = await getI18n();
   const c = COPY[locale];
+  const g = adminCCopy[locale].guia;
 
-  const [{ data: modulesRaw }, { data: resRaw }] = await Promise.all([
+  // Supabase devuelve como mucho 1.000 filas por consulta y hay más de 1.200
+  // recursos: con una sola consulta, los últimos módulos desaparecían sin
+  // avisar. Se piden por tramos, a la vez, y se juntan.
+  const TRAMO = 1000;
+  const { count } = await supabase.from("teacher_resources").select("id", { count: "exact", head: true });
+  const tramos = Math.max(1, Math.ceil((count ?? 0) / TRAMO));
+  const [{ data: modulesRaw }, ...partes] = await Promise.all([
     supabase.from("modules").select("id, slug, title, title_en, code, course, order_index").order("order_index"),
-    supabase.from("teacher_resources").select("*").order("order_index"),
+    ...Array.from({ length: tramos }, (_, i) =>
+      supabase
+        .from("teacher_resources")
+        .select("id, module_id, section, label, path, lang, order_index")
+        .order("order_index")
+        .order("id")
+        .range(i * TRAMO, i * TRAMO + TRAMO - 1),
+    ),
   ]);
 
   const modules = ((modulesRaw ?? []) as Module[]).map((m) => localize(m, locale));
-  const resources = (resRaw ?? []) as Resource[];
-
-  // Una sola llamada para todas las URLs firmadas.
-  const signed = resources.length
-    ? (await supabase.storage.from("teacher-guides").createSignedUrls(resources.map((r) => r.path), 3600)).data ?? []
-    : [];
-  const urlOf = new Map(signed.map((s) => [s.path, s.signedUrl]));
+  const resources = partes.flatMap((p) => (p.data ?? []) as Resource[]);
+  const item = (r: Resource) => ({ id: r.id, label: r.label, section: r.section, lang: r.lang, tipo: tipoDe(r.path) });
 
   const general = resources.filter((r) => !r.module_id);
-  const byModule = modules
-    .map((m) => ({ module: m, items: resources.filter((r) => r.module_id === m.id) }))
-    .filter((g) => g.items.length);
+  const grupos: GrupoGuia[] = [
+    ...(general.length ? [{ key: "general", title: c.sections.general, code: null, course: null, items: general.map(item) }] : []),
+    ...modules
+      .map((m) => ({ key: m.id, title: m.title, code: m.code ?? null, course: m.course ?? null, items: resources.filter((r) => r.module_id === m.id).map(item) }))
+      .filter((x) => x.items.length),
+  ];
+
+  const porTipo = Object.entries(
+    resources.reduce<Record<string, number>>((acc, r) => {
+      const t = tipoDe(r.path);
+      acc[t] = (acc[t] ?? 0) + 1;
+      return acc;
+    }, {}),
+  ).sort((a, b) => b[1] - a[1]);
 
   return (
     <div className="axr-admin-page">
@@ -86,76 +123,49 @@ export default async function TeacherGuidePage() {
         </div>
       </div>
 
-      {!resources.length ? <div className="axr-admin-card">{c.empty}</div> : null}
-
-      {general.length ? <Group title={c.sections.general} items={general} urlOf={urlOf} c={c} /> : null}
-
-      {byModule.map(({ module, items }) => (
-        <Group
-          key={module.id}
-          title={`${module.code ? `${module.code} · ` : ""}${module.title}`}
-          meta={c.course[module.course] ?? module.course}
-          items={items}
-          urlOf={urlOf}
-          c={c}
-        />
-      ))}
-    </div>
-  );
-}
-
-function Group({
-  title,
-  meta,
-  items,
-  urlOf,
-  c,
-}: {
-  title: string;
-  meta?: string;
-  items: Resource[];
-  urlOf: Map<string | null, string | null>;
-  c: (typeof COPY)["es"];
-}) {
-  const sections = SECTION_ORDER.filter((s) => items.some((r) => r.section === s)).concat(
-    [...new Set(items.map((r) => r.section))].filter((s) => !SECTION_ORDER.includes(s)),
-  );
-
-  return (
-    <details className="axr-admin-card">
-      <summary style={{ cursor: "pointer", fontWeight: 600 }}>
-        {title}
-        {meta ? <span style={{ marginLeft: "0.5rem", fontWeight: 400, color: "var(--axr-text-helper)" }}>· {meta}</span> : null}
-        <span style={{ marginLeft: "0.5rem", fontWeight: 400, color: "var(--axr-text-helper)" }}>({items.length})</span>
-      </summary>
-      {sections.map((s) => (
-        <div key={s} style={{ marginTop: "1rem" }}>
-          <h3 style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 0.4rem" }}>
-            {c.sections[s] ?? s}
-          </h3>
-          <table className="axr-admin-table">
-            <tbody>
-              {items
-                .filter((r) => r.section === s)
-                .map((r) => (
-                  <tr key={r.id}>
-                    <td>{r.label}</td>
-                    <td style={{ width: "4rem", color: "var(--axr-text-helper)" }}>{r.lang?.toUpperCase() ?? ""}</td>
-                    <td className="axr-admin-table__actions">
-                      {urlOf.get(r.path) ? (
-                        <a className="axr-btn axr-btn--ghost" href={urlOf.get(r.path) ?? undefined} target="_blank" rel="noopener noreferrer">
-                          ↓
-                        </a>
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+      {!resources.length ? (
+        <div className="axr-admin-card">
+          <div className="axr-adm-empty">
+            <Icono n="birrete" size={26} />
+            <span>{c.empty}</span>
+          </div>
         </div>
-      ))}
-    </details>
+      ) : (
+        <>
+          <div className="axr-adm-stats">
+            <div className="axr-adm-stat">
+              <span className="axr-adm-stat__label">
+                <Icono n="libro" /> {g.statModules}
+              </span>
+              <span className="axr-adm-stat__value">{grupos.filter((x) => x.key !== "general").length}</span>
+            </div>
+            <div className="axr-adm-stat">
+              <span className="axr-adm-stat__label">
+                <Icono n="capas" /> {g.statResources}
+              </span>
+              <span className="axr-adm-stat__value">{resources.length.toLocaleString(locale)}</span>
+            </div>
+            <div className="axr-adm-stat axr-guia-stat-types">
+              <span className="axr-adm-stat__label">
+                <Icono n="lista" /> {g.statTypes}
+              </span>
+              <span className="axr-guia-stat-types__list">
+                {porTipo.map(([t, n]) => (
+                  <span key={t} className={`axr-guia-type axr-guia-type--${t}`}>
+                    {g.types[t]} · {n}
+                  </span>
+                ))}
+              </span>
+            </div>
+          </div>
+
+          <p className="axr-adm-note">
+            <Icono n="escudo" /> {g.linkNote}
+          </p>
+
+          <GuiaDocente grupos={grupos} copy={g} secciones={c.sections} cursos={c.course} />
+        </>
+      )}
+    </div>
   );
 }
