@@ -1,0 +1,125 @@
+// ══════════════════════════════════════════════════════════
+//  Resumen del panel
+//
+//  Lo común (cifras, tarjetas, botones) está en admin.scss; aquí sólo la
+//  rejilla de la pantalla y la lista de «qué hacer ahora».
+// ══════════════════════════════════════════════════════════
+
+.axr-resumen {
+  // Las cifras, de dos en dos en el móvil: una por fila ocupaba dos pantallas.
+  .axr-adm-stats {
+    @media (max-width: 560px) {
+      grid-template-columns: 1fr 1fr;
+      .axr-adm-stat__value { font-size: 1.4rem; }
+    }
+  }
+
+  &__date {
+    display: block;
+    margin-bottom: 0.2rem;
+    font-size: 0.8125rem;
+    color: var(--adm-muted);
+    &::first-letter { text-transform: uppercase; }
+  }
+
+  &__grid {
+    display: grid;
+    gap: 1.25rem;
+    align-items: start;
+    @media (min-width: 1000px) { grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); }
+  }
+  &__side > .axr-admin-card:last-child { margin-bottom: 0; }
+
+  h2 { display: flex; align-items: center; gap: 0.5rem; }
+  &__count {
+    min-width: 1.4rem;
+    padding: 0 0.4rem;
+    border-radius: 999px;
+    background: var(--adm-ink);
+    color: #ffffff;
+    font-size: 0.75rem;
+    line-height: 1.4rem;
+    text-align: center;
+  }
+
+  // Qué hacer ahora
+  &__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid var(--adm-line);
+    border-left: 3px solid var(--adm-info);
+    border-radius: 10px;
+    background: #ffffff;
+    &--warn { border-left-color: #f1c21b; background: #fffdf3; }
+    &--bad { border-left-color: var(--adm-bad); background: #fffafa; }
+    .axr-btn { flex: none; }
+    // En el móvil el texto se lleva todo el ancho y el botón baja.
+    @media (max-width: 560px) {
+      flex-wrap: wrap;
+      .axr-resumen__icon { display: none; }
+      .axr-resumen__text { flex-basis: 100%; }
+    }
+  }
+  &__icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--adm-info-bg);
+    color: var(--adm-info);
+    .axr-resumen__item--warn & { background: var(--adm-warn-bg); color: var(--adm-warn); }
+    .axr-resumen__item--bad & { background: var(--adm-bad-bg); color: var(--adm-bad); }
+  }
+  &__text {
+    flex: 1;
+    min-width: 0;
+    display: grid;
+    gap: 0.15rem;
+    strong { font-size: 0.875rem; }
+    small { font-size: 0.75rem; color: var(--adm-muted); line-height: 1.4; }
+  }
+
+  // Atajos
+  &__quick { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  &__shortcut {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.7rem 0.75rem;
+    border: 1px solid var(--adm-line);
+    border-radius: 10px;
+    color: var(--adm-ink);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: border-color 0.12s, background 0.12s;
+    svg { flex: none; color: var(--adm-accent); }
+    &:hover { border-color: var(--adm-accent); background: var(--adm-accent-bg); color: var(--adm-ink); }
+  }
+
+  // Contenido por curso
+  &__courses {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+    li { display: grid; grid-template-columns: auto 1fr; gap: 0 0.6rem; align-items: center; }
+    strong { font-size: 0.8125rem; }
+    span:last-child { grid-column: 2; font-size: 0.75rem; color: var(--adm-muted); }
+  }
+  &__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--adm-accent);
+    &--remote-professional { background: #2f6bff; }
+    &--remote-founder { background: #e4462f; }
+    &--web-abc { background: #f59e0b; }
+  }
+}
