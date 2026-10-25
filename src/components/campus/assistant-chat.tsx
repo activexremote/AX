@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+import { BrandMark } from "@/components/brand-mark";
 import type { AssistantReply } from "@/lib/asistente/chat";
 import { useI18n } from "@/lib/i18n/provider";
 import "@/components/campus/assistant-chat.scss";
@@ -69,6 +70,9 @@ export function AssistantChat({ onClose, enfocar = true }: { onClose?: () => voi
   return (
     <section className="axr-assistant" aria-label={t.assistant.title}>
       <header className="axr-assistant__head">
+        <span className="axr-assistant__avatar" aria-hidden>
+          <BrandMark size={16} />
+        </span>
         <div>
           <strong>{t.assistant.title}</strong>
           <span>{t.assistant.subtitle}</span>
@@ -80,7 +84,11 @@ export function AssistantChat({ onClose, enfocar = true }: { onClose?: () => voi
             </button>
           ) : null}
           {onClose ? (
-            <button type="button" onClick={onClose} aria-label={t.assistant.close}>✕</button>
+            <button type="button" className="axr-assistant__close" onClick={onClose} aria-label={t.assistant.close}>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
           ) : null}
         </div>
       </header>
@@ -130,7 +138,16 @@ export function AssistantChat({ onClose, enfocar = true }: { onClose?: () => voi
           ),
         )}
 
-        {busy ? <div className="axr-assistant__msg axr-assistant__msg--assistant is-thinking">{t.assistant.thinking}</div> : null}
+        {busy ? (
+          <div className="axr-assistant__msg axr-assistant__msg--assistant is-thinking" aria-label={t.assistant.thinking}>
+            <span className="axr-assistant__dots" aria-hidden>
+              <i />
+              <i />
+              <i />
+            </span>
+            <span>{t.assistant.thinking}</span>
+          </div>
+        ) : null}
         {error ? <div className="axr-assistant__error">{error}</div> : null}
       </div>
 
@@ -155,8 +172,11 @@ export function AssistantChat({ onClose, enfocar = true }: { onClose?: () => voi
             }
           }}
         />
-        <button type="submit" disabled={busy || !input.trim()}>
-          {t.assistant.send}
+        <button type="submit" disabled={busy || !input.trim()} aria-label={t.assistant.send}>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M5 12h13M12 5l7 7-7 7" />
+          </svg>
+          <span>{t.assistant.send}</span>
         </button>
       </form>
       <p className="axr-assistant__disclaimer">{t.assistant.disclaimer}</p>
@@ -195,7 +215,11 @@ export function AssistantWidget() {
             setOpen(true);
           }}
         >
-          <span aria-hidden="true">?</span>
+          <span className="axr-assistant-widget__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 5h16v11H9l-5 4zM8 9.5h8M8 12.5h5" />
+            </svg>
+          </span>
           {t.assistant.open}
         </button>
       ) : null}
