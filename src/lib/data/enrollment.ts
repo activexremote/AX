@@ -1,5 +1,6 @@
 import { cache } from "react";
 
+import { usuarioActual } from "@/lib/data/usuario";
 import { createClient } from "@/lib/supabase/server";
 import type { Enrollment } from "@/lib/supabase/types";
 
@@ -14,9 +15,7 @@ import type { Enrollment } from "@/lib/supabase/types";
  */
 export const getMyEnrollments = cache(async (): Promise<Enrollment[]> => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await usuarioActual();
   if (!user) return [];
 
   const { data } = await supabase

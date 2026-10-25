@@ -5,15 +5,12 @@ import type { Lesson, LearningPathStep, Module, Quiz, QuizOption, QuizQuestion }
 
 export async function listModulesWithCounts() {
   const supabase = await createClient();
-  const locale = await getLocale();
-  const { data: modules } = await supabase
-    .from("modules")
-    .select("*")
-    .order("order_index");
-
-  const { data: lessons } = await supabase
-    .from("lessons")
-    .select("id, module_id, duration_min");
+  // Módulos y lecciones a la vez: son independientes.
+  const [locale, { data: modules }, { data: lessons }] = await Promise.all([
+    getLocale(),
+    supabase.from("modules").select("*").order("order_index"),
+    supabase.from("lessons").select("id, module_id, duration_min"),
+  ]);
 
   return (modules ?? []).map((m) => {
     const ml = (lessons ?? []).filter((l) => l.module_id === m.id);
