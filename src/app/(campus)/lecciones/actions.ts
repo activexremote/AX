@@ -38,11 +38,15 @@ export async function recordLessonVisit(lessonId: string) {
     last_visit: now,
   });
 
-  await supabase.from("activity_log").insert({
-    user_id: user.id,
-    kind: "lesson_start",
-    lesson_id: lessonId,
-  });
+  // «Empezó la lección» se apunta una vez, la primera. Antes salía en cada
+  // visita y la actividad reciente de «Mi progreso» se llenaba de repeticiones.
+  if (!existing) {
+    await supabase.from("activity_log").insert({
+      user_id: user.id,
+      kind: "lesson_start",
+      lesson_id: lessonId,
+    });
+  }
 
   return { ok: true };
 }

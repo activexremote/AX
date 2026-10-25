@@ -25,24 +25,17 @@ export function LessonAudioPlayer({
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [current, setCurrent] = useState(0);
-  const sentRef = useRef(false);
 
+  // El tiempo con la pestaña a la vista ya lo apunta VisitTracker; aquí sólo
+  // el que se escucha con la pestaña escondida, para no contarlo dos veces.
   useEffect(() => {
     const t = setInterval(() => {
-      if (playing) {
+      if (playing && document.visibilityState !== "visible") {
         addLessonTime(lessonId, 5);
       }
     }, 5000);
     return () => clearInterval(t);
   }, [playing, lessonId]);
-
-  useEffect(() => {
-    if (!sentRef.current) {
-      // Tick once on mount so the lesson counts as visited.
-      addLessonTime(lessonId, 1);
-      sentRef.current = true;
-    }
-  }, [lessonId]);
 
   return (
     <div className="axr-audio">
@@ -57,7 +50,16 @@ export function LessonAudioPlayer({
         }}
         disabled={!src}
       >
-        {playing ? "❚❚" : "▶"}
+        {playing ? (
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
+            <rect x="2.5" y="2" width="3" height="10" rx="1" fill="currentColor" />
+            <rect x="8.5" y="2" width="3" height="10" rx="1" fill="currentColor" />
+          </svg>
+        ) : (
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
+            <path d="M4 2.2v9.6a.6.6 0 0 0 .9.5l7.7-4.8a.6.6 0 0 0 0-1L4.9 1.7a.6.6 0 0 0-.9.5z" fill="currentColor" />
+          </svg>
+        )}
       </button>
 
       <div className="axr-audio__meta">
@@ -67,7 +69,28 @@ export function LessonAudioPlayer({
         <span className="axr-audio__title">{lessonTitle}</span>
       </div>
 
-      <div className="axr-audio__bar">
+      {/* Un clic en la barra salta a ese punto de la narración. */}
+      <div
+        className="axr-audio__bar"
+        role="slider"
+        aria-label={lessonTitle}
+        aria-valuemin={0}
+        aria-valuemax={Math.round(duration)}
+        aria-valuenow={Math.round(current)}
+        tabIndex={src ? 0 : -1}
+        onClick={(e) => {
+          const a = audioRef.current;
+          if (!a || !src || !a.duration) return;
+          const r = e.currentTarget.getBoundingClientRect();
+          a.currentTime = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * a.duration;
+        }}
+        onKeyDown={(e) => {
+          const a = audioRef.current;
+          if (!a || !src) return;
+          if (e.key === "ArrowRight") a.currentTime = Math.min(a.duration || 0, a.currentTime + 10);
+          if (e.key === "ArrowLeft") a.currentTime = Math.max(0, a.currentTime - 10);
+        }}
+      >
         <div className="axr-audio__bar-fill" style={{ width: `${progress * 100}%` }} />
       </div>
 
