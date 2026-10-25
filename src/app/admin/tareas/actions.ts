@@ -64,6 +64,35 @@ export async function createAssignment(formData: FormData) {
   return { ok: true };
 }
 
+/**
+ * Cambia la fecha límite o la nota de una tarea ya asignada.
+ *
+ * Con fecha nueva, los avisos de Slack vuelven a empezar (el recordatorio y
+ * el de vencida se mandan una sola vez por tarea) y una tarea vencida vuelve
+ * a estar pendiente. Una completada sigue completada.
+ */
+export async function updateAssignment(id: string, formData: FormData) {
+  const { supabase } = await assertStaff();
+  const dueDate = (formData.get("due_date") as string) || null;
+  const note = ((formData.get("note") as string) || "").trim().slice(0, 2000) || null;
+  if (dueDate && !/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) return { error: "Fecha no válida." };
+
+  const { data: actual } = await supabase.from("assignments").select("due_date, status").eq("id", id).maybeSingle();
+  if (!actual) return { error: "La tarea no existe." };
+
+  const cambios: Record<string, unknown> = { note, due_date: dueDate };
+  if (dueDate !== actual.due_date) {
+    cambios.reminder_sent_at = null;
+    cambios.overdue_notified_at = null;
+    if (actual.status === "vencida") cambios.status = "pendiente";
+  }
+  const { error } = await supabase.from("assignments").update(cambios).eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/tareas");
+  revalidatePath("/mis-tareas");
+  return { ok: true };
+}
+
 export async function deleteAssignment(id: string) {
   const { supabase } = await assertStaff();
   const { error } = await supabase.from("assignments").delete().eq("id", id);

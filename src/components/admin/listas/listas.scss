@@ -1,0 +1,396 @@
+// ══════════════════════════════════════════════════════════
+//  Listas del panel: Tareas, Usuarios y Matrículas
+//
+//  Las tres son lo mismo con otros datos: una barra para buscar y filtrar,
+//  y una lista de filas en una tarjeta. Las filas son rejilla, no tabla: en
+//  el móvil se apilan en vez de obligar a desplazarse de lado.
+//
+//  Usa los tokens del panel (--adm-*, en admin.scss).
+// ══════════════════════════════════════════════════════════
+
+// En el móvil, las cifras de dos en dos: una por pantalla es demasiado scroll.
+.axr-adm-stats.axr-al-stats {
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+    .axr-adm-stat { padding: 0.8rem 0.9rem; }
+    .axr-adm-stat__value { font-size: 1.4rem; }
+  }
+}
+
+// ── Barra de búsqueda y filtros ──────────────────────────
+.axr-al-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+
+.axr-al-search {
+  flex: 1 1 240px;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  padding: 0 0.75rem;
+  background: #ffffff;
+  border: 1px solid var(--adm-line-strong);
+  border-radius: 8px;
+  color: var(--adm-muted);
+  transition: border-color 0.12s, box-shadow 0.12s;
+  &:focus-within { border-color: var(--adm-accent); box-shadow: 0 0 0 3px rgba(91, 75, 245, 0.16); }
+  input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.55rem 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 0.875rem;
+    color: var(--adm-ink);
+    outline: none;
+  }
+}
+
+.axr-al-select {
+  padding: 0.5rem 2rem 0.5rem 0.7rem;
+  background: #ffffff;
+  border: 1px solid var(--adm-line-strong);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.8125rem;
+  color: var(--adm-ink);
+  max-width: 100%;
+  &:focus { outline: none; border-color: var(--adm-accent); box-shadow: 0 0 0 3px rgba(91, 75, 245, 0.16); }
+}
+
+// Pestañas de filtro con su número
+.axr-al-seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.2rem;
+  background: #ececf0;
+  border-radius: 10px;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.7rem;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #3d3d44;
+    cursor: pointer;
+    white-space: nowrap;
+    &:hover { color: var(--adm-ink); }
+    &[aria-pressed="true"] { background: #ffffff; color: var(--adm-ink); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+  }
+  small {
+    min-width: 1.15rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.07);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1.15rem;
+    text-align: center;
+  }
+}
+
+.axr-al-clear {
+  padding: 0.3rem 0.5rem;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.8125rem;
+  color: var(--adm-accent);
+  cursor: pointer;
+  &:hover { text-decoration: underline; }
+}
+
+// ── Lista ────────────────────────────────────────────────
+.axr-al-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  border: 1px solid var(--adm-line);
+  border-radius: var(--adm-radius);
+  box-shadow: var(--adm-shadow);
+  overflow: hidden;
+
+  > li { border-bottom: 1px solid var(--adm-line); }
+  > li:last-child { border-bottom: 0; }
+}
+
+// Cabecera de columnas (sólo escritorio)
+.axr-al-head {
+  display: none;
+  background: #fafafb;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--adm-muted);
+}
+
+.axr-al-row {
+  display: grid;
+  gap: 0.6rem 1rem;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  transition: background 0.1s;
+  &:hover { background: #fafafb; }
+}
+
+// Quién: avatar + nombre + email
+.axr-al-who {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+  strong { display: block; font-size: 0.875rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  small { display: block; font-size: 0.75rem; color: var(--adm-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  > span:last-child { min-width: 0; }
+}
+
+.axr-al-avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #ece9ff;
+  color: #3a2fd0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  &--alumno { background: #e8f5ee; color: #14663c; }
+  &--profesor { background: #e8eefc; color: #23458f; }
+  &--administrador { background: #f1efff; color: #3a2fd0; }
+}
+
+.axr-al-muted { font-size: 0.8125rem; color: var(--adm-muted); }
+.axr-al-label { display: none; font-size: 0.6875rem; font-weight: 600; color: var(--adm-muted); }
+
+// Barra de progreso
+.axr-al-progress {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+  font-size: 0.75rem;
+  color: var(--adm-muted);
+  i {
+    display: block;
+    height: 6px;
+    border-radius: 999px;
+    background: #ececf0;
+    overflow: hidden;
+    b { display: block; height: 100%; border-radius: inherit; background: var(--adm-accent); }
+  }
+  &.is-done i b { background: var(--adm-ok); }
+}
+
+.axr-al-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+// Botón de icono (editar, borrar…)
+.axr-al-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--adm-muted);
+  cursor: pointer;
+  &:hover { background: #f1f1f4; color: var(--adm-ink); }
+  &--danger:hover { background: var(--adm-bad-bg); color: var(--adm-bad); }
+  &:disabled { opacity: 0.4; cursor: default; }
+}
+
+.axr-al-note {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  color: var(--adm-muted);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.axr-al-error {
+  margin-bottom: 0.9rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  background: var(--adm-bad-bg);
+  color: var(--adm-bad);
+  font-size: 0.8125rem;
+}
+
+// ── Tareas ───────────────────────────────────────────────
+.axr-al--tareas {
+  @media (min-width: 900px) {
+    .axr-al-head,
+    .axr-al-row { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.6fr) minmax(120px, 1fr) minmax(130px, 0.9fr) 110px 76px; }
+    .axr-al-head { display: grid; padding: 0.6rem 1rem; }
+  }
+  @media (max-width: 899px) {
+    .axr-al-row { grid-template-columns: 1fr auto; }
+    .axr-al-row > :nth-child(2),
+    .axr-al-row > :nth-child(3),
+    .axr-al-row > :nth-child(4) { grid-column: 1 / -1; }
+  }
+}
+
+.axr-al-module {
+  min-width: 0;
+  > small { font-size: 0.75rem; }
+  strong { display: block; font-size: 0.8125rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+.axr-al-due {
+  font-size: 0.8125rem;
+  small { display: block; font-size: 0.75rem; font-weight: 400; color: var(--adm-muted); }
+  &--vencida { color: var(--adm-bad); font-weight: 600; }
+  &--pronto { color: var(--adm-warn); font-weight: 600; }
+}
+
+// ── Usuarios ─────────────────────────────────────────────
+.axr-al--usuarios {
+  @media (min-width: 900px) {
+    .axr-al-head,
+    .axr-al-row { grid-template-columns: minmax(0, 1.5fr) 150px minmax(0, 2fr) 116px; }
+    .axr-al-head { display: grid; padding: 0.6rem 1rem; }
+  }
+  @media (max-width: 899px) {
+    .axr-al-row { grid-template-columns: 1fr; }
+    .axr-al-label { display: block; }
+  }
+
+  // Los cursos: interruptores que se ve que lo son.
+  .axr-access__row { gap: 0.4rem; }
+  .axr-access__chip {
+    gap: 0.45rem;
+    padding: 0.3rem 0.65rem 0.3rem 0.35rem;
+    border: 1px solid var(--adm-line-strong);
+    background: #ffffff;
+    color: #3d3d44;
+    font-size: 0.75rem;
+    font-weight: 500;
+    &:hover:not(:disabled) { border-color: var(--adm-ok); }
+    &.is-on { background: var(--adm-ok-bg); border-color: #a7e3bd; color: #14663c; }
+  }
+  // El punto se convierte en un interruptor pequeño.
+  .axr-access__dot {
+    position: relative;
+    width: 24px;
+    height: 14px;
+    border-radius: 999px;
+    background: #c6c6cc;
+    opacity: 1;
+    transition: background 0.15s;
+    &::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ffffff;
+      transition: transform 0.15s;
+    }
+  }
+  .is-on .axr-access__dot { background: var(--adm-ok); &::after { transform: translateX(10px); } }
+}
+
+.axr-al-role {
+  display: grid;
+  gap: 0.2rem;
+  select {
+    padding: 0.4rem 1.8rem 0.4rem 0.6rem;
+    background: #ffffff;
+    border: 1px solid var(--adm-line-strong);
+    border-radius: 8px;
+    font: inherit;
+    font-size: 0.8125rem;
+    color: var(--adm-ink);
+    &:focus { outline: none; border-color: var(--adm-accent); box-shadow: 0 0 0 3px rgba(91, 75, 245, 0.16); }
+    &:disabled { opacity: 0.6; }
+  }
+  small { color: var(--adm-bad); font-size: 0.6875rem; }
+}
+
+.axr-al-joined {
+  white-space: nowrap;
+  @media (min-width: 900px) { text-align: right; }
+}
+
+.axr-al-staff { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8125rem; color: var(--adm-muted); }
+
+// ── Matrículas ───────────────────────────────────────────
+.axr-al--pedidos {
+  @media (min-width: 900px) {
+    .axr-al-head,
+    .axr-al-row { grid-template-columns: 96px minmax(0, 1.5fr) minmax(0, 1.4fr) minmax(0, 1fr) 100px 120px; }
+    .axr-al-head { display: grid; padding: 0.6rem 1rem; }
+  }
+  @media (max-width: 899px) {
+    .axr-al-row { grid-template-columns: 1fr auto; }
+    .axr-al-row > :nth-child(1) { order: 5; }
+    .axr-al-row > :nth-child(3),
+    .axr-al-row > :nth-child(4) { grid-column: 1 / -1; }
+  }
+}
+
+.axr-al-amount { font-size: 0.875rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.axr-al-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+
+// Las tarjetas de «para recuperar»
+.axr-al-recover {
+  margin-bottom: 1.5rem;
+  padding: 1.1rem 1.2rem 1.2rem;
+  background: #ffffff;
+  border: 1px solid #f3dca0;
+  border-radius: var(--adm-radius);
+  box-shadow: var(--adm-shadow);
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+    h2 { margin: 0; font-size: 1rem; font-weight: 650; }
+  }
+  > p { margin: 0 0 0.9rem; font-size: 0.8125rem; color: var(--adm-muted); }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+  li {
+    display: grid;
+    gap: 0.55rem;
+    padding: 0.85rem 0.9rem;
+    border: 1px solid var(--adm-line);
+    border-radius: 10px;
+    background: #fffdf6;
+  }
+  &__foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+  time { margin-left: auto; font-size: 0.75rem; color: var(--adm-muted); }
+}
