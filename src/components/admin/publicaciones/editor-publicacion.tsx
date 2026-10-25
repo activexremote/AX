@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -15,6 +15,7 @@ import {
 } from "@/app/admin/publicaciones/actions";
 import { EditorBlog, blogAForm, formABlog, type BlogForm } from "@/components/admin/publicaciones/editor-blog";
 import { Icono } from "@/components/admin/publicaciones/iconos";
+import { BuscadorGif, CrearImagenIa, HerramientasTexto } from "@/components/admin/publicaciones/medios-publicacion";
 import { SelectorImagenes } from "@/components/admin/publicaciones/nueva-publicacion";
 import { VistaBlog, VistaLinkedIn, VistaX } from "@/components/admin/publicaciones/vistas-previas";
 import { articuloDesdeBlog } from "@/lib/social/blog";
@@ -43,7 +44,20 @@ function Contador({ n, max, copy }: { n: number; max: number; copy: PubCopy }) {
 
 // ── Editores por canal ─────────────────────────────────────
 
-function EditorX({ body, onChange, copy, disabled }: { body: XBody; onChange: (b: XBody) => void; copy: PubCopy; disabled: boolean }) {
+type Contexto = { postId: string; language: "es" | "en" };
+
+/** Un texto del post con sus herramientas (emoji, mención, hashtags) encima. */
+function Texto({ ctx, channel, value, onChange, rows, copy, disabled }: { ctx: Contexto; channel: "x" | "linkedin"; value: string; onChange: (v: string) => void; rows: number; copy: PubCopy; disabled: boolean }) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  return (
+    <>
+      {!disabled ? <HerramientasTexto postId={ctx.postId} channel={channel} language={ctx.language} value={value} onChange={onChange} textarea={ref} copy={copy} /> : null}
+      <textarea ref={ref} rows={rows} value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled} />
+    </>
+  );
+}
+
+function EditorX({ ctx, body, onChange, copy, disabled }: { ctx: Contexto; body: XBody; onChange: (b: XBody) => void; copy: PubCopy; disabled: boolean }) {
   const posts = [body.text, ...body.thread];
   const set = (i: number, v: string) => {
     const next = [...posts];
@@ -67,7 +81,7 @@ function EditorX({ body, onChange, copy, disabled }: { body: XBody; onChange: (b
               </button>
             ) : null}
           </label>
-          <textarea rows={4} value={p} onChange={(e) => set(i, e.target.value)} disabled={disabled} />
+          <Texto ctx={ctx} channel="x" rows={4} value={p} onChange={(v) => set(i, v)} copy={copy} disabled={disabled} />
           <Contador n={longitudX(p)} max={LIMITE_X} copy={copy} />
         </div>
       ))}
@@ -82,12 +96,12 @@ function EditorX({ body, onChange, copy, disabled }: { body: XBody; onChange: (b
   );
 }
 
-function EditorLinkedIn({ body, onChange, copy, disabled }: { body: LinkedInBody; onChange: (b: LinkedInBody) => void; copy: PubCopy; disabled: boolean }) {
+function EditorLinkedIn({ ctx, body, onChange, copy, disabled }: { ctx: Contexto; body: LinkedInBody; onChange: (b: LinkedInBody) => void; copy: PubCopy; disabled: boolean }) {
   const n = [...body.text].length;
   return (
     <div className="axr-form">
       <div className="axr-form__row">
-        <textarea rows={16} value={body.text} onChange={(e) => onChange({ text: e.target.value })} disabled={disabled} />
+        <Texto ctx={ctx} channel="linkedin" rows={16} value={body.text} onChange={(v) => onChange({ text: v })} copy={copy} disabled={disabled} />
         <Contador n={n} max={LIMITE_LINKEDIN} copy={copy} />
       </div>
     </div>
@@ -248,8 +262,8 @@ export function EditorVariante({
 
       <div className={`axr-pub-split axr-pub-split--${channel}`}>
         <div className="axr-pub-split__edit">
-          {channel === "x" ? <EditorX body={x} onChange={cambia(setX)} copy={copy} disabled={publicado} /> : null}
-          {channel === "linkedin" ? <EditorLinkedIn body={li} onChange={cambia(setLi)} copy={copy} disabled={publicado} /> : null}
+          {channel === "x" ? <EditorX ctx={{ postId: variant.post_id, language }} body={x} onChange={cambia(setX)} copy={copy} disabled={publicado} /> : null}
+          {channel === "linkedin" ? <EditorLinkedIn ctx={{ postId: variant.post_id, language }} body={li} onChange={cambia(setLi)} copy={copy} disabled={publicado} /> : null}
           {channel === "blog" ? <EditorBlog form={blog} onChange={cambia(setBlog)} copy={copy} locale={locale} disabled={publicado} /> : null}
         </div>
         <div className="axr-pub-split__preview">
@@ -549,11 +563,12 @@ function sameEstado(a: EstadoCanal | undefined, b: EstadoCanal) {
 
 // ── Imágenes y borrado ─────────────────────────────────────
 
-export function ImagenesPublicacion({ postId, images, copy }: { postId: string; images: SocialImage[]; copy: PubCopy }) {
+export function ImagenesPublicacion({ postId, images, language, copy }: { postId: string; images: SocialImage[]; language: "es" | "en"; copy: PubCopy }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [formKey, setFormKey] = useState(0);
+  const [modo, setModo] = useState<"subir" | "ia" | "gif">("subir");
 
   return (
     <div>
@@ -584,27 +599,50 @@ export function ImagenesPublicacion({ postId, images, copy }: { postId: string; 
         </div>
       ) : null}
       {images.length < 4 ? (
-        <form
-          key={formKey}
-          className="axr-form"
-          action={(fd) =>
-            startTransition(async () => {
-              setError(null);
-              const r = await anadirImagenes(postId, fd);
-              if (r.error) setError(r.error);
-              setFormKey((k) => k + 1);
-              router.refresh();
-            })
-          }
-        >
-          <SelectorImagenes copy={copy} max={4 - images.length} />
-          <div>
-            <button type="submit" className="axr-btn axr-btn--ghost" disabled={pending}>
-              {copy.addImages}
-            </button>
+        <>
+          <div className="axr-pv-switch axr-pubmedia__tabs" role="tablist">
+            {(
+              [
+                ["subir", copy.mUpload],
+                ["ia", copy.mAi],
+                ["gif", copy.mGif],
+              ] as const
+            ).map(([k, label]) => (
+              <button key={k} type="button" role="tab" aria-selected={modo === k} aria-pressed={modo === k} onClick={() => setModo(k)}>
+                {label}
+              </button>
+            ))}
           </div>
-        </form>
-      ) : null}
+          {modo === "subir" ? (
+            <form
+              key={formKey}
+              className="axr-form"
+              action={(fd) =>
+                startTransition(async () => {
+                  setError(null);
+                  const r = await anadirImagenes(postId, fd);
+                  if (r.error) setError(r.error);
+                  setFormKey((k) => k + 1);
+                  router.refresh();
+                })
+              }
+            >
+              <SelectorImagenes copy={copy} max={4 - images.length} />
+              <div>
+                <button type="submit" className="axr-btn axr-btn--ghost" disabled={pending}>
+                  {copy.addImages}
+                </button>
+              </div>
+            </form>
+          ) : modo === "ia" ? (
+            <CrearImagenIa postId={postId} copy={copy} />
+          ) : (
+            <BuscadorGif postId={postId} language={language} copy={copy} />
+          )}
+        </>
+      ) : (
+        <p className="axr-pubtools__hint">{copy.mFull}</p>
+      )}
     </div>
   );
 }

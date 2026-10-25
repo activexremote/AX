@@ -117,12 +117,13 @@ export default async function PublicacionPage({
               </p>
             </div>
           ) : null}
-          <div>
-            <strong>{copy.images}</strong>
-            <ImagenesPublicacion postId={p.id} images={p.images} copy={copy} />
-          </div>
         </div>
       </details>
+
+      <section className="axr-pubcard axr-pubmedia">
+        <h2>{copy.images}</h2>
+        <ImagenesPublicacion postId={p.id} images={p.images} language={p.language} copy={copy} />
+      </section>
 
       <Estudio
         postId={p.id}

@@ -2,10 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 
+import { generarImagen, type TamanoImagen } from "@/lib/banners/imagen";
 import { createClient } from "@/lib/supabase/server";
 import { CANALES, parseBody, revisar, slugify } from "@/lib/social/canales";
 import { leerFuente } from "@/lib/social/fuente";
 import { generar } from "@/lib/social/generar";
+import { ESTILO_SOCIAL, buscarGifs, descargarGif, ideasDeImagen, sugerirHashtags, type GastoDeepseek } from "@/lib/social/medios";
 import { HORIZONTE, huecos, diaMadrid, parseRitmo } from "@/lib/social/calendario";
 import { publicSocialSettings, testDeepseekKey } from "@/lib/social/settings";
 import type { SocialChannel, SocialImage, SocialPost, SocialVariant } from "@/lib/supabase/types";
@@ -464,6 +466,118 @@ export async function anadirImagenes(postId: string, formData: FormData) {
   return subida.error ? { error: subida.error } : { ok: true };
 }
 
+// ── Imágenes con IA, GIFs y hashtags ──────────────────────
+//
+// La imagen la pinta OpenAI (la misma clave que los banners, panel → IA); las
+// ideas y los hashtags, DeepSeek. Todo gasto se apunta en social_usage.
+
+async function apuntarDeepseek(supabase: Supabase, userId: string, postId: string, channels: SocialChannel[], g?: GastoDeepseek) {
+  if (!g) return;
+  await supabase.from("social_usage").insert({
+    post_id: postId,
+    channels,
+    model: g.model,
+    input_hit: g.uso.hit,
+    input_miss: g.uso.miss,
+    output_tokens: g.uso.out,
+    peak: g.peak,
+    cost_usd: g.usd,
+    created_by: userId,
+  });
+}
+
+/** Lo que dice la publicación, para que la IA proponga algo que encaje. */
+async function materialDe(supabase: Supabase, post: SocialPost): Promise<string> {
+  const { data } = await supabase.from("social_variants").select("channel, body").eq("post_id", post.id);
+  const textos = ((data ?? []) as Pick<SocialVariant, "channel" | "body">[])
+    .filter((v) => v.channel !== "blog")
+    .map((v) => {
+      const b = v.body as { text?: string; thread?: string[] };
+      return [b.text, ...(b.thread ?? [])].filter(Boolean).join("\n");
+    });
+  return [post.title, post.topic, ...textos].filter(Boolean).join("\n\n");
+}
+
+async function cargarPost(supabase: Supabase, postId: string): Promise<SocialPost | null> {
+  const { data } = await supabase.from("social_posts").select("*").eq("id", postId).maybeSingle();
+  return (data as SocialPost | null) ?? null;
+}
+
+async function sumarImagen(supabase: Supabase, post: SocialPost, img: SocialImage) {
+  await supabase
+    .from("social_posts")
+    .update({ images: [...post.images, img], updated_at: new Date().toISOString() })
+    .eq("id", post.id);
+  revalidatePath(`/admin/publicaciones/${post.id}`);
+}
+
+export async function ideasImagen(postId: string, indicacion: string) {
+  const { supabase, userId } = await assertAdmin();
+  const post = await cargarPost(supabase, postId);
+  if (!post) return { ideas: [], error: "La publicación no existe." };
+  const r = await ideasDeImagen({ material: await materialDe(supabase, post), indicacion, language: post.language });
+  await apuntarDeepseek(supabase, userId, postId, [], r.gasto);
+  return { ideas: r.ideas, error: r.error };
+}
+
+const TAMANOS: Record<string, TamanoImagen> = { cuadrada: "1024x1024", horizontal: "1536x1024", vertical: "1024x1536" };
+
+export async function crearImagenIa(postId: string, prompt: string, formato: string, alt: string) {
+  const { supabase, userId } = await assertAdmin();
+  const post = await cargarPost(supabase, postId);
+  if (!post) return { error: "La publicación no existe." };
+  if (post.images.length >= MAX_IMAGENES) return { error: `Como mucho ${MAX_IMAGENES} imágenes por publicación.` };
+  const escena = prompt.trim().slice(0, 2000);
+  if (!escena) return { error: "Describe la imagen o elige una idea." };
+
+  const path = `${postId}/${Date.now()}-ia.jpg`;
+  const r = await generarImagen(escena, path, "medium", { bucket: BUCKET, size: TAMANOS[formato] ?? "1024x1024", estilo: ESTILO_SOCIAL });
+  if (!r.ok) return { error: r.error };
+  const g = r.imagen.gasto;
+  await supabase.from("social_usage").insert({
+    post_id: postId,
+    channels: [],
+    model: g.model,
+    input_miss: g.input,
+    output_tokens: g.output,
+    cost_usd: g.usd,
+    created_by: userId,
+  });
+  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+  await sumarImagen(supabase, post, { path, url: data.publicUrl, alt: alt.trim().slice(0, 400) });
+  return { ok: true };
+}
+
+export async function buscarGif(q: string, lang: "es" | "en") {
+  await assertAdmin();
+  return buscarGifs(q, lang === "en" ? "en" : "es");
+}
+
+export async function anadirGif(postId: string, gifId: string) {
+  const { supabase } = await assertAdmin();
+  const post = await cargarPost(supabase, postId);
+  if (!post) return { error: "La publicación no existe." };
+  if (post.images.length >= MAX_IMAGENES) return { error: `Como mucho ${MAX_IMAGENES} imágenes por publicación.` };
+  const gif = await descargarGif(gifId);
+  if (!gif.bytes) return { error: gif.error ?? "No se ha podido añadir el GIF." };
+  const path = `${postId}/${Date.now()}-giphy-${gifId}.gif`;
+  const { error } = await supabase.storage.from(BUCKET).upload(path, gif.bytes, { contentType: "image/gif" });
+  if (error) return { error: `No se pudo guardar el GIF: ${error.message}` };
+  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+  await sumarImagen(supabase, post, { path, url: data.publicUrl, alt: (gif.title ?? "").replace(/\s+GIF.*$/i, "").slice(0, 400) });
+  return { ok: true };
+}
+
+export async function hashtagsPara(postId: string, channel: SocialChannel, texto: string) {
+  const { supabase, userId } = await assertAdmin();
+  if (channel === "blog") return { propuesta: [], opciones: [], error: "El blog no lleva hashtags." };
+  const post = await cargarPost(supabase, postId);
+  if (!post) return { propuesta: [], opciones: [], error: "La publicación no existe." };
+  const r = await sugerirHashtags({ channel, texto: texto.trim() || (await materialDe(supabase, post)), language: post.language });
+  await apuntarDeepseek(supabase, userId, postId, [channel], r.gasto);
+  return { propuesta: r.propuesta, opciones: r.opciones, error: r.error };
+}
+
 export async function quitarImagen(postId: string, path: string) {
   const { supabase } = await assertAdmin();
   const { data: post } = await supabase.from("social_posts").select("images").eq("id", postId).maybeSingle();
@@ -568,6 +682,10 @@ export async function guardarAjustes(formData: FormData) {
   const up = String(formData.get("uploadpost_api_key") ?? "").trim();
   if (formData.get("clear_uploadpost") === "on") cambios.uploadpost_api_key = null;
   else if (up) cambios.uploadpost_api_key = up;
+
+  const gf = String(formData.get("giphy_api_key") ?? "").trim();
+  if (formData.get("clear_giphy") === "on") cambios.giphy_api_key = null;
+  else if (gf) cambios.giphy_api_key = gf;
 
   const { error } = await supabase.from("social_settings").update(cambios).eq("id", "default");
   if (error) return { error: error.message };

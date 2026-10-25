@@ -9,10 +9,11 @@ import type { SocialSettings } from "@/lib/supabase/types";
 // ══════════════════════════════════════════════════════════
 //  Las claves de las publicaciones
 //
-//  DeepSeek escribe; Upload-Post publicará en X y LinkedIn. Las dos claves
-//  viven en `social_settings` y se editan en /admin/publicaciones/ajustes,
-//  con el entorno (DEEPSEEK_API_KEY, UPLOADPOST_API_KEY) de respaldo, igual
-//  que la de OpenAI en lib/ai/settings.ts.
+//  DeepSeek escribe; Upload-Post publicará en X y LinkedIn; GIPHY da los
+//  GIFs. Las tres claves viven en `social_settings` y se editan en
+//  /admin/publicaciones/ajustes, con el entorno (DEEPSEEK_API_KEY,
+//  UPLOADPOST_API_KEY, GIPHY_API_KEY) de respaldo, igual que la de OpenAI en
+//  lib/ai/settings.ts.
 //
 //  DeepSeek habla el mismo protocolo que OpenAI: el cliente es el mismo SDK
 //  con otra URL. Por eso no hay dependencia nueva.
@@ -31,6 +32,7 @@ export type PublicSocialSettings = {
   deepseekSource: "panel" | "entorno" | "ninguna";
   uploadpostHint: string | null;
   uploadpostUser: string;
+  giphyHint: string | null;
   ritmo: Ritmo;
   /** ¿Alguien ha guardado ya los ajustes? Hasta entonces, el ritmo es el de serie. */
   ritmoGuardado: boolean;
@@ -61,6 +63,12 @@ export async function deepseekClient(): Promise<{ client: OpenAI; model: string 
   };
 }
 
+/** La clave de GIPHY (0024), o null. Sólo para el servidor. */
+export async function giphyKey(): Promise<string | null> {
+  const row = await readRow();
+  return (row?.giphy_api_key || process.env.GIPHY_API_KEY || "").trim() || null;
+}
+
 export async function deepseekConfigured(): Promise<boolean> {
   return Boolean(await deepseekClient());
 }
@@ -71,6 +79,7 @@ export async function publicSocialSettings(): Promise<PublicSocialSettings> {
   const entorno = (process.env.DEEPSEEK_API_KEY || "").trim();
   const usada = propia || entorno;
   const up = (row?.uploadpost_api_key || process.env.UPLOADPOST_API_KEY || "").trim();
+  const gif = (row?.giphy_api_key || process.env.GIPHY_API_KEY || "").trim();
 
   return {
     deepseekModel: row?.deepseek_model || DEEPSEEK_MODELO,
@@ -78,6 +87,7 @@ export async function publicSocialSettings(): Promise<PublicSocialSettings> {
     deepseekSource: propia ? "panel" : entorno ? "entorno" : "ninguna",
     uploadpostHint: up ? `…${up.slice(-4)}` : null,
     uploadpostUser: row?.uploadpost_user ?? "",
+    giphyHint: gif ? `…${gif.slice(-4)}` : null,
     ritmo: parseRitmo(row?.cadence),
     ritmoGuardado: Boolean(row?.updated_by),
     alertDays: row?.alert_days ?? 14,
