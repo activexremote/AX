@@ -1,0 +1,202 @@
+// ══════════════════════════════════════════════════════════
+//  Asistente del campus (panel v2)
+//
+//  Lo común (tarjetas, cifras, pastillas, botones) está en admin.scss; aquí
+//  sólo la bandeja, las listas y el buscador.
+// ══════════════════════════════════════════════════════════
+
+.axr-kb-lead { margin: -0.5rem 0 1rem; font-size: 0.8125rem; color: var(--adm-muted); line-height: 1.5; }
+
+.axr-kb-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  h2 { margin: 0 !important; }
+}
+
+// La cifra de la bandeja, en ámbar mientras haya algo esperando.
+.axr-kb-stat--warn {
+  border-color: #f1c21b !important;
+  background: var(--adm-warn-bg) !important;
+  .axr-adm-stat__label, .axr-adm-stat__label svg { color: var(--adm-warn) !important; }
+}
+
+// ── Bandeja ──
+.axr-kb-inbox {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 0.85rem 0.95rem;
+    border: 1px solid #f1e4b0;
+    border-radius: 10px;
+    background: #fffcf0;
+    @media (max-width: 640px) { flex-wrap: wrap; }
+  }
+  &__icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--adm-warn-bg);
+    color: var(--adm-warn);
+  }
+  &__main {
+    flex: 1;
+    min-width: 0;
+    display: grid;
+    gap: 0.2rem;
+    strong { font-size: 0.875rem; line-height: 1.4; }
+    small { font-size: 0.75rem; color: var(--adm-muted); }
+    details { margin-top: 0.25rem; font-size: 0.75rem; color: #525258; }
+    summary { cursor: pointer; color: var(--adm-muted); }
+    p { margin: 0.35rem 0 0; white-space: pre-wrap; line-height: 1.5; }
+  }
+}
+
+// ── Acciones de una fila ──
+.axr-kb-actions {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  max-width: 100%;
+}
+.axr-kb-danger { color: var(--adm-bad) !important; }
+.axr-kb-error { flex-basis: 100%; text-align: right; font-size: 0.75rem; color: var(--adm-bad); }
+
+// ── Buscador y filtro ──
+.axr-kb-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+.axr-kb-search {
+  flex: 1 1 260px;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0 0.7rem;
+  border: 1px solid var(--adm-line-strong);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--adm-muted);
+  &:focus-within { border-color: var(--adm-accent); box-shadow: 0 0 0 3px rgba(91, 75, 245, 0.16); }
+  input { flex: 1; min-width: 0; border: 0; padding: 0.55rem 0; font: inherit; font-size: 0.875rem; background: transparent; outline: none; color: var(--adm-ink); }
+}
+.axr-kb-filter {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 9px;
+  background: #efeff3;
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    font: inherit;
+    font-size: 0.8125rem;
+    color: var(--adm-muted);
+    cursor: pointer;
+    span { font-size: 0.6875rem; font-weight: 700; color: #8d8d95; }
+    &[aria-pressed="true"] { background: #ffffff; color: var(--adm-ink); font-weight: 600; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
+  }
+}
+
+// ── Listas (FAQs y documentos) ──
+.axr-kb-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 0.9rem 0;
+    border-top: 1px solid var(--adm-line);
+    &:first-child { border-top: 0; padding-top: 0.2rem; }
+    &.is-off .axr-kb-list__main { opacity: 0.55; }
+    @media (max-width: 720px) { flex-wrap: wrap; .axr-kb-actions { justify-content: flex-start; } }
+  }
+  &__main {
+    flex: 1;
+    min-width: 0;
+    display: grid;
+    gap: 0.3rem;
+    strong { font-size: 0.875rem; line-height: 1.4; }
+    p { margin: 0; font-size: 0.8125rem; color: #525258; line-height: 1.5; }
+  }
+  &__meta { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.15rem; }
+}
+
+.axr-kb-doc {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+  background: var(--adm-accent-bg);
+  color: #3a2fd0;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+// ── Probar y últimas preguntas ──
+.axr-kb-grid {
+  display: grid;
+  gap: 1.25rem;
+  @media (min-width: 1100px) { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+  .axr-admin-card { margin-bottom: 0; }
+}
+
+.axr-kb-recent {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 520px;
+  overflow-y: auto;
+  li {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.65rem 0;
+    border-top: 1px solid var(--adm-line);
+    &:first-child { border-top: 0; padding-top: 0; }
+    div { display: grid; gap: 0.15rem; min-width: 0; }
+    span { font-size: 0.8125rem; line-height: 1.4; }
+    small { font-size: 0.6875rem; color: var(--adm-muted); }
+  }
+}
+
+// En el móvil, los botones bajan debajo del texto: al lado lo estrujaban.
+@media (max-width: 720px) {
+  .axr-kb-inbox li,
+  .axr-kb-list li { flex-wrap: wrap; }
+  .axr-kb-inbox__main,
+  .axr-kb-list__main { flex: 1 1 calc(100% - 3.5rem); }
+  .axr-kb-inbox .axr-kb-actions,
+  .axr-kb-list .axr-kb-actions { flex: 1 1 100%; justify-content: flex-start; }
+  .axr-kb-inbox .axr-kb-actions { padding-left: calc(32px + 0.85rem); }
+}
