@@ -84,6 +84,11 @@ export type Material = {
   instruction?: string;
   /** Al regenerar un canal, la versión actual: para mejorarla, no empezar de cero. */
   current?: Partial<Record<SocialChannel, unknown>>;
+  /**
+   * La versión en el otro idioma, ya escrita: se adapta, no se reescribe.
+   * Así las dos publicaciones de una pareja cuentan lo mismo.
+   */
+  translateFrom?: { language: "es" | "en"; bodies: Partial<Record<SocialChannel, unknown>> };
 };
 
 export type Resultado = {
@@ -127,6 +132,15 @@ function usuario(m: Material, canales: SocialChannel[]): string {
     partes.push(`ENLACE DE ORIGEN: ${m.source.url}\nTÍTULO: ${m.source.title}\nTEXTO DE LA PÁGINA:\n<<<\n${m.source.text}\n>>>`);
   }
   if (m.imageCount) partes.push(`La publicación lleva ${m.imageCount} imagen(es).`);
+  const origen = canales.filter((c) => m.translateFrom?.bodies[c]);
+  if (origen.length) {
+    const destino = m.language === "en" ? "INGLÉS" : "ESPAÑOL";
+    partes.push(
+      `ADAPTA AL ${destino} esta versión: mismo contenido, misma estructura, mismos enlaces y mismas fuentes. ` +
+        `Tono nativo del idioma, no una traducción literal. No añadas ideas ni datos que no estén.\n` +
+        origen.map((c) => `${c}: ${JSON.stringify(m.translateFrom!.bodies[c])}`).join("\n"),
+    );
+  }
   const actuales = canales.filter((c) => m.current?.[c]);
   if (actuales.length) {
     partes.push(
@@ -140,7 +154,7 @@ function usuario(m: Material, canales: SocialChannel[]): string {
 export async function generar(m: Material, canales: SocialChannel[]): Promise<Resultado> {
   const lista = CANALES.filter((c) => canales.includes(c));
   if (!lista.length) return { bodies: {}, error: "No hay ningún canal seleccionado." };
-  if (!m.topic.trim() && !m.source) return { bodies: {}, error: "Hace falta un tema o un enlace." };
+  if (!m.topic.trim() && !m.source && !m.translateFrom) return { bodies: {}, error: "Hace falta un tema o un enlace." };
 
   const cfg = await deepseekClient();
   if (!cfg) return { bodies: {}, error: "Falta la clave de DeepSeek: configúrala en Publicaciones → Ajustes." };

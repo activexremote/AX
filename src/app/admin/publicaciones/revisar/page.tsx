@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { Desechar, PildoraIdioma } from "@/components/admin/publicaciones/desechar";
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import { getLocale } from "@/lib/i18n/server";
 import { fill, pubCopy } from "@/lib/i18n/publicaciones";
@@ -24,7 +25,7 @@ type Fila = {
   body: unknown;
   error: string | null;
   updated_at: string;
-  social_posts: { title: string; created_at: string } | null;
+  social_posts: { title: string; created_at: string; language: "es" | "en" } | null;
 };
 
 export default async function RevisarPage() {
@@ -33,7 +34,7 @@ export default async function RevisarPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("social_variants")
-    .select("id, post_id, channel, status, body, error, updated_at, social_posts(title, created_at)")
+    .select("id, post_id, channel, status, body, error, updated_at, social_posts(title, created_at, language)")
     .in("status", ["borrador", "error"])
     .order("updated_at", { ascending: false });
   const filas = (data ?? []) as unknown as Fila[];
@@ -54,7 +55,7 @@ export default async function RevisarPage() {
       const conError = canales.some((c) => c.v.status === "error");
       // El canal que se abre: el que ha fallado, luego el que tiene errores, luego el primero.
       const abrir = canales.find((c) => c.v.status === "error") ?? canales.find((c) => c.errores) ?? canales[0];
-      return { postId, title: vs[0].social_posts?.title ?? "—", creada: vs[0].social_posts?.created_at ?? vs[0].updated_at, canales, conError, abrir };
+      return { postId, title: vs[0].social_posts?.title ?? "—", language: vs[0].social_posts?.language ?? "es", creada: vs[0].social_posts?.created_at ?? vs[0].updated_at, canales, conError, abrir };
     })
     .sort((a, b) => Number(b.conError) - Number(a.conError) || b.creada.localeCompare(a.creada));
 
@@ -86,6 +87,7 @@ export default async function RevisarPage() {
                 <Link href={`/admin/publicaciones/${p.postId}?canal=${p.abrir.v.channel}`} className="axr-pubinbox__title">
                   {p.title}
                 </Link>
+                <PildoraIdioma language={p.language} />
                 <span className="axr-pubinbox__date">{fill(copy.uWrittenOn, fecha(p.creada))}</span>
                 <div className="axr-pubinbox__channels">
                   {p.canales.map(({ v, errores, avisos }) => (
@@ -118,9 +120,12 @@ export default async function RevisarPage() {
                     </p>
                   ))}
               </div>
-              <Link href={`/admin/publicaciones/${p.postId}?canal=${p.abrir.v.channel}`} className="axr-btn axr-pubinbox__btn">
-                {copy.uReviewBtn} <Icono n="flecha" size={14} />
-              </Link>
+              <div className="axr-pubinbox__actions">
+                <Desechar que="post" id={p.postId} copy={copy} />
+                <Link href={`/admin/publicaciones/${p.postId}?canal=${p.abrir.v.channel}`} className="axr-btn axr-pubinbox__btn">
+                  {copy.uReviewBtn} <Icono n="flecha" size={14} />
+                </Link>
+              </div>
             </li>
           ))}
         </ul>

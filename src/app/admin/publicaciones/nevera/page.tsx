@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { AlProximoHueco } from "@/components/admin/publicaciones/al-proximo-hueco";
+import { Desechar, PildoraIdioma } from "@/components/admin/publicaciones/desechar";
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import { RellenarHuecos } from "@/components/admin/publicaciones/rellenar-huecos";
 import { getLocale } from "@/lib/i18n/server";
@@ -60,8 +61,13 @@ export default async function NeveraPage() {
                         {v.title}
                       </Link>
                       <div className="axr-pubboard__foot">
-                        <span>{fill(copy.uSavedOn, fecha(v.updated_at))}</span>
+                        <span>
+                          <PildoraIdioma language={v.language} /> {fill(copy.uSavedOn, fecha(v.updated_at))}
+                        </span>
                         <AlProximoHueco id={v.id} copy={copy} />
+                      </div>
+                      <div className="axr-pubboard__foot">
+                        <Desechar que="variante" id={v.id} copy={copy} />
                       </div>
                     </li>
                   ))}

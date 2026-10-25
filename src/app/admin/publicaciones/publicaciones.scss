@@ -1451,7 +1451,6 @@ $canal-blog: #8a3ffc;
   tr:last-child td { border-bottom: 0; }
   tbody tr:hover { background: #fafafa; }
   &__title { font-weight: 500; color: var(--pub-ink); }
-  &__lang { margin-left: 0.4rem; font-size: 0.625rem; color: var(--pub-muted); }
   &__none { color: #c6c6c6; }
   &__num { text-align: right !important; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--pub-muted); }
 
@@ -2108,3 +2107,57 @@ $canal-blog: #8a3ffc;
 // Todas las pantallas de la sección, al mismo ancho que su cabecera.
 .axr-pubsec .axr-admin-page { max-width: 1320px; }
 .axr-pubsec .axr-admin-page.axr-pubnew-page { max-width: 860px; }
+
+// ── Idioma y desechar ────────────────────────────────────
+// La pastilla distingue las dos publicaciones de una pareja (ES / EN).
+.axr-publang {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.05rem 0.4rem;
+  margin: 0 0.35rem;
+  border-radius: 999px;
+  border: 1px solid var(--pub-line);
+  background: #ffffff;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--pub-muted);
+  vertical-align: middle;
+  &--en { color: #0f62fe; border-color: #a6c8ff; }
+}
+
+.axr-pubdiscard {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--pub-muted) !important;
+  &:hover { color: var(--pub-bad) !important; }
+}
+.axr-pubdiscard__confirm {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+}
+.axr-pubdiscard__error { color: var(--pub-bad); }
+
+.axr-pubinbox__actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  @media (max-width: 640px) { justify-content: flex-start; }
+}
+.axr-pubboard__list li .axr-pubboard__foot:last-child { justify-content: flex-end; }
+.axr-pubtable__act { text-align: right; white-space: nowrap; }
+.axr-pubpost-head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+.axr-pubinbox__main > .axr-publang { justify-self: start; margin: 0; }
+.axr-pubpost-head__meta .axr-publang { margin: 0; padding: 0.15rem 0.55rem; }

@@ -8,8 +8,9 @@ import { publicSocialSettings } from "@/lib/social/settings";
 import type { SocialChannel } from "@/lib/supabase/types";
 
 // Leer el enlace y escribir un artículo entero son dos llamadas lentas
-// encadenadas: con los 15 s por defecto, la acción moriría a medias.
-export const maxDuration = 180;
+// encadenadas (y, con «ambos», otra más para el inglés): con los 15 s por
+// defecto, la acción moriría a medias.
+export const maxDuration = 300;
 
 export default async function NuevaPublicacionPage({ searchParams }: { searchParams: Promise<{ canal?: string }> }) {
   const { canal } = await searchParams;

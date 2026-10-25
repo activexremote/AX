@@ -378,6 +378,8 @@ export interface SocialPost {
   source_text: string | null;
   images: SocialImage[];
   language: "es" | "en";
+  /** La misma publicación en el otro idioma (0023). Comparten imágenes. */
+  pair_id: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
