@@ -1,162 +1,237 @@
+import Link from "next/link";
+
 import { CampusHeader } from "@/components/campus-header";
-import { ModuleIcon } from "@/components/module-icon";
+import { Icono } from "@/components/admin/publicaciones/iconos";
+import { ModulosProgreso } from "@/components/progress/modulos-progreso";
 import { ProgressActionsBar } from "@/components/progress/actions-bar";
 import { getAggregatedProgress } from "@/lib/data/progress";
 import { getCurrentProfile, userInitials } from "@/lib/data/profile";
 import { getI18n } from "@/lib/i18n/server";
+import { campusV2CCopy } from "@/lib/i18n/campus-v2-c";
 import { fmt, type Dictionary } from "@/lib/i18n/dictionaries";
 import "@/app/(campus)/mi-progreso/progress.scss";
 
+// ══════════════════════════════════════════════════════════
+//  Mi progreso
+//
+//  Arriba, lo que sirve para seguir: la lección que quedó a medias y cuánto
+//  falta. Debajo, el detalle: módulo a módulo, los tests y lo último que ha
+//  pasado. Al final, la cuenta y los datos (descargarlos o empezar de cero).
+// ══════════════════════════════════════════════════════════
+
 export default async function MyProgressPage() {
-  const profile = await getCurrentProfile();
-  const [data, { t }] = await Promise.all([getAggregatedProgress(), getI18n()]);
-  const completedPct = data.totalLessons
-    ? Math.round((data.completed / data.totalLessons) * 100)
-    : 0;
-  const startedModules = data.perModule.filter((m) => m.completed > 0).length;
+  const [profile, data, { t, locale }] = await Promise.all([getCurrentProfile(), getAggregatedProgress(), getI18n()]);
+  const copy = campusV2CCopy[locale];
+  const completedPct = data.totalLessons ? Math.round((data.completed / data.totalLessons) * 100) : 0;
+  const startedModules = data.perModule.filter((m) => m.started).length;
+  const fechaHora = (iso: string) => new Date(iso).toLocaleString(locale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
   return (
     <>
       <CampusHeader active="progress" />
 
-      <div className="axr-content axr-progress-page">
-        <header className="axr-progress-header">
-          <div className="axr-progress-header__user">
-            <span className="axr-progress-header__avatar">{userInitials(profile)}</span>
-            <div>
-              <div className="axr-progress-header__name">{profile?.full_name ?? "—"}</div>
-              <div className="axr-progress-header__email">{profile?.email}</div>
-            </div>
-          </div>
-          <form action="/auth/sign-out" method="post">
-            <button type="submit" className="axr-btn axr-btn--ghost">{t.progress.logout}</button>
-          </form>
-        </header>
-
-        <div className="axr-progress-title">
+      <div className="axr-c-wrap axr-mp">
+        <header className="axr-c-head">
           <div>
             <h1>{t.progress.title}</h1>
             <p>{t.progress.subtitle}</p>
           </div>
-          <ProgressActionsBar />
-        </div>
+        </header>
 
-        <div className="axr-progress-kpis">
-          <div className="axr-kpi">
-            <div className="axr-kpi__label">{t.progress.kpiLessons}</div>
-            <div className="axr-kpi__value">{data.completed}</div>
-            <div className="axr-kpi__hint">{fmt(t.progress.kpiLessonsHint, { total: data.totalLessons })}</div>
+        {/* ── Seguir ── */}
+        <section className="axr-mp__hero">
+          <div className="axr-mp__continue">
+            {data.continuar ? (
+              <>
+                <span className="axr-mp__eyebrow">{copy.pContinueTitle}</span>
+                <strong>{data.continuar.lesson_title}</strong>
+                <span className="axr-mp__module">{data.continuar.module_title}</span>
+                <Link href={`/lecciones/${data.continuar.lesson_id}`} className="axr-btn">
+                  {copy.pContinueCta} <Icono n="flecha" size={14} />
+                </Link>
+              </>
+            ) : (
+              <>
+                {data.completed ? <span className="axr-mp__eyebrow">{copy.pContinueTitle}</span> : null}
+                <strong>{data.completed ? `${completedPct}%` : copy.pStartTitle}</strong>
+                <span className="axr-mp__module">{copy.pStartBody}</span>
+                <Link href="/" className="axr-btn">
+                  {copy.pStartCta} <Icono n="flecha" size={14} />
+                </Link>
+              </>
+            )}
           </div>
-          <div className="axr-kpi">
-            <div className="axr-kpi__label">{t.progress.kpiGlobal}</div>
-            <div className="axr-kpi__value">{completedPct}%</div>
-            <div className="axr-kpi__hint">{fmt(t.progress.kpiGlobalHint, { n: startedModules })}</div>
-          </div>
-          <div className="axr-kpi">
-            <div className="axr-kpi__label">{t.progress.kpiTime}</div>
-            <div className="axr-kpi__value">{formatDuration(data.timeSpentS)}</div>
-            <div className="axr-kpi__hint">{t.progress.kpiTimeHint}</div>
-          </div>
-          <div className="axr-kpi">
-            <div className="axr-kpi__label">{t.progress.kpiQuiz}</div>
-            <div className="axr-kpi__value">
-              {data.avgQuizScore == null ? "—" : `${Math.round(data.avgQuizScore)}%`}
+          <div className="axr-mp__ring" style={{ ["--pct" as string]: completedPct }} aria-label={`${completedPct}%`}>
+            <div>
+              <strong>{completedPct}%</strong>
+              <span>
+                {data.completed}/{data.totalLessons} · {t.progress.kpiLessons.toLowerCase()}
+              </span>
             </div>
-            <div className="axr-kpi__hint">
-              {data.avgQuizScore == null ? t.progress.kpiQuizNoData : t.progress.kpiQuizHint}
-            </div>
-          </div>
-        </div>
-
-        <section className="axr-progress-card">
-          <h3>{t.progress.perModule}</h3>
-          <div className="axr-progress-modules">
-            {data.perModule.map((m) => {
-              const pct = m.lessons ? Math.round((m.completed / m.lessons) * 100) : 0;
-              return (
-                <div key={m.id} className="axr-progress-module">
-                  <div className="axr-progress-module__icon">
-                    <ModuleIcon name={m.icon} size={20} />
-                  </div>
-                  <div className="axr-progress-module__body">
-                    <div className="axr-progress-module__title">{m.title}</div>
-                    <div className="axr-progress-module__lessons">{m.lessons} {t.progress.moduleLessons}</div>
-                    <div className="axr-progress">
-                      <span className="axr-progress__bar" style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
-                  <div className="axr-progress-module__pct">
-                    <strong>{pct}%</strong>
-                    <span>{m.completed}/{m.lessons}</span>
-                  </div>
-                </div>
-              );
-            })}
           </div>
         </section>
 
-        <section className="axr-progress-card">
-          <h3>{t.progress.detailTitle}</h3>
-          <div className="axr-progress-table-wrap">
-            <table className="axr-table">
-              <thead>
-                <tr>
-                  <th>{t.progress.colModule}</th>
-                  <th>{t.progress.colLesson}</th>
-                  <th>{t.progress.colStatus}</th>
-                  <th>{t.progress.colTime}</th>
-                  <th>{t.progress.colAudio}</th>
-                  <th>{t.progress.colQuiz}</th>
-                  <th>{t.progress.colLastVisit}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.details.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="axr-table__empty">{t.progress.detailEmpty}</td>
-                  </tr>
-                ) : null}
-                {data.details.map((d, i) => (
-                  <tr key={i}>
-                    <td>✦ {d.module_title}</td>
-                    <td>{d.lesson_title}</td>
-                    <td>
-                      <span className={`axr-status axr-status--${d.status}`}>
-                        {statusLabel(d.status, t)}
+        {/* ── Cifras ── */}
+        <div className="axr-c-stats">
+          <div className="axr-c-stat">
+            <span className="axr-c-stat__label">
+              <Icono n="ok" /> {t.progress.kpiLessons}
+            </span>
+            <span className="axr-c-stat__value">{data.completed}</span>
+            <span className="axr-c-stat__hint">{fmt(t.progress.kpiLessonsHint, { total: data.totalLessons })}</span>
+          </div>
+          <div className="axr-c-stat">
+            <span className="axr-c-stat__label">
+              <Icono n="libro" /> {t.progress.kpiGlobal}
+            </span>
+            <span className="axr-c-stat__value">{completedPct}%</span>
+            <span className="axr-c-stat__hint">{fmt(t.progress.kpiGlobalHint, { n: startedModules })}</span>
+          </div>
+          <div className="axr-c-stat">
+            <span className="axr-c-stat__label">
+              <Icono n="reloj" /> {t.progress.kpiTime}
+            </span>
+            <span className="axr-c-stat__value">{formatDuration(data.timeSpentS)}</span>
+            <span className="axr-c-stat__hint">{t.progress.kpiTimeHint}</span>
+          </div>
+          <div className="axr-c-stat">
+            <span className="axr-c-stat__label">
+              <Icono n="revisar" /> {t.progress.kpiQuiz}
+            </span>
+            <span className="axr-c-stat__value">{data.avgQuizScore == null ? "—" : `${Math.round(data.avgQuizScore)}%`}</span>
+            <span className="axr-c-stat__hint">{data.avgQuizScore == null ? t.progress.kpiQuizNoData : t.progress.kpiQuizHint}</span>
+          </div>
+        </div>
+
+        <div className="axr-mp__grid">
+          {/* ── Módulo a módulo ── */}
+          <section className="axr-c-card">
+            <h2 className="axr-c-card__title">{t.progress.perModule}</h2>
+            <ModulosProgreso
+              modulos={data.perModule}
+              textos={{
+                lessons: t.progress.moduleLessons,
+                notStarted: copy.pModuleNotStarted,
+                done: copy.pModuleDone,
+                showAll: copy.pModulesShow,
+                showStarted: copy.pModulesHide,
+              }}
+            />
+          </section>
+
+          <div className="axr-mp__side">
+            {/* ── Tests ── */}
+            <section className="axr-c-card">
+              <h2 className="axr-c-card__title">{copy.pQuizTitle}</h2>
+              {data.quizzes.length ? (
+                <ul className="axr-mp__tests">
+                  {data.quizzes.map((q) => (
+                    <li key={q.lesson_id}>
+                      <Link href={`/lecciones/${q.lesson_id}`}>
+                        <span className="axr-mp__test-title">{q.lesson_title}</span>
+                        <small>{q.attempts === 1 ? copy.pAttempt1 : copy.pAttempts.replace("{n}", String(q.attempts))}</small>
+                      </Link>
+                      <span className="axr-mp__score">{copy.pScore.replace("{n}", String(Math.round(q.best)))}</span>
+                      <span className={`axr-c-pill ${q.passed ? "axr-c-pill--ok" : "axr-c-pill--bad"}`}>{q.passed ? copy.pPassed : copy.pFailed}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="axr-mp__muted">{copy.pQuizEmpty}</p>
+              )}
+            </section>
+
+            {/* ── Lo último ── */}
+            <section className="axr-c-card">
+              <h2 className="axr-c-card__title">{t.progress.activityTitle}</h2>
+              {data.activity.length ? (
+                <ol className="axr-mp__timeline">
+                  {data.activity.map((a) => (
+                    <li key={a.id} data-kind={a.kind}>
+                      <span className="axr-mp__dot" aria-hidden />
+                      <span className="axr-mp__what">
+                        <strong>{kindLabel(a.kind, t)}</strong>
+                        {a.lesson_title || a.score !== null ? (
+                          <span>
+                            {a.lesson_title ? a.lesson_id ? <Link href={`/lecciones/${a.lesson_id}`}>{a.lesson_title}</Link> : a.lesson_title : null}
+                            {a.score !== null ? ` · ${copy.pScore.replace("{n}", String(Math.round(a.score)))}` : null}
+                          </span>
+                        ) : null}
                       </span>
-                    </td>
-                    <td>{formatDuration(d.time_spent_s)}</td>
-                    <td>—</td>
-                    <td>—</td>
-                    <td>{d.last_visit ? new Date(d.last_visit).toLocaleString() : "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      <time dateTime={a.created_at}>{fechaHora(a.created_at)}</time>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="axr-mp__muted">{t.progress.activityEmpty}</p>
+              )}
+            </section>
           </div>
-        </section>
+        </div>
 
-        <section className="axr-progress-card">
-          <h3>{t.progress.activityTitle}</h3>
-          {data.activity.length === 0 ? (
-            <div className="axr-progress-empty">
-              <div className="axr-progress-empty__circle">⏱</div>
-              <p>{t.progress.activityEmpty}</p>
+        {/* ── Lección a lección ── */}
+        <section className="axr-c-card axr-c-card--flush axr-mp__detail">
+          <h2 className="axr-c-card__title">{t.progress.detailTitle}</h2>
+          {data.details.length ? (
+            <div className="axr-mp__table-wrap">
+              <table className="axr-mp__table">
+                <thead>
+                  <tr>
+                    <th>{t.progress.colLesson}</th>
+                    <th>{t.progress.colStatus}</th>
+                    <th>{t.progress.colTime}</th>
+                    <th>{t.progress.colQuiz}</th>
+                    <th>{t.progress.colLastVisit}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.details.map((d) => (
+                    <tr key={d.lesson_id}>
+                      <td>
+                        <Link href={`/lecciones/${d.lesson_id}`} className="axr-mp__lesson">
+                          <strong>{d.lesson_title}</strong>
+                          <small>{d.module_title}</small>
+                        </Link>
+                      </td>
+                      <td>
+                        <span className={`axr-c-pill ${d.status === "completada" ? "axr-c-pill--ok" : d.status === "en_curso" ? "axr-c-pill--info" : ""}`}>{statusLabel(d.status, t)}</span>
+                      </td>
+                      <td>{formatDuration(d.time_spent_s)}</td>
+                      <td>{d.quiz_score == null ? "—" : copy.pScore.replace("{n}", String(Math.round(d.quiz_score)))}</td>
+                      <td>{d.last_visit ? fechaHora(d.last_visit) : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           ) : (
-            <ul className="axr-activity">
-              {data.activity.map((a) => (
-                <li key={a.id}>
-                  <span className="axr-activity__dot" data-kind={a.kind} />
-                  <span className="axr-activity__kind">{kindLabel(a.kind, t)}</span>
-                  <span className="axr-activity__time">
-                    {new Date(a.created_at).toLocaleString()}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <p className="axr-mp__muted axr-mp__pad">{t.progress.detailEmpty}</p>
           )}
         </section>
+
+        {/* ── La cuenta y los datos ── */}
+        <div className="axr-mp__grid axr-mp__grid--even">
+          <section className="axr-c-card">
+            <h2 className="axr-c-card__title">{copy.pAccount}</h2>
+            <div className="axr-mp__me">
+              <span className="axr-mp__avatar">{userInitials(profile)}</span>
+              <span>
+                <strong>{profile?.full_name ?? "—"}</strong>
+                <small>{profile?.email}</small>
+              </span>
+              <form action="/auth/sign-out" method="post">
+                <button type="submit" className="axr-btn axr-btn--ghost axr-btn--small">
+                  <Icono n="salir" size={14} /> {t.progress.logout}
+                </button>
+              </form>
+            </div>
+          </section>
+          <section className="axr-c-card">
+            <h2 className="axr-c-card__title">{copy.pData}</h2>
+            <p className="axr-mp__muted">{copy.pDataBody}</p>
+            <ProgressActionsBar />
+          </section>
+        </div>
       </div>
     </>
   );
