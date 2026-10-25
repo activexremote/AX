@@ -40,6 +40,10 @@
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
+    // La barra de arriba mide lo que mide: sin esto, en una página corta la
+    // rejilla la estiraba y quedaba a media pantalla.
+    grid-template-rows: auto 1fr;
+    align-content: start;
   }
 
   &__main {
