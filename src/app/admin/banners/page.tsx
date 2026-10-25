@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BorrarCampana } from "@/components/admin/banners/acciones-campana";
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import { cargarBanners } from "@/lib/banners/panel";
 import { getLocale } from "@/lib/i18n/server";
@@ -44,7 +45,7 @@ export default async function BannersPage() {
             const portada = vivos.find((b) => b.status === "aprobado") ?? vivos[0];
             const aprobadas = c.banners.filter((b) => b.status === "aprobado").length;
             return (
-              <li key={c.id}>
+              <li key={c.id} className="axr-ban-grid__item">
                 <Link href={`/admin/banners/${c.id}`} className="axr-ban-card">
                   <span className="axr-ban-card__thumb">
                     {portada ? (
@@ -57,7 +58,7 @@ export default async function BannersPage() {
                   <span className="axr-ban-card__body">
                     <strong>{c.name}</strong>
                     <small>
-                      {copy.course[c.course]} · {copy.objective[c.objective]} · {c.language.toUpperCase()}
+                      {copy.course[c.course]} · {copy.objective[c.objective]} · {c.bilingual ? copy.bilingual : c.language.toUpperCase()}
                     </small>
                     <span className="axr-ban-card__meta">
                       {c.kind === "clon" ? <span className="axr-ban-pill">{copy.tabClone}</span> : null}
@@ -66,6 +67,7 @@ export default async function BannersPage() {
                     </span>
                   </span>
                 </Link>
+                <BorrarCampana id={c.id} copy={copy} />
               </li>
             );
           })}

@@ -30,6 +30,7 @@ export function AccionesCampana({
   const [angles, setAngles] = useState<Angulo[]>([]);
   const [n, setN] = useState(3);
   const [indicacion, setIndicacion] = useState("");
+  const [borrando, setBorrando] = useState(false);
 
   return (
     <div className="axr-bancamp__actions">
@@ -134,22 +135,70 @@ export function AccionesCampana({
         </a>
       ) : null}
 
+      {borrando ? (
+        <span className="axr-ban-confirm">
+          <button
+            type="button"
+            className="axr-btn axr-btn--danger"
+            disabled={pending}
+            title={copy.confirmDelete}
+            onClick={() =>
+              start(async () => {
+                const r = await borrarCampana(id);
+                if (r.error) setError(r.error);
+                else router.push("/admin/banners");
+              })
+            }
+          >
+            <Icono n="papelera" /> {copy.confirmDeleteShort}
+          </button>
+          <button type="button" className="axr-btn axr-btn--ghost" onClick={() => setBorrando(false)}>
+            {copy.cancel}
+          </button>
+        </span>
+      ) : (
+        <button type="button" className="axr-btn axr-btn--ghost axr-ban-danger" disabled={pending} onClick={() => setBorrando(true)}>
+          <Icono n="papelera" /> {copy.deleteCampaign}
+        </button>
+      )}
+      {error ? <div className="axr-login__error">{error}</div> : null}
+    </div>
+  );
+}
+
+/** Borrar una campaña desde la lista, en dos pasos y sin salir de la lista. */
+export function BorrarCampana({ id, copy }: { id: string; copy: BanCopy }) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  const [armado, setArmado] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  if (!armado) {
+    return (
+      <button type="button" className="axr-ban-card__del" aria-label={copy.deleteCampaign} title={copy.deleteCampaign} onClick={() => setArmado(true)}>
+        <Icono n="papelera" size={14} />
+      </button>
+    );
+  }
+  return (
+    <span className="axr-ban-card__confirm" title={copy.confirmDelete}>
       <button
         type="button"
-        className="axr-btn axr-btn--ghost axr-ban-danger"
+        className="axr-btn axr-btn--danger"
         disabled={pending}
-        onClick={() => {
-          if (!window.confirm(copy.confirmDelete)) return;
+        onClick={() =>
           start(async () => {
             const r = await borrarCampana(id);
             if (r.error) setError(r.error);
-            else router.push("/admin/banners");
-          });
-        }}
+            else router.refresh();
+          })
+        }
       >
-        <Icono n="papelera" /> {copy.deleteCampaign}
+        {pending ? "…" : copy.confirmDeleteShort}
       </button>
-      {error ? <div className="axr-login__error">{error}</div> : null}
-    </div>
+      <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={() => setArmado(false)}>
+        {copy.cancel}
+      </button>
+      {error ? <small className="axr-ban-card__err">{error}</small> : null}
+    </span>
   );
 }

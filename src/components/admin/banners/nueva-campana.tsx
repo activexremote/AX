@@ -65,7 +65,7 @@ export function NuevaCampana({ copy, locale, textModel }: { copy: BanCopy; local
   const [objective, setObjective] = useState<AdObjective>("leads");
   const [angles, setAngles] = useState<Angulo[]>(["obstaculo", "metodo", "directo"]);
   const [style, setStyle] = useState<Plantilla>("foto");
-  const [idioma, setIdioma] = useState<"es" | "en">(locale === "en" ? "en" : "es");
+  const [idioma, setIdioma] = useState<"es" | "en" | "ambos">(locale === "en" ? "en" : "es");
   const [calidad, setCalidad] = useState<Calidad>("medium");
 
   const conFoto = usaImagen(style);
@@ -151,9 +151,9 @@ export function NuevaCampana({ copy, locale, textModel }: { copy: BanCopy; local
           </div>
           <div className="axr-pv-switch axr-pubnew__lang" role="group" aria-label={copy.qLanguage}>
             <input type="hidden" name="language" value={idioma} />
-            {(["es", "en"] as const).map((l) => (
-              <button key={l} type="button" aria-pressed={idioma === l} onClick={() => setIdioma(l)}>
-                {l === "es" ? "Español" : "English"}
+            {(["es", "en", "ambos"] as const).map((l) => (
+              <button key={l} type="button" aria-pressed={idioma === l} onClick={() => setIdioma(l)} title={l === "ambos" ? copy.bothLangsHint : undefined}>
+                {l === "es" ? "Español" : l === "en" ? "English" : `${copy.bothLangs} · ES + EN`}
               </button>
             ))}
           </div>

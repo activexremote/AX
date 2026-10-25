@@ -432,6 +432,8 @@ export interface AdCampaign {
   reference_path: string | null;
   reference_prompt: string | null;
   reference_analysis: AdReferenceAnalysis | null;
+  /** Pedida en los dos idiomas: `language` es el principal (0022). */
+  bilingual: boolean;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -455,6 +457,10 @@ export interface AdBanner {
   position: number;
   angle: string | null;
   copy: Record<string, string>;
+  /** Los textos en el otro idioma de la campaña, o null (0022). */
+  copy_alt: Record<string, string> | null;
+  /** Qué elementos se ven; sólo lo que cambia (formatos.ts → leerElementos). */
+  elements: Record<string, boolean>;
   template: string;
   image_path: string | null;
   image_prompt: string | null;

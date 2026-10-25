@@ -1,23 +1,39 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-import { estadoBanner, guardarBanner, nuevaImagen, quitarImagen, reescribirBanner, subirFoto } from "@/app/admin/banners/actions";
+import {
+  borrarBanner,
+  estadoBanner,
+  guardarBanner,
+  nuevaImagen,
+  quitarImagen,
+  quitarTraduccion,
+  reescribirBanner,
+  subirFoto,
+  traducirBanner,
+} from "@/app/admin/banners/actions";
+import { Editable, Lienzo } from "@/components/admin/banners/lienzo";
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import {
   CTAS,
+  ELEMENTOS,
   FORMATOS,
   FORMATO_IDS,
   LIMITES,
   PLANTILLAS,
   leerCopy,
+  leerElementos,
+  otroIdioma,
   usaImagen,
   type BannerCopy,
+  type Elementos,
   type FormatoId,
   type Plantilla,
 } from "@/lib/banners/formatos";
-import { bloquea, revisar } from "@/lib/banners/normas";
+import { bloquea, revisarVariante } from "@/lib/banners/normas";
+import type { CampoTexto } from "@/lib/banners/pieza";
 import type { BanCopy } from "@/lib/i18n/banners";
 import { fill } from "@/lib/i18n/publicaciones";
 import type { AdBanner, AdCampaign } from "@/lib/supabase/types";
@@ -25,13 +41,17 @@ import type { AdBanner, AdCampaign } from "@/lib/supabase/types";
 // ══════════════════════════════════════════════════════════
 //  Una variante: la pieza a la izquierda, lo que se edita a la derecha
 //
-//  La vista previa es la pieza de verdad (el mismo PNG que se descarga),
-//  recompuesta medio segundo después de dejar de escribir con el borrador en
-//  la URL. La revisión de normas también va en vivo: es la misma función que
-//  usa el servidor, así que lo que ves es lo que se guarda.
+//  La pieza es la de verdad, pintada en el navegador con el mismo componente
+//  que compone el PNG (lib/banners/pieza.tsx). Los textos se editan haciendo
+//  clic encima; los elementos se encienden y se apagan; nada de eso vuelve a
+//  pedir la imagen a la IA. La revisión de normas también va en vivo: es la
+//  misma función que usa el servidor, así que lo que ves es lo que se guarda.
+//
+//  Si la variante tiene versión en el otro idioma, las dos comparten imagen,
+//  plantilla y elementos: sólo cambian los textos.
 // ══════════════════════════════════════════════════════════
 
-const b64url = (s: string) => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+type Lado = "main" | "alt";
 
 function Contador({ n, max, tpl }: { n: number; max: number; tpl: string }) {
   return <small className={`axr-ban-count${n > max ? " is-over" : ""}`}>{fill(tpl, `${n}/${max}`)}</small>;
@@ -58,8 +78,30 @@ function Copiar({ texto, copy }: { texto: string; copy: BanCopy }) {
   );
 }
 
+/** Borrar en dos pasos, sin diálogos del navegador. */
+function Borrar({ label, confirmar, cancelar, onConfirm, disabled }: { label: string; confirmar: string; cancelar: string; onConfirm: () => void; disabled?: boolean }) {
+  const [armado, setArmado] = useState(false);
+  if (!armado) {
+    return (
+      <button type="button" className="axr-btn axr-btn--ghost" disabled={disabled} onClick={() => setArmado(true)}>
+        <Icono n="papelera" /> {label}
+      </button>
+    );
+  }
+  return (
+    <span className="axr-ban-confirm">
+      <button type="button" className="axr-btn axr-btn--danger" disabled={disabled} onClick={onConfirm}>
+        {confirmar}
+      </button>
+      <button type="button" className="axr-btn axr-btn--ghost" onClick={() => setArmado(false)}>
+        {cancelar}
+      </button>
+    </span>
+  );
+}
+
 /** Maqueta del anuncio en el feed: cómo se corta el texto y dónde va cada campo. */
-function VistaFeed({ c, src, copy }: { c: BannerCopy; src: string; copy: BanCopy }) {
+function VistaFeed({ c, children, copy }: { c: BannerCopy; children: React.ReactNode; copy: BanCopy }) {
   const corto = c.primaryText.length > LIMITES.primaryText ? c.primaryText.slice(0, LIMITES.primaryText).trimEnd() : c.primaryText;
   return (
     <div className="axr-ban-feed" aria-label={copy.previewFeed}>
@@ -74,8 +116,7 @@ function VistaFeed({ c, src, copy }: { c: BannerCopy; src: string; copy: BanCopy
         {corto}
         {corto !== c.primaryText ? <span className="axr-ban-feed__more">{copy.seeMore}</span> : null}
       </p>
-      {/* eslint-disable-next-line @next/next/no-img-element -- PNG generado al vuelo */}
-      <img src={src} alt={c.alt} />
+      {children}
       <div className="axr-ban-feed__foot">
         <span>
           <small>activexremote.com</small>
@@ -88,54 +129,78 @@ function VistaFeed({ c, src, copy }: { c: BannerCopy; src: string; copy: BanCopy
   );
 }
 
-export function EditorBanner({ banner, campaign, n, copy }: { banner: AdBanner; campaign: AdCampaign; n: number; copy: BanCopy }) {
+export function EditorBanner({
+  banner,
+  campaign,
+  n,
+  copy,
+  imagenUrl,
+}: {
+  banner: AdBanner;
+  campaign: AdCampaign;
+  n: number;
+  copy: BanCopy;
+  /** Enlace firmado a la foto (el bucket es privado), o null. */
+  imagenUrl: string | null;
+}) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const guardado = useMemo(() => ({ copy: leerCopy(banner.copy), template: banner.template as Plantilla }), [banner.copy, banner.template]);
-  const [c, setC] = useState<BannerCopy>(guardado.copy);
+  const [traduciendo, setTraduciendo] = useState(false);
+
+  const guardado = useMemo(
+    () => ({
+      copy: leerCopy(banner.copy),
+      alt: banner.copy_alt ? leerCopy(banner.copy_alt) : null,
+      template: banner.template as Plantilla,
+      elementos: leerElementos(banner.elements),
+    }),
+    [banner.copy, banner.copy_alt, banner.template, banner.elements],
+  );
+  const [main, setMain] = useState<BannerCopy>(guardado.copy);
+  const [alt, setAlt] = useState<BannerCopy | null>(guardado.alt);
   const [template, setTemplate] = useState<Plantilla>(guardado.template);
+  const [elementos, setElementos] = useState<Elementos>(guardado.elementos);
+  const [lado, setLado] = useState<Lado>("main");
   const [formato, setFormato] = useState<FormatoId>("vertical");
   const [zonas, setZonas] = useState(false);
   const [escena, setEscena] = useState(banner.image_prompt ?? "");
   const [instruccion, setInstruccion] = useState("");
-  const [preview, setPreview] = useState("");
-  // La pieza tarda 1-2 s en recomponerse: mientras, se ve la anterior atenuada.
-  const [cargando, setCargando] = useState(false);
+  const [nuevoPunto, setNuevoPunto] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Si el servidor trae otra versión (reescrita, otra imagen), se adopta.
+  // Si el servidor trae otra versión (reescrita, traducida, otra imagen), se adopta.
   useEffect(() => {
-    setC(guardado.copy);
+    setMain(guardado.copy);
+    setAlt(guardado.alt);
     setTemplate(guardado.template);
+    setElementos(guardado.elementos);
+    if (!guardado.alt) setLado("main");
   }, [guardado]);
   useEffect(() => setEscena(banner.image_prompt ?? ""), [banner.image_prompt]);
 
-  const sucio = JSON.stringify(c) !== JSON.stringify(guardado.copy) || template !== guardado.template;
-  const conImagen = Boolean(banner.image_path);
+  const idioma = lado === "alt" ? otroIdioma(campaign.language) : campaign.language;
+  const otro = otroIdioma(campaign.language);
+  const c = lado === "alt" && alt ? alt : main;
+  const setC = useCallback(
+    (fn: (prev: BannerCopy) => BannerCopy) => (lado === "alt" ? setAlt((p) => (p ? fn(p) : p)) : setMain(fn)),
+    [lado],
+  );
+
+  const sucio =
+    JSON.stringify(main) !== JSON.stringify(guardado.copy) ||
+    JSON.stringify(alt) !== JSON.stringify(guardado.alt) ||
+    template !== guardado.template ||
+    JSON.stringify(elementos) !== JSON.stringify(guardado.elementos);
+  const conImagen = Boolean(banner.image_path && imagenUrl);
   const imagenIa = banner.image_source === "ia" && usaImagen(template) && conImagen;
-  const flags = useMemo(() => revisar(c, { imagenIa }), [c, imagenIa]);
+  const flags = useMemo(
+    () => revisarVariante({ copy: main, copyAlt: alt, altLang: otro, imagenIa, elementos }),
+    [main, alt, otro, imagenIa, elementos],
+  );
   const bloqueado = bloquea(flags);
   const descartado = banner.status === "descartado";
   const aprobado = banner.status === "aprobado";
-
-  // Vista previa: el borrador viaja en la URL, con medio segundo de calma.
-  const base = `/admin/banners/render/${banner.id}`;
-  const version = encodeURIComponent(banner.updated_at);
-  useEffect(() => {
-    const t = setTimeout(() => {
-      const d = sucio ? `&d=${b64url(JSON.stringify({ copy: c, template }))}` : "";
-      setPreview((prev) => {
-        const next = `?v=${version}${d}`;
-        if (next !== prev) setCargando(true);
-        return next;
-      });
-    }, sucio ? 500 : 0);
-    return () => clearTimeout(t);
-  }, [c, template, sucio, version]);
-
-  const set = (k: keyof BannerCopy) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setC((prev) => ({ ...prev, [k]: e.target.value }));
 
   const correr = (fn: () => Promise<{ error?: string } | { flags?: unknown; error?: string }>) =>
     start(async () => {
@@ -145,11 +210,87 @@ export function EditorBanner({ banner, campaign, n, copy }: { banner: AdBanner; 
       router.refresh();
     });
 
+  const guardar = () => {
+    if (!sucio || pending) return;
+    correr(() => guardarBanner(banner.id, { copy: main, copyAlt: alt, template, elements: elementos }));
+  };
+  // El atajo de teclado guarda lo último, no lo que había al montar.
+  const guardarRef = useRef(guardar);
+  useLayoutEffect(() => {
+    guardarRef.current = guardar;
+  });
+
+  // ⌘S / Ctrl+S guarda la variante en la que se está escribiendo.
+  const articulo = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s" && articulo.current?.contains(document.activeElement)) {
+        e.preventDefault();
+        (document.activeElement as HTMLElement | null)?.blur();
+        // El blur deja el texto limpio en el estado; se guarda tras el siguiente pintado.
+        setTimeout(() => guardarRef.current(), 0);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const set = (k: keyof BannerCopy) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const v = e.target.value;
+    setC((prev) => ({ ...prev, [k]: v }));
+  };
+
+  const toggle = (k: (typeof ELEMENTOS)[number]) => setElementos((e) => ({ ...e, [k]: !e[k] }));
+
+  // ── Los textos de la pieza, editables en el sitio ──
+  const lineas = c.points.split("\n").slice(0, 3);
+  const pintar = (campo: CampoTexto, valor: string, i?: number) => {
+    if (campo === "points") {
+      const idx = i ?? 0;
+      return (
+        <Editable
+          key={`${lado}-points-${idx}`}
+          campo="points"
+          valor={valor}
+          placeholder={copy.placeholder.points}
+          foco={nuevoPunto === idx}
+          onChange={(v) =>
+            setC((prev) => {
+              const ls = prev.points.split("\n").slice(0, 3);
+              while (ls.length <= idx) ls.push("");
+              ls[idx] = v;
+              return { ...prev, points: ls.join("\n") };
+            })
+          }
+          onEnter={() => {
+            // Intro en un punto abre el siguiente (hasta 3).
+            if (lineas.length < 3 && idx === lineas.length - 1) {
+              setC((prev) => ({ ...prev, points: `${prev.points}\n` }));
+              setNuevoPunto(idx + 1);
+            } else (document.activeElement as HTMLElement | null)?.blur();
+          }}
+        />
+      );
+    }
+    return (
+      <Editable
+        key={`${lado}-${campo}`}
+        campo={campo}
+        valor={valor}
+        placeholder={copy.placeholder[campo]}
+        onChange={(v) => setC((prev) => ({ ...prev, [campo]: v }))}
+      />
+    );
+  };
+
   const f = FORMATOS[formato];
-  const ctas = CTAS[campaign.language] as readonly string[];
+  const ctas = CTAS[idioma] as readonly string[];
+  const base = `/admin/banners/render/${banner.id}`;
+  const version = encodeURIComponent(banner.updated_at);
+  const nombreOtro = copy.langName[otro];
 
   return (
-    <article className={`axr-pubcard axr-ban-editor${descartado ? " is-discarded" : ""}${aprobado ? " is-approved" : ""}`}>
+    <article ref={articulo} className={`axr-pubcard axr-ban-editor${descartado ? " is-discarded" : ""}${aprobado ? " is-approved" : ""}`}>
       <header className="axr-ban-editor__head">
         <strong>{fill(copy.variant, n)}</strong>
         {banner.angle ? <span className="axr-ban-pill">{copy.angle[banner.angle as keyof BanCopy["angle"]] ?? banner.angle}</span> : null}
@@ -157,9 +298,18 @@ export function EditorBanner({ banner, campaign, n, copy }: { banner: AdBanner; 
         <span className="axr-ban-editor__spacer" />
         {sucio ? <span className="axr-ban-unsaved">{copy.unsaved}</span> : null}
         {descartado ? (
-          <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={() => correr(() => estadoBanner(banner.id, "borrador"))}>
-            {copy.restore}
-          </button>
+          <>
+            <Borrar
+              label={copy.deleteVariant}
+              confirmar={copy.confirmDeleteVariant}
+              cancelar={copy.cancel}
+              disabled={pending}
+              onConfirm={() => correr(() => borrarBanner(banner.id))}
+            />
+            <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={() => correr(() => estadoBanner(banner.id, "borrador"))}>
+              {copy.restore}
+            </button>
+          </>
         ) : (
           <>
             <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={() => correr(() => estadoBanner(banner.id, "descartado"))}>
@@ -189,26 +339,37 @@ export function EditorBanner({ banner, campaign, n, copy }: { banner: AdBanner; 
       <div className="axr-ban-editor__grid">
         {/* ── La pieza ── */}
         <div className="axr-ban-stage">
-          <div className="axr-pv-switch" role="group" aria-label="Formato">
-            {FORMATO_IDS.map((id) => (
-              <button
-                key={id}
-                type="button"
-                aria-pressed={formato === id}
-                onClick={() => {
-                  if (id !== formato) setCargando(true);
-                  setFormato(id);
-                }}
-              >
-                {FORMATOS[id].label}
-              </button>
-            ))}
-          </div>
-          <div className={`axr-ban-frame axr-ban-frame--${formato}`} style={{ aspectRatio: `${f.w} / ${f.h}` }}>
-            {preview ? (
-              // eslint-disable-next-line @next/next/no-img-element -- PNG generado al vuelo, privado
-              <img src={`${base}/${formato}${preview}`} alt={c.alt} onLoad={() => setCargando(false)} onError={() => setCargando(false)} />
+          <div className="axr-ban-stage__top">
+            <div className="axr-pv-switch" role="group" aria-label="Formato">
+              {FORMATO_IDS.map((id) => (
+                <button key={id} type="button" aria-pressed={formato === id} onClick={() => setFormato(id)}>
+                  {FORMATOS[id].label}
+                </button>
+              ))}
+            </div>
+            {alt ? (
+              <div className="axr-pv-switch axr-ban-lang" role="group" aria-label="Idioma">
+                {(["main", "alt"] as const).map((l) => (
+                  <button key={l} type="button" aria-pressed={lado === l} onClick={() => setLado(l)}>
+                    {(l === "main" ? campaign.language : otro).toUpperCase()}
+                  </button>
+                ))}
+              </div>
             ) : null}
+          </div>
+
+          <div className={`axr-ban-frame axr-ban-frame--${formato}`} style={{ aspectRatio: `${f.w} / ${f.h}` }}>
+            <Lienzo
+              copy={c}
+              template={template}
+              course={campaign.course}
+              language={idioma}
+              formato={formato}
+              imagen={conImagen ? imagenUrl : null}
+              elementos={elementos}
+              texto={pintar}
+              editando
+            />
             {zonas ? (
               <span className="axr-ban-safe" aria-hidden>
                 <i style={{ top: 0, height: `${(f.safe.top / f.h) * 100}%` }} />
@@ -217,21 +378,36 @@ export function EditorBanner({ banner, campaign, n, copy }: { banner: AdBanner; 
                 <b style={{ right: 0, width: `${(f.safe.side / f.w) * 100}%` }} />
               </span>
             ) : null}
-            {pending || cargando ? <span className="axr-ban-frame__busy"><Icono n="chispa" size={22} /></span> : null}
+            {pending ? (
+              <span className="axr-ban-frame__busy">
+                <Icono n="chispa" size={22} />
+              </span>
+            ) : null}
           </div>
+          <p className="axr-ban-hint">
+            <Icono n="info" size={14} /> {copy.clickToEdit}
+          </p>
           <div className="axr-ban-stage__bar">
             <label className="axr-ban-toggle">
               <input type="checkbox" checked={zonas} onChange={(e) => setZonas(e.target.checked)} /> {copy.safeZones}
             </label>
             <small>{f.placements}</small>
-            <a className="axr-btn axr-btn--ghost" href={`${base}/${formato}?dl=1&v=${version}`} aria-disabled={sucio} onClick={(e) => sucio && e.preventDefault()} title={sucio ? copy.unsaved : undefined}>
+            <a
+              className="axr-btn axr-btn--ghost"
+              href={`${base}/${formato}?dl=1&v=${version}${lado === "alt" ? "&lang=alt" : ""}`}
+              aria-disabled={sucio}
+              onClick={(e) => sucio && e.preventDefault()}
+              title={sucio ? copy.unsaved : undefined}
+            >
               <Icono n="descarga" /> {copy.download}
             </a>
           </div>
 
           <details className="axr-ban-feedwrap">
             <summary>{copy.previewFeed}</summary>
-            {preview ? <VistaFeed c={c} src={`${base}/vertical${preview}`} copy={copy} /> : null}
+            <VistaFeed c={c} copy={copy}>
+              <Lienzo copy={c} template={template} course={campaign.course} language={idioma} formato="vertical" imagen={conImagen ? imagenUrl : null} elementos={elementos} />
+            </VistaFeed>
           </details>
         </div>
 
@@ -260,33 +436,38 @@ export function EditorBanner({ banner, campaign, n, copy }: { banner: AdBanner; 
             )}
           </section>
 
-          <section className="axr-form">
-            <h3>{copy.piece}</h3>
-            <small className="axr-ban-help">{copy.pieceHint}</small>
-            <div className="axr-form__row">
-              <label>{copy.fKicker}</label>
-              <input value={c.kicker} onChange={set("kicker")} maxLength={40} />
-            </div>
-            <div className="axr-form__row">
-              <label>{copy.fHeadline}</label>
-              <textarea rows={2} value={c.headline} onChange={set("headline")} maxLength={140} />
-              <Contador n={c.headline.split(/\s+/).filter(Boolean).length} max={LIMITES.headlineWords} tpl={copy.words} />
-            </div>
-            <div className="axr-form__row">
-              <label>{copy.fSub}</label>
-              <textarea rows={2} value={c.sub} onChange={set("sub")} maxLength={160} />
-            </div>
+          <section>
+            <h3>{copy.elements}</h3>
+            <small className="axr-ban-help">{copy.elementsHint}</small>
+            <ul className="axr-ban-elements">
+              {ELEMENTOS.map((k) => {
+                const sinFoto = k === "aiLabel" && !conImagen;
+                return (
+                  <li key={k}>
+                    <label className={`axr-ban-switch${sinFoto ? " is-off" : ""}`}>
+                      <input type="checkbox" checked={elementos[k] && !sinFoto} disabled={sinFoto} onChange={() => toggle(k)} />
+                      <span className="axr-ban-switch__track" aria-hidden />
+                      <span>{copy.element[k]}</span>
+                      {sinFoto ? <small>{copy.aiLabelNoImage}</small> : null}
+                    </label>
+                    {k === "points" && elementos.points && lineas.length < 3 ? (
+                      <button
+                        type="button"
+                        className="axr-ban-mini"
+                        onClick={() => {
+                          // Sin puntos ya hay uno vacío a la vista: se entra en él.
+                          if (c.points) setC((prev) => ({ ...prev, points: `${prev.points}\n` }));
+                          setNuevoPunto(c.points ? lineas.length : 0);
+                        }}
+                      >
+                        <Icono n="mas" size={12} /> {copy.addPoint}
+                      </button>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
             <div className="axr-ban-row2">
-              <div className="axr-form__row">
-                <label>{copy.fCta}</label>
-                <select value={c.cta} onChange={set("cta")}>
-                  {[...new Set([...ctas, c.cta])].filter(Boolean).map((x) => (
-                    <option key={x} value={x}>
-                      {x}
-                    </option>
-                  ))}
-                </select>
-              </div>
               <div className="axr-form__row">
                 <label>{copy.look}</label>
                 <select value={template} onChange={(e) => setTemplate(e.target.value as Plantilla)}>
@@ -297,11 +478,24 @@ export function EditorBanner({ banner, campaign, n, copy }: { banner: AdBanner; 
                   ))}
                 </select>
               </div>
+              <div className="axr-form__row">
+                <label>{copy.ctaMeta}</label>
+                <select value={c.cta} onChange={set("cta")}>
+                  {[...new Set([...ctas, c.cta])].filter(Boolean).map((x) => (
+                    <option key={x} value={x}>
+                      {x}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </section>
 
           <section className="axr-form">
-            <h3>{copy.metaTexts}</h3>
+            <h3>
+              {copy.metaTexts}
+              {alt ? <span className="axr-ban-pill">{idioma.toUpperCase()}</span> : null}
+            </h3>
             <small className="axr-ban-help">{copy.metaHint}</small>
             <div className="axr-form__row">
               <label>
@@ -335,15 +529,41 @@ export function EditorBanner({ banner, campaign, n, copy }: { banner: AdBanner; 
           </section>
 
           <div className="axr-ban-save">
-            <button
-              type="button"
-              className="axr-btn"
-              disabled={pending || !sucio}
-              onClick={() => correr(() => guardarBanner(banner.id, { copy: c, template }))}
-            >
+            <button type="button" className="axr-btn" disabled={pending || !sucio} onClick={guardar}>
               {pending ? copy.saving : sucio ? copy.save : copy.saved}
             </button>
           </div>
+
+          <details className="axr-ban-tools" open={traduciendo || undefined}>
+            <summary>
+              <Icono n="capas" /> {alt ? fill(copy.redoLang, nombreOtro) : fill(copy.addLang, nombreOtro)}
+            </summary>
+            <small className="axr-ban-help">{copy.addLangHint}</small>
+            <div className="axr-ban-tools__row">
+              <button
+                type="button"
+                className="axr-btn axr-btn--ghost"
+                disabled={pending || sucio}
+                title={sucio ? copy.unsaved : undefined}
+                onClick={() => {
+                  setTraduciendo(true);
+                  correr(async () => {
+                    const r = await traducirBanner(banner.id);
+                    setTraduciendo(false);
+                    if (!r.error) setLado("alt");
+                    return r;
+                  });
+                }}
+              >
+                <Icono n="chispa" /> {traduciendo ? fill(copy.translating, nombreOtro) : alt ? fill(copy.redoLang, nombreOtro) : fill(copy.addLang, nombreOtro)}
+              </button>
+              {alt ? (
+                <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={() => correr(() => quitarTraduccion(banner.id))}>
+                  <Icono n="papelera" /> {fill(copy.removeLang, nombreOtro)}
+                </button>
+              ) : null}
+            </div>
+          </details>
 
           <details className="axr-ban-tools">
             <summary>
