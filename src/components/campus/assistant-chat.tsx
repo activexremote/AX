@@ -210,6 +210,7 @@ export function AssistantWidget() {
         <button
           type="button"
           className="axr-assistant-widget__launcher"
+          aria-label={t.assistant.open}
           onClick={() => {
             setStarted(true);
             setOpen(true);
@@ -220,7 +221,7 @@ export function AssistantWidget() {
               <path d="M4 5h16v11H9l-5 4zM8 9.5h8M8 12.5h5" />
             </svg>
           </span>
-          {t.assistant.open}
+          <span className="axr-assistant-widget__label">{t.assistant.open}</span>
         </button>
       ) : null}
     </div>

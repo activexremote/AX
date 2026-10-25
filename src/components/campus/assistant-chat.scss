@@ -342,3 +342,10 @@
 .axr-assistant-inline {
   height: 480px;
 }
+
+// En el móvil, sólo el icono: el botón con texto tapaba el contenido de la
+// lección. El nombre sigue estando para los lectores de pantalla.
+@media (max-width: 760px) {
+  .axr-assistant-widget__label { display: none; }
+  .axr-assistant-widget__launcher { padding: 0.8rem !important; border-radius: 999px !important; }
+}
