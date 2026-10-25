@@ -60,7 +60,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const { w, h, file } = FORMATOS[f];
 
   const res = new ImageResponse(
-    <Banner copy={copy} template={template} course={c.course} language={c.language} formato={f} imagen={imagen} imagenIa={b.image_source === "ia"} />,
+    <Banner copy={copy} template={template} course={c.course} language={c.language} formato={f} imagen={imagen} />,
     { width: w, height: h, fonts: await fuentes() },
   );
 
