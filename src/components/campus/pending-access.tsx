@@ -1,8 +1,11 @@
 import Link from "next/link";
 
-import "@/app/login/login.scss";
+import "@/components/campus/pending-access.scss";
 import { BrandMark } from "@/components/brand-mark";
 import { LocaleToggle } from "@/components/locale-toggle";
+import { Icono } from "@/components/admin/publicaciones/iconos";
+import { campusACopy } from "@/lib/i18n/campus-v2-a";
+import { fmt } from "@/lib/i18n/dictionaries";
 import { getI18n } from "@/lib/i18n/server";
 import { firstName } from "@/lib/data/profile";
 import type { Profile } from "@/lib/supabase/types";
@@ -12,60 +15,64 @@ import type { Profile } from "@/lib/supabase/types";
  *
  * No es la cerradura: las políticas de modules y lessons (has_course_access)
  * ya le devuelven cero filas. Esto es para que no vea un campus vacío y crea
- * que algo está roto, sino qué le falta y cómo conseguirlo.
+ * que algo está roto, sino qué le falta y cómo conseguirlo: dónde está (los
+ * tres pasos, con el suyo marcado), el botón para matricularse y qué hacer si
+ * ya ha pagado.
  */
 export async function PendingAccess({ profile }: { profile: Profile }) {
-  const { t } = await getI18n();
+  const { t, locale } = await getI18n();
   const p = t.pending;
+  const c = campusACopy[locale];
 
   return (
-    <main className="axr-login">
-      <div className="axr-login__frame axr-pending">
-        <header className="axr-login__bar">
-          <span className="axr-login__bar-left">
-            <span className="axr-login__bar-dot" aria-hidden /> {p.bar}
-          </span>
-          <span className="axr-login__bar-meta">
-            <LocaleToggle />
-          </span>
-        </header>
+    <main className="axr-page axr-pend">
+      <div className="axr-pend__top">
+        <span className="axr-pend__brand">
+          <BrandMark size={20} />
+          <span>ActiveXRemote</span>
+        </span>
+        <LocaleToggle />
+      </div>
 
-        <div className="axr-pending__body">
-          <div className="axr-login__brand">
-            <BrandMark size={26} />
-            <div>
-              <div className="axr-login__wordmark">ActiveXRemote</div>
-              <div className="axr-login__eyebrow">{p.eyebrow} · {firstName(profile)}</div>
-            </div>
-          </div>
+      <section className="axr-pend__card">
+        <span className="axr-c-pill axr-c-pill--accent">
+          <Icono n="usuarios" size={12} /> {fmt(c.pendingHello, { n: firstName(profile) })}
+        </span>
+        <h1>{p.title}</h1>
+        <p className="axr-pend__lead">{p.lead}</p>
 
-          <h1 className="axr-login__headline">{p.title}</h1>
-          <p className="axr-login__lead">{p.lead}</p>
-
-          <ol className="axr-pending__steps">
-            {p.steps.map((step, i) => (
-              <li key={step} className={i === 0 ? "is-done" : i === 1 ? "is-current" : undefined}>
-                <span className="axr-pending__mark" aria-hidden>{i === 0 ? "✓" : String(i + 1).padStart(2, "0")}</span>
+        <ol className="axr-pend__steps">
+          {p.steps.map((step, i) => {
+            const estado = i === 0 ? "done" : i === 1 ? "current" : "todo";
+            return (
+              <li key={step} data-state={estado}>
+                <span className="axr-pend__mark" aria-hidden>
+                  {estado === "done" ? <Icono n="ok" size={14} /> : i + 1}
+                </span>
                 <span>{step}</span>
               </li>
-            ))}
-          </ol>
+            );
+          })}
+        </ol>
 
-          <div className="axr-pending__actions">
-            <Link href="/matricula" className="axr-login__submit axr-pending__cta">
-              {p.cta} <span aria-hidden>→</span>
-            </Link>
-            <form action="/auth/sign-out" method="post">
-              <button type="submit" className="axr-login__ghost">{p.signOut}</button>
-            </form>
-          </div>
-
-          <div className="axr-pending__note">
-            <strong>{p.paidTitle}</strong>
-            <span>{p.paidBody}</span>
-          </div>
+        <div className="axr-pend__actions">
+          <Link href="/matricula" className="axr-btn">
+            {p.cta} <Icono n="flecha" />
+          </Link>
+          <form action="/auth/sign-out" method="post">
+            <button type="submit" className="axr-btn axr-btn--ghost">
+              <Icono n="salir" /> {p.signOut}
+            </button>
+          </form>
         </div>
-      </div>
+
+        <div className="axr-c-note">
+          <Icono n="info" />
+          <span>
+            <strong>{p.paidTitle}</strong> {p.paidBody}
+          </span>
+        </div>
+      </section>
     </main>
   );
 }

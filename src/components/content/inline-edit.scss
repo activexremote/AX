@@ -21,13 +21,15 @@
     justify-content: space-between;
     gap: 0.5rem;
     margin-bottom: 1.1rem;
-    padding: 0.45rem 0.6rem;
-    border: 1px solid var(--axr-border-ink);
-    background: var(--axr-gray-10);
+    padding: 0.5rem 0.6rem 0.5rem 0.9rem;
+    border: 1px solid #d9d4ff;
+    border-radius: 12px;
+    background: #faf9ff;
     // Se queda arriba: en una lección larga, el aviso de guardado tiene que
-    // verse esté donde esté el cursor.
+    // verse esté donde esté el cursor. Por debajo de la cabecera fija del
+    // campus (60 px), no detrás de ella.
     position: sticky;
-    top: 0;
+    top: 68px;
     z-index: 5;
 
     &-actions {
@@ -48,25 +50,25 @@
   }
 
   &__badge {
-    font-family: var(--axr-code);
-    font-size: 0.625rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--axr-text-helper);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #3a2fd0;
   }
 
   &__btn {
     appearance: none;
     background: #fff;
-    border: 1px solid var(--axr-border-ink);
-    padding: 0.35rem 0.7rem;
+    border: 1px solid #d4d4da;
+    border-radius: 8px;
+    padding: 0.4rem 0.75rem;
     font: inherit;
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
     cursor: pointer;
 
-    &:hover:not(:disabled) { box-shadow: var(--axr-shadow-hard-sm); }
+    &:hover:not(:disabled) { background: #f6f6f8; border-color: #b9b9c1; }
     &:disabled { opacity: 0.4; cursor: not-allowed; }
-    &[data-on="true"] { background: var(--axr-text); color: #fff; }
+    &[data-on="true"] { background: #5b4bf5; border-color: #5b4bf5; color: #fff; }
   }
 
   &__hint {

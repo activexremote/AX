@@ -1,9 +1,9 @@
 // ══════════════════════════════════════════════════════════
 //  Los bloques de una lección
 //
-//  Mismo lenguaje que el resto del campus: esquina viva, filete negro de 1 px
-//  y sombra dura cuando algo tiene que destacar. Nada redondeado y ningún
-//  degradado, que aquí no pintan nada.
+//  Mismo lenguaje que el resto del campus. Desde el campus v2 eso es radio
+//  suave, filetes claros y etiquetas en frase: la capa «v2» del final de la
+//  hoja ajusta cada bloque sin tocar su estructura de arriba.
 //
 //  Una sola hoja para los dos sitios donde se pintan los bloques —la lección
 //  del alumno y la vista previa del panel—, que es lo que garantiza que el
@@ -679,5 +679,185 @@
       text-transform: uppercase;
       color: var(--axr-text-helper);
     }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  Capa v2 (campus y panel rediseñados)
+//
+//  Radio suave, filetes claros, etiquetas en frase en vez de versalitas de
+//  máquina de escribir, y el violeta de la marca para lo que marca el ritmo
+//  (viñetas, números, pasos). Lo de arriba sigue mandando en la estructura.
+// ══════════════════════════════════════════════════════════
+
+.axr-blk {
+  --blk-line: #e6e6ea;
+  --blk-soft: #f8f8fa;
+  --blk-accent: #5b4bf5;
+  --blk-accent-bg: #f1efff;
+  --blk-muted: #6f6f76;
+
+  &__h2 {
+    font-family: inherit;
+    font-size: 1.4rem;
+    letter-spacing: -0.015em;
+    border-top-color: var(--blk-line);
+  }
+
+  &__ul li::before { width: 6px; height: 6px; border-radius: 50%; background: var(--blk-accent); }
+  &__ol-n {
+    display: grid;
+    place-items: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--blk-accent-bg);
+    color: var(--blk-accent);
+    font-family: inherit;
+  }
+  &__divider { border-top-color: var(--blk-line); }
+
+  // Checklist
+  &__check {
+    border-color: var(--blk-line);
+    border-radius: 14px;
+    overflow: hidden;
+    &-head {
+      background: var(--blk-soft);
+      border-bottom-color: var(--blk-line);
+      span { font-family: inherit; }
+    }
+    li + li { border-top-color: #f0f0f3; }
+    label:hover { background: #fafafb; }
+    &-box { border-radius: 6px; border-color: #c6c6cc; }
+  }
+
+  // Punto de control: una parada; se ve de lejos por el color, no por la sombra.
+  &__checkpoint {
+    border: 1px solid #d9d4ff;
+    border-radius: 14px;
+    box-shadow: none;
+    background: #faf9ff;
+    > strong {
+      font-family: inherit;
+      font-size: 0.8125rem;
+      letter-spacing: 0;
+      text-transform: none;
+      color: #3a2fd0;
+    }
+  }
+
+  // Cuadros destacados: tinte suave del color de cada tipo.
+  &__note {
+    border: 0;
+    border-left: 3px solid #8d8d95;
+    border-radius: 0 12px 12px 0;
+    background: var(--blk-soft);
+    padding: 0.9rem 1.05rem;
+    &[data-kind="idea"] { background: #f5f3ff; }
+    &[data-kind="aviso"] { background: #fff8e6; }
+    &[data-kind="error"] { background: #fff1f1; }
+    &[data-kind="ejemplo"] { background: #ecfbf9; }
+    &[data-kind="dato"] { background: #eef4ff; }
+  }
+
+  &__quote {
+    border-left-color: var(--blk-accent);
+    figcaption { font-family: inherit; }
+  }
+
+  // Tabla
+  &__table {
+    &-scroll { border-color: var(--blk-line); border-radius: 12px; }
+    th {
+      background: var(--blk-soft);
+      font-family: inherit;
+      font-size: 0.75rem;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--blk-muted);
+      border-bottom-color: var(--blk-line);
+    }
+    td { border-bottom-color: #f0f0f3; }
+  }
+
+  // Pasos
+  &__steps {
+    border-color: var(--blk-line);
+    border-radius: 14px;
+    overflow: hidden;
+    li + li { border-top-color: #f0f0f3; }
+    &-n {
+      border: 0;
+      border-radius: 50%;
+      background: var(--blk-accent-bg);
+      color: var(--blk-accent);
+      font-family: inherit;
+    }
+  }
+
+  // Pros y contras
+  &__pros {
+    ul { border-color: var(--blk-line); border-radius: 0 12px 12px 0; }
+    ul[data-kind="pro"] { background: #f2fbf4; }
+    ul[data-kind="con"] { background: #fff6f6; }
+  }
+
+  // Comparativa
+  &__compare {
+    border-color: var(--blk-line);
+    border-radius: 14px;
+    overflow: hidden;
+    &-side {
+      + .axr-blk__compare-side { border-color: var(--blk-line); }
+      &[data-side="1"] { background: var(--blk-soft); }
+      > strong { font-family: inherit; font-size: 0.8125rem; letter-spacing: 0; text-transform: none; }
+      li::before { border-radius: 50%; }
+    }
+  }
+
+  // Cifras
+  &__stats {
+    border-color: var(--blk-line);
+    border-radius: 14px;
+    overflow: hidden;
+    > div { border-color: #f0f0f3; }
+    dt { font-family: inherit; color: #3a2fd0; }
+  }
+
+  // Gráficos
+  &__chart { border-color: var(--blk-line); border-radius: 14px; }
+  &__bars {
+    &-track { border: 0; border-radius: 999px; background: #ececf0; overflow: hidden; }
+    &-fill { border-radius: 999px; }
+    &-value { font-family: inherit; }
+  }
+  &__dot { border-radius: 50%; }
+
+  // Recursos
+  &__resources {
+    &-title { font-family: inherit; font-size: 0.8125rem; letter-spacing: 0; text-transform: none; color: var(--blk-muted); }
+    ul { border-color: var(--blk-line); border-radius: 14px; overflow: hidden; }
+    li + li { border-top-color: #f0f0f3; }
+    a:hover, a:focus-visible { background: #fafafb; }
+    &-kind {
+      border: 0;
+      border-radius: 8px;
+      background: var(--blk-accent-bg);
+      color: var(--blk-accent);
+      font-family: inherit;
+      &[data-kind="pdf"] { background: #fff1f1; color: #da1e28; }
+      &[data-kind="sheet"] { background: #defbe6; color: #198038; }
+      &[data-kind="doc"] { background: #edf5ff; color: #0f62fe; }
+      &[data-kind="slides"] { background: #fff4ef; color: #c93b12; }
+    }
+  }
+
+  // Cronología
+  &__timeline {
+    border-left-color: var(--blk-line);
+    li::before { border-radius: 50%; border-color: var(--blk-accent); background: #ffffff; }
+    &-when { font-family: inherit; letter-spacing: 0; text-transform: none; font-size: 0.75rem; }
   }
 }

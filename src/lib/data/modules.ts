@@ -9,17 +9,20 @@ export async function listModulesWithCounts() {
   const [locale, { data: modules }, { data: lessons }] = await Promise.all([
     getLocale(),
     supabase.from("modules").select("*").order("order_index"),
-    supabase.from("lessons").select("id, module_id, duration_min"),
+    supabase.from("lessons").select("id, module_id, duration_min, order_index, title, title_en"),
   ]);
 
   return (modules ?? []).map((m) => {
-    const ml = (lessons ?? []).filter((l) => l.module_id === m.id);
+    const ml = (lessons ?? []).filter((l) => l.module_id === m.id).sort((a, b) => a.order_index - b.order_index);
     const minutes = ml.reduce((acc, l) => acc + (l.duration_min ?? 0), 0);
     return {
       ...localize(m, locale),
       lessons_count: ml.length,
       estimated_minutes: m.estimated_minutes ?? minutes,
-    } as Module & { lessons_count: number };
+      // Las lecciones en orden, sólo id y título: con esto la portada del
+      // campus sabe por dónde va cada alumno y a qué lección llevarle.
+      ordered_lessons: ml.map((l) => ({ id: l.id as string, title: (locale === "en" && l.title_en?.trim() ? l.title_en : l.title) as string })),
+    } as Module & { lessons_count: number; ordered_lessons: { id: string; title: string }[] };
   });
 }
 
@@ -29,14 +32,20 @@ export async function getModuleBySlug(slug: string) {
   // detrás de otra). El orden se pone aquí: es una lista corta.
   const [locale, { data: fila }] = await Promise.all([
     getLocale(),
-    supabase.from("modules").select("*, lecciones:lessons(*)").eq("slug", slug).maybeSingle(),
+    // Con el test de cada lección (sólo su id): la lista dice qué lecciones tienen control.
+    supabase.from("modules").select("*, lecciones:lessons(*, quizzes(id))").eq("slug", slug).maybeSingle(),
   ]);
   if (!fila) return null;
-  const { lecciones, ...module } = fila as Module & { lecciones: Lesson[] | null };
+  const { lecciones, ...module } = fila as Module & { lecciones: (Lesson & { quizzes: { id: string }[] | { id: string } | null })[] | null };
 
   return {
     module: localize(module as Module, locale),
-    lessons: [...(lecciones ?? [])].sort((a, b) => a.order_index - b.order_index).map((l) => localize(l, locale)),
+    lessons: [...(lecciones ?? [])]
+      .sort((a, b) => a.order_index - b.order_index)
+      .map(({ quizzes, ...l }) => ({
+        ...localize(l as Lesson, locale),
+        has_quiz: Array.isArray(quizzes) ? quizzes.length > 0 : Boolean(quizzes),
+      })),
   };
 }
 

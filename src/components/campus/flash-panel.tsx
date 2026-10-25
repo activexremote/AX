@@ -1,6 +1,9 @@
 import Link from "next/link";
 
+import { Icono } from "@/components/admin/publicaciones/iconos";
+import { campusACopy } from "@/lib/i18n/campus-v2-a";
 import { fmt } from "@/lib/i18n/dictionaries";
+import { getI18n } from "@/lib/i18n/server";
 import { getFlashProgress, getUnlocks } from "@/lib/data/relampago";
 import { FLASH_COURSES } from "@/lib/relampago/catalog";
 import type { CourseKey } from "@/lib/supabase/types";
@@ -37,61 +40,76 @@ export async function FlashPanel({ copy }: { copy: Copy }) {
   const visibles = paneles.filter((p): p is NonNullable<typeof p> => p !== null);
   if (visibles.length === 0) return null;
 
+  const { locale } = await getI18n();
+  const c = campusACopy[locale];
+
   return (
     <>
       {visibles.map(({ curso, progress, unlocks }) => {
         const pct = progress.total ? Math.round((progress.done / progress.total) * 100) : 0;
         return (
-          <section key={curso.key} className="axr-flashpanel">
-            <header className="axr-flashpanel__head">
-              <span className="axr-section-tag">{curso.code}</span>
-              <h2>{curso.title}</h2>
-              <p>{curso.claim}</p>
+          <section key={curso.key} className="axr-c-card axr-flash">
+            <header className="axr-flash__head">
+              <div>
+                <span className="axr-c-pill axr-c-pill--accent">
+                  <Icono n="chispa" size={12} /> {c.flashTag} · {curso.code}
+                </span>
+                <h2>{curso.title}</h2>
+                <p>{curso.claim}</p>
+              </div>
+              <div className="axr-flash__score">
+                <strong>{pct}%</strong>
+                <span className="axr-c-progress" role="img" aria-label={`${pct}%`}>
+                  <span style={{ width: `${pct}%` }} />
+                </span>
+                <small>
+                  {fmt(copy.progress, {
+                    done: progress.done,
+                    total: progress.total,
+                    passed: progress.passed,
+                    submitted: progress.submitted,
+                  })}
+                </small>
+              </div>
             </header>
 
-            <div className="axr-flashpanel__bar" role="img" aria-label={`${pct}%`}>
-              <span style={{ width: `${pct}%` }} />
-            </div>
-            <p className="axr-flashpanel__nums">
-              {fmt(copy.progress, {
-                done: progress.done,
-                total: progress.total,
-                passed: progress.passed,
-                submitted: progress.submitted,
-              })}
-            </p>
-
-            <ol className="axr-flashpanel__modules">
-              {progress.modules.map((m) => (
+            <ol className="axr-flash__modules" aria-label={c.flashModules}>
+              {progress.modules.map((m, i) => (
                 <li key={m.id}>
                   <Link href={`/modulos/${m.slug}`}>
-                    <span className="axr-flashpanel__module-code">{m.code}</span>
-                    <span>{m.title}</span>
+                    <span className="axr-flash__n" aria-hidden>
+                      {i + 1}
+                    </span>
+                    <span className="axr-flash__module">
+                      {m.code ? <small>{m.code}</small> : null}
+                      <span>{m.title}</span>
+                    </span>
+                    <Icono n="flecha" size={14} />
                   </Link>
                 </li>
               ))}
             </ol>
 
-            <div className="axr-flashpanel__unlocks">
+            <div className="axr-flash__unlocks">
               <h3>{copy.title}</h3>
               <p>{copy.lead}</p>
               <ul>
                 {unlocks.map((u) => (
                   <li key={u.key} data-earned={u.earned}>
-                    <span className="axr-flashpanel__unlock-state">
-                      {u.earned ? copy.earned : copy.locked}
+                    <span className={`axr-c-pill ${u.earned ? "axr-c-pill--ok" : ""}`}>
+                      {u.earned ? <Icono n="ok" size={12} /> : <Icono n="escudo" size={12} />} {u.earned ? copy.earned : copy.locked}
                     </span>
                     <strong>{u.title}</strong>
-                    <span className="axr-flashpanel__unlock-desc">{u.description}</span>
+                    <span className="axr-flash__unlock-desc">{u.description}</span>
                     {u.earned &&
                       (u.url ? (
-                        <a href={u.url} className="axr-btn axr-btn--ghost">
+                        <a href={u.url} className="axr-btn axr-btn--ghost axr-btn--small">
                           {copy.open}
                         </a>
                       ) : (
                         // Ganado pero sin archivo todavía. Se dice, en vez de
                         // dejar un botón que no lleva a ninguna parte.
-                        <span className="axr-flashpanel__unlock-soon">{copy.soon}</span>
+                        <span className="axr-flash__unlock-soon">{copy.soon}</span>
                       ))}
                   </li>
                 ))}

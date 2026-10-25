@@ -1,0 +1,206 @@
+// ══════════════════════════════════════════════════════════
+//  Campus · v2
+//
+//  El mismo lenguaje que el panel (admin.scss) y que Publicaciones: fondo
+//  gris muy claro, tarjetas blancas con radio suave, títulos en frase, un
+//  solo color de acción (el verde de la marca) y el violeta de la marca para
+//  lo que está seleccionado. Aquí están las piezas comunes; cada pantalla
+//  del campus sólo añade lo suyo.
+// ══════════════════════════════════════════════════════════
+
+.axr-page {
+  --cmp-bg: #f6f6f8;
+  --cmp-ink: #161616;
+  --cmp-text: #3d3d44;
+  --cmp-muted: #6f6f76;
+  --cmp-line: #e6e6ea;
+  --cmp-line-strong: #d4d4da;
+  --cmp-radius: 14px;
+  --cmp-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --cmp-accent: #5b4bf5;
+  --cmp-accent-ink: #3a2fd0;
+  --cmp-accent-bg: #f1efff;
+  --cmp-ok: #198038;
+  --cmp-ok-bg: #defbe6;
+  --cmp-warn: #8e6a00;
+  --cmp-warn-bg: #fcf4d6;
+  --cmp-bad: #da1e28;
+  --cmp-bad-bg: #fff1f1;
+  --cmp-info: #0f62fe;
+  --cmp-info-bg: #edf5ff;
+
+  padding-top: 60px;
+  min-height: 100vh;
+  background: var(--cmp-bg);
+  color: var(--cmp-ink);
+
+  @media (max-width: 760px) {
+    padding-top: 56px;
+    // La barra de navegación de abajo no tapa el final de la página.
+    padding-bottom: calc(68px + env(safe-area-inset-bottom));
+  }
+}
+
+// ── Contenedor y cabecera de página ──────────────────────
+.axr-c-wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 2rem clamp(1rem, 3vw, 2rem) 4rem;
+  @media (max-width: 760px) { padding-top: 1.25rem; }
+}
+
+.axr-c-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  &__crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.8125rem;
+    color: var(--cmp-muted);
+    a { color: var(--cmp-muted); &:hover { color: var(--cmp-ink); } }
+  }
+  h1 { margin: 0; font-size: clamp(1.5rem, 2.6vw, 2rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; }
+  p { margin: 0.4rem 0 0; max-width: 68ch; color: var(--cmp-muted); font-size: 0.9375rem; line-height: 1.55; }
+}
+
+// ── Tarjeta ──────────────────────────────────────────────
+.axr-c-card {
+  background: #ffffff;
+  border: 1px solid var(--cmp-line);
+  border-radius: var(--cmp-radius);
+  box-shadow: var(--cmp-shadow);
+  padding: 1.25rem 1.35rem;
+  min-width: 0;
+
+  &__title { margin: 0 0 0.9rem; font-size: 1rem; font-weight: 650; letter-spacing: -0.01em; }
+  &--flush { padding: 0; overflow: hidden; }
+  & + & { margin-top: 1rem; }
+}
+
+// ── Cifras ───────────────────────────────────────────────
+.axr-c-stats {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  margin-bottom: 1.25rem;
+  @media (max-width: 520px) { grid-template-columns: 1fr 1fr; }
+}
+.axr-c-stat {
+  display: grid;
+  gap: 0.2rem;
+  padding: 1rem 1.15rem;
+  background: #ffffff;
+  border: 1px solid var(--cmp-line);
+  border-radius: var(--cmp-radius);
+  box-shadow: var(--cmp-shadow);
+  &__label { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8125rem; color: var(--cmp-muted); svg { color: var(--cmp-accent); } }
+  &__value { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+  &__hint { font-size: 0.75rem; color: var(--cmp-muted); }
+}
+
+// ── Barra de progreso ────────────────────────────────────
+.axr-c-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: #ececf0;
+  overflow: hidden;
+  > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #6d5cff, #a855f7); }
+  &--ok > span { background: var(--cmp-ok); }
+}
+
+// ── Pastillas ────────────────────────────────────────────
+.axr-c-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: #ececf0;
+  color: var(--cmp-text);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  &--ok { background: var(--cmp-ok-bg); color: var(--cmp-ok); }
+  &--warn { background: var(--cmp-warn-bg); color: var(--cmp-warn); }
+  &--bad { background: var(--cmp-bad-bg); color: var(--cmp-bad); }
+  &--info { background: var(--cmp-info-bg); color: var(--cmp-info); }
+  &--accent { background: var(--cmp-accent-bg); color: var(--cmp-accent-ink); }
+}
+
+// ── Estado vacío y avisos ────────────────────────────────
+.axr-c-empty {
+  display: grid;
+  justify-items: center;
+  gap: 0.4rem;
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--cmp-muted);
+  font-size: 0.875rem;
+  svg { color: #b9b9c1; }
+  strong { color: var(--cmp-ink); font-size: 1rem; }
+  .axr-btn { margin-top: 0.5rem; }
+}
+.axr-c-note {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  padding: 0.8rem 0.95rem;
+  border-radius: 12px;
+  background: var(--cmp-info-bg);
+  color: #0043ce;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  svg { flex: none; margin-top: 0.15rem; }
+  &--warn { background: var(--cmp-warn-bg); color: var(--cmp-warn); }
+  &--ok { background: var(--cmp-ok-bg); color: var(--cmp-ok); }
+  &--accent { background: var(--cmp-accent-bg); color: var(--cmp-accent-ink); }
+}
+
+// ── Botones ──────────────────────────────────────────────
+// Un verde de acción; el resto, blancos con borde. Radio suave.
+.axr-page .axr-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 40px;
+  padding: 0.55rem 1.05rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--axr-go, #038632);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+
+  &:hover { background: var(--axr-go-deep, #06702b); color: #ffffff; text-decoration: none; }
+  &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(91, 75, 245, 0.25); }
+  &:disabled, &[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+
+  &--primary { background: var(--axr-go, #038632); color: #ffffff; border-color: transparent; }
+  &--success { background: var(--cmp-ok-bg); color: var(--cmp-ok); border-color: transparent; &:hover { background: var(--cmp-ok-bg); color: var(--cmp-ok); } }
+  &--ghost {
+    background: #ffffff;
+    border-color: var(--cmp-line-strong);
+    color: var(--cmp-ink);
+    &:hover { background: #f6f6f8; border-color: #b9b9c1; color: var(--cmp-ink); }
+  }
+  &--danger {
+    background: var(--cmp-bad);
+    border-color: var(--cmp-bad);
+    color: #ffffff;
+    &:hover { background: #b81921; border-color: #b81921; }
+  }
+  &--small { min-height: 32px; padding: 0.3rem 0.7rem; font-size: 0.8125rem; }
+}

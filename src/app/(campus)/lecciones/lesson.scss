@@ -1,264 +1,336 @@
-.axr-lesson-bar {
-  background: #ffffff;
-  border-bottom: 1px solid var(--axr-border-ink);
-  font-family: var(--axr-mono);
-  font-size: 0.6875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+// ══════════════════════════════════════════════════════════
+//  La lección (campus v2)
+//
+//  Hoja blanca de ancho cómodo para leer sobre el gris del campus, el
+//  índice del módulo a la izquierda y lo que cierra la lección (test, misión
+//  o «marcar como completada») en tarjetas debajo. Mismo lenguaje que el
+//  resto del campus (campus.scss): radio suave, filetes claros, títulos en
+//  frase y un solo verde para lo que se pulsa.
+// ══════════════════════════════════════════════════════════
 
-  &__inner {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 0.625rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--axr-text-helper);
-
-    a {
-      color: #161616;
-    }
-  }
-
-  &__pct {
-    margin-left: auto;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    background: #161616;
-    color: #ffffff;
-    padding: 0.25rem 0.625rem;
-    font-weight: 500;
-  }
-}
-
-.axr-lesson {
-  display: grid;
-  grid-template-columns: 268px minmax(0, 1fr);
-  max-width: 1280px;
+.axr-lsn {
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 1.5rem 1.5rem 6rem;
-  gap: 2rem;
+  // Abajo, sitio para la barra flotante del audio.
+  padding: 1.25rem clamp(1rem, 3vw, 2rem) 8rem;
 
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
-
-  &__sidebar {
-    border-right: 1px solid var(--axr-border-ink);
-    padding-right: 1rem;
-
-    @media (max-width: 900px) {
-      border-right: 0;
-      border-bottom: 1px solid var(--axr-border-ink);
-      padding-right: 0;
-      padding-bottom: 1rem;
-    }
-
-    h2 {
-      font-size: 1rem;
-      font-weight: 600;
-      margin: 0.5rem 0 0.25rem;
-    }
-
-    p {
-      margin: 0 0 1rem 0;
-      font-family: var(--axr-mono);
-      font-size: 0.6875rem;
-      color: var(--axr-text-helper);
-    }
-
-    ol {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      border-top: 1px solid var(--axr-border);
-    }
-  }
-
-  &__sidebar-item {
+  &__crumbs {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 0.625rem;
-    padding: 0.625rem;
-    color: var(--axr-text-secondary);
+    gap: 0.4rem;
+    margin-bottom: 1.25rem;
     font-size: 0.8125rem;
-    border-left: 2px solid transparent;
-    border-bottom: 1px solid var(--axr-border);
-    transition: background 0.15s;
-
-    &:hover {
-      background: var(--axr-gray-10);
-      text-decoration: none;
-      color: var(--axr-text);
-    }
-
-    &.is-active {
-      background: #f4f4f4;
-      color: #161616;
-      font-weight: 600;
-      border-left-color: #161616;
-    }
-
-    &[data-done="true"] {
-      color: var(--axr-text);
-    }
+    color: var(--cmp-muted, #6f6f76);
+    a { color: var(--cmp-muted, #6f6f76); &:hover { color: var(--cmp-ink, #161616); } }
+    > span:last-child { color: var(--cmp-ink, #161616); font-weight: 500; }
   }
 
-  &__sidebar-num {
-    width: 22px;
-    height: 22px;
-    background: #ffffff;
-    border: 1px solid var(--axr-border-ink);
-    color: var(--axr-text-helper);
+  &__grid {
     display: grid;
-    place-items: center;
-    font-family: var(--axr-mono);
-    font-size: 0.625rem;
-    font-weight: 600;
-    flex-shrink: 0;
-
-    [data-done="true"] & {
-      background: #161616;
-      color: #ffffff;
-    }
-
-    .is-active & {
-      background: #161616;
-      color: #ffffff;
-    }
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 1.75rem;
+    align-items: start;
+    @media (max-width: 960px) { grid-template-columns: 1fr; }
   }
 
-  &__main {
+  &__main { min-width: 0; display: grid; gap: 1.25rem; }
+
+  // ── La hoja ────────────────────────────────────────────
+  &__paper {
+    background: #ffffff;
+    border: 1px solid var(--cmp-line, #e6e6ea);
+    border-radius: 18px;
+    box-shadow: var(--cmp-shadow);
+    padding: clamp(1.25rem, 4vw, 2.75rem) clamp(1.1rem, 5vw, 3.5rem) clamp(1.5rem, 4vw, 3rem);
     min-width: 0;
   }
 
-  &__main h1 {
-    font-size: 2rem;
+  &__head {
+    margin-bottom: 1.75rem;
+    h1 {
+      margin: 0.85rem 0 0;
+      font-size: clamp(1.6rem, 3.2vw, 2.25rem);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.15;
+      text-wrap: balance;
+    }
+  }
+  &__pills { display: flex; flex-wrap: wrap; gap: 0.4rem; .axr-c-pill { gap: 0.25rem; } }
+  &__subtitle { margin: 0.6rem 0 0; font-size: 1.0625rem; line-height: 1.55; color: var(--cmp-muted, #6f6f76); }
+
+  &__label {
+    display: block;
+    margin-bottom: 0.55rem;
+    font-size: 0.8125rem;
     font-weight: 600;
-    letter-spacing: -0.02em;
-    margin: 0.5rem 0 0.5rem 0;
+    color: var(--cmp-muted, #6f6f76);
   }
 
-  &__meta {
-    color: var(--axr-text-helper);
-    font-family: var(--axr-mono);
-    font-size: 0.6875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+  // Gancho de los relámpago: lo primero que se lee, antes del vídeo. Es la
+  // frase que el alumno ya se ha dicho a sí mismo.
+  &__hook {
+    margin: 0 0 1.5rem;
+    padding: 0.9rem 1.1rem;
+    border-radius: 12px;
+    background: #fff4ef;
+    color: #8a3a1c;
+    font-size: 1.0625rem;
+    font-style: italic;
+    line-height: 1.5;
   }
 
-  &__badge {
+  &__video {
+    margin: 0 0 1.75rem;
+    border-radius: 14px;
+    overflow: hidden;
     background: #161616;
-    color: #ffffff;
-    padding: 0.25rem 0.5rem;
-    font-weight: 500;
+    video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #000; }
+  }
+  &__video-demo {
+    margin: 0;
+    padding: 0.65rem 0.95rem;
+    background: #fff4ef;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: #8a3a1c;
+  }
+  &__video-soon { margin: 0; padding: 2rem 1.5rem; color: #ffffff; font-size: 0.9375rem; line-height: 1.6; text-align: center; }
+
+  &__outcome {
+    margin: 0 0 1.5rem;
+    strong { display: block; font-size: 0.8125rem; }
+    p { margin: 0.2rem 0 0; font-weight: 600; color: var(--cmp-ink, #161616); }
+  }
+
+  &__terms {
+    margin: 0 0 1.75rem;
+    ul { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0; padding: 0; list-style: none; }
+    li {
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      background: #f3f3f6;
+      font-family: var(--axr-code);
+      font-size: 0.75rem;
+      color: var(--cmp-text, #3d3d44);
+    }
   }
 
   &__toc {
-    background: #ffffff;
-    border: 1px solid var(--axr-border-ink);
-    padding: 1rem 1.25rem;
-    margin-bottom: 2rem;
-
-    &-label {
-      font-family: var(--axr-mono);
-      font-size: 0.6875rem;
-      font-weight: 500;
-      color: var(--axr-text-helper);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 0.75rem;
-    }
-
-    ol {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    li {
-      display: flex;
-      gap: 0.625rem;
-      font-size: 0.875rem;
-      color: var(--axr-text-secondary);
-
-      &:first-child {
-        color: #161616;
-        font-weight: 600;
-      }
-    }
+    margin: 0 0 2rem;
+    padding: 1rem 1.15rem;
+    border-radius: 14px;
+    background: #f8f8fa;
+    border: 1px solid var(--cmp-line, #e6e6ea);
+    ol { display: grid; gap: 0.45rem; margin: 0; padding: 0; list-style: none; }
+    li { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.9375rem; color: var(--cmp-text, #3d3d44); }
   }
-
   &__toc-num {
-    width: 20px;
-    height: 20px;
-    background: #ffffff;
-    border: 1px solid var(--axr-border-ink);
-    color: var(--axr-text-helper);
+    flex: none;
     display: grid;
     place-items: center;
-    font-family: var(--axr-mono);
-    font-size: 0.625rem;
-    flex-shrink: 0;
-
-    li:first-child & {
-      background: #161616;
-      color: #ffffff;
-    }
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1px solid var(--cmp-line-strong, #d4d4da);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--cmp-muted, #6f6f76);
   }
 
+  // ── El cuerpo: ancho de lectura y tipografía ───────────
+  // 72 caracteres por línea: lo que se lee sin perder el renglón.
   &__content {
-    color: var(--axr-text);
-    line-height: 1.65;
-    font-size: 0.9375rem;
+    max-width: 72ch;
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    color: #26262b;
+
+    // Sólo el Markdown (hijos directos): los bloques (checklists, tablas,
+    // gráficos…) traen su propio ritmo de content.scss y no se tocan.
+    > h1, > h2, > h3 { font-weight: 700; letter-spacing: -0.015em; line-height: 1.3; color: var(--cmp-ink, #161616); }
+    > h1 { margin: 0 0 1rem; font-size: 1.65rem; }
+    > h2 { margin: 2.25rem 0 0.75rem; font-size: 1.4rem; }
+    > h3 { margin: 1.85rem 0 0.5rem; font-size: 1.2rem; }
+    > p { margin: 0 0 1.05rem; }
+    // El reset del campus quita las viñetas: en el Markdown hacen falta.
+    > ul, > ol { padding-left: 1.3rem; margin: 0 0 1.05rem; }
+    > ul { list-style: disc; }
+    > ol { list-style: decimal; }
+    > ul > li::marker, > ol > li::marker { color: var(--cmp-accent, #5b4bf5); }
+    > ul > li, > ol > li { margin-bottom: 0.35rem; }
+    > blockquote { margin: 1.25rem 0; padding: 0.75rem 1rem; border-left: 3px solid var(--cmp-accent, #5b4bf5); border-radius: 0 10px 10px 0; background: #f8f8fa; color: var(--cmp-text, #3d3d44); }
+    > table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: 0.9rem; }
+    > table th, > table td { padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--cmp-line, #e6e6ea); text-align: left; vertical-align: top; }
+    > table th { background: #fafafb; font-size: 0.8125rem; color: var(--cmp-muted, #6f6f76); }
+    > hr { border: 0; border-top: 1px solid var(--cmp-line, #e6e6ea); margin: 2rem 0; }
+    > p a, > ul a, > ol a { color: var(--cmp-accent-ink, #3a2fd0); text-decoration: underline; text-underline-offset: 2px; }
+    > p code, > ul code, > ol code { padding: 0.1rem 0.35rem; border-radius: 6px; background: #f3f3f6; font-size: 0.875em; }
+    img { max-width: 100%; border-radius: 12px; }
+    .axr-blk { font-size: 1rem; }
   }
 
-  &__content h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    margin: 1.75rem 0 0.5rem;
-    padding-left: 0.75rem;
-    border-left: 3px solid #161616;
+  // ── Tarjetas debajo de la hoja ─────────────────────────
+  &__card {
+    background: #ffffff;
+    border: 1px solid var(--cmp-line, #e6e6ea);
+    border-radius: 18px;
+    box-shadow: var(--cmp-shadow);
+    padding: clamp(1.1rem, 3vw, 1.75rem);
+    scroll-margin-top: 80px;
   }
-
-  &__content p {
-    margin: 0 0 1rem 0;
-  }
-
-  &__quiz-section {
-    margin-top: 2.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--axr-border-ink);
-
-    h2 {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin: 0 0 1rem 0;
-    }
-  }
-
-  &__cta-bar {
-    margin-top: 2rem;
+  &__card-head {
     display: flex;
-    justify-content: space-between;
+    gap: 0.85rem;
+    align-items: flex-start;
+    margin-bottom: 1.25rem;
+    h2 { margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.015em; }
+    p { margin: 0.25rem 0 0; font-size: 0.875rem; color: var(--cmp-muted, #6f6f76); line-height: 1.5; }
+  }
+  &__card-icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--cmp-accent-bg, #f1efff);
+    color: var(--cmp-accent, #5b4bf5);
+  }
+
+  // Marcar como completada
+  &__finish {
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 0.75rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--axr-border-ink);
+    gap: 1rem;
+    &-text {
+      flex: 1;
+      min-width: 220px;
+      h2 { margin: 0; font-size: 1.125rem; font-weight: 700; }
+      p { margin: 0.2rem 0 0; font-size: 0.875rem; color: var(--cmp-muted, #6f6f76); line-height: 1.5; }
+    }
+    &-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    &.is-done .axr-lsn__card-icon { background: var(--cmp-ok-bg, #defbe6); color: var(--cmp-ok, #198038); }
+  }
+
+  // Anterior / siguiente
+  &__pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.9rem;
+    @media (max-width: 560px) { grid-template-columns: 1fr; }
+  }
+  &__pager-item {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.95rem 1.1rem;
+    border: 1px solid var(--cmp-line, #e6e6ea);
+    border-radius: 14px;
+    background: #ffffff;
+    color: inherit;
+    text-decoration: none !important;
+    transition: border-color 0.12s, box-shadow 0.12s;
+    small { font-size: 0.75rem; color: var(--cmp-muted, #6f6f76); }
+    strong { font-size: 0.9375rem; line-height: 1.35; color: var(--cmp-ink, #161616); }
+    &:hover { border-color: var(--cmp-line-strong, #d4d4da); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06); }
+    &--next { text-align: right; }
   }
 }
 
+// ── Índice del módulo ────────────────────────────────────
+.axr-lsn-index {
+  position: sticky;
+  top: 80px;
+  max-height: calc(100vh - 100px);
+  overflow: auto;
+  background: #ffffff;
+  border: 1px solid var(--cmp-line, #e6e6ea);
+  border-radius: 16px;
+  box-shadow: var(--cmp-shadow);
+  padding: 1rem 0.65rem 0.75rem;
+  @media (max-width: 960px) { display: none; }
+
+  &__head {
+    display: grid;
+    gap: 0.45rem;
+    padding: 0 0.45rem 0.85rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid #ececf0;
+    .axr-c-pill { justify-self: start; }
+  }
+  &__module {
+    font-size: 0.9375rem;
+    font-weight: 650;
+    line-height: 1.35;
+    color: var(--cmp-ink, #161616);
+    &:hover { color: var(--cmp-accent-ink, #3a2fd0); text-decoration: none; }
+  }
+  &__progress { display: grid; gap: 0.35rem; small { font-size: 0.75rem; color: var(--cmp-muted, #6f6f76); } }
+
+  &__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  &__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.55rem 0.5rem;
+    border-radius: 10px;
+    color: var(--cmp-text, #3d3d44);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    text-decoration: none !important;
+    &:hover { background: #f3f3f6; color: var(--cmp-ink, #161616); }
+    &.is-active { background: var(--cmp-accent-bg, #f1efff); color: var(--cmp-accent-ink, #3a2fd0); font-weight: 600; }
+  }
+  &__num {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid var(--cmp-line-strong, #d4d4da);
+    background: #ffffff;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--cmp-muted, #6f6f76);
+    .is-done & { background: var(--cmp-ok, #198038); border-color: var(--cmp-ok, #198038); color: #ffffff; }
+    .is-active & { background: var(--cmp-accent, #5b4bf5); border-color: var(--cmp-accent, #5b4bf5); color: #ffffff; }
+  }
+  &__title { padding-top: 0.1rem; }
+  &__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+}
+
+// En el móvil, el índice es un desplegable encima de la lección.
+.axr-lsn-index-m {
+  display: none;
+  background: #ffffff;
+  border: 1px solid var(--cmp-line, #e6e6ea);
+  border-radius: 14px;
+  box-shadow: var(--cmp-shadow);
+  @media (max-width: 960px) { display: block; }
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.8rem 1rem;
+    cursor: pointer;
+    list-style: none;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    &::-webkit-details-marker { display: none; }
+  }
+  &__label { display: inline-flex; align-items: center; gap: 0.5rem; svg { color: var(--cmp-accent, #5b4bf5); } }
+  &__body { display: grid; gap: 0.75rem; padding: 0 0.65rem 0.75rem; }
+}
+
+// ── Botones ──────────────────────────────────────────────
+// Base de .axr-btn fuera del campus (la página la carga y otras pantallas la
+// heredan). Dentro del campus manda campus.scss (`.axr-page .axr-btn`).
 .axr-btn {
   display: inline-flex;
   align-items: center;
@@ -270,9 +342,8 @@
   cursor: pointer;
   font-family: inherit;
 
-  // Verde de acción, el mismo que en la web pública. El campus sigue siendo
-  // monocromo: éste es el único color que tiene, y por eso funciona como
-  // señal —lo que se puede pulsar, y sólo eso, es verde—.
+  // Verde de acción, el mismo que en la web pública: lo que se puede pulsar,
+  // y sólo eso, es verde.
   &--primary {
     background: var(--axr-go);
     color: #ffffff;
@@ -299,353 +370,242 @@
   }
 }
 
+// ── El test ──────────────────────────────────────────────
 .axr-quiz {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  display: grid;
+  gap: 1rem;
 
   &__question {
-    border: 0;
-    padding: 0;
     margin: 0;
+    padding: 1.1rem 1.15rem 1.2rem;
+    border: 1px solid var(--cmp-line, #e6e6ea);
+    border-radius: 14px;
+    background: #fafafb;
   }
-
-  &__legend {
-    font-family: var(--axr-mono);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    color: var(--axr-text-helper);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 0.625rem;
-  }
-
-  &__prompt {
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: var(--axr-text);
-    margin: 0 0 0.875rem 0;
-  }
-
-  &__options {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
+  &__legend { float: left; width: 100%; margin-bottom: 0.4rem; padding: 0; font-size: 0.75rem; font-weight: 600; color: var(--cmp-muted, #6f6f76); }
+  &__prompt { clear: both; margin: 0 0 0.85rem; font-size: 1rem; font-weight: 650; line-height: 1.45; color: var(--cmp-ink, #161616); }
+  &__options { display: grid; gap: 0.5rem; }
 
   &__option {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.75rem 1rem;
+    min-height: 48px;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid var(--cmp-line-strong, #d4d4da);
+    border-radius: 12px;
     background: #ffffff;
-    border: 1px solid var(--axr-border);
+    font-size: 0.9375rem;
+    line-height: 1.4;
     cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
-    font-size: 0.875rem;
+    transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
 
-    input { accent-color: #161616; }
-    &:hover { background: var(--axr-gray-10); }
+    // El círculo de verdad se esconde pero sigue ahí (teclado y lector de
+    // pantalla): la letra hace de botón y la fila entera es el objetivo.
+    input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+    &:has(input:focus-visible) { box-shadow: 0 0 0 3px rgba(91, 75, 245, 0.25); }
+    &:hover { border-color: #b9b9c1; }
 
-    &[data-state="selected"] {
-      background: #f4f4f4;
-      border-color: #161616;
-    }
-
-    &[data-state="correct"] {
-      background: #f4f4f4;
-      border-color: #161616;
-      border-left-width: 4px;
-      color: #161616;
-      font-weight: 600;
-    }
-
-    &[data-state="wrong"] {
-      background: #ffffff;
-      border-color: #c6c6c6;
-      border-style: dashed;
-      color: var(--axr-text-helper);
-      text-decoration: line-through;
-    }
+    &[data-state="selected"] { border-color: var(--cmp-accent, #5b4bf5); background: var(--cmp-accent-bg, #f1efff); }
+    &[data-state="correct"] { border-color: var(--cmp-ok, #198038); background: var(--cmp-ok-bg, #defbe6); cursor: default; }
+    &[data-state="wrong"] { border-color: var(--cmp-bad, #da1e28); background: var(--cmp-bad-bg, #fff1f1); cursor: default; }
+    &[data-state="default"]:has(input:disabled) { opacity: 0.6; cursor: default; }
+  }
+  &__letter {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 1px solid var(--cmp-line-strong, #d4d4da);
+    background: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--cmp-muted, #6f6f76);
+    [data-state="selected"] & { background: var(--cmp-accent, #5b4bf5); border-color: var(--cmp-accent, #5b4bf5); color: #ffffff; }
+    [data-state="correct"] & { background: var(--cmp-ok, #198038); border-color: var(--cmp-ok, #198038); color: #ffffff; }
+    [data-state="wrong"] & { background: var(--cmp-bad, #da1e28); border-color: var(--cmp-bad, #da1e28); color: #ffffff; }
+  }
+  &__label { flex: 1; }
+  &__tag {
+    flex: none;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: #ffffff;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    &--ok { color: var(--cmp-ok, #198038); }
+    &--bad { color: var(--cmp-bad, #da1e28); }
   }
 
   &__actions {
     display: flex;
-    justify-content: center;
-    margin-top: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    small { font-size: 0.8125rem; color: var(--cmp-muted, #6f6f76); }
   }
 
   &__result {
-    text-align: center;
-    padding: 1.75rem 1rem;
-    background: #161616;
-    color: #ffffff;
-    border: 1px solid #161616;
-
-    &.is-fail {
-      background: #ffffff;
-      color: #161616;
-      border: 1px solid var(--axr-border-ink);
-      border-left-width: 4px;
-    }
-  }
-
-  &__result-icon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-  }
-
-  &__result-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-  }
-
-  &__result-detail {
-    margin-top: 0.25rem;
-    font-family: var(--axr-mono);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    opacity: 0.85;
-  }
-
-  &__footer {
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1rem 1.25rem;
+    padding: 1.1rem 1.25rem;
+    border-radius: 14px;
+    background: var(--cmp-ok-bg, #defbe6);
+    color: #0e5c28;
+    &.is-fail { background: var(--cmp-warn-bg, #fcf4d6); color: var(--cmp-warn, #8e6a00); }
   }
+  &__score {
+    display: grid;
+    justify-items: center;
+    min-width: 96px;
+    padding: 0.55rem 0.9rem;
+    border-radius: 12px;
+    background: #ffffff;
+    strong { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
+    small { font-size: 0.6875rem; color: var(--cmp-muted, #6f6f76); white-space: nowrap; }
+  }
+  &__result-text { flex: 1; min-width: 160px; }
+  &__result-title { font-size: 1.125rem; font-weight: 700; }
+  &__result-detail { margin-top: 0.15rem; font-size: 0.875rem; opacity: 0.9; }
+  &__result-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 }
 
-// audio bar sticky bottom
+// ── La barra del audio ───────────────────────────────────
+// Flotante y redondeada, centrada abajo. En el móvil, encima de la barra de
+// navegación del campus.
 .axr-audio-bar {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #ffffff;
-  border-top: 1px solid var(--axr-border-ink);
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(760px, calc(100vw - 2rem));
   z-index: 30;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--cmp-line, #e6e6ea);
+  border-radius: 999px;
+  box-shadow: 0 12px 32px rgba(20, 16, 40, 0.14);
 
-  &__inner {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 0.625rem 1.5rem;
+  @media (max-width: 760px) {
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    border-radius: 18px;
   }
+
+  &__inner { padding: 0.45rem 1rem 0.45rem 0.45rem; }
 }
 
 .axr-audio {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
+  gap: 0.85rem;
 
   &__play {
-    width: 38px;
-    height: 38px;
-    background: #161616;
-    color: #ffffff;
-    border: 1px solid #161616;
-    cursor: pointer;
-    font-size: 0.875rem;
+    flex: none;
     display: grid;
     place-items: center;
-
-    &:hover { background: #000000; }
-    &:disabled { background: var(--axr-gray-50); border-color: var(--axr-gray-50); cursor: not-allowed; }
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--cmp-accent, #5b4bf5);
+    color: #ffffff;
+    cursor: pointer;
+    transition: background 0.12s, transform 0.12s;
+    &:hover { background: var(--cmp-accent-ink, #3a2fd0); }
+    &:active { transform: scale(0.96); }
+    &:disabled { background: #c6c6cc; cursor: not-allowed; }
   }
 
   &__meta {
-    display: flex;
-    flex-direction: column;
+    display: grid;
     min-width: 0;
-    flex: 0 0 auto;
-    max-width: 220px;
+    flex: 0 1 220px;
+    @media (max-width: 520px) { display: none; }
   }
-
-  &__label {
-    font-family: var(--axr-mono);
-    font-size: 0.625rem;
-    color: var(--axr-text-helper);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  &__title {
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--axr-text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+  &__label { font-size: 0.6875rem; color: var(--cmp-muted, #6f6f76); }
+  &__title { font-size: 0.8125rem; font-weight: 600; color: var(--cmp-ink, #161616); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   &__bar {
     position: relative;
     flex: 1;
     height: 6px;
-    background: var(--axr-gray-10);
-    border: 1px solid var(--axr-border);
+    border-radius: 999px;
+    background: #ececf0;
     overflow: hidden;
-
-    &-fill {
-      position: absolute;
-      inset: 0 auto 0 0;
-      background: #161616;
-    }
+    cursor: pointer;
+    &:focus-visible { outline: 2px solid var(--cmp-accent, #5b4bf5); outline-offset: 3px; }
+    &-fill { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: linear-gradient(90deg, #6d5cff, #a855f7); }
   }
 
-  &__time {
-    font-family: var(--axr-mono);
-    font-size: 0.6875rem;
-    color: var(--axr-text-helper);
-    font-variant-numeric: tabular-nums;
-  }
+  &__time { flex: none; font-size: 0.75rem; color: var(--cmp-muted, #6f6f76); font-variant-numeric: tabular-nums; }
+}
+
+// Con la barra del audio en pantalla, el botón del asistente sube por
+// encima de ella en vez de taparla.
+body:has(.axr-audio-bar) .axr-assistant-widget {
+  bottom: calc(84px + env(safe-area-inset-bottom));
+  @media (max-width: 760px) { bottom: calc(148px + env(safe-area-inset-bottom)); }
 }
 
 // ══════════════════════════════════════════════════════════
-//  Lecciones de curso relámpago
+//  La misión de los cursos relámpago
 //
-//  El campus es monocromo y de esquinas rectas (ver globals.scss) y esto no
-//  lo rompe: el único color es el naranja de los relámpago, y sólo donde hay
-//  que separar una cosa de otra —la misión y la nota—. Todo lo demás sigue
-//  siendo tinta sobre blanco.
+//  Una tarjeta más debajo de la lección, con el naranja de los relámpago
+//  sólo donde separa una cosa de otra: la cabecera y la nota.
 // ══════════════════════════════════════════════════════════
-
-.axr-lesson {
-  // El gancho: lo primero que se lee, antes del vídeo. Es la frase que el
-  // alumno ya se ha dicho a sí mismo.
-  &__hook {
-    margin: 0 0 1.5rem;
-    padding-left: 1rem;
-    border-left: 3px solid var(--axr-flash, #ff6a3d);
-    font-size: 1.0625rem;
-    font-style: italic;
-    line-height: 1.5;
-    color: var(--axr-text-secondary);
-  }
-
-  &__video {
-    margin: 0 0 1.75rem;
-    background: var(--axr-text);
-
-    video {
-      display: block;
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      background: #000;
-    }
-  }
-  &__video-demo {
-    margin: 0;
-    padding: 0.65rem 0.9rem;
-    background: #fff4ef;
-    border: 1px solid #ffd9cb;
-    border-top: 0;
-    font-size: 0.8125rem;
-    line-height: 1.5;
-    color: #8a3a1c;
-  }
-
-  &__video-soon {
-    margin: 0;
-    padding: 2rem 1.5rem;
-    color: #fff;
-    font-size: 0.9375rem;
-    line-height: 1.6;
-    text-align: center;
-  }
-
-  &__outcome {
-    margin: 0 0 1.5rem;
-    padding: 1rem 1.25rem;
-    border: 1px solid var(--axr-border-ink);
-
-    p { margin: 0.4rem 0 0; font-weight: 600; line-height: 1.5; }
-  }
-
-  &__terms {
-    margin: 0 0 1.75rem;
-
-    ul {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-      margin: 0.5rem 0 0;
-      padding: 0;
-      list-style: none;
-    }
-    li {
-      padding: 0.2rem 0.55rem;
-      border: 1px solid var(--axr-border);
-      background: var(--axr-gray-10);
-      font-family: var(--axr-code);
-      font-size: 0.75rem;
-      color: var(--axr-text-secondary);
-    }
-  }
-
-  // La misión va en su propia rejilla, alineada con la columna de la lección:
-  // la barra lateral se repite vacía para que el texto no se desplace.
-  &--mission {
-    padding-top: 0;
-    .axr-lesson__sidebar { border-right-color: transparent; }
-    @media (max-width: 899px) { .axr-lesson__sidebar { display: none; } }
-  }
-}
-
-// ── La misión ─────────────────────────────────────────────
 .axr-mission {
   --flash: #ff6a3d;
   --flash-deep: #c93b12;
   --flash-soft: #fff4ef;
+  --mission-pad: clamp(1.1rem, 3vw, 1.75rem);
 
-  margin: 0 0 3rem;
-  padding: 1.5rem;
-  border: 2px solid var(--axr-border-ink);
-  background: #fff;
+  margin: 0;
+  padding: var(--mission-pad);
+  border: 1px solid #ffd9cb;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: var(--cmp-shadow);
+  scroll-margin-top: 80px;
 
   &__head {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 0.85rem;
-
-    h2 { margin: 0; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; }
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin: calc(-1 * var(--mission-pad)) calc(-1 * var(--mission-pad)) 1.1rem;
+    padding: 1rem var(--mission-pad);
+    border-radius: 18px 18px 0 0;
+    background: var(--flash-soft);
+    h2 { margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.015em; color: var(--flash-deep); }
   }
   &__time {
-    font-family: var(--axr-mono);
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    background: #ffffff;
     font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--axr-text-helper);
+    font-weight: 600;
+    color: var(--flash-deep);
   }
 
-  &__brief {
-    margin: 0 0 1.25rem;
-    font-size: 1.0625rem;
-    line-height: 1.6;
-  }
+  &__brief { margin: 0 0 1.25rem; font-size: 1.0625rem; line-height: 1.6; }
 
   &__specs {
+    display: grid;
+    gap: 0.2rem;
     margin: 0 0 1.5rem;
     padding: 1rem 1.15rem;
-    background: var(--axr-gray-10);
-
-    dt {
-      font-family: var(--axr-mono);
-      font-size: 0.6875rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--axr-text-helper);
-    }
-    dd {
-      margin: 0.2rem 0 0.85rem;
-      font-size: 0.9375rem;
-      line-height: 1.55;
-      &:last-child { margin-bottom: 0; }
-    }
+    border-radius: 12px;
+    background: #f8f8fa;
+    dt { font-size: 0.8125rem; font-weight: 700; color: var(--cmp-muted, #6f6f76); }
+    dd { margin: 0 0 0.75rem; font-size: 0.9375rem; line-height: 1.55; &:last-child { margin-bottom: 0; } }
+    &:empty { display: none; }
   }
 
   // ── La corrección ──
@@ -655,108 +615,59 @@
     gap: 1.25rem;
     margin: 0 0 1.5rem;
     padding: 1.25rem;
-    border: 1px solid var(--axr-border-ink);
+    border-radius: 14px;
     background: var(--flash-soft);
-
     @media (min-width: 641px) { grid-template-columns: auto 1fr; align-items: start; }
-
     // El color de la nota separa aprobado (80, el umbral del curso) de lo
     // demás sin decir "suspenso": aquí se repite hasta que sale.
-    &[data-score="alto"] { --nota: #1a7f4b; }
+    &[data-score="alto"] { --nota: #198038; background: #defbe6; }
     &[data-score="medio"] { --nota: var(--flash-deep); }
     &[data-score="bajo"] { --nota: #b4234c; }
   }
-
   &__score {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    justify-items: center;
+    align-content: center;
     min-width: 110px;
     padding: 0.85rem 1.25rem;
-    border: 2px solid var(--nota, var(--flash-deep));
-    background: #fff;
-
-    strong {
-      font-family: var(--axr-display);
-      font-size: 2.75rem;
-      font-weight: 700;
-      line-height: 1;
-      color: var(--nota, var(--flash-deep));
-    }
-    span {
-      font-family: var(--axr-mono);
-      font-size: 0.6875rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--axr-text-helper);
-    }
+    border-radius: 14px;
+    background: #ffffff;
+    strong { font-size: 2.75rem; font-weight: 800; line-height: 1; letter-spacing: -0.03em; color: var(--nota, var(--flash-deep)); }
+    span { font-size: 0.75rem; color: var(--cmp-muted, #6f6f76); }
   }
-
   &__feedback {
     display: grid;
     gap: 0.9rem;
-
-    h3 {
-      margin: 0 0 0.3rem;
-      font-family: var(--axr-mono);
-      font-size: 0.6875rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
+    h3 { margin: 0 0 0.3rem; font-size: 0.875rem; font-weight: 700; }
     ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.25rem; }
     li { font-size: 0.9375rem; line-height: 1.5; }
-
-    [data-kind="good"] h3 { color: #1a7f4b; }
+    [data-kind="good"] h3 { color: #198038; }
     [data-kind="watch"] h3 { color: #b4234c; }
     [data-kind="improve"] h3 { color: var(--flash-deep); }
   }
-
-  &__next {
-    margin: 0;
-    padding-top: 0.75rem;
-    border-top: 1px solid var(--axr-border);
-    font-size: 0.9375rem;
-    line-height: 1.5;
-  }
+  &__next { margin: 0; padding-top: 0.75rem; border-top: 1px solid rgba(0, 0, 0, 0.08); font-size: 0.9375rem; line-height: 1.5; }
 
   &__pending {
     margin: 0 0 1.5rem;
     padding: 1.15rem 1.25rem;
-    border: 1px dashed var(--axr-border-strong);
-    background: var(--axr-gray-10);
-
+    border-radius: 14px;
+    background: var(--cmp-warn-bg, #fcf4d6);
+    color: var(--cmp-warn, #8e6a00);
     h3 { margin: 0 0 0.35rem; font-size: 1rem; font-weight: 700; }
-    p { margin: 0; font-size: 0.9375rem; line-height: 1.55; color: var(--axr-text-secondary); }
+    p { margin: 0; font-size: 0.9375rem; line-height: 1.55; }
     ul { margin: 0.6rem 0 0; padding-left: 1.1rem; font-size: 0.9375rem; }
   }
 
-  &__done {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.85rem;
-  }
-  &__sent {
-    margin: 0;
-    font-family: var(--axr-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.04em;
-    color: var(--axr-text-helper);
-  }
+  &__done { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.85rem; }
+  &__sent { margin: 0; font-size: 0.8125rem; color: var(--cmp-muted, #6f6f76); }
 
   // ── El formulario ──
   &__form { display: grid; gap: 1.1rem; }
-
   &__field {
     display: grid;
     gap: 0.35rem;
-
     label { font-size: 0.9375rem; font-weight: 600; }
-    small { font-size: 0.8125rem; line-height: 1.45; color: var(--axr-text-helper); }
-
+    small { font-size: 0.8125rem; line-height: 1.45; color: var(--cmp-muted, #6f6f76); }
     input,
     textarea {
       width: 100%;
@@ -764,28 +675,23 @@
       font: inherit;
       // 16px exactos: por debajo, Safari en iOS hace zoom al enfocar.
       font-size: 16px;
-      color: var(--axr-text);
-      background: #fff;
-      border: 1px solid var(--axr-border-strong);
-      border-radius: 0;
-
-      &:focus {
-        outline: none;
-        border-color: var(--axr-border-ink);
-        box-shadow: inset 0 0 0 1px var(--axr-border-ink);
-      }
+      color: var(--cmp-ink, #161616);
+      background: #ffffff;
+      border: 1px solid var(--cmp-line-strong, #d4d4da);
+      border-radius: 10px;
+      transition: border-color 0.12s, box-shadow 0.12s;
+      &:focus { outline: none; border-color: var(--cmp-accent, #5b4bf5); box-shadow: 0 0 0 3px rgba(91, 75, 245, 0.16); }
     }
     textarea { resize: vertical; min-height: 8rem; line-height: 1.55; }
     input { min-height: 46px; }
   }
-
   &__error {
     margin: 0;
     padding: 0.7rem 0.85rem;
+    border-radius: 10px;
     font-size: 0.875rem;
     color: #b4234c;
     background: #fdeef2;
-    border: 1px solid #f6c9d5;
   }
 }
 
@@ -802,12 +708,16 @@
 .axr-erlik {
   position: fixed;
   right: max(1rem, env(safe-area-inset-right));
-  bottom: calc(76px + env(safe-area-inset-bottom));
+  // Encima de la barra flotante del audio (y, en el móvil, también de la
+  // barra de navegación del campus).
+  bottom: calc(100px + env(safe-area-inset-bottom));
   z-index: 31;
   display: flex;
   align-items: flex-end;
   gap: 0.5rem;
   animation: axr-erlik-in 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+
+  @media (max-width: 760px) { bottom: calc(160px + env(safe-area-inset-bottom)); }
 
   &__bubble {
     width: 112px;

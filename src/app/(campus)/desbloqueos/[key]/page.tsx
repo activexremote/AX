@@ -3,13 +3,17 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+import { Icono } from "@/components/admin/publicaciones/iconos";
 import { CampusHeader } from "@/components/campus-header";
 import { UnlockDownload } from "@/components/campus/unlock-download";
 import { usuarioActual } from "@/lib/data/usuario";
 import { createClient } from "@/lib/supabase/server";
 import { unlockContent, unlockFilename } from "@/lib/relampago/unlocks";
 import { getI18n } from "@/lib/i18n/server";
+import { fmt } from "@/lib/i18n/dictionaries";
+import { campusLessonCopy } from "@/lib/i18n/campus-v2-b";
 import "@/app/(campus)/lecciones/lesson.scss";
+import "./desbloqueo.scss";
 
 // Un material de los que se ganan al terminar un curso relámpago.
 //
@@ -23,8 +27,9 @@ export default async function UnlockPage({ params }: { params: Promise<{ key: st
   const contenido = unlockContent(key);
   if (!contenido) notFound();
 
-  const [supabase, user, { t }] = await Promise.all([createClient(), usuarioActual(), getI18n()]);
+  const [supabase, user, { t, locale }] = await Promise.all([createClient(), usuarioActual(), getI18n()]);
   if (!user) notFound();
+  const c = campusLessonCopy[locale];
 
   // Tres consultas. Para un alumno tienen que decir que sí las dos primeras:
   //  · que el desbloqueo exista y tenga acceso al curso (la RLS de `unlocks`
@@ -50,45 +55,61 @@ export default async function UnlockPage({ params }: { params: Promise<{ key: st
 
   if (!unlock || (!ganado && !revisando)) notFound();
 
+  const fecha = ganado?.granted_at
+    ? new Date(ganado.granted_at).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" })
+    : null;
 
   return (
     <>
       <CampusHeader />
 
-      <div className="axr-lesson-bar">
-        <div className="axr-lesson-bar__inner">
-          <Link href="/">{t.lesson.breadcrumb}</Link>
-          <span aria-hidden>·</span>
+      <div className="axr-unlock">
+        <nav className="axr-lsn__crumbs" aria-label="Breadcrumb">
+          <Link href="/">{t.nav.home}</Link>
+          <span aria-hidden>/</span>
           <span>{t.unlocks.title}</span>
-          <span aria-hidden>·</span>
+          <span aria-hidden>/</span>
           <span>{unlock.title}</span>
-        </div>
-      </div>
+        </nav>
 
-      <div className="axr-lesson axr-lesson--unlock">
-        <main className="axr-lesson__main">
-          <span className="axr-section-tag">
-            {ganado ? t.unlocks.earned : t.unlocks.staffPreview}
+        {/* ── La recompensa ── */}
+        <header className={`axr-unlock__hero${ganado ? "" : " is-preview"}`}>
+          <span className="axr-unlock__badge" aria-hidden>
+            <Icono n={ganado ? "escudo" : "capas"} size={28} />
           </span>
-          <h1>{unlock.title}</h1>
-          {unlock.description && <p className="axr-unlock__lead">{unlock.description}</p>}
-
-          <UnlockDownload
-            filename={unlockFilename(key)}
-            content={contenido}
-            label={t.unlocks.download}
-          />
-
-          <article className="axr-lesson__content prose">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{contenido}</ReactMarkdown>
-          </article>
-
-          <div className="axr-lesson__cta-bar">
-            <Link className="axr-btn axr-btn--ghost" href="/">
-              ← {t.unlocks.backToCampus}
-            </Link>
+          <div className="axr-unlock__hero-text">
+            <span className={`axr-c-pill ${ganado ? "axr-c-pill--ok" : "axr-c-pill--warn"}`}>
+              {ganado ? t.unlocks.earned : t.unlocks.staffPreview}
+            </span>
+            <span className="axr-unlock__eyebrow">{c.unlockEyebrow}</span>
+            <h1>{unlock.title}</h1>
+            {unlock.description && <p className="axr-unlock__lead">{unlock.description}</p>}
+            {fecha ? <small className="axr-unlock__when">{fmt(c.unlockEarnedOn, { date: fecha })}</small> : null}
+            {!ganado ? <small className="axr-unlock__when">{c.unlockStaff}</small> : null}
+            <UnlockDownload
+              filename={unlockFilename(key)}
+              content={contenido}
+              label={t.unlocks.download}
+              copyLabel={c.unlockCopy}
+              copiedLabel={c.unlockCopied}
+            />
+            <small className="axr-unlock__how">{c.unlockHow}</small>
           </div>
-        </main>
+        </header>
+
+        {/* ── El material ── */}
+        <article className="axr-lsn__paper axr-unlock__paper">
+          <span className="axr-lsn__label">{c.unlockWhat}</span>
+          <div className="axr-lsn__content prose">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{contenido}</ReactMarkdown>
+          </div>
+        </article>
+
+        <div className="axr-unlock__back">
+          <Link className="axr-btn axr-btn--ghost" href="/">
+            ← {t.unlocks.backToCampus}
+          </Link>
+        </div>
       </div>
     </>
   );

@@ -4,6 +4,7 @@ import { AssistantWidget } from "@/components/campus/assistant-chat";
 import { hasKnowledge } from "@/lib/asistente/knowledge";
 import { getMyEnrollments } from "@/lib/data/enrollment";
 import { PendingAccess } from "@/components/campus/pending-access";
+import "./campus.scss";
 
 export default async function CampusLayout({ children }: { children: React.ReactNode }) {
   const profile = await getCurrentProfile();
