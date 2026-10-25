@@ -1,0 +1,137 @@
+// ══════════════════════════════════════════════════════════
+//  Guía docente (panel v2)
+// ══════════════════════════════════════════════════════════
+
+.axr-guia-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 1rem 0;
+}
+.axr-guia-search {
+  flex: 1 1 280px;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0 0.7rem;
+  border: 1px solid var(--adm-line-strong);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--adm-muted);
+  &:focus-within { border-color: var(--adm-accent); box-shadow: 0 0 0 3px rgba(91, 75, 245, 0.16); }
+  input { flex: 1; min-width: 0; border: 0; padding: 0.55rem 0; font: inherit; font-size: 0.875rem; background: transparent; outline: none; color: var(--adm-ink); }
+}
+.axr-guia-filter {
+  display: inline-flex;
+  flex-wrap: wrap;
+  padding: 3px;
+  border-radius: 9px;
+  background: #efeff3;
+  button {
+    padding: 0.35rem 0.75rem;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    font: inherit;
+    font-size: 0.8125rem;
+    color: var(--adm-muted);
+    cursor: pointer;
+    &[aria-pressed="true"] { background: #ffffff; color: var(--adm-ink); font-weight: 600; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
+  }
+}
+
+// Cifras: el tipo de archivo, en pastillas
+.axr-guia-stat-types { grid-column: span 2; @media (max-width: 640px) { grid-column: auto; } }
+.axr-guia-stat-types__list { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.35rem; }
+
+// Un color por tipo de archivo: el mismo en la cifra, la tarjeta y la fila.
+.axr-guia-type {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background: #ececf0;
+  color: #3d3d44;
+  &--pdf { background: #fff1f1; color: #b81921; }
+  &--slides { background: #fff2e8; color: #b24a00; }
+  &--doc { background: #edf5ff; color: #0043ce; }
+  &--sheet { background: #defbe6; color: #0e6027; }
+  &--md { background: #f2f2f5; color: #525258; }
+}
+
+// ── Tarjeta de módulo ──
+.axr-guia-list { display: grid; gap: 0.6rem; }
+
+.axr-guia-card {
+  background: #ffffff;
+  border: 1px solid var(--adm-line);
+  border-radius: var(--adm-radius);
+  box-shadow: var(--adm-shadow);
+  overflow: hidden;
+
+  summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 0.9rem;
+    padding: 0.9rem 1.1rem;
+    cursor: pointer;
+    list-style: none;
+    &::-webkit-details-marker { display: none; }
+    &:hover { background: #fafafb; }
+  }
+  &[open] summary { border-bottom: 1px solid var(--adm-line); }
+  &[open] &__chev { transform: rotate(90deg); }
+
+  &__chev { flex: none; display: inline-grid; color: var(--adm-muted); transition: transform 0.15s; }
+  &__title {
+    flex: 1 1 320px;
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    strong { font-size: 0.9375rem; font-weight: 650; }
+  }
+  &__code { flex: none; font-size: 0.75rem; font-weight: 600; color: var(--adm-muted); }
+  &__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; }
+  &__count { margin-left: 0.25rem; font-size: 0.75rem; color: var(--adm-muted); }
+
+  &__body { display: grid; gap: 1.1rem; padding: 1rem 1.1rem 1.15rem; }
+}
+
+.axr-guia-section {
+  h3 { margin: 0 0 0.45rem; font-size: 0.8125rem; font-weight: 650; color: #3d3d44; }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; }
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.5rem 0;
+    border-top: 1px solid var(--adm-line);
+    &:first-child { border-top: 0; }
+    .axr-btn { flex: none; }
+  }
+}
+
+.axr-guia-file {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  background: #ececf0;
+  color: #3d3d44;
+  &--pdf { background: #fff1f1; color: #b81921; }
+  &--slides { background: #fff2e8; color: #b24a00; }
+  &--doc { background: #edf5ff; color: #0043ce; }
+  &--sheet { background: #defbe6; color: #0e6027; }
+  &__label { flex: 1; min-width: 0; font-size: 0.8125rem; line-height: 1.4; }
+}

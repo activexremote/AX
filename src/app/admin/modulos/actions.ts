@@ -17,7 +17,10 @@ async function assertStaff() {
   return supabase;
 }
 
-const COURSE_KEYS = ["core", "remote-professional", "remote-founder"] as const;
+// Todos los cursos del enum `course_key`. Antes faltaba "web-abc": guardar un
+// módulo del curso relámpago lo pasaba sin avisar al núcleo común, y con él
+// a la vista de todos los alumnos del programa.
+const COURSE_KEYS = ["core", "remote-professional", "remote-founder", "web-abc"] as const;
 
 /** El curso llega de un <select>, pero un formulario se puede reenviar a mano:
  *  un valor inventado aquí rompería el filtro de acceso, así que se descarta. */

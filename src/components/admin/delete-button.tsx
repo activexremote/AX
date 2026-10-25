@@ -9,10 +9,13 @@ export function DeleteButton({
   action,
   label,
   confirmLabel,
+  small = false,
 }: {
   action: () => Promise<{ ok?: boolean; error?: string } | void>;
   label?: string;
   confirmLabel?: string;
+  /** Tamaño compacto, para las filas de una lista. */
+  small?: boolean;
 }) {
   const { t } = useI18n();
   const router = useRouter();
@@ -20,10 +23,11 @@ export function DeleteButton({
   const [pending, startTransition] = useTransition();
   const deleteLabel = label ?? t.admin.delete;
   const confirm = confirmLabel ?? t.admin.confirmDelete;
+  const tam = small ? " axr-btn--small" : "";
 
   if (!armed) {
     return (
-      <button type="button" className="axr-btn axr-btn--ghost" onClick={() => setArmed(true)}>
+      <button type="button" className={`axr-btn axr-btn--ghost axr-btn--delete${tam}`} onClick={() => setArmed(true)}>
         {deleteLabel}
       </button>
     );
@@ -33,7 +37,7 @@ export function DeleteButton({
     <span style={{ display: "inline-flex", gap: "0.375rem" }}>
       <button
         type="button"
-        className="axr-btn axr-btn--danger"
+        className={`axr-btn axr-btn--danger${tam}`}
         disabled={pending}
         onClick={() =>
           startTransition(async () => {
@@ -45,8 +49,8 @@ export function DeleteButton({
       >
         {confirm}
       </button>
-      <button type="button" className="axr-btn axr-btn--ghost" onClick={() => setArmed(false)}>
-        Cancelar
+      <button type="button" className={`axr-btn axr-btn--ghost${tam}`} onClick={() => setArmed(false)}>
+        {t.common.cancel}
       </button>
     </span>
   );

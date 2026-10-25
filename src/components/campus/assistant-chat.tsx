@@ -19,7 +19,7 @@ type Message =
  * que recuerde el hilo. Vive sólo en el navegador —al recargar se empieza de
  * cero—; lo que se pregunta sí queda en el servidor para el equipo.
  */
-export function AssistantChat({ onClose }: { onClose?: () => void }) {
+export function AssistantChat({ onClose, enfocar = true }: { onClose?: () => void; /** Al abrirse, el cursor al campo. No en el panel, donde el chat está dentro de la página: allí la hacía saltar hasta él. */ enfocar?: boolean }) {
   const { t } = useI18n();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -33,8 +33,8 @@ export function AssistantChat({ onClose }: { onClose?: () => void }) {
   }, [messages, busy]);
 
   useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+    if (enfocar) inputRef.current?.focus();
+  }, [enfocar]);
 
   async function send(text: string) {
     const question = text.trim();

@@ -10,6 +10,8 @@ import {
 } from "@/app/admin/slack/digest-actions";
 import { useI18n } from "@/lib/i18n/provider";
 
+// Los tres envíos que también hace el cron, a mano. Cada uno es una tarjeta
+// pulsable; el resultado sale debajo.
 export function DigestTriggers() {
   const { t } = useI18n();
   const router = useRouter();
@@ -27,18 +29,21 @@ export function DigestTriggers() {
 
   return (
     <div>
-      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-        <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={() => run(triggerStudentDigest)}>
-          📊 {t.slack.digestStudents}
+      <div className="axr-slack-digests">
+        <button type="button" disabled={pending} onClick={() => run(triggerStudentDigest)}>
+          <span aria-hidden>📊</span>
+          <strong>{t.slack.digestStudents}</strong>
         </button>
-        <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={() => run(triggerTeacherDigest)}>
-          🧭 {t.slack.digestTeachers}
+        <button type="button" disabled={pending} onClick={() => run(triggerTeacherDigest)}>
+          <span aria-hidden>🧭</span>
+          <strong>{t.slack.digestTeachers}</strong>
         </button>
-        <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={() => run(triggerReminders)}>
-          ⏰ {t.slack.digestReminders}
+        <button type="button" disabled={pending} onClick={() => run(triggerReminders)}>
+          <span aria-hidden>⏰</span>
+          <strong>{t.slack.digestReminders}</strong>
         </button>
       </div>
-      {msg ? <p style={{ fontSize: "0.8125rem", marginBottom: 0 }}>{msg}</p> : null}
+      {msg ? <p className="axr-adm-note" style={{ marginTop: "0.75rem", marginBottom: 0 }}>{msg}</p> : null}
     </div>
   );
 }

@@ -24,11 +24,19 @@ export async function saveSlackSettings(formData: FormData) {
     (key) => formData.get(`event:${key}`) !== "on",
   );
 
+  // El formulario nunca recibe el token guardado: vacío significa «déjalo
+  // como está». Para quitarlo hay una casilla aparte (como la clave de OpenAI).
+  const token = ((formData.get("bot_token") as string) || "").trim();
+  const borrarToken = formData.get("clear_token") === "on";
+  const cambioToken = borrarToken ? { bot_token: null } : token ? { bot_token: token } : {};
+
   const { error } = await admin
     .from("slack_settings")
     .update({
       enabled: formData.get("enabled") === "on",
-      bot_token: ((formData.get("bot_token") as string) || "").trim() || null,
+      ...cambioToken,
+      // Un token nuevo (o ninguno) invalida la última prueba.
+      ...(borrarToken || token ? { last_test_ok: null, last_test_at: null, last_test_detail: null } : {}),
       channel_general: ((formData.get("channel_general") as string) || "").trim() || null,
       channel_alumnos: ((formData.get("channel_alumnos") as string) || "").trim() || null,
       channel_profesores: ((formData.get("channel_profesores") as string) || "").trim() || null,

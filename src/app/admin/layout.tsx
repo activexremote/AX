@@ -1,9 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { BrandMark } from "@/components/brand-mark";
-import { LocaleToggle } from "@/components/locale-toggle";
-import { getCurrentProfile } from "@/lib/data/profile";
+import { MenuAdmin, type GrupoMenu } from "@/components/admin/menu-admin";
+import { getCurrentProfile, userInitials } from "@/lib/data/profile";
 import { getI18n } from "@/lib/i18n/server";
 import { pubCopy } from "@/lib/i18n/publicaciones";
 import { banCopy } from "@/lib/i18n/banners";
@@ -16,65 +14,81 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (profile.role !== "administrador" && profile.role !== "profesor") {
     redirect("/");
   }
-  const [{ t, locale }, pendientes] = await Promise.all([
-    getI18n(),
-    profile.role === "administrador" ? contarPendientes() : null,
-  ]);
-  const roleLabel = t.common[`role_${profile.role}` as const];
+  const admin = profile.role === "administrador";
+  const [{ t, locale }, pendientes] = await Promise.all([getI18n(), admin ? contarPendientes() : null]);
   const pc = pubCopy[locale];
+  const bc = banCopy[locale];
+  const a = t.admin;
+
+  // El profesorado ve lo suyo (formación); el resto es del equipo.
+  const grupos: GrupoMenu[] = [
+    { items: [{ href: "/admin", label: a.navSummary, icon: "inicio", exact: true }] },
+    {
+      label: a.navGroupTeaching,
+      items: [
+        { href: "/admin/modulos", label: a.navModulesShort, icon: "libro" },
+        { href: "/admin/tareas", label: a.navTasksShort, icon: "tareas" },
+        { href: "/admin/guia-profesores", label: a.navTeacherGuideShort, icon: "birrete" },
+        { href: "/admin/asistente", label: a.navAssistantShort, icon: "chat" },
+      ],
+    },
+    ...(admin
+      ? ([
+          {
+            label: a.navGroupStudents,
+            items: [
+              { href: "/admin/matriculas", label: a.navOrdersShort, icon: "tarjeta" },
+              { href: "/admin/usuarios", label: a.navUsers, icon: "usuarios" },
+            ],
+          },
+          {
+            label: a.navGroupMarketing,
+            items: [
+              {
+                href: "/admin/publicaciones",
+                label: pc.nav,
+                icon: "megafono",
+                badge: pendientes?.revisar || undefined,
+                tono: "alerta",
+                sub: [
+                  { href: "/admin/publicaciones", label: pc.tabSummary },
+                  { href: "/admin/publicaciones/revisar", label: pc.uReview, badge: pendientes?.revisar || undefined, tono: "alerta" },
+                  { href: "/admin/publicaciones/calendario", label: pc.tabCalendar },
+                  { href: "/admin/publicaciones/nevera", label: pc.tabFridge, badge: pendientes?.nevera || undefined },
+                  { href: "/admin/publicaciones/nueva", label: `+ ${pc.new}` },
+                ],
+              },
+              {
+                href: "/admin/banners",
+                label: bc.nav,
+                icon: "imagen",
+                sub: [
+                  { href: "/admin/banners", label: a.navCampaigns },
+                  { href: "/admin/banners/clonar", label: bc.tabClone },
+                  { href: "/admin/banners/normas", label: bc.tabRules },
+                  { href: "/admin/banners/nueva", label: `+ ${bc.new}` },
+                ],
+              },
+            ],
+          },
+          {
+            label: a.navGroupSettings,
+            items: [
+              { href: "/admin/ia", label: a.navAi, icon: "chispa" },
+              { href: "/admin/slack", label: a.navSlackShort, icon: "almohadilla" },
+            ],
+          },
+        ] satisfies GrupoMenu[])
+      : []),
+  ];
 
   return (
     <div className="axr-admin">
-      <aside className="axr-admin__sidebar">
-        <Link href="/" className="axr-admin__logo">
-          <BrandMark size={20} className="axr-admin__logo-mark" />
-          ActiveXRemote
-        </Link>
-        <div className="axr-admin__role">{t.admin.panel} · {roleLabel}</div>
-        <nav className="axr-admin__nav">
-          <Link href="/admin">{t.admin.navSummary}</Link>
-          <Link href="/admin/modulos">{t.admin.navModules}</Link>
-          <Link href="/admin/tareas">{t.admin.navTasks}</Link>
-          <Link href="/admin/asistente">{t.admin.navAssistant}</Link>
-          <Link href="/admin/guia-profesores">{t.admin.navTeacherGuide}</Link>
-          {profile.role === "administrador" ? (
-            <>
-              <Link href="/admin/matriculas">{t.admin.navOrders}</Link>
-              <Link href="/admin/usuarios">{t.admin.navUsers}</Link>
-              <Link href="/admin/slack">{t.admin.navSlack}</Link>
-              {/* Sin clave en el diccionario general: la página es nueva y su
-                  texto vive en lib/i18n/editor.ts. */}
-              <Link href="/admin/ia">IA</Link>
-              {/* Publicaciones lleva sus apartados a la vista, con lo que
-                  espera en cada uno: nada de secciones escondidas. */}
-              <Link href="/admin/publicaciones">{pc.nav}</Link>
-              <div className="axr-admin__sub">
-                <Link href="/admin/publicaciones/revisar">
-                  {pc.uReview}
-                  {pendientes!.revisar ? <span className="axr-admin__badge axr-admin__badge--alert">{pendientes!.revisar}</span> : null}
-                </Link>
-                <Link href="/admin/publicaciones/calendario">{pc.tabCalendar}</Link>
-                <Link href="/admin/publicaciones/nevera">
-                  {pc.tabFridge}
-                  {pendientes!.nevera ? <span className="axr-admin__badge">{pendientes!.nevera}</span> : null}
-                </Link>
-                <Link href="/admin/publicaciones/nueva">+ {pc.new}</Link>
-              </div>
-              {/* Anuncios para Meta: misma forma que publicaciones. */}
-              <Link href="/admin/banners">{banCopy[locale].nav}</Link>
-              <div className="axr-admin__sub">
-                <Link href="/admin/banners/clonar">{banCopy[locale].tabClone}</Link>
-                <Link href="/admin/banners/normas">{banCopy[locale].tabRules}</Link>
-                <Link href="/admin/banners/nueva">+ {banCopy[locale].new}</Link>
-              </div>
-            </>
-          ) : null}
-        </nav>
-        <div className="axr-admin__back">
-          <LocaleToggle tone="dark" />
-          <Link href="/">← {t.admin.back}</Link>
-        </div>
-      </aside>
+      <MenuAdmin
+        grupos={grupos}
+        persona={{ nombre: profile.full_name || profile.email || "—", rol: t.common[`role_${profile.role}` as const], iniciales: userInitials(profile) }}
+        textos={{ open: a.navOpenMenu, close: a.navCloseMenu, viewCampus: a.navViewCampus, panel: a.panel }}
+      />
       <main className="axr-admin__main">{children}</main>
     </div>
   );

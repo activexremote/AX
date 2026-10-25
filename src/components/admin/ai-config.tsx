@@ -26,7 +26,7 @@ export function AiConfig({ settings, copy }: { settings: PublicAiSettings; copy:
   const [pending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [test, setTest] = useState<string | null>(null);
+  const [test, setTest] = useState<{ ok: boolean; detail: string } | null>(null);
 
   function handleSave(formData: FormData) {
     setError(null);
@@ -46,7 +46,7 @@ export function AiConfig({ settings, copy }: { settings: PublicAiSettings; copy:
     setTest(null);
     startTransition(async () => {
       const r = await testAiConnection();
-      setTest((r.ok ? "✓ " : "✕ ") + r.detail);
+      setTest(r);
       router.refresh();
     });
   }
@@ -63,13 +63,14 @@ export function AiConfig({ settings, copy }: { settings: PublicAiSettings; copy:
       {error ? <div className="axr-login__error">{error}</div> : null}
       {saved ? <div className="axr-login__ok">{copy.sSaved}</div> : null}
 
-      <div className="axr-form__row">
-        <label style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-          <input type="checkbox" name="enabled" defaultChecked={settings.enabled} style={{ width: "auto" }} />
-          {copy.sEnabled}
-        </label>
-        <small>{copy.sEnabledHint}</small>
-      </div>
+      <label className="axr-ia-switch">
+        <input type="checkbox" name="enabled" defaultChecked={settings.enabled} />
+        <span className="axr-ia-switch__track" aria-hidden />
+        <span>
+          <strong>{copy.sEnabled}</strong>
+          <small>{copy.sEnabledHint}</small>
+        </span>
+      </label>
 
       <div className="axr-form__row">
         <label htmlFor="openai_api_key">{copy.sKey}</label>
@@ -87,12 +88,10 @@ export function AiConfig({ settings, copy }: { settings: PublicAiSettings; copy:
       </div>
 
       {settings.source === "panel" ? (
-        <div className="axr-form__row">
-          <label style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            <input type="checkbox" name="clear_key" style={{ width: "auto" }} />
-            {copy.sClear}
-          </label>
-        </div>
+        <label className="axr-ia-check">
+          <input type="checkbox" name="clear_key" />
+          {copy.sClear}
+        </label>
       ) : null}
 
       <div className="axr-form__row">
@@ -106,22 +105,16 @@ export function AiConfig({ settings, copy }: { settings: PublicAiSettings; copy:
         <small>{copy.sModelHint}</small>
       </div>
 
-      <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", alignItems: "center" }}>
-        <button type="submit" className="axr-btn" disabled={pending}>
-          {pending ? copy.sSaving : copy.sSave}
-        </button>
+      {test ? <p className={`axr-adm-note axr-adm-note--${test.ok ? "ok" : "bad"}`}>{test.detail}</p> : null}
+
+      <div className="axr-form__actions">
         <button type="button" className="axr-btn axr-btn--ghost" onClick={handleTest} disabled={pending}>
           {pending ? copy.sTesting : copy.sTest}
         </button>
-        {test ? <span style={{ fontSize: "0.8125rem" }}>{test}</span> : null}
+        <button type="submit" className="axr-btn" disabled={pending}>
+          {pending ? copy.sSaving : copy.sSave}
+        </button>
       </div>
-
-      <p style={{ fontSize: "0.75rem", color: "var(--axr-text-helper)", marginBottom: 0 }}>
-        {copy.sLastTest}:{" "}
-        {settings.lastTestAt
-          ? `${settings.lastTestOk ? "✓" : "✕"} ${settings.lastTestDetail ?? ""} (${new Date(settings.lastTestAt).toLocaleString()})`
-          : copy.sNeverTested}
-      </p>
     </form>
   );
 }

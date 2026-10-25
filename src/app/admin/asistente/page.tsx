@@ -1,12 +1,27 @@
+import { FaqLista } from "@/components/admin/faq-lista";
 import { KbQuestionActions, KbRowActions, KbSourceButton } from "@/components/admin/kb-source-editor";
+import { Icono } from "@/components/admin/publicaciones/iconos";
 import { AssistantChat } from "@/components/campus/assistant-chat";
+import { adminCCopy } from "@/lib/i18n/admin-v2-c";
+import { fill } from "@/lib/i18n/publicaciones";
 import { getI18n } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import type { AssistantQuestion, KbSource } from "@/lib/supabase/types";
+import "./asistente.scss";
+
+// ══════════════════════════════════════════════════════════
+//  Asistente del campus
+//
+//  Arriba, lo que pide trabajo: las preguntas que el chat no supo contestar,
+//  como una bandeja (cada una es una FAQ que falta). Después, lo que el chat
+//  sabe (FAQs y documentos) y, al final, dónde probarlo y lo último que se
+//  ha preguntado.
+// ══════════════════════════════════════════════════════════
 
 export default async function AdminAssistantPage() {
   const supabase = await createClient();
   const { t, locale } = await getI18n();
+  const c = adminCCopy[locale].asistente;
 
   const cols = "id, kind, course, title, file_name, active, chunks_count, created_at";
   const [{ data: faqRows }, { data: docRows }, { data: unanswered }, { data: recent }] = await Promise.all([
@@ -40,8 +55,6 @@ export default async function AdminAssistantPage() {
   const date = (iso: string) => new Date(iso).toLocaleString(locale, { dateStyle: "short", timeStyle: "short" });
   const author = (q: WithAuthor) => q.profiles?.full_name ?? q.profiles?.email ?? "—";
 
-  const muted = { textAlign: "center", color: "var(--axr-text-helper)" } as const;
-
   return (
     <div className="axr-admin-page">
       <div className="axr-admin-page__header">
@@ -49,161 +62,153 @@ export default async function AdminAssistantPage() {
           <h1>{t.kb.title}</h1>
           <p>{t.kb.subtitle}</p>
         </div>
-      </div>
-
-      <div className="axr-progress-kpis">
-        <div className="axr-kpi">
-          <div className="axr-kpi__label">{t.kb.kpiFaqs}</div>
-          <div className="axr-kpi__value">{faqs.length}</div>
-        </div>
-        <div className="axr-kpi">
-          <div className="axr-kpi__label">{t.kb.kpiDocs}</div>
-          <div className="axr-kpi__value">{docs.length}</div>
-        </div>
-        <div className="axr-kpi">
-          <div className="axr-kpi__label">{t.kb.kpiChunks}</div>
-          <div className="axr-kpi__value">{chunks}</div>
-        </div>
-        <div className="axr-kpi">
-          <div className="axr-kpi__label">{t.kb.kpiUnanswered}</div>
-          <div className="axr-kpi__value">{pending.length}</div>
-        </div>
-      </div>
-
-      {pending.length > 0 ? (
-        <div className="axr-admin-card">
-          <h2>{t.kb.unansweredTitle}</h2>
-          <p style={{ fontSize: "0.8125rem", color: "var(--axr-text-helper)", marginTop: 0 }}>{t.kb.unansweredHint}</p>
-          <table className="axr-admin-table">
-            <thead>
-              <tr>
-                <th>{t.kb.colQuestion}</th>
-                <th>{t.admin.colStudent}</th>
-                <th>{t.kb.colDate}</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {pending.map((q) => (
-                <tr key={q.id}>
-                  <td>
-                    <strong>{q.question}</strong>
-                    {q.answer ? (
-                      <details style={{ marginTop: "0.25rem", fontSize: "0.75rem", color: "var(--axr-text-secondary)" }}>
-                        <summary>{t.kb.botSaid}</summary>
-                        <p style={{ whiteSpace: "pre-wrap", margin: "0.25rem 0 0" }}>{q.answer}</p>
-                      </details>
-                    ) : null}
-                  </td>
-                  <td>{author(q)}</td>
-                  <td>{date(q.created_at)}</td>
-                  <td><KbQuestionActions id={q.id} question={q.question} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : null}
-
-      <div className="axr-admin-card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "1rem" }}>
-          <h2 style={{ flex: 1 }}>{t.kb.faqsTitle}</h2>
+        <div>
+          <KbSourceButton kind="documento" label={t.kb.newDoc} variant="ghost" />
           <KbSourceButton kind="faq" label={`+ ${t.kb.newFaq}`} />
         </div>
-        <table className="axr-admin-table">
-          <thead>
-            <tr>
-              <th>{t.kb.colQuestion}</th>
-              <th>{t.kb.colCourse}</th>
-              <th>{t.kb.colActive}</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {faqs.length === 0 ? <tr><td colSpan={4} style={muted}>{t.kb.noFaqs}</td></tr> : null}
-            {faqs.map((s) => (
-              <tr key={s.id} style={s.active ? undefined : { opacity: 0.55 }}>
-                <td>
-                  <strong>{s.title}</strong>
-                  <div style={{ fontSize: "0.75rem", color: "var(--axr-text-secondary)", marginTop: "0.25rem" }}>
-                    {s.body.length > 160 ? `${s.body.slice(0, 160)}…` : s.body}
+      </div>
+
+      <div className="axr-adm-stats">
+        <div className="axr-adm-stat">
+          <span className="axr-adm-stat__label">
+            <Icono n="chat" /> {t.kb.kpiFaqs}
+          </span>
+          <span className="axr-adm-stat__value">{faqs.length}</span>
+          <span className="axr-adm-stat__hint">{fill(c.statActive, faqs.filter((f) => f.active).length)}</span>
+        </div>
+        <div className="axr-adm-stat">
+          <span className="axr-adm-stat__label">
+            <Icono n="libro" /> {t.kb.kpiDocs}
+          </span>
+          <span className="axr-adm-stat__value">{docs.length}</span>
+          <span className="axr-adm-stat__hint">{fill(c.statActiveDocs, docs.filter((d) => d.active).length)}</span>
+        </div>
+        <div className="axr-adm-stat">
+          <span className="axr-adm-stat__label">
+            <Icono n="capas" /> {t.kb.kpiChunks}
+          </span>
+          <span className="axr-adm-stat__value">{chunks}</span>
+          <span className="axr-adm-stat__hint">{c.statIndexed}</span>
+        </div>
+        <a href="#bandeja" className={`axr-adm-stat${pending.length ? " axr-kb-stat--warn" : ""}`}>
+          <span className="axr-adm-stat__label">
+            <Icono n={pending.length ? "aviso" : "ok"} /> {t.kb.kpiUnanswered}
+          </span>
+          <span className="axr-adm-stat__value">{pending.length}</span>
+          <span className="axr-adm-stat__hint">{c.statInbox}</span>
+        </a>
+      </div>
+
+      {/* ── La bandeja ── */}
+      <section id="bandeja" className="axr-admin-card">
+        <h2>{c.inboxTitle}</h2>
+        {pending.length ? (
+          <>
+            <p className="axr-kb-lead">{t.kb.unansweredHint}</p>
+            <ul className="axr-kb-inbox">
+              {pending.map((q) => (
+                <li key={q.id}>
+                  <span className="axr-kb-inbox__icon" aria-hidden>
+                    <Icono n="chat" />
+                  </span>
+                  <div className="axr-kb-inbox__main">
+                    <strong>{q.question}</strong>
+                    <small>{c.askedBy.replace("{who}", author(q)).replace("{when}", date(q.created_at))}</small>
+                    {q.answer ? (
+                      <details>
+                        <summary>{t.kb.botSaid}</summary>
+                        <p>{q.answer}</p>
+                      </details>
+                    ) : null}
                   </div>
-                </td>
-                <td>{s.course ?? t.kb.allCourses}</td>
-                <td>{s.active ? "✓" : "—"}</td>
-                <td><KbRowActions source={s} /></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                  <KbQuestionActions id={q.id} question={q.question} />
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <div className="axr-adm-empty">
+            <Icono n="ok" size={26} />
+            <span>{c.inboxEmpty}</span>
+          </div>
+        )}
+      </section>
 
-      <div className="axr-admin-card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "1rem" }}>
-          <h2 style={{ flex: 1 }}>{t.kb.docsTitle}</h2>
-          <KbSourceButton kind="documento" label={`+ ${t.kb.newDoc}`} />
+      {/* ── FAQs ── */}
+      <section className="axr-admin-card">
+        <div className="axr-kb-head">
+          <h2>{t.kb.faqsTitle}</h2>
+          <KbSourceButton kind="faq" label={`+ ${t.kb.newFaq}`} variant="ghost" small />
         </div>
-        <table className="axr-admin-table">
-          <thead>
-            <tr>
-              <th>{t.kb.colTitle}</th>
-              <th>{t.kb.colCourse}</th>
-              <th>{t.kb.colChunks}</th>
-              <th>{t.kb.colActive}</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {docs.length === 0 ? <tr><td colSpan={5} style={muted}>{t.kb.noDocs}</td></tr> : null}
+        <FaqLista faqs={faqs} copy={c} allCourses={t.kb.allCourses} empty={t.kb.noFaqs} />
+      </section>
+
+      {/* ── Documentos ── */}
+      <section className="axr-admin-card">
+        <div className="axr-kb-head">
+          <h2>{t.kb.docsTitle}</h2>
+          <KbSourceButton kind="documento" label={`+ ${t.kb.newDoc}`} variant="ghost" small />
+        </div>
+        {docs.length ? (
+          <ul className="axr-kb-list">
             {docs.map((s) => (
-              <tr key={s.id} style={s.active ? undefined : { opacity: 0.55 }}>
-                <td>
+              <li key={s.id} className={s.active ? undefined : "is-off"}>
+                <span className="axr-kb-doc" aria-hidden>
+                  {(s.file_name?.split(".").pop() ?? "txt").slice(0, 4).toUpperCase()}
+                </span>
+                <div className="axr-kb-list__main">
                   <strong>{s.title}</strong>
-                  {s.file_name ? (
-                    <div style={{ fontSize: "0.75rem", color: "var(--axr-text-helper)" }}>{s.file_name}</div>
-                  ) : null}
-                </td>
-                <td>{s.course ?? t.kb.allCourses}</td>
-                <td>{s.chunks_count}</td>
-                <td>{s.active ? "✓" : "—"}</td>
-                <td><KbRowActions source={s} /></td>
-              </tr>
+                  {s.file_name ? <p>{s.file_name}</p> : null}
+                  <div className="axr-kb-list__meta">
+                    <span className={`axr-adm-pill${s.active ? " axr-adm-pill--ok" : ""}`}>{s.active ? c.activeDoc : c.inactiveDoc}</span>
+                    <span className="axr-adm-pill">{s.course ?? t.kb.allCourses}</span>
+                    <span className="axr-adm-pill axr-adm-pill--accent">{fill(c.chunks, s.chunks_count)}</span>
+                  </div>
+                </div>
+                <KbRowActions source={s} />
+              </li>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </ul>
+        ) : (
+          <div className="axr-adm-empty">
+            <Icono n="libro" size={26} />
+            <span>{t.kb.noDocs}</span>
+          </div>
+        )}
+      </section>
 
-      <div className="axr-admin-card">
-        <h2>{t.kb.tryTitle}</h2>
-        <p style={{ fontSize: "0.8125rem", color: "var(--axr-text-helper)", marginTop: 0 }}>{t.kb.tryHint}</p>
-        <div className="axr-assistant-inline">
-          <AssistantChat />
-        </div>
-      </div>
+      <div className="axr-kb-grid">
+        <section className="axr-admin-card">
+          <h2>{t.kb.tryTitle}</h2>
+          <p className="axr-kb-lead">{t.kb.tryHint}</p>
+          <div className="axr-assistant-inline">
+            <AssistantChat enfocar={false} />
+          </div>
+        </section>
 
-      <div className="axr-admin-card">
-        <h2>{t.kb.recentTitle}</h2>
-        <table className="axr-admin-table">
-          <thead>
-            <tr>
-              <th>{t.kb.colQuestion}</th>
-              <th>{t.admin.colStudent}</th>
-              <th>{t.kb.colAnswered}</th>
-              <th>{t.kb.colDate}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {latest.length === 0 ? <tr><td colSpan={4} style={muted}>{t.kb.noQuestions}</td></tr> : null}
-            {latest.map((q) => (
-              <tr key={q.id}>
-                <td>{q.question}</td>
-                <td>{author(q)}</td>
-                <td>{q.answered ? "✓" : "—"}</td>
-                <td>{date(q.created_at)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <section className="axr-admin-card">
+          <h2>{t.kb.recentTitle}</h2>
+          {latest.length ? (
+            <ul className="axr-kb-recent">
+              {latest.map((q) => (
+                <li key={q.id}>
+                  <div>
+                    <span>{q.question}</span>
+                    <small>
+                      {author(q)} · {date(q.created_at)}
+                    </small>
+                  </div>
+                  <span className={`axr-adm-pill axr-adm-pill--${q.answered ? "ok" : "warn"}`}>{q.answered ? c.answered : c.unanswered}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="axr-adm-empty">
+              <Icono n="chat" size={26} />
+              <span>{t.kb.noQuestions}</span>
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );

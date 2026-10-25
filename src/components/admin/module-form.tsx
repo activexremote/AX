@@ -4,13 +4,15 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { createModule, updateModule } from "@/app/admin/modulos/actions";
+import { adminACopy } from "@/lib/i18n/admin-v2-a";
 import { useI18n } from "@/lib/i18n/provider";
 import type { Module } from "@/lib/supabase/types";
 
 const ICONS = ["Education", "Laptop", "Chat", "Time", "Collaborate", "Events", "GroupSecurity", "Favorite", "UserMultiple", "ChartLine"];
 
 export function ModuleForm({ module, onDone }: { module?: Module; onDone?: () => void }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const relampago = adminACopy[locale].courseRelampago;
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +52,7 @@ export function ModuleForm({ module, onDone }: { module?: Module; onDone?: () =>
           <option value="core">{t.adminForm.courseCore}</option>
           <option value="remote-professional">{t.adminForm.courseProfessional}</option>
           <option value="remote-founder">{t.adminForm.courseFounder}</option>
+          <option value="web-abc">{relampago}</option>
         </select>
       </div>
       <div className="axr-form__row">
