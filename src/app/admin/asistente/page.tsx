@@ -182,7 +182,7 @@ export default async function AdminAssistantPage() {
           <h2>{t.kb.tryTitle}</h2>
           <p className="axr-kb-lead">{t.kb.tryHint}</p>
           <div className="axr-assistant-inline">
-            <AssistantChat />
+            <AssistantChat enfocar={false} />
           </div>
         </section>
 

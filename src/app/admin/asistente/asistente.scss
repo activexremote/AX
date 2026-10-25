@@ -200,3 +200,16 @@
   .axr-kb-list .axr-kb-actions { flex: 1 1 100%; justify-content: flex-start; }
   .axr-kb-inbox .axr-kb-actions { padding-left: calc(32px + 0.85rem); }
 }
+
+// El chat de prueba es el mismo componente que ven los alumnos en el campus
+// (cuadrado, a juego con el campus). Dentro del panel se suaviza para que
+// no desentone con las tarjetas de alrededor; en el campus no cambia nada.
+.axr-admin .axr-assistant {
+  border-radius: 12px;
+  overflow: hidden;
+  border-color: var(--adm-line);
+  textarea,
+  button { border-radius: 8px; }
+  .axr-assistant__msg { border-radius: 10px; }
+  .axr-assistant__suggestions button { border-radius: 999px; }
+}
