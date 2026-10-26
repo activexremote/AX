@@ -436,6 +436,10 @@ export interface AdCampaign {
   reference_analysis: AdReferenceAnalysis | null;
   /** Pedida en los dos idiomas: `language` es el principal (0022). */
   bilingual: boolean;
+  /** Referencias de imagen elegidas al crearla (0025 · direcciones.ts → Ref). */
+  visual_refs: { dir: string; titulo?: string; idea?: string }[];
+  /** Lo que se quiere ver en las imágenes (0025). */
+  image_brief: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -467,6 +471,8 @@ export interface AdBanner {
   image_path: string | null;
   image_prompt: string | null;
   image_source: "ia" | "subida" | "ninguna";
+  /** La línea visual con la que se pintó (0025). */
+  visual_ref: { dir: string; titulo?: string; idea?: string } | null;
   review: { flags?: { level: "bloquea" | "aviso"; rule: string; text: string }[]; checkedAt?: string };
   status: AdBannerStatus;
   created_at: string;

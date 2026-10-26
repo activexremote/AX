@@ -15,6 +15,7 @@ import {
   traducirBanner,
 } from "@/app/admin/banners/actions";
 import { Editable, Lienzo } from "@/components/admin/banners/lienzo";
+import { ElegirLinea } from "@/components/admin/banners/selector-visual";
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import {
   CTAS,
@@ -32,6 +33,7 @@ import {
   type FormatoId,
   type Plantilla,
 } from "@/lib/banners/formatos";
+import { lineaDe } from "@/lib/banners/direcciones";
 import { bloquea, revisarVariante } from "@/lib/banners/normas";
 import type { CampoTexto } from "@/lib/banners/pieza";
 import type { BanCopy } from "@/lib/i18n/banners";
@@ -134,12 +136,14 @@ export function EditorBanner({
   campaign,
   n,
   copy,
+  locale,
   imagenUrl,
 }: {
   banner: AdBanner;
   campaign: AdCampaign;
   n: number;
   copy: BanCopy;
+  locale: string;
   /** Enlace firmado a la foto (el bucket es privado), o null. */
   imagenUrl: string | null;
 }) {
@@ -165,6 +169,7 @@ export function EditorBanner({
   const [formato, setFormato] = useState<FormatoId>("vertical");
   const [zonas, setZonas] = useState(false);
   const [escena, setEscena] = useState(banner.image_prompt ?? "");
+  const [linea, setLinea] = useState(banner.visual_ref?.dir ?? "");
   const [instruccion, setInstruccion] = useState("");
   const [nuevoPunto, setNuevoPunto] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -178,6 +183,7 @@ export function EditorBanner({
     if (!guardado.alt) setLado("main");
   }, [guardado]);
   useEffect(() => setEscena(banner.image_prompt ?? ""), [banner.image_prompt]);
+  useEffect(() => setLinea(banner.visual_ref?.dir ?? ""), [banner.visual_ref?.dir]);
 
   const idioma = lado === "alt" ? otroIdioma(campaign.language) : campaign.language;
   const otro = otroIdioma(campaign.language);
@@ -579,10 +585,15 @@ export function EditorBanner({
             <summary>
               <Icono n="imagen" /> {copy.image}
             </summary>
+            <label className="axr-ban-help">
+              {copy.visLine}: <strong>{linea ? (lineaDe(linea)?.nombre[locale === "en" ? "en" : "es"] ?? linea) : copy.visLineNone}</strong>
+            </label>
+            <ElegirLinea copy={copy} locale={locale} value={linea} onChange={setLinea} />
+            <small className="axr-ban-help">{copy.visLineHint}</small>
             <label className="axr-ban-help">{copy.regenImageHint}</label>
             <textarea rows={3} value={escena} onChange={(e) => setEscena(e.target.value)} maxLength={1500} />
             <div className="axr-ban-tools__row">
-              <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={() => correr(() => nuevaImagen(banner.id, escena))}>
+              <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={() => correr(() => nuevaImagen(banner.id, escena, linea || undefined))}>
                 <Icono n="chispa" /> {copy.regenImage}
               </button>
               <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={() => fileRef.current?.click()}>

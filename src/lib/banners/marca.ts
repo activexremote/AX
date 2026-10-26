@@ -72,13 +72,12 @@ export const ANGULO_GUIA: Record<string, string> = {
   convocatoria: "Convocatoria: la fecha real de inicio como única urgencia. Nada de plazas ni cuentas atrás.",
 };
 
-/** Dirección visual común a todas las imágenes. Va en inglés: los modelos de imagen lo siguen mejor. */
-export const ESTILO_IMAGEN = `Photorealistic editorial photograph, natural light, shallow depth of field,
-modern and warm, shot on a 35mm lens. Authentic candid moment, not a posed
-stock photo. Adults of diverse backgrounds and ages. Subtle colour accents in
-violet (#5B4BF5), magenta and warm coral that match the brand.
-
-HARD RULES FOR THE IMAGE:
+/**
+ * Las normas de cualquier imagen, sea cual sea la línea visual
+ * (direcciones.ts). Van en inglés: los modelos de imagen lo siguen mejor.
+ */
+export const REGLAS_IMAGEN = `HARD RULES FOR THE IMAGE:
+- If people appear: adults of diverse backgrounds and ages, never celebrities.
 - Absolutely NO text, letters, numbers, words, captions, logos, watermarks or
   brand marks anywhere. Screens, notebooks and signs must show nothing legible.
 - No user-interface elements: no play buttons, notifications, chat bubbles,
@@ -89,3 +88,11 @@ HARD RULES FOR THE IMAGE:
 - Keep the main subject in the CENTRAL square of the frame; the top and bottom
   of a tall frame will be cropped or covered by text.
 - Leave calm, uncluttered areas for text overlay.`;
+
+/** El acabado por defecto, cuando no se ha elegido línea visual (publicaciones, variantes antiguas). */
+export const ESTILO_BASE = `Photorealistic editorial photograph, natural light, shallow depth of field,
+modern and warm, shot on a 35mm lens. Authentic candid moment, not a posed
+stock photo. Subtle colour accents in violet (#5B4BF5), magenta and warm coral
+that match the brand.`;
+
+export const ESTILO_IMAGEN = `${ESTILO_BASE}\n\n${REGLAS_IMAGEN}`;

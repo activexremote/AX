@@ -4,9 +4,10 @@ import OpenAI from "openai";
 
 import { resolveAi } from "@/lib/ai/settings";
 import { costeUsd, type Calidad } from "@/lib/banners/costes";
+import { lineaDe, type Ref } from "@/lib/banners/direcciones";
 import type { Gasto } from "@/lib/banners/generar";
 import { mensajeError } from "@/lib/banners/generar";
-import { ESTILO_IMAGEN } from "@/lib/banners/marca";
+import { ESTILO_IMAGEN, REGLAS_IMAGEN } from "@/lib/banners/marca";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // ══════════════════════════════════════════════════════════
@@ -33,6 +34,12 @@ const MODELOS = [process.env.OPENAI_IMAGE_MODEL?.trim(), "gpt-image-2", "gpt-ima
 /** Errores que significan «este modelo no», no «esta petición no». */
 const otroModelo = (status?: number, msg = "") =>
   status === 404 || (status === 400 && /model/i.test(msg) && !/safety|moderation|content/i.test(msg)) || (status === 403 && /model/i.test(msg));
+
+/** El acabado de una línea visual, con las normas detrás. Sin línea, el de siempre. */
+export function estiloDe(ref?: Ref | null): string | undefined {
+  const l = lineaDe(ref?.dir);
+  return l ? `${l.estilo}\n\n${REGLAS_IMAGEN}` : undefined;
+}
 
 export type ImagenGenerada = { path: string; prompt: string; gasto: Gasto };
 
