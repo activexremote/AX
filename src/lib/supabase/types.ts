@@ -473,6 +473,8 @@ export interface AdBanner {
   image_source: "ia" | "subida" | "ninguna";
   /** La línea visual con la que se pintó (0025). */
   visual_ref: { dir: string; titulo?: string; idea?: string } | null;
+  /** Dónde va cada cosa en la pieza (0026 · formatos.ts → COMPOSICIONES). */
+  layout: string;
   review: { flags?: { level: "bloquea" | "aviso"; rule: string; text: string }[]; checkedAt?: string };
   status: AdBannerStatus;
   created_at: string;

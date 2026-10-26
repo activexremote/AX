@@ -10,9 +10,11 @@ import {
   OBJETIVOS,
   PLANTILLAS,
   difElementos,
+  leerComposicion,
   leerCopy,
   leerElementos,
   otroIdioma,
+  repartirComposiciones,
   usaImagen,
   type Angulo,
   type Plantilla,
@@ -200,6 +202,13 @@ async function guardarVariantes(
   const { count } = await supabase.from("ad_banners").select("id", { count: "exact", head: true }).eq("campaign_id", campaign.id);
   const desde = count ?? 0;
   const conFoto = usaImagen(template);
+  // Cada variante, con otra composición: así no parecen la misma pieza. Los
+  // clones no, que copian la estructura de su referencia.
+  const { data: usadas } = await supabase.from("ad_banners").select("layout").eq("campaign_id", campaign.id);
+  const layouts =
+    campaign.kind === "clon"
+      ? variantes.map(() => "clasica")
+      : repartirComposiciones(variantes.length, (usadas ?? []).map((u) => u.layout as string));
 
   const { data: filas, error } = await supabase
     .from("ad_banners")
@@ -212,6 +221,7 @@ async function guardarVariantes(
         template,
         image_prompt: v.imagePrompt,
         visual_ref: v.ref?.dir ? v.ref : null,
+        layout: layouts[i],
         review: { flags: revisar(v.copy, { imagenIa: conFoto }), checkedAt: new Date().toISOString() },
       })),
     )
@@ -246,9 +256,10 @@ export async function crearCampana(formData: FormData): Promise<{ id?: string; e
     /* sin referencias: mezcla al azar */
   }
   const imageBrief = usaImagen(style) ? String(formData.get("image_brief") ?? "").trim().slice(0, 1000) || null : null;
-  // Una variante por ángulo y, si se eligieron más imágenes que ángulos, una
-  // por imagen: los ángulos se repiten por turnos.
-  const total = Math.min(MAX_VARIANTES, Math.max(angulos.length, visualRefs.length));
+  // Las variantes que se pidan (y, si se eligieron más imágenes, una por
+  // imagen): los ángulos y las imágenes se reparten por turnos.
+  const pedidas = Math.round(Number(formData.get("count") ?? 0)) || angulos.length;
+  const total = Math.min(MAX_VARIANTES, Math.max(1, pedidas, visualRefs.length));
   const angles = angulos.length ? Array.from({ length: total }, (_, i) => angulos[i % angulos.length]) : [];
 
   if (!CURSOS.includes(course) || !OBJETIVOS.includes(objective) || !PLANTILLAS.includes(style) || !CALIDADES.includes(calidad)) {
@@ -306,7 +317,7 @@ async function cargar(supabase: Supabase, id: string) {
 
 export async function guardarBanner(
   id: string,
-  input: { copy: unknown; copyAlt?: unknown; template: string; elements?: unknown },
+  input: { copy: unknown; copyAlt?: unknown; template: string; elements?: unknown; layout?: string },
 ): Promise<{ flags?: Flag[]; error?: string }> {
   const { supabase } = await assertAdmin();
   const x = await cargar(supabase, id);
@@ -322,6 +333,7 @@ export async function guardarBanner(
   const copyAlt = x.banner.copy_alt && input.copyAlt ? limpiar(input.copyAlt) : x.banner.copy_alt;
   const template = (PLANTILLAS as string[]).includes(input.template) ? input.template : x.banner.template;
   const elements = input.elements === undefined ? x.banner.elements : difElementos(leerElementos(input.elements));
+  const layout = input.layout === undefined ? x.banner.layout : leerComposicion(input.layout);
   const flags = flagsDe({ copy, copy_alt: copyAlt, elements, image_source: x.banner.image_source, template }, x.campaign);
 
   // Un aprobado que deja de cumplir vuelve a revisión: lo aprobado tiene que
@@ -329,7 +341,7 @@ export async function guardarBanner(
   const status = x.banner.status === "aprobado" && bloquea(flags) ? "borrador" : x.banner.status;
   const { error } = await supabase
     .from("ad_banners")
-    .update({ copy, copy_alt: copyAlt, template, elements, status, review: { flags, checkedAt: ahora() }, updated_at: ahora() })
+    .update({ copy, copy_alt: copyAlt, template, elements, layout, status, review: { flags, checkedAt: ahora() }, updated_at: ahora() })
     .eq("id", id);
   if (error) return { error: error.message };
   revalidatePath(`/admin/banners/${x.campaign.id}`);

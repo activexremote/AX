@@ -1,7 +1,7 @@
 import { strToU8, zipSync } from "fflate";
 import { ImageResponse } from "next/og";
 
-import { FORMATOS, FORMATO_IDS, leerCopy, leerElementos, otroIdioma, type Plantilla } from "@/lib/banners/formatos";
+import { FORMATOS, FORMATO_IDS, leerComposicion, leerCopy, leerElementos, otroIdioma, type Plantilla } from "@/lib/banners/formatos";
 import { leerImagen } from "@/lib/banners/imagen";
 import { Banner, fuentes } from "@/lib/banners/render";
 import { getCurrentProfile } from "@/lib/data/profile";
@@ -48,7 +48,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       for (const f of FORMATO_IDS) {
         const { w, h, label, file } = FORMATOS[f];
         const res = new ImageResponse(
-          <Banner copy={copy} template={b.template as Plantilla} course={c.course} language={lang} formato={f} imagen={imagen} elementos={elementos} />,
+          <Banner copy={copy} template={b.template as Plantilla} course={c.course} language={lang} formato={f} imagen={imagen} elementos={elementos} composicion={leerComposicion(b.layout)} />,
           { width: w, height: h, fonts },
         );
         files[`${carpeta}${label}/${file}_v${n}_${lang.toUpperCase()}.png`] = new Uint8Array(await res.arrayBuffer());

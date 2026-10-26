@@ -63,6 +63,30 @@ export type Plantilla = "foto" | "tarjeta" | "marca";
 export const PLANTILLAS: Plantilla[] = ["foto", "tarjeta", "marca"];
 export const usaImagen = (p: string) => p === "foto" || p === "tarjeta";
 
+// ── Composiciones ─────────────────────────────────────────
+// Dónde va cada cosa en la pieza: lo que hace que dos variantes no parezcan
+// la misma aunque compartan plantilla. Cada variante de una campaña sale con
+// una distinta; en el editor se cambia sin pagar nada.
+//   clasica   · textos abajo a la izquierda (la de siempre)
+//   centrado  · todo centrado, titular en medio
+//   arriba    · titular arriba, la imagen respira abajo, botón al pie
+//   panel     · imagen y un bloque de color partidos
+//   marco     · la imagen enmarcada como una foto sobre papel
+//   cinta     · el titular en una banda diagonal
+//   gigante   · titular enorme en mayúsculas sobre color
+//   bocadillo · el titular en un bocadillo, aire de meme
+//   revista   · portada: cabecera grande, marco fino, todo centrado
+export const COMPOSICIONES = ["clasica", "centrado", "arriba", "panel", "marco", "cinta", "gigante", "bocadillo", "revista"] as const;
+export type Composicion = (typeof COMPOSICIONES)[number];
+export const leerComposicion = (v: unknown): Composicion => ((COMPOSICIONES as readonly unknown[]).includes(v) ? (v as Composicion) : "clasica");
+
+/** `n` composiciones distintas al azar; primero las que la campaña aún no usa. */
+export function repartirComposiciones(n: number, usadas: string[] = []): Composicion[] {
+  const azar = <T,>(a: T[]) => a.slice().sort(() => Math.random() - 0.5);
+  const orden = [...azar(COMPOSICIONES.filter((c) => !usadas.includes(c))), ...azar(COMPOSICIONES.filter((c) => usadas.includes(c)))];
+  return Array.from({ length: n }, (_, i) => orden[i % orden.length]);
+}
+
 // ── Cursos y su acento (BRANDBOOK §5–6) ───────────────────
 export const CURSOS: AdCourse[] = ["escuela", "remote-professional", "remote-founder"];
 
