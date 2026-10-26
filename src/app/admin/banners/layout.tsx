@@ -40,6 +40,7 @@ export default async function BannersLayout({ children }: { children: React.Reac
         chips={chips}
         tabs={[
           { href: "/admin/banners", label: copy.tabCampaigns, icon: "lista", exact: true },
+          { href: "/admin/banners/galeria", label: copy.tabGallery, icon: "imagen" },
           { href: "/admin/banners/clonar", label: copy.tabClone, icon: "capas" },
           { href: "/admin/banners/normas", label: copy.tabRules, icon: "escudo" },
         ]}

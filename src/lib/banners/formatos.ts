@@ -55,6 +55,9 @@ export const FORMATOS: Record<FormatoId, Formato> = {
 
 export const FORMATO_IDS = Object.keys(FORMATOS) as FormatoId[];
 
+/** Variantes por descarga desde la galería: cada una son hasta 6 PNG (3 formatos × 2 idiomas) y todo cabe en el tiempo de una función. */
+export const MAX_GALERIA = 60;
+
 // ── Plantillas ────────────────────────────────────────────
 // `foto`: imagen a sangre con velo para el texto.
 // `tarjeta`: imagen arriba, bloque blanco abajo (sistema público de marca).
