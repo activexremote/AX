@@ -93,3 +93,35 @@ export async function armarZip(
   }
   return zipSync(files, { level: 0 });
 }
+
+type ClienteSupabase = { from: (t: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+/**
+ * Unas variantes cualesquiera (de la galería o del conector de Claude) en un
+ * .zip: carpeta de banners («Sin carpeta» si no tienen) / campaña / formato.
+ */
+export async function zipDeVariantes(
+  supabase: ClienteSupabase,
+  ids: string[],
+  opts: { formatos: FormatoId[]; ambos: boolean },
+): Promise<{ zip: Uint8Array; n: number } | null> {
+  const { data } = await supabase.from("ad_banners").select("*").in("id", ids).order("position");
+  const banners = (data ?? []) as AdBanner[];
+  if (!banners.length) return null;
+  const { data: camps } = await supabase.from("ad_campaigns").select("*").in("id", [...new Set(banners.map((b) => b.campaign_id))]);
+  const campanas = (camps ?? []) as AdCampaign[];
+  const idsCarpeta = [...new Set(banners.map((b) => b.folder_id).filter((x): x is string => Boolean(x)))];
+  const { data: carps } = idsCarpeta.length ? await supabase.from("ad_folders").select("id, name").in("id", idsCarpeta) : { data: [] };
+  const nombreDe = new Map(((carps ?? []) as { id: string; name: string }[]).map((f) => [f.id, f.name]));
+
+  const grupos = [null, ...idsCarpeta].flatMap((fid) =>
+    campanas
+      .map((campaign) => ({
+        campaign,
+        carpeta: fid ? nombreDe.get(fid) ?? "Carpeta" : "Sin carpeta",
+        banners: banners.filter((b) => b.campaign_id === campaign.id && (b.folder_id ?? null) === fid),
+      }))
+      .filter((g) => g.banners.length),
+  );
+  return { zip: await armarZip(grupos, { ...opts, porCampana: true }), n: banners.length };
+}

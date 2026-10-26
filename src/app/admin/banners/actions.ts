@@ -28,6 +28,7 @@ import { leerRefs, mezcla, type Ref } from "@/lib/banners/direcciones";
 import { escribirEscena, generarClones, generarVariantes, idearImagenes, traducirCopias, type Brief, type Gasto, type Variante } from "@/lib/banners/generar";
 import { BUCKET, borrarImagen, estiloDe, generarImagen, leerImagen } from "@/lib/banners/imagen";
 import { bloquea, revisar, revisarVariante, type Flag } from "@/lib/banners/normas";
+import { contextoMcp } from "@/lib/mcp/contexto";
 import { createClient } from "@/lib/supabase/server";
 import type { AdBanner, AdBannerStatus, AdCampaign, AdCourse, AdObjective } from "@/lib/supabase/types";
 
@@ -50,6 +51,10 @@ const TIPOS = new Set(["image/jpeg", "image/png", "image/webp"]);
 const CALIDADES: Calidad[] = ["low", "medium", "high"];
 
 async function assertAdmin() {
+  // Desde el conector de Claude (/api/mcp) no hay cookies: el token ya se ha
+  // comprobado allí (administrador) y llega aquí por el contexto.
+  const mcp = contextoMcp();
+  if (mcp) return { supabase: mcp.supabase, userId: mcp.userId };
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("no-auth");

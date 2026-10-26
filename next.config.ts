@@ -29,6 +29,24 @@ const nextConfig: NextConfig = {
     // (Satori no entiende fuentes variables): misma historia que los .afm.
     "/admin/banners/render/[id]/[formato]": ["./src/lib/banners/fonts/**"],
     "/admin/banners/[id]/zip": ["./src/lib/banners/fonts/**"],
+    "/admin/banners/galeria/descargar": ["./src/lib/banners/fonts/**"],
+    // El conector de Claude enseña y descarga banners: también compone piezas.
+    "/api/mcp": ["./src/lib/banners/fonts/**"],
+    "/api/mcp/descarga": ["./src/lib/banners/fonts/**"],
+  },
+  // La pantalla de «¿Conectar Claude?» no se puede meter en un iframe de otra
+  // web: si se pudiera, alguien podría hacer que un administrador pulsara
+  // «Permitir» sin saberlo.
+  async headers() {
+    return [
+      {
+        source: "/mcp/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+        ],
+      },
+    ];
   },
   experimental: {
     optimizePackageImports: ["@carbon/react", "@carbon/icons-react"],

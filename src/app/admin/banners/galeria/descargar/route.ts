@@ -1,8 +1,7 @@
 import { FORMATO_IDS, MAX_GALERIA, type FormatoId } from "@/lib/banners/formatos";
-import { armarZip } from "@/lib/banners/zip";
+import { zipDeVariantes } from "@/lib/banners/zip";
 import { getCurrentProfile } from "@/lib/data/profile";
 import { createClient } from "@/lib/supabase/server";
-import type { AdBanner, AdCampaign } from "@/lib/supabase/types";
 
 // Las variantes que se eligen en la galería, en un .zip: una carpeta por
 // carpeta de banners («Sin carpeta» si no tienen), dentro una por campaña y,
@@ -24,31 +23,13 @@ export async function POST(req: Request) {
   const formatos = pedidos.length ? pedidos : FORMATO_IDS;
   const ambos = form.get("ambos") === "1";
 
-  const supabase = await createClient();
-  const { data } = await supabase.from("ad_banners").select("*").in("id", ids).order("position");
-  const banners = (data ?? []) as AdBanner[];
-  if (!banners.length) return new Response("No se encuentran esas variantes.", { status: 404 });
-  const { data: camps } = await supabase.from("ad_campaigns").select("*").in("id", [...new Set(banners.map((b) => b.campaign_id))]);
-  const campanas = (camps ?? []) as AdCampaign[];
-  const idsCarpeta = [...new Set(banners.map((b) => b.folder_id).filter((x): x is string => Boolean(x)))];
-  const { data: carps } = idsCarpeta.length ? await supabase.from("ad_folders").select("id, name").in("id", idsCarpeta) : { data: [] };
-  const nombreDe = new Map((carps ?? []).map((f) => [f.id as string, f.name as string]));
-
-  const grupos = [null, ...idsCarpeta].flatMap((fid) =>
-    campanas
-      .map((campaign) => ({
-        campaign,
-        carpeta: fid ? nombreDe.get(fid) ?? "Carpeta" : "Sin carpeta",
-        banners: banners.filter((b) => b.campaign_id === campaign.id && (b.folder_id ?? null) === fid),
-      }))
-      .filter((g) => g.banners.length),
-  );
-  const zip = await armarZip(grupos, { formatos, ambos, porCampana: true });
+  const r = await zipDeVariantes(await createClient(), ids, { formatos, ambos });
+  if (!r) return new Response("No se encuentran esas variantes.", { status: 404 });
   const fecha = new Date().toISOString().slice(0, 10);
-  return new Response(Buffer.from(zip), {
+  return new Response(Buffer.from(r.zip), {
     headers: {
       "Content-Type": "application/zip",
-      "Content-Disposition": `attachment; filename="banners-${fecha}-${banners.length}.zip"`,
+      "Content-Disposition": `attachment; filename="banners-${fecha}-${r.n}.zip"`,
       "Cache-Control": "private, no-store",
     },
   });
