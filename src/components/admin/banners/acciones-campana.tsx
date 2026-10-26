@@ -7,7 +7,9 @@ import {
   anadirVariantes,
   borrarCampana,
   masClones,
+  moverCampana,
 } from "@/app/admin/banners/actions";
+import { ElegirCarpeta, type ValorCarpeta } from "@/components/admin/banners/elegir-carpeta";
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import { ANGULOS, type Angulo } from "@/lib/banners/formatos";
 import type { BanCopy } from "@/lib/i18n/banners";
@@ -18,12 +20,18 @@ export function AccionesCampana({
   copy,
   aprobadas,
   clon = false,
+  carpetas,
+  carpeta,
 }: {
   id: string;
   copy: BanCopy;
   aprobadas: number;
   clon?: boolean;
+  carpetas: { id: string; name: string }[];
+  carpeta: string | null;
 }) {
+  const [destino, setDestino] = useState<ValorCarpeta>({ v: carpeta ?? "", nueva: "" });
+  const popCarpeta = useRef<HTMLDetailsElement>(null);
   const router = useRouter();
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -134,6 +142,36 @@ export function AccionesCampana({
           </div>
         </details>
       )}
+
+      <details className="axr-ban-pop" ref={popCarpeta}>
+        <summary className="axr-btn axr-btn--ghost">
+          <Icono n="carpeta" /> {carpetas.find((x) => x.id === carpeta)?.name ?? copy.folderNone}
+        </summary>
+        <div className="axr-ban-pop__body">
+          <strong>{copy.campaignFolder}</strong>
+          <ElegirCarpeta carpetas={carpetas} value={destino} onChange={setDestino} copy={copy} />
+          <small className="axr-ban-help">{copy.campaignFolderHint}</small>
+          <button
+            type="button"
+            className="axr-btn"
+            disabled={pending || (destino.v === "nueva" && !destino.nueva.trim())}
+            onClick={() =>
+              start(async () => {
+                setError(null);
+                const r = await moverCampana(id, destino.v === "nueva" ? { nueva: destino.nueva } : { id: destino.v || null });
+                if (r.error) setError(r.error);
+                else {
+                  setDestino({ v: r.id ?? "", nueva: "" });
+                  if (popCarpeta.current) popCarpeta.current.open = false;
+                }
+                router.refresh();
+              })
+            }
+          >
+            {copy.moveGo}
+          </button>
+        </div>
+      </details>
 
       {aprobadas ? (
         <a href={`/admin/banners/${id}/zip`} className="axr-btn">

@@ -15,7 +15,7 @@ import type { AdBanner, AdCampaign } from "@/lib/supabase/types";
 //  un textos.txt por campaña e idioma con lo que hay que pegar en el
 //  Administrador de anuncios. Con variantes en los dos idiomas, una carpeta
 //  por idioma (ES/, EN/). Con varias campañas (la galería), una carpeta por
-//  campaña delante.
+//  campaña delante y, si se pide, la carpeta antes que la campaña.
 // ══════════════════════════════════════════════════════════
 
 export const slug = (s: string) =>
@@ -26,18 +26,19 @@ export const slug = (s: string) =>
     .replace(/^-|-$/g, "");
 
 export async function armarZip(
-  grupos: { campaign: AdCampaign; banners: AdBanner[] }[],
+  grupos: { campaign: AdCampaign; banners: AdBanner[]; carpeta?: string }[],
   opts: { formatos: FormatoId[]; ambos: boolean; porCampana: boolean },
 ): Promise<Uint8Array> {
   const fonts = await fuentes();
   const files: Record<string, Uint8Array> = {};
   const usadas = new Set<string>();
 
-  for (const { campaign: c, banners } of grupos) {
+  for (const { campaign: c, banners, carpeta } of grupos) {
     // Dos campañas con el mismo nombre no se pisan la carpeta.
     let raiz = "";
     if (opts.porCampana) {
-      const base = slug(c.name) || "campana";
+      const delante = carpeta !== undefined ? `${slug(carpeta) || "carpeta"}/` : "";
+      const base = `${delante}${slug(c.name) || "campana"}`;
       let nombre = base;
       for (let k = 2; usadas.has(nombre); k++) nombre = `${base}-${k}`;
       usadas.add(nombre);

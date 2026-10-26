@@ -5,7 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import type { AdBanner, AdCampaign } from "@/lib/supabase/types";
 
 // Las variantes que se eligen en la galería, en un .zip: una carpeta por
-// campaña y, dentro, la misma estructura que la descarga de una campaña.
+// carpeta de banners («Sin carpeta» si no tienen), dentro una por campaña y,
+// dentro, la misma estructura que la descarga de una campaña.
 // POST (un formulario): con muchas elegidas, los ids no caben en una URL.
 
 export const runtime = "nodejs";
@@ -29,10 +30,19 @@ export async function POST(req: Request) {
   if (!banners.length) return new Response("No se encuentran esas variantes.", { status: 404 });
   const { data: camps } = await supabase.from("ad_campaigns").select("*").in("id", [...new Set(banners.map((b) => b.campaign_id))]);
   const campanas = (camps ?? []) as AdCampaign[];
+  const idsCarpeta = [...new Set(banners.map((b) => b.folder_id).filter((x): x is string => Boolean(x)))];
+  const { data: carps } = idsCarpeta.length ? await supabase.from("ad_folders").select("id, name").in("id", idsCarpeta) : { data: [] };
+  const nombreDe = new Map((carps ?? []).map((f) => [f.id as string, f.name as string]));
 
-  const grupos = campanas
-    .map((campaign) => ({ campaign, banners: banners.filter((b) => b.campaign_id === campaign.id) }))
-    .filter((g) => g.banners.length);
+  const grupos = [null, ...idsCarpeta].flatMap((fid) =>
+    campanas
+      .map((campaign) => ({
+        campaign,
+        carpeta: fid ? nombreDe.get(fid) ?? "Carpeta" : "Sin carpeta",
+        banners: banners.filter((b) => b.campaign_id === campaign.id && (b.folder_id ?? null) === fid),
+      }))
+      .filter((g) => g.banners.length),
+  );
   const zip = await armarZip(grupos, { formatos, ambos, porCampana: true });
   const fecha = new Date().toISOString().slice(0, 10);
   return new Response(Buffer.from(zip), {

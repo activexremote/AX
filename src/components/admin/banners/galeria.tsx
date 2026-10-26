@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 
+import { borrarCarpeta, crearCarpeta, moverBanners, renombrarCarpeta } from "@/app/admin/banners/actions";
+import { ElegirCarpeta, type ValorCarpeta } from "@/components/admin/banners/elegir-carpeta";
 import { Lienzo } from "@/components/admin/banners/lienzo";
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import { FORMATOS, FORMATO_IDS, MAX_GALERIA, esNativo, leerBoton, leerComposicion, leerCopy, leerElementos, type FormatoId, type Plantilla } from "@/lib/banners/formatos";
@@ -16,13 +19,16 @@ import type { AdBannerStatus, AdCourse } from "@/lib/supabase/types";
 //  Cada miniatura es la pieza de verdad (lienzo.tsx), pintada sólo cuando se
 //  acerca a la pantalla: con cientos de variantes, montar todas de golpe
 //  cargaría cientos de fotos. Se elige con un clic en la tarjeta; la barra
-//  de abajo descarga lo elegido en un .zip (galeria/descargar).
+//  de abajo mueve lo elegido a una carpeta o lo descarga en un .zip
+//  (galeria/descargar). A la izquierda, las carpetas: filtran, se crean, se
+//  renombran y se borran (sin borrar lo que tienen).
 // ══════════════════════════════════════════════════════════
 
 export type ItemGaleria = {
   id: string;
   campaignId: string;
   campaignName: string;
+  folderId: string | null;
   course: AdCourse;
   language: "es" | "en";
   n: number;
@@ -70,7 +76,146 @@ function Miniatura({ it, formato }: { it: ItemGaleria; formato: FormatoId }) {
   );
 }
 
-export function Galeria({ items, campanas, copy }: { items: ItemGaleria[]; campanas: { id: string; name: string }[]; copy: BanCopy }) {
+/** Las carpetas a la izquierda: filtrar, crear, renombrar y borrar. */
+function Carpetas({
+  carpetas,
+  items,
+  actual,
+  onElegir,
+  copy,
+}: {
+  carpetas: { id: string; name: string }[];
+  items: ItemGaleria[];
+  actual: string;
+  onElegir: (id: string) => void;
+  copy: BanCopy;
+}) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  const [nueva, setNueva] = useState<string | null>(null);
+  const [editando, setEditando] = useState<{ id: string; name: string } | null>(null);
+  const [borrando, setBorrando] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const cuenta = (id: string | null) => items.filter((it) => it.folderId === id).length;
+  const correr = (fn: () => Promise<{ error?: string; id?: string }>, despues?: (r: { error?: string; id?: string }) => void) =>
+    start(async () => {
+      setError(null);
+      const r = await fn();
+      if (r.error) setError(r.error);
+      else despues?.(r);
+      router.refresh();
+    });
+
+  const fila = (id: string, label: string, n: number, extra?: React.ReactNode) => (
+    <li key={id || "todas"}>
+      <button type="button" className={`axr-bangal__folder${actual === id ? " is-on" : ""}`} onClick={() => onElegir(id)}>
+        <Icono n="carpeta" size={15} />
+        <span>{label}</span>
+        <small>{n}</small>
+      </button>
+      {extra}
+    </li>
+  );
+
+  return (
+    <aside className="axr-pubcard axr-bangal__folders" aria-label={copy.folders}>
+      <strong className="axr-bangal__folders-title">{copy.folders}</strong>
+      <ul>
+        {fila("", copy.folderAll, items.length)}
+        {fila("sin", copy.folderNone, cuenta(null))}
+        {carpetas.map((c) =>
+          editando?.id === c.id ? (
+            <li key={c.id} className="axr-bangal__folder-edit">
+              <input
+                value={editando.name}
+                maxLength={80}
+                autoFocus
+                onChange={(e) => setEditando({ ...editando, name: e.target.value })}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") correr(() => renombrarCarpeta(c.id, editando.name), () => setEditando(null));
+                  if (e.key === "Escape") setEditando(null);
+                }}
+              />
+              <button type="button" className="axr-btn axr-btn--small" disabled={pending} onClick={() => correr(() => renombrarCarpeta(c.id, editando.name), () => setEditando(null))}>
+                <Icono n="ok" size={13} />
+              </button>
+            </li>
+          ) : (
+            fila(
+              c.id,
+              c.name,
+              cuenta(c.id),
+              actual === c.id ? (
+                <div className="axr-bangal__folder-acts">
+                  {borrando === c.id ? (
+                    <>
+                      <small>{copy.folderDeleteConfirm}</small>
+                      <button type="button" className="axr-btn axr-btn--danger axr-btn--small" disabled={pending} onClick={() => correr(() => borrarCarpeta(c.id), () => onElegir(""))}>
+                        {copy.confirmDeleteShort}
+                      </button>
+                      <button type="button" className="axr-btn axr-btn--ghost axr-btn--small" onClick={() => setBorrando(null)}>
+                        {copy.cancel}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button type="button" onClick={() => setEditando({ id: c.id, name: c.name })}>
+                        {copy.folderRename}
+                      </button>
+                      <button type="button" onClick={() => setBorrando(c.id)}>
+                        {copy.folderDelete}
+                      </button>
+                    </>
+                  )}
+                </div>
+              ) : null,
+            )
+          ),
+        )}
+      </ul>
+      {nueva === null ? (
+        <button type="button" className="axr-bangal__folder-new" onClick={() => setNueva("")}>
+          {copy.folderNew.replace("…", "")}
+        </button>
+      ) : (
+        <div className="axr-bangal__folder-edit">
+          <input
+            value={nueva}
+            maxLength={80}
+            autoFocus
+            placeholder={copy.folderNewPh}
+            onChange={(e) => setNueva(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && nueva.trim()) correr(() => crearCarpeta(nueva), (r) => { setNueva(null); if (r.id) onElegir(r.id); });
+              if (e.key === "Escape") setNueva(null);
+            }}
+          />
+          <button type="button" className="axr-btn axr-btn--small" disabled={pending || !nueva.trim()} onClick={() => correr(() => crearCarpeta(nueva), (r) => { setNueva(null); if (r.id) onElegir(r.id); })}>
+            {copy.folderCreate}
+          </button>
+        </div>
+      )}
+      {error ? <div className="axr-login__error">{error}</div> : null}
+    </aside>
+  );
+}
+
+export function Galeria({
+  items,
+  campanas,
+  carpetas,
+  copy,
+}: {
+  items: ItemGaleria[];
+  campanas: { id: string; name: string }[];
+  carpetas: { id: string; name: string }[];
+  copy: BanCopy;
+}) {
+  const router = useRouter();
+  const [moviendo, startMover] = useTransition();
+  const [carpeta, setCarpeta] = useState("");
+  const [destino, setDestino] = useState<ValorCarpeta>({ v: "", nueva: "" });
+  const [aviso, setAviso] = useState<string | null>(null);
   const [campana, setCampana] = useState("");
   const [estado, setEstado] = useState<"" | AdBannerStatus>("");
   const [tipo, setTipo] = useState<"" | "imagen" | "nativo">("");
@@ -85,13 +230,28 @@ export function Galeria({ items, campanas, copy }: { items: ItemGaleria[]; campa
     () =>
       items.filter(
         (it) =>
+          (!carpeta || (carpeta === "sin" ? !it.folderId : it.folderId === carpeta)) &&
           (!campana || it.campaignId === campana) &&
           (!estado || it.status === estado) &&
           (!tipo || (tipo === "nativo") === esNativo(it.layout)),
       ),
-    [items, campana, estado, tipo],
+    [items, carpeta, campana, estado, tipo],
   );
-  useEffect(() => setCuantas(PAGINA), [campana, estado, tipo]);
+  useEffect(() => setCuantas(PAGINA), [carpeta, campana, estado, tipo]);
+
+  const mover = () =>
+    startMover(async () => {
+      setAviso(null);
+      const r = await moverBanners([...elegidas], destino.v === "nueva" ? { nueva: destino.nueva } : { id: destino.v || null });
+      if (r.error) setAviso(r.error);
+      else {
+        const nombre = r.id ? (carpetas.find((c) => c.id === r.id)?.name ?? destino.nueva) : copy.folderNone;
+        setAviso(fill(copy.moved, nombre));
+        setElegidas(new Set());
+        setDestino({ v: "", nueva: "" });
+      }
+      router.refresh();
+    });
 
   const alternar = (id: string) =>
     setElegidas((prev) => {
@@ -103,7 +263,10 @@ export function Galeria({ items, campanas, copy }: { items: ItemGaleria[]; campa
   const demasiadas = elegidas.size > MAX_GALERIA;
 
   return (
-    <div className="axr-bangal">
+    <div className="axr-bangal axr-bangal--carpetas">
+      <Carpetas carpetas={carpetas} items={items} actual={carpeta} onElegir={setCarpeta} copy={copy} />
+      <div className="axr-bangal__main">
+      {aviso ? <div className="axr-adm-note">{aviso}</div> : null}
       <div className="axr-pubcard axr-bangal__filters">
         <label>
           <span>{copy.galCampaign}</span>
@@ -222,6 +385,12 @@ export function Galeria({ items, campanas, copy }: { items: ItemGaleria[]; campa
           ))}
           <input type="hidden" name="ambos" value={ambos ? "1" : "0"} />
           <strong>{fill(copy.galSelected, elegidas.size)}</strong>
+          <div className="axr-bangal__move">
+            <ElegirCarpeta carpetas={carpetas} value={destino} onChange={setDestino} copy={copy} label={copy.moveTo} />
+            <button type="button" className="axr-btn axr-btn--ghost axr-btn--small" disabled={moviendo || (destino.v === "nueva" && !destino.nueva.trim())} onClick={mover}>
+              <Icono n="carpeta" size={14} /> {copy.moveGo}
+            </button>
+          </div>
           <div className="axr-bangal__fmts" role="group" aria-label={copy.galFormats}>
             {FORMATO_IDS.map((f) => (
               <label key={f}>
@@ -240,6 +409,7 @@ export function Galeria({ items, campanas, copy }: { items: ItemGaleria[]; campa
           </button>
         </form>
       ) : null}
+      </div>
     </div>
   );
 }
