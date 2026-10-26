@@ -76,14 +76,52 @@ export const usaImagen = (p: string) => p === "foto" || p === "tarjeta";
 //   gigante   · titular enorme en mayúsculas sobre color
 //   bocadillo · el titular en un bocadillo, aire de meme
 //   revista   · portada: cabecera grande, marco fino, todo centrado
-export const COMPOSICIONES = ["clasica", "centrado", "arriba", "panel", "marco", "cinta", "gigante", "bocadillo", "revista"] as const;
+//
+// Y los NATIVOS: la pieza no parece un anuncio sino una captura (un chat, un
+// correo, un tuit, una nota…). No llevan foto y su contenido va en `chat`.
+// Imitan el estilo, nunca el logo ni la marca de esas aplicaciones, ni likes,
+// verificados o notificaciones: eso sería engañoso y Meta lo rechaza.
+//   whatsapp · telegram · email · tweet · notas · buscador · calendario · billete
+export const NATIVOS = ["whatsapp", "telegram", "email", "tweet", "notas", "buscador", "calendario", "billete"] as const;
+export const COMPOSICIONES = ["clasica", "centrado", "arriba", "panel", "marco", "cinta", "gigante", "bocadillo", "revista", ...NATIVOS] as const;
 export type Composicion = (typeof COMPOSICIONES)[number];
+export type Nativo = (typeof NATIVOS)[number];
+export const esNativo = (c: unknown): c is Nativo => (NATIVOS as readonly unknown[]).includes(c);
+
+/** Qué escribe la IA en `chat` para cada formato nativo. */
+export const GUIA_NATIVO: Record<Nativo, string> = {
+  whatsapp:
+    "captura de un chat de WhatsApp entre quien lee (una persona con una duda u objeción real) y ActiveXRemote. 3-6 mensajes cortos y naturales, como se escribe en el móvil. Empieza «> » lo que escribe la persona y «< » lo que responde ActiveXRemote. El último mensaje es de ActiveXRemote e invita a dar el paso.",
+  telegram:
+    "captura de un chat de Telegram entre quien lee y ActiveXRemote, con otro ritmo que WhatsApp: 3-5 mensajes, puede haber uno más largo con una lista corta. «> » la persona, «< » ActiveXRemote.",
+  email:
+    "captura de un correo que ActiveXRemote envía a quien lee. El titular es el asunto. En `chat`, el cuerpo: 3-5 párrafos cortos (saludo, idea, dato verificado, cierre); cada línea es una frase o párrafo COMPLETO, nunca una frase partida en varias líneas; sin prefijos.",
+  tweet:
+    "captura de un tuit publicado por ActiveXRemote: una opinión con contraste, como se escribe en redes. El titular es la primera frase; en `chat`, 1-3 líneas más del tuit, sin prefijos ni hashtags.",
+  notas:
+    "captura de una nota del móvil con una lista. El titular es el título de la nota; en `chat`, 3-5 elementos de la lista (lo que se aprende o se consigue hacer), sin prefijos.",
+  buscador:
+    "captura de un buscador. El titular es lo que alguien está buscando (una duda real, en minúsculas, sin punto); en `chat`, 3-4 sugerencias de búsqueda parecidas, sin prefijos. La línea de apoyo es el título del resultado de ActiveXRemote.",
+  calendario:
+    "captura de una invitación de calendario a la clase. El titular es el nombre del evento; en `chat`, 2-4 líneas de detalle (cuándo, cómo, formato), con datos verificados, sin prefijos.",
+  billete:
+    "una tarjeta de embarque como metáfora del cambio. En `chat`, exactamente 2 líneas: el origen y el destino, 1-3 palabras cada uno (p. ej. «Oficina gris» y «Equipos globales»). El titular va como mensaje principal del billete.",
+};
+
+/** `n` nativos distintos al azar; primero los que la campaña aún no usa. */
+export function repartirNativos(n: number, usados: string[] = []): Nativo[] {
+  const azar = <T,>(a: T[]) => a.slice().sort(() => Math.random() - 0.5);
+  const orden = [...azar(NATIVOS.filter((c) => !usados.includes(c))), ...azar(NATIVOS.filter((c) => usados.includes(c)))];
+  return Array.from({ length: n }, (_, i) => orden[i % orden.length]);
+}
 export const leerComposicion = (v: unknown): Composicion => ((COMPOSICIONES as readonly unknown[]).includes(v) ? (v as Composicion) : "clasica");
 
 /** `n` composiciones distintas al azar; primero las que la campaña aún no usa. */
 export function repartirComposiciones(n: number, usadas: string[] = []): Composicion[] {
   const azar = <T,>(a: T[]) => a.slice().sort(() => Math.random() - 0.5);
-  const orden = [...azar(COMPOSICIONES.filter((c) => !usadas.includes(c))), ...azar(COMPOSICIONES.filter((c) => usadas.includes(c)))];
+  // Sólo las de imagen: los nativos se reparten aparte (repartirNativos).
+  const conImagen = COMPOSICIONES.filter((c) => !esNativo(c));
+  const orden = [...azar(conImagen.filter((c) => !usadas.includes(c))), ...azar(conImagen.filter((c) => usadas.includes(c)))];
   return Array.from({ length: n }, (_, i) => orden[i % orden.length]);
 }
 
@@ -213,6 +251,8 @@ export type BannerCopy = {
   extra: string;
   /** Puntos opcionales, uno por línea (máximo 3). */
   points: string;
+  /** El contenido de los formatos nativos: mensajes, cuerpo del correo, lista… Uno por línea. */
+  chat: string;
   primaryText: string;
   adHeadline: string;
   description: string;
@@ -226,6 +266,7 @@ export const COPY_VACIO: BannerCopy = {
   cta: "",
   extra: "",
   points: "",
+  chat: "",
   primaryText: "",
   adHeadline: "",
   description: "",
@@ -287,3 +328,34 @@ export const LIMITES = {
   description: 30,
   headlineWords: 10,
 } as const;
+
+// ── Los mensajes de un formato nativo ─────────────────────
+export type LineaChat = { yo: boolean; t: string };
+
+/**
+ * Las líneas de `chat`, sin vacías. «> » es de quien lee (a la derecha) y
+ * «< » de ActiveXRemote; sin prefijo, se alternan empezando por quien lee.
+ */
+export function lineasChat(c: Pick<BannerCopy, "chat">, max = 8): LineaChat[] {
+  return c.chat
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .slice(0, max)
+    .map((l, i) => (l.startsWith(">") ? { yo: true, t: l.slice(1).trim() } : l.startsWith("<") ? { yo: false, t: l.slice(1).trim() } : { yo: i % 2 === 0, t: l }));
+}
+
+/** Cambia el texto de la línea `idx` (contando sólo las no vacías) sin perder su prefijo. */
+export function editarLineaChat(chat: string, idx: number, texto: string): string {
+  const ls = chat.split("\n");
+  let k = -1;
+  for (let i = 0; i < ls.length; i++) {
+    if (!ls[i].trim()) continue;
+    k++;
+    if (k !== idx) continue;
+    const m = ls[i].trim().match(/^([<>])\s*/);
+    ls[i] = m ? `${m[1]} ${texto}` : texto;
+    break;
+  }
+  return ls.join("\n");
+}

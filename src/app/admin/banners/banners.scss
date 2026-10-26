@@ -1109,3 +1109,27 @@ $professional: #5b4bf5;
   }
 }
 .axr-ban-pop--right .axr-ban-pop__body { right: 0; left: auto; }
+
+// ── Formatos nativos en el selector de composición ──
+.axr-ban-comps__sep {
+  flex: none;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--pub-muted);
+  padding-left: 0.6rem;
+  margin-left: 0.2rem;
+  border-left: 1px solid var(--pub-line);
+}
+.axr-ban-comp--nativo {
+  b { left: 5px; width: 18px; height: 6px; border-radius: 3px; }
+  em { width: 14px; height: 6px; border-radius: 3px; background: #fff; }
+}
+.axr-ban-comp--whatsapp { background: #efe7dd; box-shadow: inset 0 8px 0 #075e54; b { top: 13px; background: #fff; } em { right: 4px; top: 23px; background: #d9fdd3; } }
+.axr-ban-comp--telegram { background: linear-gradient(160deg, #a9d3a0, #9ccbb5); box-shadow: inset 0 8px 0 #fff; b { top: 13px; background: #fff; } em { right: 4px; top: 23px; background: #eeffde; } }
+.axr-ban-comp--email { background: #fff; outline: 1px solid #e3e3e8; b { top: 8px; width: 24px; height: 4px; background: #1f1f1f; } em { left: 5px; top: 18px; width: 22px; height: 3px; background: #c4c7cc; } }
+.axr-ban-comp--tweet { background: linear-gradient(160deg, #3a1f6e, #241246); b { top: 12px; left: 4px; width: 26px; height: 16px; border-radius: 3px; background: #fff; } em { left: 12px; bottom: 5px; background: #038632; } }
+.axr-ban-comp--notas { background: #fbf8ef; outline: 1px solid #ece4cf; b { top: 8px; background: #1c1a16; height: 4px; } em { left: 5px; top: 17px; width: 4px; height: 4px; border-radius: 99px; background: #d99a00; } }
+.axr-ban-comp--buscador { background: #f6f7fb; b { top: 10px; left: 4px; width: 26px; height: 7px; border-radius: 99px; background: #fff; outline: 1px solid #d5d7de; } em { left: 4px; top: 22px; width: 26px; height: 9px; border-radius: 2px; background: #fff; } }
+.axr-ban-comp--calendario { background: linear-gradient(160deg, #3a1f6e, #241246); b { top: 10px; left: 4px; width: 26px; height: 20px; border-radius: 3px; background: #fff; box-shadow: inset 0 3px 0 #5b4bf5; } em { left: 12px; bottom: 4px; background: #038632; } }
+.axr-ban-comp--billete { background: linear-gradient(160deg, #3a1f6e, #241246); b { top: 9px; left: 4px; width: 26px; height: 22px; border-radius: 3px; background: #fff; box-shadow: inset 0 5px 0 #161326; } em { left: 12px; bottom: 4px; background: #038632; } }
+.axr-ban-chat textarea { font-family: inherit; line-height: 1.5; }

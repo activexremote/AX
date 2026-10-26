@@ -15,8 +15,11 @@ import {
   leerCopy,
   leerElementos,
   otroIdioma,
+  esNativo,
   repartirBotones,
   repartirComposiciones,
+  repartirNativos,
+  type Nativo,
   usaImagen,
   type Angulo,
   type Plantilla,
@@ -39,7 +42,7 @@ import type { AdBanner, AdBannerStatus, AdCampaign, AdCourse, AdObjective } from
 //  aprueba y sube al Administrador de anuncios de Meta.
 // ══════════════════════════════════════════════════════════
 
-const MAX_VARIANTES = 6;
+const MAX_VARIANTES = 8;
 /** Las que se pueden añadir de una vez a una campaña ya creada. */
 const MAX_NUEVAS = 8;
 const MAX_BYTES = 8 * 1024 * 1024;
@@ -168,6 +171,8 @@ async function crearVariantes(
   calidad: Calidad,
   /** Variantes que se añaden a una campaña: distintas también de las que ya tiene. */
   nuevas = false,
+  /** Cuántas van en formato nativo (chat, correo, tuit…) en vez de con imagen. */
+  nativos = 0,
 ): Promise<{ error?: string }> {
   const elegidas = nuevas ? [] : leerRefs(campaign.visual_refs);
   let refs: Ref[] | undefined;
@@ -177,6 +182,11 @@ async function crearVariantes(
     const titulares = (hechas ?? []).map((h) => leerCopy(h.copy).headline).filter(Boolean);
     if (titulares.length) yaHay = `YA HAY ESTAS VARIANTES EN LA CAMPAÑA: no repitas sus ganchos ni sus escenas; escribe ideas nuevas.\n${titulares.map((t) => `- ${t}`).join("\n")}`;
   }
+  // Qué variantes van en formato nativo: repartidas, no todas al final.
+  const { data: yaUsados } = nativos ? await supabase.from("ad_banners").select("layout").eq("campaign_id", campaign.id) : { data: [] };
+  const tipos = repartirNativos(Math.min(nativos, angles.length), (yaUsados ?? []).map((u) => u.layout as string));
+  const huecos = angles.map((_, i) => i).sort(() => Math.random() - 0.5).slice(0, tipos.length);
+  const formatos: (Nativo | null)[] = angles.map((_, i) => (huecos.includes(i) ? tipos[huecos.indexOf(i)] : null));
   if (usaImagen(campaign.style)) {
     if (elegidas.length) {
       refs = angles.map((_, i) => elegidas[i % elegidas.length]);
@@ -195,6 +205,7 @@ async function crearVariantes(
     notes: [campaign.notes, yaHay].filter(Boolean).join("\n\n") || undefined,
     refs,
     imageBrief: campaign.image_brief ?? undefined,
+    formatos: formatos.some(Boolean) ? formatos : undefined,
   };
   const r = await generarVariantes(brief);
   await apuntarGasto(supabase, userId, campaign.id, "texto", r.gastos);
@@ -222,11 +233,14 @@ async function guardarVariantes(
   // Cada variante, con otra composición: así no parecen la misma pieza. Los
   // clones no, que copian la estructura de su referencia.
   const { data: usadas } = await supabase.from("ad_banners").select("layout, cta_style").eq("campaign_id", campaign.id);
+  const deImagen = repartirComposiciones(variantes.length, (usadas ?? []).map((u) => u.layout as string));
   const layouts = igual
     ? variantes.map(() => igual.layout)
     : campaign.kind === "clon"
       ? variantes.map(() => "clasica")
-      : repartirComposiciones(variantes.length, (usadas ?? []).map((u) => u.layout as string));
+      : variantes.map((v, i) => v.formato ?? deImagen[i]);
+  // Los nativos no llevan foto: van con la plantilla sin imagen.
+  const plantillas = layouts.map((l) => (esNativo(l) ? "marca" : template));
   const botones = igual ? variantes.map(() => igual.cta_style) : repartirBotones(variantes.length, (usadas ?? []).map((u) => u.cta_style));
 
   const { data: filas, error } = await supabase
@@ -237,23 +251,23 @@ async function guardarVariantes(
         position: desde + i,
         angle: v.angle,
         copy: v.copy,
-        template,
+        template: plantillas[i],
         image_prompt: v.imagePrompt,
         visual_ref: v.ref?.dir ? v.ref : null,
         layout: layouts[i],
         cta_style: botones[i],
         ...(igual ? { elements: igual.elements } : {}),
-        review: { flags: revisar(v.copy, { imagenIa: conFoto }), checkedAt: new Date().toISOString() },
+        review: { flags: revisar(v.copy, { imagenIa: usaImagen(plantillas[i]) }), checkedAt: new Date().toISOString() },
       })),
     )
-    .select("id, campaign_id, image_path, image_prompt, visual_ref");
+    .select("id, campaign_id, image_path, image_prompt, visual_ref, template");
   if (error || !filas) return { error: `No se pudieron guardar las variantes: ${error?.message ?? ""}` };
 
   if (!conFoto) return {};
 
   // Las fotos, a la vez: cada una tarda 20-40 s y no dependen entre sí.
   const errores = (
-    await Promise.all(filas.map((f) => pintar(supabase, userId, { ...f, image_path: null }, f.image_prompt ?? "", calidad, f.visual_ref as Ref | null)))
+    await Promise.all(filas.filter((f) => usaImagen(f.template)).map((f) => pintar(supabase, userId, { ...f, image_path: null }, f.image_prompt ?? "", calidad, f.visual_ref as Ref | null)))
   ).filter(Boolean);
   if (errores.length) {
     return { error: `Las variantes están escritas, pero ${errores.length} imagen(es) no se han podido pintar: ${errores[0]} Puedes reintentarlo desde cada variante.` };
@@ -280,6 +294,7 @@ export async function crearCampana(formData: FormData): Promise<{ id?: string; e
   // Las variantes que se pidan (y, si se eligieron más imágenes, una por
   // imagen): los ángulos y las imágenes se reparten por turnos.
   const pedidas = Math.round(Number(formData.get("count") ?? 0)) || angulos.length;
+  const nativos = Math.max(0, Math.round(Number(formData.get("native") ?? 0)) || 0);
   const total = Math.min(MAX_VARIANTES, Math.max(1, pedidas, visualRefs.length));
   const angles = angulos.length ? Array.from({ length: total }, (_, i) => angulos[i % angulos.length]) : [];
 
@@ -309,7 +324,7 @@ export async function crearCampana(formData: FormData): Promise<{ id?: string; e
     .single();
   if (error || !data) return { error: `No se pudo crear la campaña: ${error?.message ?? ""}` };
 
-  const r = await crearVariantes(supabase, userId, data as AdCampaign, angles, calidad);
+  const r = await crearVariantes(supabase, userId, data as AdCampaign, angles, calidad, false, nativos);
   const t = r.error ? {} : await traducirPendientes(supabase, userId, data.id);
   revalidatePath("/admin/banners");
   // Con id, la campaña existe aunque la IA haya fallado: el aviso se ve en
@@ -326,7 +341,8 @@ export async function anadirVariantes(campaignId: string, angles: string[], n?: 
   const base = elegidos.length ? elegidos : [...ANGULOS].sort(() => Math.random() - 0.5);
   const total = Math.min(MAX_NUEVAS, Math.max(1, Math.round(n ?? base.length)));
   const lista = Array.from({ length: total }, (_, i) => base[i % base.length]);
-  const r = await crearVariantes(supabase, userId, data as AdCampaign, lista, "medium", true);
+  // Unas cuantas en formato nativo, para seguir mezclando.
+  const r = await crearVariantes(supabase, userId, data as AdCampaign, lista, "medium", true, Math.round(total * 0.4));
   const t = await traducirPendientes(supabase, userId, campaignId);
   revalidatePath(`/admin/banners/${campaignId}`);
   return { error: r.error ?? t.error };
@@ -700,6 +716,7 @@ export async function masComoEsta(id: string, n: number): Promise<{ error?: stri
     refs: conFoto && ref ? Array.from({ length: total }, () => ref) : undefined,
     imageBrief: campaign.image_brief ?? undefined,
     parecidas: { copy: leerCopy(banner.copy), escena: banner.image_prompt ?? "" },
+    formatos: esNativo(banner.layout) ? Array.from({ length: total }, () => banner.layout as Nativo) : undefined,
   });
   await apuntarGasto(supabase, userId, campaign.id, "texto", r.gastos);
   if (!r.variantes.length) return { error: r.error ?? "No se ha generado ninguna variante." };

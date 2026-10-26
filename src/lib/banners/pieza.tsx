@@ -5,6 +5,8 @@ import {
   ELEMENTOS_POR_DEFECTO,
   ETIQUETA_IA,
   FORMATOS,
+  esNativo,
+  lineasChat,
   BOTON_HEX,
   BOTON_POR_DEFECTO,
   puntos,
@@ -43,7 +45,7 @@ import type { AdCourse } from "@/lib/supabase/types";
 //  la imagen: la foto la pinta la IA una vez y todo lo demás va encima.
 // ══════════════════════════════════════════════════════════
 
-export type CampoTexto = "kicker" | "headline" | "sub" | "extra" | "points" | "cta";
+export type CampoTexto = "kicker" | "headline" | "sub" | "extra" | "points" | "cta" | "chat";
 
 /** Cómo se pinta un texto. Por defecto, tal cual; el editor lo hace editable. */
 export type PintarTexto = (campo: CampoTexto, valor: string, indice?: number) => ReactNode;
@@ -260,7 +262,7 @@ export function Banner(p: Pieza) {
   const pad = { top: safe.top, bottom: safe.bottom, side: safe.side + 12 };
 
   // Se ve si está encendido y tiene texto; en el editor, aunque esté vacío.
-  const ve = (k: CampoTexto) => el[k] && (Boolean(c[k].trim()) || Boolean(p.editando));
+  const ve = (k: Exclude<CampoTexto, "chat">) => el[k] && (Boolean(c[k].trim()) || Boolean(p.editando));
   // Al editar, las líneas tal cual (también la que se acaba de añadir vacía);
   // en el PNG, sólo las que tienen texto.
   const crudas = c.points.split("\n").slice(0, 3);
@@ -410,6 +412,278 @@ export function Banner(p: Pieza) {
     cta: 32,
   };
   const alto = h - pad.top - pad.bottom; // lo que queda dentro de la zona segura
+
+  // ══ Los nativos: capturas de chat, correo, tuit… ══
+  // No llevan foto ni etiqueta de IA. Sin `chat`, se arman con el titular y
+  // la línea de apoyo para que nunca salgan vacíos.
+  if (esNativo(composicion)) {
+    const es = p.language === "es";
+    const conChat = lineasChat(c);
+    const msgs = conChat.length ? conChat : [c.headline, c.sub].filter(Boolean).map((t, i) => ({ yo: i % 2 === 0, t }));
+    // Quien escribe es siempre la marca: una etiqueta («ROMPE LA BARRERA») como
+    // nombre de contacto no tendría sentido.
+    const marca = "ActiveXRemote";
+    const linea = (t: string, i: number) => pintar("chat", t, i);
+    const avatar = (d: number, fondo = a.mesh) => (
+      <div style={{ display: "flex", width: d, height: d, borderRadius: 999, alignItems: "center", justifyContent: "center", backgroundImage: fondo, backgroundColor: "#241246", flexShrink: 0 }}>
+        <svg width={d * 0.5} height={(d * 0.5 * 28) / 46} viewBox="0 0 46 28" fill="none" stroke="#ffffff" strokeWidth={2.4}>
+          <path d="M11 2 L20 26 L2 26 Z" />
+          <path d="M26 2 L44 2 L35 14 Z" />
+          <path d="M26 26 L44 26 L35 14 Z" />
+        </svg>
+      </div>
+    );
+    const ctaNativo = (sobre: "oscuro" | "claro" = "claro", al: Al = "center") =>
+      ve("cta") ? (
+        <div style={{ display: "flex", justifyContent: al === "center" ? "center" : "flex-start", marginTop: 12 }}>
+          <Cta tam={34} b={boton} sobre={sobre} al={al}>
+            {pintar("cta", c.cta)}
+          </Cta>
+        </div>
+      ) : null;
+    const horas = ["09:41", "09:42", "09:42", "09:44", "09:45", "09:45", "09:47", "09:48"];
+
+    if (composicion === "whatsapp" || composicion === "telegram") {
+      const wa = composicion === "whatsapp";
+      const cab = pad.top + 110;
+      return (
+        <div style={{ ...raiz, ...(wa ? { background: "#EFE7DD" } : { backgroundImage: "linear-gradient(160deg, #A9D3A0 0%, #D7E6B0 50%, #9CCBB5 100%)" }) }}>
+          <div style={{ position: "absolute", top: 0, left: 0, width: w, height: cab, display: "flex", alignItems: "flex-end", background: wa ? "#075E54" : "#ffffff", padding: `0 ${pad.side}px 22px`, ...(wa ? {} : { boxShadow: "0 2px 10px rgba(0,0,0,0.12)" }) }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
+              <span style={{ display: "flex", fontSize: 46, color: wa ? "#ffffff" : "#3390EC" }}>‹</span>
+              {avatar(76)}
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <span style={{ display: "flex", fontSize: 36, fontWeight: 700, color: wa ? "#ffffff" : "#161326" }}>{marca}</span>
+                <span style={{ display: "flex", fontSize: 24, color: wa ? "rgba(255,255,255,0.8)" : "#3390EC" }}>{es ? "en línea" : "online"}</span>
+              </div>
+            </div>
+          </div>
+          <div style={{ position: "absolute", top: cab + 34, left: pad.side - 20, right: pad.side - 20, bottom: pad.bottom, display: "flex", flexDirection: "column", gap: 16 }}>
+            {ve("headline") ? (
+              <div style={{ display: "flex", alignSelf: "center", maxWidth: "86%", background: wa ? "#FFF3C4" : "rgba(40,60,40,0.42)", color: wa ? "#54470F" : "#ffffff", fontSize: 26, fontWeight: 500, padding: "10px 22px", borderRadius: 14, textAlign: "center", marginBottom: 6 }}>
+                {pintar("headline", c.headline)}
+              </div>
+            ) : null}
+            {msgs.map((m, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: m.yo ? "flex-end" : "flex-start" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    maxWidth: "80%",
+                    background: m.yo ? (wa ? "#D9FDD3" : "#EEFFDE") : "#ffffff",
+                    borderRadius: 22,
+                    ...(m.yo ? { borderTopRightRadius: 4 } : { borderTopLeftRadius: 4 }),
+                    padding: "16px 24px 10px",
+                    boxShadow: "0 1px 1px rgba(0,0,0,0.12)",
+                  }}
+                >
+                  <div style={{ display: "flex", fontSize: 36, lineHeight: 1.3, color: "#111B21" }}>{conChat.length ? linea(m.t, i) : m.t}</div>
+                  <div style={{ display: "flex", alignSelf: "flex-end", fontSize: 20, color: m.yo && !wa ? "#4FAE4E" : "#667781", marginTop: 4 }}>
+                    {horas[i % horas.length]}
+                    {m.yo ? (wa ? " ✓✓" : " ✓✓") : ""}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {ctaNativo("claro")}
+          </div>
+        </div>
+      );
+    }
+
+    if (composicion === "email") {
+      return (
+        <div style={{ ...raiz, background: "#ffffff" }}>
+          <div style={{ position: "absolute", top: pad.top, left: pad.side, right: pad.side, display: "flex", alignItems: "center", gap: 20, background: "#EEF1F6", borderRadius: 999, padding: "20px 30px" }}>
+            {/* Inter no tiene ☰ ni ⋯: los iconos van dibujados. */}
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="2.4" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+            <span style={{ display: "flex", fontSize: 28, color: "#5F6368" }}>{es ? "Buscar en el correo" : "Search mail"}</span>
+          </div>
+          <div style={{ position: "absolute", top: pad.top + 140, left: pad.side, right: pad.side, bottom: pad.bottom, display: "flex", flexDirection: "column", gap: 26 }}>
+            {ve("headline") ? (
+              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 16 }}>
+                <span style={{ display: "flex", fontSize: 50, fontWeight: 700, lineHeight: 1.15, color: "#1F1F1F" }}>{pintar("headline", c.headline)}</span>
+                <span style={{ display: "flex", fontSize: 22, color: "#444746", background: "#E8EAED", borderRadius: 6, padding: "4px 12px" }}>{es ? "Recibidos" : "Inbox"}</span>
+              </div>
+            ) : null}
+            <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+              {avatar(72)}
+              <div style={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 14 }}>
+                  <span style={{ display: "flex", fontSize: 30, fontWeight: 700, color: "#1F1F1F" }}>{marca}</span>
+                  <span style={{ display: "flex", fontSize: 24, color: "#5F6368" }}>09:41</span>
+                </div>
+                <span style={{ display: "flex", fontSize: 24, color: "#5F6368" }}>{es ? "para mí" : "to me"}</span>
+              </div>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 20, fontSize: 38, lineHeight: 1.45, color: "#1F1F1F" }}>
+              {msgs.map((m, i) => (
+                <div key={i} style={{ display: "flex" }}>
+                  {conChat.length ? linea(m.t, i) : m.t}
+                </div>
+              ))}
+            </div>
+            {ctaNativo("claro", "flex-start")}
+          </div>
+        </div>
+      );
+    }
+
+    if (composicion === "tweet") {
+      return (
+        <div style={{ ...raiz, backgroundImage: a.mesh, backgroundColor: "#241246" }}>
+          {logoEn("#ffffff", { top: pad.top, left: pad.side })}
+          <div style={{ position: "absolute", top: pad.top + 90, left: pad.side, right: pad.side, bottom: pad.bottom, display: "flex", flexDirection: "column", justifyContent: "center", gap: 34 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 26, background: "#ffffff", borderRadius: 28, padding: "44px 46px", boxShadow: "0 30px 80px rgba(0,0,0,0.35)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+                {avatar(84)}
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <span style={{ display: "flex", fontSize: 32, fontWeight: 800, color: "#0F1419" }}>{marca}</span>
+                  <span style={{ display: "flex", fontSize: 26, color: "#536471" }}>The Remote Business School</span>
+                </div>
+              </div>
+              {ve("headline") ? <div style={{ display: "flex", fontSize: 46, fontWeight: 700, lineHeight: 1.25, color: "#0F1419" }}>{pintar("headline", c.headline)}</div> : null}
+              {conChat.length ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 14, fontSize: 38, lineHeight: 1.35, color: "#0F1419" }}>
+                  {conChat.map((m, i) => (
+                    <div key={i} style={{ display: "flex" }}>
+                      {linea(m.t, i)}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+              <div style={{ display: "flex", fontSize: 24, color: "#536471", borderTop: "1px solid #EFF3F4", paddingTop: 20 }}>09:41 · {es ? "9 ene" : "Jan 9"}</div>
+            </div>
+            {ctaNativo("oscuro")}
+          </div>
+        </div>
+      );
+    }
+
+    if (composicion === "notas") {
+      return (
+        <div style={{ ...raiz, background: "#FBF8EF" }}>
+          <div style={{ position: "absolute", top: pad.top, left: pad.side, right: pad.side, display: "flex", justifyContent: "space-between", alignItems: "center", color: "#D99A00", fontSize: 32, fontWeight: 500 }}>
+            <span style={{ display: "flex" }}>‹ {es ? "Notas" : "Notes"}</span>
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="#D99A00"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>
+          </div>
+          <div style={{ position: "absolute", top: pad.top + 110, left: pad.side, right: pad.side, bottom: pad.bottom, display: "flex", flexDirection: "column", gap: 26 }}>
+            <span style={{ display: "flex", fontSize: 24, color: "#9A9488", alignSelf: "center" }}>{es ? "9 de enero · 09:41" : "January 9 · 09:41"}</span>
+            {ve("headline") ? <div style={{ display: "flex", fontSize: 58, fontWeight: 800, lineHeight: 1.1, color: "#1C1A16" }}>{pintar("headline", c.headline)}</div> : null}
+            {msgs.map((m, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 22, fontSize: 42, lineHeight: 1.3, color: "#1C1A16" }}>
+                <div style={{ display: "flex", width: 44, height: 44, borderRadius: 999, flexShrink: 0, alignItems: "center", justifyContent: "center", ...(i < msgs.length - 1 ? { background: "#D99A00", color: "#ffffff" } : { border: "3px solid #C9C2B4" }), fontSize: 28 }}>
+                  {i < msgs.length - 1 ? "✓" : ""}
+                </div>
+                <div style={{ display: "flex", ...(i < msgs.length - 1 ? { color: "#6F6A60" } : {}) }}>{conChat.length ? linea(m.t, i) : m.t}</div>
+              </div>
+            ))}
+            {ctaNativo("claro", "flex-start")}
+          </div>
+        </div>
+      );
+    }
+
+    if (composicion === "buscador") {
+      return (
+        <div style={{ ...raiz, background: "#F6F7FB" }}>
+          {logoEn("#161326", { top: pad.top, left: 0, width: w, justifyContent: "center" }, 30)}
+          <div style={{ position: "absolute", top: pad.top + 110, left: pad.side, right: pad.side, bottom: pad.bottom, display: "flex", flexDirection: "column", gap: 30 }}>
+            <div style={{ display: "flex", flexDirection: "column", background: "#ffffff", borderRadius: 34, boxShadow: "0 8px 30px rgba(22,19,38,0.12)", overflow: "hidden" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 22, padding: "26px 34px", borderBottom: "1px solid #ECECF1" }}>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="2.4"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
+                <span style={{ display: "flex", fontSize: 38, color: "#1F1F1F" }}>{ve("headline") ? pintar("headline", c.headline) : c.headline}</span>
+                <span style={{ display: "flex", width: 3, height: 44, background: a.accent }} />
+              </div>
+              {conChat.map((m, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 22, padding: "18px 34px", fontSize: 32, color: "#3C4043" }}>
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#9AA0A6" strokeWidth="2.4"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
+                  <span style={{ display: "flex" }}>{linea(m.t, i)}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, background: "#ffffff", borderRadius: 24, padding: "30px 34px", boxShadow: "0 2px 10px rgba(22,19,38,0.06)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                {avatar(44)}
+                <span style={{ display: "flex", fontSize: 26, color: "#4D5156" }}>activexremote.com</span>
+              </div>
+              {ve("sub") ? <div style={{ display: "flex", fontSize: 38, fontWeight: 500, lineHeight: 1.25, color: "#1A0DAB" }}>{pintar("sub", c.sub)}</div> : null}
+              {ve("extra") ? <div style={{ display: "flex", fontSize: 28, color: "#4D5156" }}>{pintar("extra", c.extra)}</div> : null}
+            </div>
+            {ctaNativo("claro", "flex-start")}
+          </div>
+        </div>
+      );
+    }
+
+    if (composicion === "calendario") {
+      return (
+        <div style={{ ...raiz, backgroundImage: a.mesh, backgroundColor: "#241246" }}>
+          {logoEn("#ffffff", { top: pad.top, left: pad.side })}
+          <div style={{ position: "absolute", top: pad.top + 90, left: pad.side, right: pad.side, bottom: pad.bottom, display: "flex", flexDirection: "column", justifyContent: "center", gap: 34 }}>
+            <div style={{ display: "flex", flexDirection: "column", background: "#ffffff", borderRadius: 28, overflow: "hidden", boxShadow: "0 30px 80px rgba(0,0,0,0.35)" }}>
+              <div style={{ display: "flex", height: 18, background: a.accent }} />
+              <div style={{ display: "flex", flexDirection: "column", gap: 24, padding: "40px 46px 46px" }}>
+                <span style={{ display: "flex", fontSize: 24, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", color: a.accent }}>{es ? "Invitación" : "Invitation"}</span>
+                {ve("headline") ? <div style={{ display: "flex", fontSize: 54, fontWeight: 800, lineHeight: 1.1, color: "#161326" }}>{pintar("headline", c.headline)}</div> : null}
+                {msgs.map((m, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 20, fontSize: 34, color: "#3A3655" }}>
+                    <div style={{ display: "flex", width: 16, height: 16, borderRadius: 4, background: i === 0 ? a.accent : "#C9C6D6", flexShrink: 0 }} />
+                    <span style={{ display: "flex" }}>{conChat.length ? linea(m.t, i) : m.t}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {ctaNativo("oscuro")}
+          </div>
+        </div>
+      );
+    }
+
+    // billete
+    const [desde, hasta] = [msgs[0]?.t ?? (es ? "Tu casa" : "Home"), msgs[1]?.t ?? (es ? "El mundo" : "The world")];
+    return (
+      <div style={{ ...raiz, backgroundImage: a.mesh, backgroundColor: "#241246" }}>
+        {logoEn("#ffffff", { top: pad.top, left: pad.side })}
+        <div style={{ position: "absolute", top: pad.top + 90, left: pad.side, right: pad.side, bottom: pad.bottom, display: "flex", flexDirection: "column", justifyContent: "center", gap: 34 }}>
+          <div style={{ display: "flex", flexDirection: "column", background: "#ffffff", borderRadius: 30, boxShadow: "0 30px 80px rgba(0,0,0,0.35)", ...(p.formato === "post" ? {} : {}) }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "30px 44px", background: "#161326", borderTopLeftRadius: 30, borderTopRightRadius: 30 }}>
+              <span style={{ display: "flex", fontSize: 24, fontWeight: 800, letterSpacing: 4, color: "#ffffff" }}>{es ? "TARJETA DE EMBARQUE" : "BOARDING PASS"}</span>
+              <span style={{ display: "flex", fontSize: 24, fontWeight: 700, color: a.accent === "#5B4BF5" ? "#B9B2FF" : "#FFB59E" }}>AXR · 2027</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, padding: "40px 44px 26px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, maxWidth: "40%" }}>
+                <span style={{ display: "flex", fontSize: 22, fontWeight: 700, letterSpacing: 3, color: "#8A86A0" }}>{es ? "DESDE" : "FROM"}</span>
+                <span style={{ display: "flex", fontSize: 44, fontWeight: 800, lineHeight: 1.05, textTransform: "uppercase", color: "#161326" }}>{conChat.length ? linea(desde, 0) : desde}</span>
+              </div>
+              <svg width="70" height="70" viewBox="0 0 24 24" fill={a.accent}><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z" /></svg>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, maxWidth: "40%", alignItems: "flex-end" }}>
+                <span style={{ display: "flex", fontSize: 22, fontWeight: 700, letterSpacing: 3, color: "#8A86A0" }}>{es ? "HASTA" : "TO"}</span>
+                <span style={{ display: "flex", fontSize: 44, fontWeight: 800, lineHeight: 1.05, textTransform: "uppercase", textAlign: "right", color: a.accent }}>{conChat.length > 1 ? linea(hasta, 1) : hasta}</span>
+              </div>
+            </div>
+            <div style={{ display: "flex", margin: "0 44px", borderTop: "4px dashed #DAD7E6" }} />
+            <div style={{ display: "flex", flexDirection: "column", gap: 18, padding: "30px 44px 40px" }}>
+              {ve("headline") ? <div style={{ display: "flex", fontSize: 44, fontWeight: 800, lineHeight: 1.12, color: "#161326" }}>{pintar("headline", c.headline)}</div> : null}
+              <div style={{ display: "flex", gap: 40 }}>
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <span style={{ display: "flex", fontSize: 20, fontWeight: 700, letterSpacing: 3, color: "#8A86A0" }}>{es ? "SALIDA" : "DEPARTS"}</span>
+                  <span style={{ display: "flex", fontSize: 32, fontWeight: 700, color: "#161326" }}>{ve("extra") ? pintar("extra", c.extra) : es ? "9 ENE" : "JAN 9"}</span>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <span style={{ display: "flex", fontSize: 20, fontWeight: 700, letterSpacing: 3, color: "#8A86A0" }}>{es ? "PUERTA" : "GATE"}</span>
+                  <span style={{ display: "flex", fontSize: 32, fontWeight: 700, color: "#161326" }}>14</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          {ctaNativo("oscuro")}
+        </div>
+      </div>
+    );
+  }
+
 
   if (composicion === "centrado") {
     return (

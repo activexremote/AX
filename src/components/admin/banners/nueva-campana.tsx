@@ -15,7 +15,7 @@ import { formatoUsd } from "@/lib/social/costes";
 import type { AdCourse, AdObjective } from "@/lib/supabase/types";
 
 const IMAGE_MODEL = "gpt-image-2";
-const MAX_VARIANTES = 6;
+const MAX_VARIANTES = 8;
 
 function Espera({ copy, conFoto }: { copy: BanCopy; conFoto: boolean }) {
   const [s, setS] = useState(0);
@@ -68,6 +68,7 @@ export function NuevaCampana({ copy, locale, textModel }: { copy: BanCopy; local
   const [objective, setObjective] = useState<AdObjective>("leads");
   const [angles, setAngles] = useState<Angulo[]>(["obstaculo", "aspiracion", "metodo", "directo", "convocatoria"]);
   const [cuantas, setCuantas] = useState(5);
+  const [nativos, setNativos] = useState(2);
   const [style, setStyle] = useState<Plantilla>("foto");
   const [idioma, setIdioma] = useState<"es" | "en" | "ambos">(locale === "en" ? "en" : "es");
   const [calidad, setCalidad] = useState<Calidad>("medium");
@@ -77,7 +78,9 @@ export function NuevaCampana({ copy, locale, textModel }: { copy: BanCopy; local
   const conFoto = usaImagen(style);
   // Con referencias de imagen, una variante por referencia si hay más que ángulos.
   const variantes = angles.length ? Math.min(MAX_VARIANTES, Math.max(cuantas, conFoto ? refs.length : 0)) : 0;
-  const coste = estimar(textModel, IMAGE_MODEL, variantes, conFoto, calidad);
+  const enNativo = Math.min(nativos, variantes);
+  // Los nativos no pagan imagen.
+  const coste = estimar(textModel, IMAGE_MODEL, variantes, false, calidad) + (conFoto ? estimar(textModel, IMAGE_MODEL, variantes - enNativo, true, calidad) - estimar(textModel, IMAGE_MODEL, variantes - enNativo, false, calidad) : 0);
   const segundos = conFoto ? 45 + (calidad === "high" ? 30 : 0) : 15;
 
   const alternar = (a: Angulo) =>
@@ -146,13 +149,25 @@ export function NuevaCampana({ copy, locale, textModel }: { copy: BanCopy; local
           <strong>{copy.qCount}</strong>
           <input type="hidden" name="count" value={cuantas} />
           <div className="axr-pv-switch" role="group" aria-label={copy.qCount}>
-            {[3, 4, 5, 6].map((n) => (
+            {[3, 4, 5, 6, 7, 8].map((n) => (
               <button key={n} type="button" aria-pressed={cuantas === n} onClick={() => setCuantas(n)}>
                 {n}
               </button>
             ))}
           </div>
           <small>{copy.qCountHint}</small>
+        </div>
+        <div className="axr-pubnew__count">
+          <strong>{copy.qNative}</strong>
+          <input type="hidden" name="native" value={enNativo} />
+          <div className="axr-pv-switch" role="group" aria-label={copy.qNative}>
+            {Array.from({ length: Math.min(variantes, 8) + 1 }, (_, n) => n).map((n) => (
+              <button key={n} type="button" aria-pressed={enNativo === n} onClick={() => setNativos(n)}>
+                {n}
+              </button>
+            ))}
+          </div>
+          <small>{copy.qNativeHint}</small>
         </div>
 
         {/* ── Cómo se ve ── */}

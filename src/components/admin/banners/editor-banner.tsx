@@ -30,6 +30,9 @@ import {
   BOTON_ICONOS,
   BOTON_TAMANOS,
   COMPOSICIONES,
+  NATIVOS,
+  editarLineaChat,
+  esNativo,
   leerBoton,
   type BotonEstilo,
   PLANTILLAS,
@@ -272,6 +275,18 @@ export function EditorBanner({
   // ── Los textos de la pieza, editables en el sitio ──
   const lineas = c.points.split("\n").slice(0, 3);
   const pintar = (campo: CampoTexto, valor: string, i?: number) => {
+    if (campo === "chat") {
+      const idx = i ?? 0;
+      return (
+        <Editable
+          key={`${lado}-chat-${idx}`}
+          campo="chat"
+          valor={valor}
+          placeholder={copy.placeholder.chat}
+          onChange={(v) => setC((prev) => ({ ...prev, chat: editarLineaChat(prev.chat, idx, v) }))}
+        />
+      );
+    }
     if (campo === "points") {
       const idx = i ?? 0;
       return (
@@ -436,9 +451,19 @@ export function EditorBanner({
           </p>
           <div className="axr-ban-comps" role="radiogroup" aria-label={copy.layoutLabel}>
             <span>{copy.layoutLabel}</span>
-            {COMPOSICIONES.map((k) => (
+            {COMPOSICIONES.filter((k) => !esNativo(k)).map((k) => (
               <button key={k} type="button" role="radio" aria-checked={layout === k} onClick={() => setLayout(k)}>
                 <i className={`axr-ban-comp axr-ban-comp--${k}`} aria-hidden>
+                  <b />
+                  <em />
+                </i>
+                {copy.layout[k]}
+              </button>
+            ))}
+            <span className="axr-ban-comps__sep">{copy.layoutNative}</span>
+            {NATIVOS.map((k) => (
+              <button key={k} type="button" role="radio" aria-checked={layout === k} onClick={() => setLayout(k)}>
+                <i className={`axr-ban-comp axr-ban-comp--nativo axr-ban-comp--${k}`} aria-hidden>
                   <b />
                   <em />
                 </i>
@@ -548,6 +573,13 @@ export function EditorBanner({
                 </select>
               </div>
             </div>
+            {esNativo(layout) ? (
+              <div className="axr-form__row axr-ban-chat">
+                <label>{copy.chatLabel}</label>
+                <textarea rows={6} value={c.chat} onChange={set("chat")} maxLength={1200} />
+                <small className="axr-ban-help">{copy.chatHint}</small>
+              </div>
+            ) : null}
             <div className="axr-ban-boton">
               <strong>{copy.btnStyle}</strong>
               <div className="axr-ban-boton__row" role="radiogroup" aria-label={copy.btnStyle}>

@@ -196,7 +196,8 @@ export function revisar(c: BannerCopy, opts: { imagenIa?: boolean; elementos?: E
   const el = opts.elementos ?? ELEMENTOS_POR_DEFECTO;
   const visibles = PIEZA.filter((k) => el[k]);
   const textos = {
-    pieza: visibles.map((k) => c[k]).join("\n"),
+    // El contenido de los formatos nativos también se ve en la pieza.
+    pieza: [...visibles.map((k) => c[k]), c.chat].join("\n"),
     meta: META.map((k) => c[k]).join("\n"),
   };
   const vistos = new Set<string>();
