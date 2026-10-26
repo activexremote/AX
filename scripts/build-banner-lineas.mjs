@@ -48,7 +48,9 @@ const PERSONAS = [
 
 async function pintar(l) {
   const quien = PERSONAS[LINEAS.indexOf(l) % PERSONAS.length];
-  const prompt = `${l.escena}\nIf a person appears, it is ${quien}.\n\n${l.estilo}\n\n${REGLAS_IMAGEN}`;
+  // Los fondos van sin nadie: decirle quién saldría le invita a meter a alguien.
+  const persona = l.familia === "fondos" ? "" : `\nIf a person appears, it is ${quien}.`;
+  const prompt = `${l.escena}${persona}\n\n${l.estilo}\n\n${REGLAS_IMAGEN}`;
   for (const model of MODELOS) {
     try {
       const res = await client.images.generate({ model, prompt, size: "1024x1536", quality: "medium", output_format: "jpeg", n: 1 });

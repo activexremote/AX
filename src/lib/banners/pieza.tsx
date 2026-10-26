@@ -8,6 +8,7 @@ import {
   VERDE,
   puntos,
   type BannerCopy,
+  type Composicion,
   type Elementos,
   type FormatoId,
   type Plantilla,
@@ -54,6 +55,8 @@ export type Pieza = {
   /** URL de la foto (data: en el servidor, firmada en el navegador), o null. */
   imagen: string | null;
   elementos?: Elementos;
+  /** Dónde va cada cosa (formatos.ts → COMPOSICIONES). Por defecto, la clásica. */
+  composicion?: Composicion;
   /** Familia tipográfica: «Inter» en Satori; la variable de la app en el navegador. */
   fuente?: string;
   texto?: PintarTexto;
@@ -62,6 +65,9 @@ export type Pieza = {
 };
 
 const tal = (_c: CampoTexto, v: string) => v;
+
+/** Un estilo sin las claves que no tienen valor: Satori revienta con `undefined`. */
+const sin = <T extends Record<string, unknown>>(o: T): T => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as T;
 
 /** Tamaño del titular según cuánto texto lleva. */
 function tamTitular(texto: string, plantilla: Plantilla, formato: FormatoId): number {
@@ -87,14 +93,17 @@ function Lockup({ color, size = 34 }: { color: string; size?: number }) {
   );
 }
 
-function Cta({ children, tam = 34 }: { children: ReactNode; tam?: number }) {
+type Al = "flex-start" | "center" | "flex-end";
+
+function Cta({ children, tam = 34, al = "flex-start", giro }: { children: ReactNode; tam?: number; al?: Al; giro?: number }) {
   return (
     <div
       style={{
         display: "flex",
         alignItems: "center",
         gap: 14,
-        alignSelf: "flex-start",
+        alignSelf: al,
+        ...(giro ? { transform: `rotate(${giro}deg)` } : {}),
         background: VERDE,
         color: "#ffffff",
         fontSize: tam,
@@ -109,12 +118,13 @@ function Cta({ children, tam = 34 }: { children: ReactNode; tam?: number }) {
   );
 }
 
-function Kicker({ children, fondo, color = "#ffffff" }: { children: ReactNode; fondo: string; color?: string }) {
+function Kicker({ children, fondo, color = "#ffffff", al = "flex-start", giro }: { children: ReactNode; fondo: string; color?: string; al?: Al; giro?: number }) {
   return (
     <div
       style={{
         display: "flex",
-        alignSelf: "flex-start",
+        alignSelf: al,
+        ...(giro ? { transform: `rotate(${giro}deg)` } : {}),
         background: fondo,
         color,
         fontSize: 26,
@@ -131,13 +141,13 @@ function Kicker({ children, fondo, color = "#ffffff" }: { children: ReactNode; f
 }
 
 /** La línea destacada: un dato con un punto del color del curso delante. */
-function Extra({ children, acento, oscuro }: { children: ReactNode; acento: string; oscuro: boolean }) {
+function Extra({ children, acento, oscuro, al = "flex-start" }: { children: ReactNode; acento: string; oscuro: boolean; al?: Al }) {
   return (
     <div
       style={{
         display: "flex",
         alignItems: "center",
-        alignSelf: "flex-start",
+        alignSelf: al,
         gap: 14,
         fontSize: 30,
         fontWeight: 700,
@@ -153,9 +163,9 @@ function Extra({ children, acento, oscuro }: { children: ReactNode; acento: stri
   );
 }
 
-function Puntos({ items, acento, oscuro, pintar }: { items: string[]; acento: string; oscuro: boolean; pintar: (v: string, i: number) => ReactNode }) {
+function Puntos({ items, acento, oscuro, pintar, al = "flex-start" }: { items: string[]; acento: string; oscuro: boolean; pintar: (v: string, i: number) => ReactNode; al?: Al }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12, alignSelf: al }}>
       {items.map((t, i) => (
         <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 16, fontSize: 32, fontWeight: 500, lineHeight: 1.3, color: oscuro ? "rgba(255,255,255,0.92)" : "#3A3655" }}>
           <span style={{ display: "flex", color: acento, fontWeight: 800 }}>✓</span>
@@ -228,34 +238,346 @@ export function Banner(p: Pieza) {
     ) : null;
 
   /** El bloque de texto, igual en las tres plantillas salvo los colores. */
-  const textos = (o: { oscuro: boolean; kickerFondo: string; titularColor: string; titularLh: number; titularLs: number; sombra?: string; sub: { size: number; color: string; maxWidth?: number; sombra?: string }; cta: number }) => [
-    ve("kicker") ? (
-      <Kicker key="k" fondo={o.kickerFondo}>
-        {pintar("kicker", c.kicker)}
-      </Kicker>
-    ) : null,
-    ve("headline") ? (
-      <div key="h" style={{ display: "flex", fontSize: titular, fontWeight: 800, lineHeight: o.titularLh, letterSpacing: -titular * o.titularLs, color: o.titularColor, textShadow: o.sombra }}>
-        {pintar("headline", c.headline)}
+  const textos = (o: {
+    oscuro: boolean;
+    kickerFondo: string;
+    kickerColor?: string;
+    titularColor: string;
+    titularLh: number;
+    titularLs: number;
+    sombra?: string;
+    sub: { size: number; color: string; maxWidth?: number; sombra?: string };
+    cta: number;
+    /** Alineación de todo el bloque (las composiciones centradas). */
+    al?: Al;
+    /** Tamaño del titular, si la composición pide otro. */
+    tam?: number;
+    mayus?: boolean;
+    sinCta?: boolean;
+    sinKicker?: boolean;
+    sinTitular?: boolean;
+  }) => {
+    const al = o.al ?? "flex-start";
+    const alinear = al === "center" ? ("center" as const) : al === "flex-end" ? ("right" as const) : undefined;
+    const tam = o.tam ?? titular;
+    return [
+      ve("kicker") && !o.sinKicker ? (
+        <Kicker key="k" fondo={o.kickerFondo} color={o.kickerColor} al={al}>
+          {pintar("kicker", c.kicker)}
+        </Kicker>
+      ) : null,
+      ve("headline") && !o.sinTitular ? (
+        <div
+          key="h"
+          style={sin({
+            display: "flex",
+            justifyContent: al,
+            ...(alinear ? { textAlign: alinear } : {}),
+            fontSize: tam,
+            fontWeight: 800,
+            lineHeight: o.titularLh,
+            letterSpacing: -tam * o.titularLs,
+            ...(o.mayus ? { textTransform: "uppercase" as const } : {}),
+            color: o.titularColor,
+            textShadow: o.sombra,
+          })}
+        >
+          {pintar("headline", c.headline)}
+        </div>
+      ) : null,
+      ve("sub") ? (
+        <div key="s" style={sin({ display: "flex", justifyContent: al, ...(alinear ? { textAlign: alinear } : {}), alignSelf: al, fontSize: o.sub.size, fontWeight: 500, lineHeight: 1.35, color: o.sub.color, maxWidth: o.sub.maxWidth, textShadow: o.sub.sombra })}>
+          {pintar("sub", c.sub)}
+        </div>
+      ) : null,
+      el.points && items.length ? <Puntos key="p" items={items} acento={a.accent} oscuro={o.oscuro} al={al} pintar={(v, i) => pintar("points", v, i)} /> : null,
+      ve("extra") ? (
+        <Extra key="e" acento={a.accent} oscuro={o.oscuro} al={al}>
+          {pintar("extra", c.extra)}
+        </Extra>
+      ) : null,
+      ve("cta") && !o.sinCta ? (
+        <div key="c" style={{ display: "flex", marginTop: 8, justifyContent: al }}>
+          <Cta tam={o.cta} al={al}>
+            {pintar("cta", c.cta)}
+          </Cta>
+        </div>
+      ) : null,
+    ];
+  };
+
+  const composicion = p.composicion ?? "clasica";
+
+  // ══ Las composiciones que no son la clásica ══
+  // Con la plantilla «marca» no hay foto aunque la variante tenga una.
+  const foto = plantilla === "marca" ? null : p.imagen;
+  // Ojo con Satori: un estilo con valor `undefined` revienta el PNG. Lo que
+  // es opcional va con `...(x ? { prop: x } : {})`.
+  // La imagen (o, sin imagen, el mesh del curso) en una caja: a sangre o en un hueco.
+  const imagenEn = (x: number, y: number, iw: number, ih: number, extra?: { radio?: number; giro?: number; sombra?: string; borde?: string }) => (
+    <div
+      style={{
+        position: "absolute",
+        top: y,
+        left: x,
+        width: iw,
+        height: ih,
+        display: "flex",
+        overflow: "hidden",
+        borderRadius: extra?.radio ?? 0,
+        // Satori no acepta `transform`, `boxShadow` ni `border` sin valor: o
+        // los lleva o no están.
+        ...(extra?.giro ? { transform: `rotate(${extra.giro}deg)` } : {}),
+        ...(extra?.sombra ? { boxShadow: extra.sombra } : {}),
+        ...(extra?.borde ? { border: extra.borde } : {}),
+        ...(foto ? {} : { backgroundImage: a.mesh }),
+        backgroundColor: "#241246",
+      }}
+    >
+      {foto ? <Fondo imagen={foto} w={iw} h={ih} /> : null}
+    </div>
+  );
+  const capa = (fondo: string, opacidad = 1) => (
+    <div style={{ position: "absolute", top: 0, left: 0, width: w, height: h, display: "flex", ...(fondo.includes("gradient") ? { backgroundImage: fondo } : { backgroundColor: fondo }), opacity: opacidad }} />
+  );
+  const etiquetaIa = (oscuro: boolean, top = pad.top, right = pad.side) =>
+    el.aiLabel && foto ? (
+      <div style={{ position: "absolute", top, right, display: "flex" }}>
+        <EtiquetaIa texto={ETIQUETA_IA[p.language]} oscuro={oscuro} />
       </div>
-    ) : null,
-    ve("sub") ? (
-      <div key="s" style={{ display: "flex", fontSize: o.sub.size, fontWeight: 500, lineHeight: 1.35, color: o.sub.color, maxWidth: o.sub.maxWidth, textShadow: o.sub.sombra }}>
-        {pintar("sub", c.sub)}
+    ) : null;
+  const logoEn = (color: string, estilo: Record<string, number | string>, size?: number) =>
+    el.logo ? (
+      <div style={{ position: "absolute", display: "flex", ...estilo }}>
+        <Lockup color={color} size={size} />
       </div>
-    ) : null,
-    el.points && items.length ? <Puntos key="p" items={items} acento={a.accent} oscuro={o.oscuro} pintar={(v, i) => pintar("points", v, i)} /> : null,
-    ve("extra") ? (
-      <Extra key="e" acento={a.accent} oscuro={o.oscuro}>
-        {pintar("extra", c.extra)}
-      </Extra>
-    ) : null,
-    ve("cta") ? (
-      <div key="c" style={{ display: "flex", marginTop: 8 }}>
-        <Cta tam={o.cta}>{pintar("cta", c.cta)}</Cta>
+    ) : null;
+  const claro = { oscuro: false, kickerFondo: a.accent, titularColor: "#161326", titularLh: 1.05, titularLs: 0.025, sub: { size: 32, color: "#514D69" }, cta: 30 };
+  const oscuro = {
+    oscuro: true,
+    kickerFondo: a.accent,
+    titularColor: "#ffffff",
+    titularLh: 1.04,
+    titularLs: 0.025,
+    sombra: "0 2px 24px rgba(0,0,0,0.35)",
+    sub: { size: 34, color: "rgba(255,255,255,0.9)", maxWidth: 900, sombra: "0 1px 12px rgba(0,0,0,0.4)" },
+    cta: 32,
+  };
+  const alto = h - pad.top - pad.bottom; // lo que queda dentro de la zona segura
+
+  if (composicion === "centrado") {
+    return (
+      <div style={{ ...raiz, background: "#161326" }}>
+        {imagenEn(0, 0, w, h)}
+        {capa("rgba(22,19,38,0.58)")}
+        {logoEn("#ffffff", { top: pad.top, left: 0, width: w, justifyContent: "center" })}
+        {etiquetaIa(true)}
+        <div style={{ position: "absolute", top: pad.top + 80, left: pad.side, width: w - pad.side * 2, height: alto - 80, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 28 }}>
+          {textos({ ...oscuro, al: "center", tam: titular + 6, sub: { ...oscuro.sub, maxWidth: 860 } })}
+        </div>
       </div>
-    ) : null,
-  ];
+    );
+  }
+
+  if (composicion === "arriba") {
+    return (
+      <div style={{ ...raiz, background: "#161326" }}>
+        {imagenEn(0, 0, w, h)}
+        {capa("linear-gradient(180deg, rgba(22,19,38,0.92) 0%, rgba(22,19,38,0.75) 38%, rgba(22,19,38,0) 62%, rgba(22,19,38,0) 78%, rgba(22,19,38,0.55) 100%)")}
+        {logoEn("#ffffff", { top: pad.top, left: pad.side })}
+        {etiquetaIa(true)}
+        <div style={{ position: "absolute", top: pad.top + 90, left: pad.side, right: pad.side, display: "flex", flexDirection: "column", gap: 24 }}>
+          {textos({ ...oscuro, sinCta: true })}
+        </div>
+        {ve("cta") ? (
+          <div style={{ position: "absolute", bottom: pad.bottom, left: pad.side, display: "flex" }}>
+            <Cta tam={34}>{pintar("cta", c.cta)}</Cta>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (composicion === "panel") {
+    const color = p.course === "remote-founder" ? "#2A0F2C" : "#161326";
+    if (p.formato === "post") {
+      const corte = Math.round(w * 0.52);
+      return (
+        <div style={{ ...raiz, background: color }}>
+          {imagenEn(corte, 0, w - corte, h)}
+          <div style={{ position: "absolute", top: 0, left: corte - 8, width: 8, height: h, display: "flex", background: a.accent }} />
+          {logoEn("#ffffff", { top: pad.top, left: pad.side }, 28)}
+          {etiquetaIa(true)}
+          <div style={{ position: "absolute", top: pad.top + 80, left: pad.side, width: corte - pad.side * 2, height: alto - 80, display: "flex", flexDirection: "column", justifyContent: "center", gap: 22 }}>
+            {textos({ ...oscuro, sombra: undefined, tam: Math.round(titular * 0.72), sub: { size: 28, color: "rgba(255,255,255,0.82)" }, cta: 28 })}
+          </div>
+        </div>
+      );
+    }
+    // Vertical: imagen arriba y bloque abajo. Historia: al revés, porque abajo
+    // lo tapa la interfaz.
+    const historia = p.formato === "story";
+    const corte = Math.round(h * (historia ? 0.6 : 0.5));
+    return (
+      <div style={{ ...raiz, background: color }}>
+        {historia ? imagenEn(0, corte, w, h - corte) : imagenEn(0, 0, w, corte)}
+        <div style={{ position: "absolute", top: corte - 4, left: 0, width: w, height: 8, display: "flex", background: a.accent }} />
+        {logoEn("#ffffff", { top: pad.top, left: pad.side })}
+        {etiquetaIa(true, historia ? corte + 30 : pad.top)}
+        <div
+          style={{
+            position: "absolute",
+            left: pad.side,
+            right: pad.side,
+            top: historia ? pad.top + 100 : corte + 56,
+            bottom: historia ? h - corte + 50 : pad.bottom,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            gap: 24,
+          }}
+        >
+          {textos({ ...oscuro, sombra: undefined, tam: Math.round(titular * 0.86), sub: { size: 32, color: "rgba(255,255,255,0.82)" } })}
+        </div>
+      </div>
+    );
+  }
+
+  if (composicion === "marco") {
+    const papel = "#F4F1EA";
+    const iw = w - pad.side * 2 - 40;
+    // La foto se queda con lo que no necesita el texto, que va debajo.
+    const ih = Math.round(Math.min(iw * 0.95, alto - 90 - (p.formato === "post" ? 430 : 480)));
+    const y = pad.top + 90;
+    return (
+      <div style={{ ...raiz, background: papel }}>
+        {logoEn("#161326", { top: pad.top, left: pad.side })}
+        {imagenEn(pad.side + 20, y, iw, ih, { radio: 6, giro: -2, sombra: "0 24px 60px rgba(22,19,38,0.28)", borde: "14px solid #ffffff" })}
+        {etiquetaIa(true, y + 30, pad.side + 40)}
+        <div style={{ position: "absolute", top: y + ih + 56, left: pad.side, right: pad.side, display: "flex", flexDirection: "column", gap: 18 }}>
+          {textos({ ...claro, tam: Math.round(titular * 0.74) })}
+        </div>
+      </div>
+    );
+  }
+
+  if (composicion === "cinta") {
+    const y = pad.top + Math.round(alto * 0.34);
+    return (
+      <div style={{ ...raiz, background: "#161326" }}>
+        {imagenEn(0, 0, w, h)}
+        {capa("linear-gradient(180deg, rgba(22,19,38,0.5) 0%, rgba(22,19,38,0) 25%, rgba(22,19,38,0) 55%, rgba(22,19,38,0.85) 100%)")}
+        {logoEn("#ffffff", { top: pad.top, left: pad.side })}
+        {etiquetaIa(true)}
+        {ve("kicker") ? (
+          <div style={{ position: "absolute", top: y - 90, left: pad.side + 20, display: "flex" }}>
+            <Kicker fondo="#ffffff" color="#161326" giro={-6}>
+              {pintar("kicker", c.kicker)}
+            </Kicker>
+          </div>
+        ) : null}
+        {ve("headline") ? (
+          <div
+            style={{
+              position: "absolute",
+              top: y,
+              left: -60,
+              width: w + 120,
+              display: "flex",
+              transform: "rotate(-6deg)",
+              background: a.accent,
+              padding: `38px ${pad.side + 80}px`,
+              boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+            }}
+          >
+            <div style={{ display: "flex", fontSize: Math.round(titular * 0.84), fontWeight: 800, lineHeight: 1.04, letterSpacing: -titular * 0.02, color: "#ffffff" }}>{pintar("headline", c.headline)}</div>
+          </div>
+        ) : null}
+        <div style={{ position: "absolute", left: pad.side, right: pad.side, bottom: pad.bottom, display: "flex", flexDirection: "column", gap: 22 }}>
+          {textos({ ...oscuro, sinKicker: true, sinTitular: true })}
+        </div>
+      </div>
+    );
+  }
+
+  if (composicion === "gigante") {
+    return (
+      <div style={{ ...raiz, background: a.accent }}>
+        {imagenEn(0, 0, w, h)}
+        {capa(a.accent, 0.82)}
+        {capa("linear-gradient(180deg, rgba(22,19,38,0) 55%, rgba(22,19,38,0.55) 100%)")}
+        {logoEn("#ffffff", { top: pad.top, left: pad.side })}
+        {etiquetaIa(true)}
+        <div style={{ position: "absolute", top: pad.top + 100, left: pad.side, right: pad.side, display: "flex", flexDirection: "column", gap: 22 }}>
+          {textos({ ...oscuro, kickerFondo: "#161326", sombra: undefined, mayus: true, titularLh: 0.98, titularLs: 0.035, tam: Math.round(titular * 1.28), sinCta: true, sub: { size: 34, color: "#ffffff", maxWidth: 880 } })}
+        </div>
+        {ve("cta") ? (
+          <div style={{ position: "absolute", bottom: pad.bottom, right: pad.side, display: "flex" }}>
+            <Cta tam={34}>{pintar("cta", c.cta)}</Cta>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (composicion === "bocadillo") {
+    const y = pad.top + 110;
+    return (
+      <div style={{ ...raiz, background: "#161326" }}>
+        {imagenEn(0, 0, w, h)}
+        {capa("linear-gradient(180deg, rgba(22,19,38,0.45) 0%, rgba(22,19,38,0) 20%, rgba(22,19,38,0) 62%, rgba(22,19,38,0.8) 100%)")}
+        {logoEn("#ffffff", { top: pad.top, left: pad.side })}
+        {etiquetaIa(true)}
+        {ve("headline") ? (
+          <div style={{ position: "absolute", top: y, left: pad.side, width: Math.round(w * 0.8), display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", background: "#ffffff", borderRadius: 44, padding: "44px 48px", boxShadow: "0 24px 60px rgba(0,0,0,0.25)" }}>
+              <div style={{ display: "flex", fontSize: Math.round(titular * 0.78), fontWeight: 800, lineHeight: 1.06, letterSpacing: -titular * 0.02, color: "#161326" }}>{pintar("headline", c.headline)}</div>
+            </div>
+            {/* El pico del bocadillo. */}
+            <div style={{ display: "flex", width: 56, height: 56, background: "#ffffff", marginTop: -30, marginLeft: 90, transform: "rotate(45deg)" }} />
+          </div>
+        ) : null}
+        {ve("kicker") ? (
+          <div style={{ position: "absolute", top: y - 44, left: pad.side + 30, display: "flex" }}>
+            <Kicker fondo="#FFD84D" color="#161326" giro={-4}>
+              {pintar("kicker", c.kicker)}
+            </Kicker>
+          </div>
+        ) : null}
+        <div style={{ position: "absolute", left: pad.side, right: pad.side, bottom: pad.bottom, display: "flex", flexDirection: "column", gap: 20 }}>
+          {textos({ ...oscuro, sinKicker: true, sinTitular: true, sinCta: true })}
+          {ve("cta") ? (
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <Cta tam={34} giro={-3}>
+                {pintar("cta", c.cta)}
+              </Cta>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
+  if (composicion === "revista") {
+    const m = 30;
+    return (
+      <div style={{ ...raiz, background: "#161326" }}>
+        {imagenEn(0, 0, w, h)}
+        {capa("linear-gradient(180deg, rgba(22,19,38,0.55) 0%, rgba(22,19,38,0) 22%, rgba(22,19,38,0) 48%, rgba(22,19,38,0.9) 100%)")}
+        <div style={{ position: "absolute", top: m, left: m, width: w - m * 2, height: h - m * 2, display: "flex", border: "4px solid rgba(255,255,255,0.9)" }} />
+        {logoEn("#ffffff", { top: pad.top + 10, left: 0, width: w, justifyContent: "center" }, 46)}
+        {ve("kicker") ? (
+          <div style={{ position: "absolute", top: pad.top + 90, left: 0, width: w, display: "flex", justifyContent: "center" }}>
+            <div style={{ display: "flex", fontSize: 24, fontWeight: 700, letterSpacing: 6, textTransform: "uppercase", color: "#ffffff", borderTop: "2px solid #ffffff", borderBottom: "2px solid #ffffff", padding: "8px 18px" }}>{pintar("kicker", c.kicker)}</div>
+          </div>
+        ) : null}
+        {etiquetaIa(true, pad.top + 14, m + 24)}
+        <div style={{ position: "absolute", left: pad.side + 20, right: pad.side + 20, bottom: pad.bottom + 20, display: "flex", flexDirection: "column", alignItems: "center", gap: 22 }}>
+          {textos({ ...oscuro, al: "center", sinKicker: true, sub: { ...oscuro.sub, maxWidth: 820 } })}
+        </div>
+      </div>
+    );
+  }
 
   // ── Foto a sangre ──
   if (plantilla === "foto" && p.imagen) {

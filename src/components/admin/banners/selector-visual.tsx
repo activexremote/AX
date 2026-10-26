@@ -31,6 +31,7 @@ export function SelectorVisual({
   brief,
   onBrief,
   max,
+  total,
   contexto,
 }: {
   copy: BanCopy;
@@ -40,6 +41,8 @@ export function SelectorVisual({
   brief: string;
   onBrief: (v: string) => void;
   max: number;
+  /** Cuántas variantes se van a crear. */
+  total: number;
   contexto: { course: string; objective: string; angles: Angulo[] };
 }) {
   const lang = locale === "en" ? "en" : "es";
@@ -60,7 +63,7 @@ export function SelectorVisual({
 
   const sorprender = () => {
     // Tantas como variantes haya (mínimo 3), de familias distintas.
-    const n = Math.min(max, Math.max(3, contexto.angles.length));
+    const n = Math.min(max, Math.max(3, total));
     const mezcladas = LINEAS.slice().sort(() => Math.random() - 0.5);
     const out: Ref[] = [];
     for (const l of mezcladas) {
@@ -87,7 +90,6 @@ export function SelectorVisual({
   };
 
   const visibles = familia ? LINEAS.filter((l) => l.familia === familia) : LINEAS;
-  const total = Math.min(max, Math.max(contexto.angles.length, value.length));
 
   return (
     <div className="axr-ban-vis">
@@ -233,15 +235,30 @@ export function SelectorVisual({
 /** En el editor de una variante: la línea con la que se pinta la próxima imagen. */
 export function ElegirLinea({ copy, locale, value, onChange }: { copy: BanCopy; locale: string; value: string; onChange: (dir: string) => void }) {
   const lang = locale === "en" ? "en" : "es";
+  // Con 100 líneas, se abre en la familia de la actual.
+  const [familia, setFamilia] = useState<Familia | null>(lineaDe(value)?.familia ?? null);
+  const visibles = familia ? LINEAS.filter((l) => l.familia === familia) : LINEAS;
   return (
-    <div className="axr-ban-vis__strip" role="radiogroup" aria-label={copy.visLine}>
-      {LINEAS.map((l) => (
-        <button key={l.id} type="button" role="radio" aria-checked={value === l.id} className={value === l.id ? "is-on" : undefined} onClick={() => onChange(l.id)} title={l.desc[lang]}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={muestraDe(l.id)} alt="" loading="lazy" />
-          <span>{l.nombre[lang]}</span>
+    <>
+      <div className="axr-ban-vis__fams" role="group">
+        <button type="button" aria-pressed={familia === null} onClick={() => setFamilia(null)}>
+          {copy.visAll}
         </button>
-      ))}
-    </div>
+        {FAMILIAS.map((f) => (
+          <button key={f} type="button" aria-pressed={familia === f} onClick={() => setFamilia(f)}>
+            {copy.family[f]}
+          </button>
+        ))}
+      </div>
+      <div className="axr-ban-vis__strip" role="radiogroup" aria-label={copy.visLine}>
+        {visibles.map((l) => (
+          <button key={l.id} type="button" role="radio" aria-checked={value === l.id} className={value === l.id ? "is-on" : undefined} onClick={() => onChange(l.id)} title={l.desc[lang]}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={muestraDe(l.id)} alt="" loading="lazy" />
+            <span>{l.nombre[lang]}</span>
+          </button>
+        ))}
+      </div>
+    </>
   );
 }

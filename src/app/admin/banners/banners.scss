@@ -819,6 +819,8 @@ $professional: #5b4bf5;
   &__acts { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 
   &__fams {
+    width: 0;
+    min-width: 100%;
     display: flex;
     gap: 0.35rem;
     overflow-x: auto;
@@ -974,4 +976,67 @@ $professional: #5b4bf5;
 @media (max-width: 640px) {
   .axr-ban-vis__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-height: 480px; }
   .axr-ban-vis__ideagrid { grid-template-columns: 1fr; }
+}
+
+// ── Cuántas variantes ──
+.axr-pubnew__count {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.9rem;
+  margin: 0.4rem 0 0.2rem;
+  strong { font-size: 0.875rem; }
+  small { flex-basis: 100%; font-size: 0.75rem; color: var(--pub-muted); }
+  .axr-pv-switch button { min-width: 2.6rem; font-weight: 700; }
+}
+
+// ── Composición de la pieza (editor) ──
+.axr-ban-comps {
+  width: 0;
+  min-width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding: 2px 2px 6px;
+  > span { flex: none; font-size: 0.75rem; font-weight: 700; color: var(--pub-muted); margin-right: 0.2rem; }
+  button {
+    flex: none;
+    display: grid;
+    justify-items: center;
+    gap: 0.25rem;
+    font: inherit;
+    font-size: 0.6875rem;
+    color: var(--pub-ink);
+    background: #fff;
+    border: 1px solid var(--pub-line);
+    border-radius: 8px;
+    padding: 0.35rem 0.45rem;
+    cursor: pointer;
+    &[aria-checked="true"] { border-color: var(--adm-accent, #5b4bf5); box-shadow: inset 0 0 0 1px var(--adm-accent, #5b4bf5); background: var(--adm-accent-bg, #f1efff); font-weight: 700; }
+  }
+}
+
+// Esquema en miniatura de cada composición: b = titular, em = botón.
+.axr-ban-comp {
+  position: relative;
+  display: block;
+  width: 34px;
+  height: 42px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: linear-gradient(160deg, #8a96b3, #3d4a63);
+  b, em { position: absolute; display: block; }
+  b { background: #fff; height: 5px; border-radius: 2px; }
+  em { background: #038632; width: 10px; height: 4px; border-radius: 4px; }
+
+  &--clasica { b { left: 4px; bottom: 12px; width: 22px; } em { left: 4px; bottom: 5px; } }
+  &--centrado { b { left: 6px; top: 17px; width: 22px; } em { left: 12px; top: 26px; } }
+  &--arriba { b { left: 4px; top: 7px; width: 24px; } em { left: 4px; bottom: 5px; } }
+  &--panel { background: linear-gradient(90deg, #161326 52%, #8a96b3 52%); b { left: 3px; top: 16px; width: 13px; } em { left: 3px; top: 25px; width: 8px; } }
+  &--marco { background: #f4f1ea; &::before { content: ""; position: absolute; left: 5px; top: 5px; width: 24px; height: 18px; background: #6f7b97; border: 2px solid #fff; transform: rotate(-3deg); } b { left: 5px; bottom: 11px; width: 22px; background: #161326; } em { left: 5px; bottom: 4px; } }
+  &--cinta { b { left: -4px; top: 16px; width: 44px; height: 8px; background: #5b4bf5; transform: rotate(-8deg); } em { left: 4px; bottom: 5px; } }
+  &--gigante { background: #5b4bf5; b { left: 3px; top: 8px; width: 28px; height: 14px; } em { right: 4px; bottom: 5px; } }
+  &--bocadillo { b { left: 4px; top: 8px; width: 24px; height: 10px; border-radius: 5px; } em { right: 4px; bottom: 5px; transform: rotate(-6deg); } }
+  &--revista { &::before { content: ""; position: absolute; inset: 3px; border: 1px solid #fff; } b { left: 7px; bottom: 12px; width: 20px; } em { left: 12px; bottom: 5px; } }
 }

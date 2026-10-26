@@ -23,7 +23,10 @@ import {
   FORMATOS,
   FORMATO_IDS,
   LIMITES,
+  COMPOSICIONES,
   PLANTILLAS,
+  leerComposicion,
+  type Composicion,
   leerCopy,
   leerElementos,
   otroIdioma,
@@ -158,13 +161,15 @@ export function EditorBanner({
       alt: banner.copy_alt ? leerCopy(banner.copy_alt) : null,
       template: banner.template as Plantilla,
       elementos: leerElementos(banner.elements),
+      layout: leerComposicion(banner.layout),
     }),
-    [banner.copy, banner.copy_alt, banner.template, banner.elements],
+    [banner.copy, banner.copy_alt, banner.template, banner.elements, banner.layout],
   );
   const [main, setMain] = useState<BannerCopy>(guardado.copy);
   const [alt, setAlt] = useState<BannerCopy | null>(guardado.alt);
   const [template, setTemplate] = useState<Plantilla>(guardado.template);
   const [elementos, setElementos] = useState<Elementos>(guardado.elementos);
+  const [layout, setLayout] = useState<Composicion>(guardado.layout);
   const [lado, setLado] = useState<Lado>("main");
   const [formato, setFormato] = useState<FormatoId>("vertical");
   const [zonas, setZonas] = useState(false);
@@ -180,6 +185,7 @@ export function EditorBanner({
     setAlt(guardado.alt);
     setTemplate(guardado.template);
     setElementos(guardado.elementos);
+    setLayout(guardado.layout);
     if (!guardado.alt) setLado("main");
   }, [guardado]);
   useEffect(() => setEscena(banner.image_prompt ?? ""), [banner.image_prompt]);
@@ -197,6 +203,7 @@ export function EditorBanner({
     JSON.stringify(main) !== JSON.stringify(guardado.copy) ||
     JSON.stringify(alt) !== JSON.stringify(guardado.alt) ||
     template !== guardado.template ||
+    layout !== guardado.layout ||
     JSON.stringify(elementos) !== JSON.stringify(guardado.elementos);
   const conImagen = Boolean(banner.image_path && imagenUrl);
   const imagenIa = banner.image_source === "ia" && usaImagen(template) && conImagen;
@@ -218,7 +225,7 @@ export function EditorBanner({
 
   const guardar = () => {
     if (!sucio || pending) return;
-    correr(() => guardarBanner(banner.id, { copy: main, copyAlt: alt, template, elements: elementos }));
+    correr(() => guardarBanner(banner.id, { copy: main, copyAlt: alt, template, elements: elementos, layout }));
   };
   // El atajo de teclado guarda lo último, no lo que había al montar.
   const guardarRef = useRef(guardar);
@@ -373,6 +380,7 @@ export function EditorBanner({
               formato={formato}
               imagen={conImagen ? imagenUrl : null}
               elementos={elementos}
+              composicion={layout}
               texto={pintar}
               editando
             />
@@ -393,6 +401,18 @@ export function EditorBanner({
           <p className="axr-ban-hint">
             <Icono n="info" size={14} /> {copy.clickToEdit}
           </p>
+          <div className="axr-ban-comps" role="radiogroup" aria-label={copy.layoutLabel}>
+            <span>{copy.layoutLabel}</span>
+            {COMPOSICIONES.map((k) => (
+              <button key={k} type="button" role="radio" aria-checked={layout === k} onClick={() => setLayout(k)}>
+                <i className={`axr-ban-comp axr-ban-comp--${k}`} aria-hidden>
+                  <b />
+                  <em />
+                </i>
+                {copy.layout[k]}
+              </button>
+            ))}
+          </div>
           <div className="axr-ban-stage__bar">
             <label className="axr-ban-toggle">
               <input type="checkbox" checked={zonas} onChange={(e) => setZonas(e.target.checked)} /> {copy.safeZones}
@@ -412,7 +432,7 @@ export function EditorBanner({
           <details className="axr-ban-feedwrap">
             <summary>{copy.previewFeed}</summary>
             <VistaFeed c={c} copy={copy}>
-              <Lienzo copy={c} template={template} course={campaign.course} language={idioma} formato="vertical" imagen={conImagen ? imagenUrl : null} elementos={elementos} />
+              <Lienzo copy={c} template={template} course={campaign.course} language={idioma} formato="vertical" imagen={conImagen ? imagenUrl : null} elementos={elementos} composicion={layout} />
             </VistaFeed>
           </details>
         </div>
