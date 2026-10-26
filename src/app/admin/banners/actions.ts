@@ -17,8 +17,9 @@ import {
   type Angulo,
   type Plantilla,
 } from "@/lib/banners/formatos";
-import { generarClones, generarVariantes, traducirCopias, type Brief, type Gasto, type Variante } from "@/lib/banners/generar";
-import { BUCKET, borrarImagen, generarImagen, leerImagen } from "@/lib/banners/imagen";
+import { leerRefs, mezcla, type Ref } from "@/lib/banners/direcciones";
+import { escribirEscena, generarClones, generarVariantes, idearImagenes, traducirCopias, type Brief, type Gasto, type Variante } from "@/lib/banners/generar";
+import { BUCKET, borrarImagen, estiloDe, generarImagen, leerImagen } from "@/lib/banners/imagen";
 import { bloquea, revisar, revisarVariante, type Flag } from "@/lib/banners/normas";
 import { createClient } from "@/lib/supabase/server";
 import type { AdBanner, AdBannerStatus, AdCampaign, AdCourse, AdObjective } from "@/lib/supabase/types";
@@ -50,7 +51,7 @@ async function assertAdmin() {
 
 type Supabase = Awaited<ReturnType<typeof assertAdmin>>["supabase"];
 
-async function apuntarGasto(supabase: Supabase, userId: string, campaignId: string, kind: "texto" | "imagen", gastos: Gasto[]) {
+async function apuntarGasto(supabase: Supabase, userId: string, campaignId: string | null, kind: "texto" | "imagen", gastos: Gasto[]) {
   if (!gastos.length) return;
   // Se apunta aunque la respuesta no haya servido: OpenAI lo cobra igual.
   await supabase.from("ad_usage").insert(
@@ -122,28 +123,37 @@ function leerIdioma(v: FormDataEntryValue | null): { language: "es" | "en"; bili
 
 const ruta = (campaignId: string, bannerId: string) => `${campaignId}/${bannerId}-${Date.now()}.jpg`;
 
-/** Pinta la foto de una variante y la guarda. Devuelve el error, si lo hay. */
+/**
+ * Pinta la foto de una variante y la guarda. Devuelve el error, si lo hay.
+ * Con `ref`, con el acabado de esa línea visual (y se apunta en la variante).
+ */
 async function pintar(
   supabase: Supabase,
   userId: string,
   b: Pick<AdBanner, "id" | "campaign_id" | "image_path">,
   escena: string,
   calidad: Calidad,
+  ref?: Ref | null,
 ): Promise<string | null> {
   if (!escena.trim()) return "No hay descripción de la escena.";
-  const r = await generarImagen(escena, ruta(b.campaign_id, b.id), calidad);
+  const r = await generarImagen(escena, ruta(b.campaign_id, b.id), calidad, { estilo: estiloDe(ref) });
   if (!r.ok) return r.error;
   await apuntarGasto(supabase, userId, b.campaign_id, "imagen", [r.imagen.gasto]);
   const anterior = b.image_path;
   await supabase
     .from("ad_banners")
-    .update({ image_path: r.imagen.path, image_prompt: escena, image_source: "ia", updated_at: new Date().toISOString() })
+    .update({ image_path: r.imagen.path, image_prompt: escena, image_source: "ia", ...(ref ? { visual_ref: ref } : {}), updated_at: new Date().toISOString() })
     .eq("id", b.id);
   if (anterior && anterior !== r.imagen.path) await borrarImagen(anterior);
   return null;
 }
 
-/** Guarda las variantes nuevas de una campaña y les pinta la foto si la plantilla la lleva. */
+/**
+ * Guarda las variantes nuevas de una campaña y les pinta la foto si la
+ * plantilla la lleva. Cada variante, con su referencia de imagen: las que se
+ * eligieron al crear la campaña, por turnos; sin ninguna elegida, una línea
+ * distinta al azar para cada una (y distinta de las que ya hay).
+ */
 async function crearVariantes(
   supabase: Supabase,
   userId: string,
@@ -151,6 +161,16 @@ async function crearVariantes(
   angles: Angulo[],
   calidad: Calidad,
 ): Promise<{ error?: string }> {
+  const elegidas = leerRefs(campaign.visual_refs);
+  let refs: Ref[] | undefined;
+  if (usaImagen(campaign.style)) {
+    if (elegidas.length) {
+      refs = angles.map((_, i) => elegidas[i % elegidas.length]);
+    } else {
+      const { data: usadas } = await supabase.from("ad_banners").select("visual_ref").eq("campaign_id", campaign.id);
+      refs = mezcla(angles.length, (usadas ?? []).map((u) => (u.visual_ref as Ref | null)?.dir).filter((d): d is string => Boolean(d)));
+    }
+  }
   const brief: Brief = {
     course: campaign.course,
     objective: campaign.objective,
@@ -159,6 +179,8 @@ async function crearVariantes(
     count: angles.length,
     audience: campaign.audience ?? undefined,
     notes: campaign.notes ?? undefined,
+    refs,
+    imageBrief: campaign.image_brief ?? undefined,
   };
   const r = await generarVariantes(brief);
   await apuntarGasto(supabase, userId, campaign.id, "texto", r.gastos);
@@ -189,17 +211,18 @@ async function guardarVariantes(
         copy: v.copy,
         template,
         image_prompt: v.imagePrompt,
+        visual_ref: v.ref?.dir ? v.ref : null,
         review: { flags: revisar(v.copy, { imagenIa: conFoto }), checkedAt: new Date().toISOString() },
       })),
     )
-    .select("id, campaign_id, image_path, image_prompt");
+    .select("id, campaign_id, image_path, image_prompt, visual_ref");
   if (error || !filas) return { error: `No se pudieron guardar las variantes: ${error?.message ?? ""}` };
 
   if (!conFoto) return {};
 
   // Las fotos, a la vez: cada una tarda 20-40 s y no dependen entre sí.
   const errores = (
-    await Promise.all(filas.map((f) => pintar(supabase, userId, { ...f, image_path: null }, f.image_prompt ?? "", calidad)))
+    await Promise.all(filas.map((f) => pintar(supabase, userId, { ...f, image_path: null }, f.image_prompt ?? "", calidad, f.visual_ref as Ref | null)))
   ).filter(Boolean);
   if (errores.length) {
     return { error: `Las variantes están escritas, pero ${errores.length} imagen(es) no se han podido pintar: ${errores[0]} Puedes reintentarlo desde cada variante.` };
@@ -215,7 +238,18 @@ export async function crearCampana(formData: FormData): Promise<{ id?: string; e
   const { language, bilingual } = leerIdioma(formData.get("language"));
   const style = String(formData.get("style") ?? "foto") as Plantilla;
   const calidad = String(formData.get("quality") ?? "medium") as Calidad;
-  const angles = ANGULOS.filter((a) => formData.getAll("angles").map(String).includes(a)).slice(0, MAX_VARIANTES);
+  const angulos = ANGULOS.filter((a) => formData.getAll("angles").map(String).includes(a)).slice(0, MAX_VARIANTES);
+  let visualRefs: Ref[] = [];
+  try {
+    visualRefs = usaImagen(style) ? leerRefs(JSON.parse(String(formData.get("visual") ?? "[]")), MAX_VARIANTES) : [];
+  } catch {
+    /* sin referencias: mezcla al azar */
+  }
+  const imageBrief = usaImagen(style) ? String(formData.get("image_brief") ?? "").trim().slice(0, 1000) || null : null;
+  // Una variante por ángulo y, si se eligieron más imágenes que ángulos, una
+  // por imagen: los ángulos se repiten por turnos.
+  const total = Math.min(MAX_VARIANTES, Math.max(angulos.length, visualRefs.length));
+  const angles = angulos.length ? Array.from({ length: total }, (_, i) => angulos[i % angulos.length]) : [];
 
   if (!CURSOS.includes(course) || !OBJETIVOS.includes(objective) || !PLANTILLAS.includes(style) || !CALIDADES.includes(calidad)) {
     return { error: "Hay un valor del formulario que no se reconoce." };
@@ -232,9 +266,11 @@ export async function crearCampana(formData: FormData): Promise<{ id?: string; e
       language,
       bilingual,
       style,
-      angles,
+      angles: angulos,
       audience: String(formData.get("audience") ?? "").trim().slice(0, 1000) || null,
       notes: String(formData.get("notes") ?? "").trim().slice(0, 2000) || null,
+      visual_refs: visualRefs,
+      image_brief: imageBrief,
       created_by: userId,
     })
     .select("*")
@@ -390,11 +426,27 @@ export async function reescribirBanner(id: string, instruccion: string): Promise
   return t;
 }
 
-export async function nuevaImagen(id: string, escena: string): Promise<{ error?: string }> {
+/**
+ * Otra imagen para la variante. Con `dir`, en otra línea visual: si la escena
+ * no se ha tocado (era la de la línea anterior), se escribe una nueva para la
+ * línea elegida.
+ */
+export async function nuevaImagen(id: string, escena: string, dir?: string): Promise<{ error?: string }> {
   const { supabase, userId } = await assertAdmin();
   const x = await cargar(supabase, id);
   if (!x) return { error: "La variante no existe." };
-  const err = await pintar(supabase, userId, x.banner, escena.trim() || x.banner.image_prompt || "", "medium");
+  const actual = leerRefs([x.banner.visual_ref])[0] ?? null;
+  const pedida = dir ? (leerRefs([{ dir }])[0] ?? null) : null;
+  const cambia = Boolean(pedida && pedida.dir !== actual?.dir);
+  const ref = cambia ? pedida : actual;
+  let texto = escena.trim();
+  if (cambia && ref && (!texto || texto === (x.banner.image_prompt ?? "").trim())) {
+    const e = await escribirEscena(leerCopy(x.banner.copy), ref, x.campaign.image_brief);
+    await apuntarGasto(supabase, userId, x.campaign.id, "texto", e.gastos);
+    if (!e.escena) return { error: e.error ?? "No se ha podido escribir la escena." };
+    texto = e.escena;
+  }
+  const err = await pintar(supabase, userId, x.banner, texto || x.banner.image_prompt || "", "medium", ref);
   if (err) return { error: err };
   if (!usaImagen(x.banner.template)) await supabase.from("ad_banners").update({ template: "foto" }).eq("id", id);
   revalidatePath(`/admin/banners/${x.campaign.id}`);
@@ -558,4 +610,28 @@ export async function masClones(campaignId: string, count: number, indicacion: s
   const t = await traducirPendientes(supabase, userId, c.id);
   revalidatePath(`/admin/banners/${c.id}`);
   return { error: g.error ?? t.error };
+}
+
+// ── Ideas de imagen ───────────────────────────────────────
+export async function idearImagenesAccion(input: {
+  course: string;
+  objective: string;
+  angles: string[];
+  imageBrief: string;
+  evitar: string[];
+}): Promise<{ ideas: Ref[]; error?: string }> {
+  const { supabase, userId } = await assertAdmin();
+  const course = input.course as AdCourse;
+  const objective = input.objective as AdObjective;
+  if (!CURSOS.includes(course) || !OBJETIVOS.includes(objective)) return { ideas: [], error: "Hay un valor del formulario que no se reconoce." };
+  const r = await idearImagenes({
+    course,
+    objective,
+    angles: ANGULOS.filter((a) => input.angles.includes(a)),
+    imageBrief: String(input.imageBrief ?? "").slice(0, 1000),
+    evitar: (input.evitar ?? []).map((t) => String(t).slice(0, 120)).slice(0, 36),
+  });
+  // Todavía no hay campaña: el gasto se apunta suelto, cuenta en el mes igual.
+  await apuntarGasto(supabase, userId, null, "texto", r.gastos);
+  return { ideas: r.ideas, error: r.error };
 }

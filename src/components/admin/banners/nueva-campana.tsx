@@ -4,7 +4,9 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { crearCampana } from "@/app/admin/banners/actions";
+import { SelectorVisual } from "@/components/admin/banners/selector-visual";
 import { Icono } from "@/components/admin/publicaciones/iconos";
+import type { Ref } from "@/lib/banners/direcciones";
 import { estimar, type Calidad } from "@/lib/banners/costes";
 import { ANGULOS, CURSOS, OBJETIVOS, PLANTILLAS, usaImagen, type Angulo, type Plantilla } from "@/lib/banners/formatos";
 import type { BanCopy } from "@/lib/i18n/banners";
@@ -13,6 +15,7 @@ import { formatoUsd } from "@/lib/social/costes";
 import type { AdCourse, AdObjective } from "@/lib/supabase/types";
 
 const IMAGE_MODEL = "gpt-image-2";
+const MAX_VARIANTES = 6;
 
 function Espera({ copy, conFoto }: { copy: BanCopy; conFoto: boolean }) {
   const [s, setS] = useState(0);
@@ -67,9 +70,13 @@ export function NuevaCampana({ copy, locale, textModel }: { copy: BanCopy; local
   const [style, setStyle] = useState<Plantilla>("foto");
   const [idioma, setIdioma] = useState<"es" | "en" | "ambos">(locale === "en" ? "en" : "es");
   const [calidad, setCalidad] = useState<Calidad>("medium");
+  const [refs, setRefs] = useState<Ref[]>([]);
+  const [imageBrief, setImageBrief] = useState("");
 
   const conFoto = usaImagen(style);
-  const coste = estimar(textModel, IMAGE_MODEL, angles.length, conFoto, calidad);
+  // Con referencias de imagen, una variante por referencia si hay más que ángulos.
+  const variantes = angles.length ? (conFoto ? Math.min(MAX_VARIANTES, Math.max(angles.length, refs.length)) : angles.length) : 0;
+  const coste = estimar(textModel, IMAGE_MODEL, variantes, conFoto, calidad);
   const segundos = conFoto ? 45 + (calidad === "high" ? 30 : 0) : 15;
 
   const alternar = (a: Angulo) =>
@@ -158,6 +165,27 @@ export function NuevaCampana({ copy, locale, textModel }: { copy: BanCopy; local
             ))}
           </div>
         </div>
+
+        {/* ── Qué imagen ── */}
+        {conFoto ? (
+          <>
+            <div className="axr-pubnew__q">
+              <span className="axr-pubnew__n">5</span> {copy.qImage}
+            </div>
+            <small className="axr-pubnew__hint">{copy.qImageHint}</small>
+            <input type="hidden" name="visual" value={JSON.stringify(refs)} />
+            <SelectorVisual
+              copy={copy}
+              locale={locale}
+              value={refs}
+              onChange={setRefs}
+              brief={imageBrief}
+              onBrief={setImageBrief}
+              max={MAX_VARIANTES}
+              contexto={{ course, objective, angles }}
+            />
+          </>
+        ) : null}
 
         {/* ── Opcional ── */}
         <details className="axr-pubnew__more">

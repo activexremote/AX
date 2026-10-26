@@ -137,7 +137,7 @@ export default async function CampanaPage({
 
       <div className="axr-ban-list">
         {lista.map((b, i) => (
-          <EditorBanner key={b.id} banner={b} campaign={c} n={i + 1} copy={copy} imagenUrl={b.image_path ? urlDe.get(b.image_path) ?? null : null} />
+          <EditorBanner key={b.id} banner={b} campaign={c} n={i + 1} copy={copy} locale={locale} imagenUrl={b.image_path ? urlDe.get(b.image_path) ?? null : null} />
         ))}
       </div>
     </div>

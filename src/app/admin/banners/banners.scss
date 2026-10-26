@@ -280,7 +280,7 @@ $professional: #5b4bf5;
   gap: 0.6rem;
   align-content: start;
   min-width: 0;
-  .axr-pv-switch { justify-self: start; max-width: 100%; overflow-x: auto; button { white-space: nowrap; font-size: 0.6875rem; } }
+  .axr-pv-switch { justify-self: start; min-width: 0; max-width: 100%; overflow-x: auto; button { white-space: nowrap; font-size: 0.6875rem; } }
 
   &__bar {
     display: flex;
@@ -674,6 +674,7 @@ $professional: #5b4bf5;
 }
 
 .axr-ban-stage__top {
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -800,4 +801,177 @@ $professional: #5b4bf5;
   background: var(--ban-bad) !important;
   border-color: transparent !important;
   color: #ffffff !important;
+}
+
+// ── Líneas visuales: elegir la imagen antes de pagarla ──
+.axr-ban-vis {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 0.25rem;
+
+  &__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  &__acts { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+  &__fams {
+    display: flex;
+    gap: 0.35rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    button {
+      flex: none;
+      font: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.35rem 0.75rem;
+      border-radius: 99px;
+      border: 1px solid var(--pub-line);
+      background: #fff;
+      color: var(--pub-ink);
+      cursor: pointer;
+      &[aria-pressed="true"] { background: var(--pub-ink); border-color: var(--pub-ink); color: #fff; }
+    }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    gap: 0.75rem;
+    max-height: 560px;
+    overflow-y: auto;
+    padding: 2px;
+  }
+
+  &__card,
+  &__idea {
+    font: inherit;
+    text-align: left;
+    color: var(--pub-ink);
+    background: #fff;
+    border: 1px solid var(--pub-line);
+    border-radius: 10px;
+    padding: 0.4rem 0.4rem 0.6rem;
+    cursor: pointer;
+    display: grid;
+    gap: 0.2rem;
+    align-content: start;
+    transition: border-color 0.12s, box-shadow 0.12s, transform 0.12s;
+    strong { font-size: 0.8125rem; line-height: 1.25; padding: 0.15rem 0.15rem 0; }
+    small { font-size: 0.6875rem; line-height: 1.35; color: var(--pub-muted); padding: 0 0.15rem; }
+    &:hover:not(:disabled) { border-color: var(--adm-accent, #5b4bf5); transform: translateY(-1px); }
+    &:focus-visible { outline: 2px solid var(--pub-info); outline-offset: 2px; }
+    &.is-on { border-color: var(--adm-accent, #5b4bf5); box-shadow: inset 0 0 0 1px var(--adm-accent, #5b4bf5); background: var(--adm-accent-bg, #f1efff); }
+    &:disabled { opacity: 0.45; cursor: not-allowed; }
+  }
+
+  &__img {
+    position: relative;
+    display: block;
+    aspect-ratio: 2 / 3;
+    border-radius: 7px;
+    overflow: hidden;
+    background: #eee;
+    img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  }
+  &__n {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 99px;
+    background: var(--adm-accent, #5b4bf5);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 800;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 0 0 2px #fff;
+  }
+
+  &__ideas { display: grid; gap: 0.75rem; justify-items: start; }
+  &__lead { font-size: 0.8125rem; color: var(--pub-muted); margin: 0; max-width: 60ch; }
+  &__ideagrid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.6rem;
+    &[aria-busy="true"] { opacity: 0.5; }
+  }
+  &__idea {
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 0.7rem;
+    padding: 0.5rem;
+    > span:last-child { display: grid; gap: 0.25rem; align-content: start; }
+    strong, small { padding: 0; }
+    em { font-style: normal; justify-self: start; margin-top: 0.1rem; }
+  }
+
+  &__plan {
+    border: 1px dashed var(--pub-line);
+    border-radius: 10px;
+    padding: 0.7rem 0.8rem;
+    display: grid;
+    gap: 0.6rem;
+    ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem; }
+    li {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 0.55rem;
+      background: #fff;
+      border: 1px solid var(--pub-line);
+      border-radius: 8px;
+      padding: 0.35rem;
+      img { width: 34px; height: 51px; object-fit: cover; border-radius: 5px; display: block; }
+      span { display: grid; min-width: 0; }
+      small { font-size: 0.6875rem; color: var(--pub-muted); }
+      strong { font-size: 0.8125rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      button { border: 0; background: none; color: var(--pub-muted); cursor: pointer; padding: 0.3rem; border-radius: 6px; &:hover { color: var(--pub-ink); background: #f2f2f4; } }
+    }
+  }
+  &__plan-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; strong { font-size: 0.8125rem; } }
+
+  &__brief { margin: 0; }
+
+  // En el editor de una variante: tira horizontal de miniaturas.
+  &__strip {
+    // Sin ancho propio: si no, sus 32 miniaturas ensanchan la columna del editor.
+    width: 0;
+    min-width: 100%;
+    display: flex;
+    gap: 0.45rem;
+    overflow-x: auto;
+    padding: 2px 2px 6px;
+    margin-bottom: 0.25rem;
+    button {
+      flex: none;
+      width: 74px;
+      font: inherit;
+      background: none;
+      border: 0;
+      padding: 0;
+      cursor: pointer;
+      display: grid;
+      gap: 0.2rem;
+      color: var(--pub-ink);
+      img { width: 74px; height: 111px; object-fit: cover; border-radius: 7px; display: block; outline: 1px solid var(--pub-line); outline-offset: -1px; }
+      span { font-size: 0.625rem; line-height: 1.25; text-align: center; }
+      &.is-on img { outline: 3px solid var(--adm-accent, #5b4bf5); outline-offset: -3px; }
+      &.is-on span { font-weight: 700; }
+    }
+  }
+}
+
+.axr-ban-tools .axr-ban-vis__strip + .axr-ban-help { display: block; margin-bottom: 0.5rem; }
+
+@media (max-width: 640px) {
+  .axr-ban-vis__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-height: 480px; }
+  .axr-ban-vis__ideagrid { grid-template-columns: 1fr; }
 }
