@@ -77,6 +77,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             label: a.navGroupSettings,
             items: [
               { href: "/admin/ia", label: a.navAi, icon: "chispa" },
+              { href: "/admin/conexiones", label: a.navConnections, icon: "enchufe" },
               { href: "/admin/slack", label: a.navSlackShort, icon: "almohadilla" },
             ],
           },

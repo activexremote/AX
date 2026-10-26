@@ -31,6 +31,7 @@
     "@carbon/icons-react": "^11.81.0",
     "@carbon/react": "^1.108.0",
     "@carbon/styles": "^1.107.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.1",
     "fflate": "^0.8.3",
@@ -42,8 +43,10 @@
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
     "sass": "^1.99.0",
+    "sharp": "^0.34.5",
     "stripe": "^22.5.0",
-    "unpdf": "^1.8.1"
+    "unpdf": "^1.8.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/node": "^20",

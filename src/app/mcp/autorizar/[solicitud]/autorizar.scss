@@ -1,0 +1,37 @@
+.axr-mcpauth {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem 1rem;
+  background: linear-gradient(160deg, #f4f3ff, #fff6f2);
+
+  &__card {
+    width: min(480px, 100%);
+    background: #fff;
+    border: 1px solid #e6e6ea;
+    border-radius: 16px;
+    padding: 1.75rem;
+    box-shadow: 0 20px 60px rgba(22, 19, 38, 0.1);
+    display: grid;
+    gap: 0.9rem;
+    h1 { font-size: 1.35rem; line-height: 1.25; margin: 0; }
+    p { margin: 0; color: #514d69; line-height: 1.55; font-size: 0.95rem; }
+    ul { margin: 0; padding-left: 1.1rem; color: #6f6f76; font-size: 0.85rem; display: grid; gap: 0.25rem; }
+  }
+  &__brand { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; letter-spacing: 0.04em; color: #161326; }
+  &__actions { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 0.4rem; }
+  &__btn {
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 0.7rem 1.4rem;
+    border-radius: 999px;
+    border: 1px solid #038632;
+    background: #038632;
+    color: #fff;
+    cursor: pointer;
+    &:hover { filter: brightness(1.08); }
+    &:focus-visible { outline: 2px solid #5b4bf5; outline-offset: 2px; }
+    &--ghost { background: #fff; color: #161326; border-color: #d4d4da; }
+  }
+}

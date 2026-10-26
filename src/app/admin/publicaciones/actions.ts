@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { generarImagen, type TamanoImagen } from "@/lib/banners/imagen";
+import { contextoMcp } from "@/lib/mcp/contexto";
 import { createClient } from "@/lib/supabase/server";
 import { CANALES, parseBody, revisar, slugify } from "@/lib/social/canales";
 import { leerFuente } from "@/lib/social/fuente";
@@ -27,6 +28,10 @@ const MAX_BYTES = 5 * 1024 * 1024;
 const TIPOS = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 async function assertAdmin() {
+  // Desde el conector de Claude (/api/mcp) no hay cookies: el token ya se ha
+  // comprobado allí (administrador) y llega aquí por el contexto.
+  const mcp = contextoMcp();
+  if (mcp) return { supabase: mcp.supabase, userId: mcp.userId };
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("no-auth");

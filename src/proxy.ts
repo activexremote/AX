@@ -275,7 +275,10 @@ export const config = {
   // recibían un 307 y no llegaban a ejecutarse nunca, y el webhook de Stripe
   // habría corrido la misma suerte. Cada endpoint de /api se autentica solo:
   // los crons con CRON_SECRET y Stripe con la firma del webhook.
+  //
+  // "/.well-known/" también: son los metadatos OAuth del conector de Claude
+  // (/api/mcp), que se piden sin sesión y sin prefijo de idioma.
   matcher: [
-    "/((?!api/|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp3|wav|mp4|webm|m4v)$).*)",
+    "/((?!api/|\\.well-known/|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp3|wav|mp4|webm|m4v)$).*)",
   ],
 };
