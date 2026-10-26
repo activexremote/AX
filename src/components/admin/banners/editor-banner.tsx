@@ -7,6 +7,7 @@ import {
   borrarBanner,
   estadoBanner,
   guardarBanner,
+  masComoEsta,
   nuevaImagen,
   quitarImagen,
   quitarTraduccion,
@@ -23,7 +24,14 @@ import {
   FORMATOS,
   FORMATO_IDS,
   LIMITES,
+  BOTON_COLORES,
+  BOTON_FORMAS,
+  BOTON_HEX,
+  BOTON_ICONOS,
+  BOTON_TAMANOS,
   COMPOSICIONES,
+  leerBoton,
+  type BotonEstilo,
   PLANTILLAS,
   leerComposicion,
   type Composicion,
@@ -162,14 +170,18 @@ export function EditorBanner({
       template: banner.template as Plantilla,
       elementos: leerElementos(banner.elements),
       layout: leerComposicion(banner.layout),
+      boton: leerBoton(banner.cta_style),
     }),
-    [banner.copy, banner.copy_alt, banner.template, banner.elements, banner.layout],
+    [banner.copy, banner.copy_alt, banner.template, banner.elements, banner.layout, banner.cta_style],
   );
   const [main, setMain] = useState<BannerCopy>(guardado.copy);
   const [alt, setAlt] = useState<BannerCopy | null>(guardado.alt);
   const [template, setTemplate] = useState<Plantilla>(guardado.template);
   const [elementos, setElementos] = useState<Elementos>(guardado.elementos);
   const [layout, setLayout] = useState<Composicion>(guardado.layout);
+  const [boton, setBoton] = useState<BotonEstilo>(guardado.boton);
+  const [parecidas, setParecidas] = useState(3);
+  const popParecidas = useRef<HTMLDetailsElement>(null);
   const [lado, setLado] = useState<Lado>("main");
   const [formato, setFormato] = useState<FormatoId>("vertical");
   const [zonas, setZonas] = useState(false);
@@ -186,6 +198,7 @@ export function EditorBanner({
     setTemplate(guardado.template);
     setElementos(guardado.elementos);
     setLayout(guardado.layout);
+    setBoton(guardado.boton);
     if (!guardado.alt) setLado("main");
   }, [guardado]);
   useEffect(() => setEscena(banner.image_prompt ?? ""), [banner.image_prompt]);
@@ -204,6 +217,7 @@ export function EditorBanner({
     JSON.stringify(alt) !== JSON.stringify(guardado.alt) ||
     template !== guardado.template ||
     layout !== guardado.layout ||
+    JSON.stringify(boton) !== JSON.stringify(guardado.boton) ||
     JSON.stringify(elementos) !== JSON.stringify(guardado.elementos);
   const conImagen = Boolean(banner.image_path && imagenUrl);
   const imagenIa = banner.image_source === "ia" && usaImagen(template) && conImagen;
@@ -225,7 +239,7 @@ export function EditorBanner({
 
   const guardar = () => {
     if (!sucio || pending) return;
-    correr(() => guardarBanner(banner.id, { copy: main, copyAlt: alt, template, elements: elementos, layout }));
+    correr(() => guardarBanner(banner.id, { copy: main, copyAlt: alt, template, elements: elementos, layout, boton }));
   };
   // El atajo de teclado guarda lo último, no lo que había al montar.
   const guardarRef = useRef(guardar);
@@ -325,6 +339,24 @@ export function EditorBanner({
           </>
         ) : (
           <>
+            <details className="axr-ban-pop axr-ban-pop--right" ref={popParecidas}>
+              <summary className="axr-btn axr-btn--ghost">
+                <Icono n="capas" /> {copy.moreLike}
+              </summary>
+              <div className="axr-ban-pop__body">
+                <small className="axr-ban-help">{copy.moreLikeHint}</small>
+                <label className="axr-ban-howmany">
+                  <strong>{copy.addHowMany}</strong>
+                  <input type="number" min={1} max={8} value={parecidas} onChange={(e) => setParecidas(Math.max(1, Math.min(8, Number(e.target.value) || 1)))} />
+                </label>
+                <button type="button" className="axr-btn" disabled={pending || sucio} title={sucio ? copy.unsaved : undefined} onClick={() => {
+                    if (popParecidas.current) popParecidas.current.open = false;
+                    correr(() => masComoEsta(banner.id, parecidas));
+                  }}>
+                  <Icono n="chispa" /> {pending ? copy.generating : fill(copy.moreLikeGo, parecidas)}
+                </button>
+              </div>
+            </details>
             <button type="button" className="axr-btn axr-btn--ghost" disabled={pending} onClick={() => correr(() => estadoBanner(banner.id, "descartado"))}>
               {copy.discard}
             </button>
@@ -381,6 +413,7 @@ export function EditorBanner({
               imagen={conImagen ? imagenUrl : null}
               elementos={elementos}
               composicion={layout}
+              boton={boton}
               texto={pintar}
               editando
             />
@@ -432,7 +465,7 @@ export function EditorBanner({
           <details className="axr-ban-feedwrap">
             <summary>{copy.previewFeed}</summary>
             <VistaFeed c={c} copy={copy}>
-              <Lienzo copy={c} template={template} course={campaign.course} language={idioma} formato="vertical" imagen={conImagen ? imagenUrl : null} elementos={elementos} composicion={layout} />
+              <Lienzo copy={c} template={template} course={campaign.course} language={idioma} formato="vertical" imagen={conImagen ? imagenUrl : null} elementos={elementos} composicion={layout} boton={boton} />
             </VistaFeed>
           </details>
         </div>
@@ -513,6 +546,46 @@ export function EditorBanner({
                     </option>
                   ))}
                 </select>
+              </div>
+            </div>
+            <div className="axr-ban-boton">
+              <strong>{copy.btnStyle}</strong>
+              <div className="axr-ban-boton__row" role="radiogroup" aria-label={copy.btnStyle}>
+                {BOTON_FORMAS.map((f) => (
+                  <button key={f} type="button" role="radio" aria-checked={boton.forma === f} onClick={() => setBoton((b) => ({ ...b, forma: f }))}>
+                    <i className={`axr-ban-boton__muestra axr-ban-boton__muestra--${f}`} aria-hidden />
+                    {copy.btnShape[f]}
+                  </button>
+                ))}
+              </div>
+              <div className="axr-ban-boton__row">
+                {BOTON_COLORES.map((k) => (
+                  <button
+                    key={k}
+                    type="button"
+                    className="axr-ban-boton__color"
+                    aria-pressed={boton.color === k}
+                    aria-label={copy.btnColor[k]}
+                    title={copy.btnColor[k]}
+                    style={{ background: BOTON_HEX[k] }}
+                    onClick={() => setBoton((b) => ({ ...b, color: k }))}
+                  />
+                ))}
+                <span className="axr-ban-boton__sep" />
+                <select value={boton.icono} aria-label={copy.btnStyle} onChange={(e) => setBoton((b) => ({ ...b, icono: e.target.value as BotonEstilo["icono"] }))}>
+                  {BOTON_ICONOS.map((k) => (
+                    <option key={k} value={k}>
+                      {copy.btnIcon[k]}
+                    </option>
+                  ))}
+                </select>
+                <div className="axr-pv-switch" role="group">
+                  {BOTON_TAMANOS.map((k) => (
+                    <button key={k} type="button" aria-pressed={boton.tam === k} onClick={() => setBoton((b) => ({ ...b, tam: k }))}>
+                      {copy.btnSize[k]}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </section>

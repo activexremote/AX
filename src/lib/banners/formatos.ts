@@ -87,6 +87,66 @@ export function repartirComposiciones(n: number, usadas: string[] = []): Composi
   return Array.from({ length: n }, (_, i) => orden[i % orden.length]);
 }
 
+// ── El botón ──────────────────────────────────────────────
+// La llamada a la acción se puede pintar de muchas maneras: forma, color,
+// icono y tamaño. Cada variante de una campaña sale con un botón distinto
+// (otro motivo para que no parezcan la misma pieza) y en el editor se cambia.
+// Es una etiqueta de la pieza: no imita ningún botón de la interfaz de Meta.
+export const BOTON_FORMAS = ["pastilla", "redondeado", "recto", "contorno", "subrayado", "pegatina"] as const;
+export const BOTON_COLORES = ["verde", "violeta", "coral", "amarillo", "blanco", "negro"] as const;
+export const BOTON_ICONOS = ["flecha", "circulo", "ninguno"] as const;
+export const BOTON_TAMANOS = ["s", "m", "l"] as const;
+export type BotonEstilo = {
+  forma: (typeof BOTON_FORMAS)[number];
+  color: (typeof BOTON_COLORES)[number];
+  icono: (typeof BOTON_ICONOS)[number];
+  tam: (typeof BOTON_TAMANOS)[number];
+};
+export const BOTON_POR_DEFECTO: BotonEstilo = { forma: "pastilla", color: "verde", icono: "flecha", tam: "m" };
+export const BOTON_HEX: Record<BotonEstilo["color"], string> = {
+  verde: "#038632",
+  violeta: "#5B4BF5",
+  coral: "#E4462F",
+  amarillo: "#FFD84D",
+  blanco: "#FFFFFF",
+  negro: "#161326",
+};
+
+export function leerBoton(raw: unknown): BotonEstilo {
+  const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const de = <T extends string>(lista: readonly T[], v: unknown, d: T): T => ((lista as readonly unknown[]).includes(v) ? (v as T) : d);
+  return {
+    forma: de(BOTON_FORMAS, o.forma, BOTON_POR_DEFECTO.forma),
+    color: de(BOTON_COLORES, o.color, BOTON_POR_DEFECTO.color),
+    icono: de(BOTON_ICONOS, o.icono, BOTON_POR_DEFECTO.icono),
+    tam: de(BOTON_TAMANOS, o.tam, BOTON_POR_DEFECTO.tam),
+  };
+}
+
+/** Botones de partida que se distinguen bien entre sí: uno distinto por variante. */
+const BOTONES_VARIADOS: BotonEstilo[] = [
+  { forma: "pastilla", color: "verde", icono: "flecha", tam: "m" },
+  { forma: "pastilla", color: "blanco", icono: "flecha", tam: "m" },
+  { forma: "recto", color: "amarillo", icono: "flecha", tam: "l" },
+  { forma: "contorno", color: "blanco", icono: "ninguno", tam: "m" },
+  { forma: "redondeado", color: "violeta", icono: "circulo", tam: "m" },
+  { forma: "pastilla", color: "negro", icono: "circulo", tam: "s" },
+  { forma: "pegatina", color: "coral", icono: "flecha", tam: "l" },
+  { forma: "subrayado", color: "blanco", icono: "flecha", tam: "m" },
+  { forma: "redondeado", color: "verde", icono: "ninguno", tam: "l" },
+  { forma: "pegatina", color: "amarillo", icono: "circulo", tam: "m" },
+];
+
+const claveBoton = (b: BotonEstilo) => `${b.forma}-${b.color}-${b.icono}`;
+
+/** `n` botones distintos; primero los que la campaña aún no usa. */
+export function repartirBotones(n: number, usados: unknown[] = []): BotonEstilo[] {
+  const ya = new Set(usados.map((u) => claveBoton(leerBoton(u))));
+  const azar = <T,>(a: T[]) => a.slice().sort(() => Math.random() - 0.5);
+  const orden = [...azar(BOTONES_VARIADOS.filter((b) => !ya.has(claveBoton(b)))), ...azar(BOTONES_VARIADOS.filter((b) => ya.has(claveBoton(b))))];
+  return Array.from({ length: n }, (_, i) => orden[i % orden.length]);
+}
+
 // ── Cursos y su acento (BRANDBOOK §5–6) ───────────────────
 export const CURSOS: AdCourse[] = ["escuela", "remote-professional", "remote-founder"];
 

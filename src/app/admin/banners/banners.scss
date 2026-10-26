@@ -1040,3 +1040,72 @@ $professional: #5b4bf5;
   &--bocadillo { b { left: 4px; top: 8px; width: 24px; height: 10px; border-radius: 5px; } em { right: 4px; bottom: 5px; transform: rotate(-6deg); } }
   &--revista { &::before { content: ""; position: absolute; inset: 3px; border: 1px solid #fff; } b { left: 7px; bottom: 12px; width: 20px; } em { left: 12px; bottom: 5px; } }
 }
+
+// ── Cuántas añadir / más como esta ──
+.axr-ban-howmany {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  strong { font-size: 0.875rem; color: var(--pub-ink); }
+  input { width: 5rem; font: inherit; font-size: 1rem; font-weight: 700; text-align: center; padding: 0.35rem 0.4rem; border: 1px solid var(--pub-line); border-radius: 8px; }
+}
+.axr-ban-pop__angles {
+  border-top: 1px solid var(--pub-line);
+  padding-top: 0.4rem;
+  summary { font-size: 0.75rem; font-weight: 600; color: var(--pub-muted); cursor: pointer; margin-bottom: 0.3rem; }
+  label { display: flex; gap: 0.5rem; align-items: flex-start; font-size: 0.8125rem; margin: 0.25rem 0; text-transform: none !important; letter-spacing: 0 !important; }
+}
+
+// ── Estilo del botón (editor) ──
+.axr-ban-boton {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  > strong { font-size: 0.8125rem; }
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    > button:not(.axr-ban-boton__color) {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font: inherit;
+      font-size: 0.75rem;
+      padding: 0.35rem 0.6rem;
+      border-radius: 8px;
+      border: 1px solid var(--pub-line);
+      background: #fff;
+      color: var(--pub-ink);
+      cursor: pointer;
+      &[aria-checked="true"] { border-color: var(--adm-accent, #5b4bf5); box-shadow: inset 0 0 0 1px var(--adm-accent, #5b4bf5); background: var(--adm-accent-bg, #f1efff); font-weight: 700; }
+    }
+    select { width: auto; font: inherit; font-size: 0.75rem; padding: 0.35rem 0.5rem; border-radius: 8px; border: 1px solid var(--pub-line); }
+  }
+  &__color {
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    cursor: pointer;
+    &[aria-pressed="true"] { outline: 2px solid var(--adm-accent, #5b4bf5); outline-offset: 2px; }
+  }
+  &__sep { width: 1px; height: 22px; background: var(--pub-line); margin: 0 0.2rem; }
+  &__muestra {
+    display: inline-block;
+    width: 22px;
+    height: 10px;
+    background: #038632;
+    &--pastilla { border-radius: 99px; }
+    &--redondeado { border-radius: 3px; }
+    &--recto { border-radius: 0; }
+    &--contorno { background: none; border: 2px solid #038632; border-radius: 99px; }
+    &--subrayado { background: none; border-bottom: 2px solid #038632; height: 8px; }
+    &--pegatina { border-radius: 2px; transform: rotate(-6deg); box-shadow: 2px 2px 0 #161326; }
+  }
+}
+.axr-ban-pop--right .axr-ban-pop__body { right: 0; left: auto; }
