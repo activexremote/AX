@@ -440,6 +440,8 @@ export interface AdCampaign {
   visual_refs: { dir: string; titulo?: string; idea?: string }[];
   /** Lo que se quiere ver en las imágenes (0025). */
   image_brief: string | null;
+  /** La carpeta en la que entran sus variantes nuevas (0028), o null. */
+  folder_id: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -477,10 +479,20 @@ export interface AdBanner {
   layout: string;
   /** Cómo es el botón (0027 · formatos.ts → BotonEstilo). */
   cta_style: Record<string, string>;
+  /** La carpeta en la que está (0028), o null. */
+  folder_id: string | null;
   review: { flags?: { level: "bloquea" | "aviso"; rule: string; text: string }[]; checkedAt?: string };
   status: AdBannerStatus;
   created_at: string;
   updated_at: string;
+}
+
+/** Una carpeta de banners (0028). */
+export interface AdFolder {
+  id: string;
+  name: string;
+  created_by: string | null;
+  created_at: string;
 }
 
 export interface AdUsage {

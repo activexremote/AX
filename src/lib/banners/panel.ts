@@ -39,3 +39,10 @@ export const cargarBanners = cache(async () => {
 
   return { campanas: lista, gastoMes, aprobados, ai };
 });
+
+/** Las carpetas de banners, por nombre. */
+export async function cargarCarpetas(): Promise<{ id: string; name: string }[]> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("ad_folders").select("id, name").order("name");
+  return (data ?? []) as { id: string; name: string }[];
+}

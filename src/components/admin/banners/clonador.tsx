@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { clonarBanner } from "@/app/admin/banners/actions";
+import { ElegirCarpeta, type ValorCarpeta } from "@/components/admin/banners/elegir-carpeta";
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import { costeUsd, TOKENS_IMAGEN, type Calidad } from "@/lib/banners/costes";
 import { CURSOS, PLANTILLAS, type Plantilla } from "@/lib/banners/formatos";
@@ -54,7 +55,18 @@ function Espera({ copy, conFoto }: { copy: BanCopy; conFoto: boolean }) {
   );
 }
 
-export function Clonador({ copy, locale, textModel }: { copy: BanCopy; locale: string; textModel: string }) {
+export function Clonador({
+  copy,
+  locale,
+  textModel,
+  carpetas,
+}: {
+  copy: BanCopy;
+  locale: string;
+  textModel: string;
+  carpetas: { id: string; name: string }[];
+}) {
+  const [carpeta, setCarpeta] = useState<ValorCarpeta>({ v: "", nueva: "" });
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -251,6 +263,9 @@ export function Clonador({ copy, locale, textModel }: { copy: BanCopy; locale: s
                   </button>
                 ))}
               </div>
+            </div>
+            <div className="axr-form__row">
+              <ElegirCarpeta carpetas={carpetas} value={carpeta} onChange={setCarpeta} copy={copy} name label={copy.folder} />
             </div>
             <div className="axr-form__row">
               <label htmlFor="clone-name">{copy.fName}</label>

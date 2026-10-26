@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { crearCampana } from "@/app/admin/banners/actions";
+import { ElegirCarpeta, type ValorCarpeta } from "@/components/admin/banners/elegir-carpeta";
 import { SelectorVisual } from "@/components/admin/banners/selector-visual";
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import type { Ref } from "@/lib/banners/direcciones";
@@ -60,7 +61,17 @@ function MuestraPlantilla({ p }: { p: Plantilla }) {
   );
 }
 
-export function NuevaCampana({ copy, locale, textModel }: { copy: BanCopy; locale: string; textModel: string }) {
+export function NuevaCampana({
+  copy,
+  locale,
+  textModel,
+  carpetas,
+}: {
+  copy: BanCopy;
+  locale: string;
+  textModel: string;
+  carpetas: { id: string; name: string }[];
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +80,7 @@ export function NuevaCampana({ copy, locale, textModel }: { copy: BanCopy; local
   const [angles, setAngles] = useState<Angulo[]>(["obstaculo", "aspiracion", "metodo", "directo", "convocatoria"]);
   const [cuantas, setCuantas] = useState(5);
   const [nativos, setNativos] = useState(2);
+  const [carpeta, setCarpeta] = useState<ValorCarpeta>({ v: "", nueva: "" });
   const [style, setStyle] = useState<Plantilla>("foto");
   const [idioma, setIdioma] = useState<"es" | "en" | "ambos">(locale === "en" ? "en" : "es");
   const [calidad, setCalidad] = useState<Calidad>("medium");
@@ -216,6 +228,12 @@ export function NuevaCampana({ copy, locale, textModel }: { copy: BanCopy; local
             />
           </>
         ) : null}
+
+        {/* ── Dónde se guardan ── */}
+        <div className="axr-pubnew__count">
+          <ElegirCarpeta carpetas={carpetas} value={carpeta} onChange={setCarpeta} copy={copy} name label={copy.folder} />
+          <small>{copy.folderHint}</small>
+        </div>
 
         {/* ── Opcional ── */}
         <details className="axr-pubnew__more">

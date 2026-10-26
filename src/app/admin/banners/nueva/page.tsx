@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { NuevaCampana } from "@/components/admin/banners/nueva-campana";
 import { publicAiSettings } from "@/lib/ai/settings";
+import { cargarCarpetas } from "@/lib/banners/panel";
 import { getLocale } from "@/lib/i18n/server";
 import { banCopy } from "@/lib/i18n/banners";
 
@@ -12,7 +13,7 @@ export const maxDuration = 300;
 export default async function NuevaCampanaPage() {
   const locale = await getLocale();
   const copy = banCopy[locale];
-  const ai = await publicAiSettings();
+  const [ai, carpetas] = await Promise.all([publicAiSettings(), cargarCarpetas()]);
   const sinClave = ai.source === "ninguna" || ai.lastTestOk === false;
 
   return (
@@ -33,7 +34,7 @@ export default async function NuevaCampanaPage() {
         </div>
       ) : null}
 
-      <NuevaCampana copy={copy} locale={locale} textModel={ai.model} />
+      <NuevaCampana copy={copy} locale={locale} textModel={ai.model} carpetas={carpetas} />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { AccionesCampana } from "@/components/admin/banners/acciones-campana";
 import { EditorBanner } from "@/components/admin/banners/editor-banner";
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import { BUCKET } from "@/lib/banners/imagen";
+import { cargarCarpetas } from "@/lib/banners/panel";
 import { getLocale } from "@/lib/i18n/server";
 import { banCopy } from "@/lib/i18n/banners";
 import { fill } from "@/lib/i18n/publicaciones";
@@ -33,9 +34,10 @@ export default async function CampanaPage({
   if (!campaign) notFound();
   const c = campaign as AdCampaign;
 
-  const [{ data: banners }, { data: usos }] = await Promise.all([
+  const [{ data: banners }, { data: usos }, carpetas] = await Promise.all([
     supabase.from("ad_banners").select("*").eq("campaign_id", id).order("position"),
     supabase.from("ad_usage").select("cost_usd").eq("campaign_id", id),
+    cargarCarpetas(),
   ]);
   const lista = (banners ?? []) as AdBanner[];
   // Los descartados al final: siguen ahí por si se recuperan, pero no estorban.
@@ -66,7 +68,7 @@ export default async function CampanaPage({
           </p>
           {c.audience || c.notes ? <p className="axr-bancamp__brief">{[c.audience, c.notes].filter(Boolean).join(" · ")}</p> : null}
         </div>
-        <AccionesCampana id={c.id} copy={copy} aprobadas={aprobadas} clon={c.kind === "clon"} />
+        <AccionesCampana id={c.id} copy={copy} aprobadas={aprobadas} clon={c.kind === "clon"} carpetas={carpetas} carpeta={c.folder_id} />
       </div>
 
       {aviso ? <div className="axr-login__error" style={{ marginBottom: "1rem" }}>{aviso}</div> : null}

@@ -225,7 +225,7 @@ async function guardarVariantes(
   variantes: Variante[],
   template: string,
   calidad: Calidad,
-  igual?: Pick<AdBanner, "layout" | "elements" | "cta_style">,
+  igual?: Pick<AdBanner, "layout" | "elements" | "cta_style" | "folder_id">,
 ): Promise<{ error?: string }> {
   const { count } = await supabase.from("ad_banners").select("id", { count: "exact", head: true }).eq("campaign_id", campaign.id);
   const desde = count ?? 0;
@@ -256,6 +256,8 @@ async function guardarVariantes(
         visual_ref: v.ref?.dir ? v.ref : null,
         layout: layouts[i],
         cta_style: botones[i],
+        // A la carpeta de la variante de la que salen («más como esta») o a la de la campaña.
+        folder_id: (igual ? igual.folder_id : null) ?? campaign.folder_id ?? null,
         ...(igual ? { elements: igual.elements } : {}),
         review: { flags: revisar(v.copy, { imagenIa: usaImagen(plantillas[i]) }), checkedAt: new Date().toISOString() },
       })),
@@ -302,6 +304,8 @@ export async function crearCampana(formData: FormData): Promise<{ id?: string; e
     return { error: "Hay un valor del formulario que no se reconoce." };
   }
   if (!angles.length) return { error: "Elige al menos un ángulo." };
+  const carpeta = await carpetaDelFormulario(supabase, userId, formData);
+  if (carpeta.error) return { error: carpeta.error };
 
   const nombreAuto = `${course === "escuela" ? "Escuela" : course === "remote-founder" ? "Founder" : "Professional"} · ${objective} · ${new Date().toLocaleDateString("es-ES")}`;
   const { data, error } = await supabase
@@ -318,6 +322,7 @@ export async function crearCampana(formData: FormData): Promise<{ id?: string; e
       notes: String(formData.get("notes") ?? "").trim().slice(0, 2000) || null,
       visual_refs: visualRefs,
       image_brief: imageBrief,
+      folder_id: carpeta.id,
       created_by: userId,
     })
     .select("*")
@@ -587,6 +592,8 @@ export async function clonarBanner(formData: FormData): Promise<{ id?: string; e
   const count = Math.max(1, Math.min(5, Number(formData.get("count")) || 3));
   const indicacion = String(formData.get("prompt") ?? "").trim().slice(0, 1500);
   const plantillaPedida = String(formData.get("style") ?? "auto");
+  const carpeta = await carpetaDelFormulario(supabase, userId, formData);
+  if (carpeta.error) return { error: carpeta.error };
   if (!CURSOS.includes(course) || !CALIDADES.includes(calidad)) return { error: "Hay un valor del formulario que no se reconoce." };
 
   // La campaña se crea antes de llamar a la IA: así la referencia queda
@@ -603,6 +610,7 @@ export async function clonarBanner(formData: FormData): Promise<{ id?: string; e
       style: (PLANTILLAS as string[]).includes(plantillaPedida) ? plantillaPedida : "foto",
       angles: [],
       reference_prompt: indicacion || null,
+      folder_id: carpeta.id,
       created_by: userId,
     })
     .select("*")
@@ -726,8 +734,97 @@ export async function masComoEsta(id: string, n: number): Promise<{ error?: stri
     layout: banner.layout,
     elements: banner.elements,
     cta_style: banner.cta_style,
+    folder_id: banner.folder_id,
   });
   const t = await traducirPendientes(supabase, userId, campaign.id);
   revalidatePath(`/admin/banners/${campaign.id}`);
   return { error: g.error ?? t.error };
+}
+
+// ── Carpetas ──────────────────────────────────────────────
+// Para ordenar los banners. Una variante está en una carpeta o en ninguna;
+// una campaña tiene la carpeta en la que entran sus variantes nuevas.
+
+const nombreCarpeta = (v: unknown) => String(v ?? "").replace(/\s+/g, " ").trim().slice(0, 80);
+
+async function nuevaCarpeta(supabase: Supabase, userId: string, nombre: string): Promise<{ id?: string; error?: string }> {
+  const name = nombreCarpeta(nombre);
+  if (!name) return { error: "Ponle nombre a la carpeta." };
+  const { data, error } = await supabase.from("ad_folders").insert({ name, created_by: userId }).select("id").single();
+  return error || !data ? { error: `No se pudo crear la carpeta: ${error?.message ?? ""}` } : { id: data.id as string };
+}
+
+/** «folder»: "" (ninguna), el id de una, o "nueva" con su nombre en «folder_new». */
+async function carpetaDelFormulario(supabase: Supabase, userId: string, formData: FormData): Promise<{ id: string | null; error?: string }> {
+  const v = String(formData.get("folder") ?? "");
+  if (!v) return { id: null };
+  if (v === "nueva") {
+    const r = await nuevaCarpeta(supabase, userId, String(formData.get("folder_new") ?? ""));
+    return { id: r.id ?? null, error: r.error };
+  }
+  const { data } = await supabase.from("ad_folders").select("id").eq("id", v).maybeSingle();
+  return data ? { id: data.id as string } : { id: null, error: "Esa carpeta ya no existe." };
+}
+
+/** El destino de un movimiento: una carpeta, ninguna (null) o una nueva con ese nombre. */
+type Destino = { id: string | null } | { nueva: string };
+
+async function resolverDestino(supabase: Supabase, userId: string, d: Destino): Promise<{ id: string | null; error?: string }> {
+  if ("nueva" in d) {
+    const r = await nuevaCarpeta(supabase, userId, d.nueva);
+    return { id: r.id ?? null, error: r.error };
+  }
+  if (!d.id) return { id: null };
+  const { data } = await supabase.from("ad_folders").select("id").eq("id", d.id).maybeSingle();
+  return data ? { id: data.id as string } : { id: null, error: "Esa carpeta ya no existe." };
+}
+
+export async function crearCarpeta(nombre: string): Promise<{ id?: string; error?: string }> {
+  const { supabase, userId } = await assertAdmin();
+  const r = await nuevaCarpeta(supabase, userId, nombre);
+  revalidatePath("/admin/banners", "layout");
+  return r;
+}
+
+export async function renombrarCarpeta(id: string, nombre: string): Promise<{ error?: string }> {
+  const { supabase } = await assertAdmin();
+  const name = nombreCarpeta(nombre);
+  if (!name) return { error: "Ponle nombre a la carpeta." };
+  const { error } = await supabase.from("ad_folders").update({ name }).eq("id", id);
+  revalidatePath("/admin/banners", "layout");
+  return error ? { error: error.message } : {};
+}
+
+/** Borra la carpeta, no su contenido: las variantes se quedan sin carpeta. */
+export async function borrarCarpeta(id: string): Promise<{ error?: string }> {
+  const { supabase } = await assertAdmin();
+  const { error } = await supabase.from("ad_folders").delete().eq("id", id);
+  revalidatePath("/admin/banners", "layout");
+  return error ? { error: error.message } : {};
+}
+
+/** Mueve variantes sueltas (de la galería) a una carpeta, a ninguna o a una nueva. */
+export async function moverBanners(ids: string[], destino: Destino): Promise<{ id?: string | null; error?: string }> {
+  const { supabase, userId } = await assertAdmin();
+  const lista = [...new Set(ids)].filter((x) => /^[0-9a-f-]{36}$/.test(x)).slice(0, 1000);
+  if (!lista.length) return { error: "No has elegido ninguna variante." };
+  const d = await resolverDestino(supabase, userId, destino);
+  if (d.error) return { error: d.error };
+  const { error } = await supabase.from("ad_banners").update({ folder_id: d.id }).in("id", lista);
+  revalidatePath("/admin/banners", "layout");
+  return error ? { error: error.message } : { id: d.id };
+}
+
+/** Una campaña entera a una carpeta: sus variantes y las que se generen después. */
+export async function moverCampana(campaignId: string, destino: Destino): Promise<{ id?: string | null; error?: string }> {
+  const { supabase, userId } = await assertAdmin();
+  const d = await resolverDestino(supabase, userId, destino);
+  if (d.error) return { error: d.error };
+  const [a, b] = await Promise.all([
+    supabase.from("ad_campaigns").update({ folder_id: d.id }).eq("id", campaignId),
+    supabase.from("ad_banners").update({ folder_id: d.id }).eq("campaign_id", campaignId),
+  ]);
+  revalidatePath("/admin/banners", "layout");
+  const error = a.error ?? b.error;
+  return error ? { error: error.message } : { id: d.id };
 }

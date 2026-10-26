@@ -1,5 +1,6 @@
 import { Galeria, type ItemGaleria } from "@/components/admin/banners/galeria";
 import { BUCKET } from "@/lib/banners/imagen";
+import { cargarCarpetas } from "@/lib/banners/panel";
 import { getLocale } from "@/lib/i18n/server";
 import { banCopy } from "@/lib/i18n/banners";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -14,9 +15,10 @@ export default async function GaleriaPage() {
   const copy = banCopy[locale];
   const supabase = await createClient();
 
-  const [{ data: camps }, { data: filas }] = await Promise.all([
+  const [{ data: camps }, { data: filas }, carpetas] = await Promise.all([
     supabase.from("ad_campaigns").select("*").order("created_at", { ascending: false }),
     supabase.from("ad_banners").select("*").order("created_at", { ascending: false }).limit(1000),
+    cargarCarpetas(),
   ]);
   const campanas = (camps ?? []) as AdCampaign[];
   const banners = (filas ?? []) as AdBanner[];
@@ -38,6 +40,7 @@ export default async function GaleriaPage() {
         id: b.id,
         campaignId: c.id,
         campaignName: c.name,
+        folderId: b.folder_id,
         course: c.course,
         language: c.language,
         n: b.position + 1,
@@ -59,7 +62,7 @@ export default async function GaleriaPage() {
         <h1>{copy.galTitle}</h1>
         <p>{copy.galLead}</p>
       </div>
-      <Galeria items={items} campanas={campanas.map((c) => ({ id: c.id, name: c.name }))} copy={copy} />
+      <Galeria items={items} campanas={campanas.map((c) => ({ id: c.id, name: c.name }))} carpetas={carpetas} copy={copy} />
     </div>
   );
 }
