@@ -65,6 +65,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 icon: "imagen",
                 sub: [
                   { href: "/admin/banners", label: a.navCampaigns },
+                  { href: "/admin/banners/galeria", label: bc.tabGallery },
                   { href: "/admin/banners/clonar", label: bc.tabClone },
                   { href: "/admin/banners/normas", label: bc.tabRules },
                   { href: "/admin/banners/nueva", label: `+ ${bc.new}` },
