@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import type { NextRequest } from "next/server";
 
-import { FORMATOS, PLANTILLAS, leerCopy, leerComposicion, leerElementos, otroIdioma, type FormatoId, type Plantilla } from "@/lib/banners/formatos";
+import { FORMATOS, PLANTILLAS, leerCopy, leerBoton, leerComposicion, leerElementos, otroIdioma, type FormatoId, type Plantilla } from "@/lib/banners/formatos";
 import { leerImagen } from "@/lib/banners/imagen";
 import { Banner, fuentes } from "@/lib/banners/render";
 import { getCurrentProfile } from "@/lib/data/profile";
@@ -19,7 +19,7 @@ import type { AdBanner, AdCampaign } from "@/lib/supabase/types";
 
 export const runtime = "nodejs";
 
-function leerBorrador(raw: string | null): { copy?: unknown; template?: string; elements?: unknown; layout?: string } | null {
+function leerBorrador(raw: string | null): { copy?: unknown; template?: string; elements?: unknown; layout?: string; boton?: unknown } | null {
   if (!raw) return null;
   try {
     return JSON.parse(Buffer.from(raw, "base64url").toString("utf8"));
@@ -59,13 +59,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const copy = leerCopy(borrador?.copy ?? (alt ? b.copy_alt : b.copy));
   const elementos = leerElementos(borrador?.elements ?? b.elements);
   const composicion = leerComposicion(borrador?.layout ?? b.layout);
+  const boton = leerBoton(borrador?.boton ?? b.cta_style);
   const template = (PLANTILLAS as string[]).includes(borrador?.template ?? "") ? (borrador!.template as Plantilla) : (b.template as Plantilla);
 
   const imagen = b.image_path ? await leerImagen(b.image_path) : null;
   const { w, h, file } = FORMATOS[f];
 
   const res = new ImageResponse(
-    <Banner copy={copy} template={template} course={c.course} language={language} formato={f} imagen={imagen} elementos={elementos} composicion={composicion} />,
+    <Banner copy={copy} template={template} course={c.course} language={language} formato={f} imagen={imagen} elementos={elementos} composicion={composicion} boton={boton} />,
     { width: w, height: h, fonts: await fuentes() },
   );
 

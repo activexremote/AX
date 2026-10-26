@@ -475,6 +475,8 @@ export interface AdBanner {
   visual_ref: { dir: string; titulo?: string; idea?: string } | null;
   /** Dónde va cada cosa en la pieza (0026 · formatos.ts → COMPOSICIONES). */
   layout: string;
+  /** Cómo es el botón (0027 · formatos.ts → BotonEstilo). */
+  cta_style: Record<string, string>;
   review: { flags?: { level: "bloquea" | "aviso"; rule: string; text: string }[]; checkedAt?: string };
   status: AdBannerStatus;
   created_at: string;

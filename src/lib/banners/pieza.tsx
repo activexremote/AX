@@ -5,9 +5,11 @@ import {
   ELEMENTOS_POR_DEFECTO,
   ETIQUETA_IA,
   FORMATOS,
-  VERDE,
+  BOTON_HEX,
+  BOTON_POR_DEFECTO,
   puntos,
   type BannerCopy,
+  type BotonEstilo,
   type Composicion,
   type Elementos,
   type FormatoId,
@@ -57,6 +59,8 @@ export type Pieza = {
   elementos?: Elementos;
   /** Dónde va cada cosa (formatos.ts → COMPOSICIONES). Por defecto, la clásica. */
   composicion?: Composicion;
+  /** Cómo es el botón (formatos.ts → BotonEstilo). Por defecto, verde en pastilla. */
+  boton?: BotonEstilo;
   /** Familia tipográfica: «Inter» en Satori; la variable de la app en el navegador. */
   fuente?: string;
   texto?: PintarTexto;
@@ -95,25 +99,66 @@ function Lockup({ color, size = 34 }: { color: string; size?: number }) {
 
 type Al = "flex-start" | "center" | "flex-end";
 
-function Cta({ children, tam = 34, al = "flex-start", giro }: { children: ReactNode; tam?: number; al?: Al; giro?: number }) {
+/** Sobre qué se pinta el botón: así un botón blanco no desaparece en un fondo claro. */
+type FondoBoton = "oscuro" | "claro" | "acento";
+
+function Cta({
+  children,
+  tam = 34,
+  al = "flex-start",
+  giro,
+  b = BOTON_POR_DEFECTO,
+  sobre = "oscuro",
+  acento,
+}: {
+  children: ReactNode;
+  tam?: number;
+  al?: Al;
+  giro?: number;
+  b?: BotonEstilo;
+  sobre?: FondoBoton;
+  /** El color de fondo cuando `sobre` es «acento». */
+  acento?: string;
+}) {
+  // El color pedido, salvo que se confunda con lo que hay detrás.
+  let hex = BOTON_HEX[b.color];
+  if (sobre === "claro" && b.color === "blanco") hex = BOTON_HEX.negro;
+  if (sobre === "oscuro" && b.color === "negro" && b.forma !== "pastilla" && b.forma !== "redondeado" && b.forma !== "recto" && b.forma !== "pegatina") hex = BOTON_HEX.blanco;
+  if (sobre === "acento" && acento && hex.toLowerCase() === acento.toLowerCase()) hex = BOTON_HEX.blanco;
+  const t = Math.round(tam * (b.tam === "s" ? 0.82 : b.tam === "l" ? 1.2 : 1));
+  const tintaSobre = hex === BOTON_HEX.blanco || hex === BOTON_HEX.amarillo ? "#161326" : "#ffffff";
+  const linea = b.forma === "contorno" || b.forma === "subrayado";
+  const tinta = linea ? hex : tintaSobre;
+  const radio = b.forma === "pastilla" || b.forma === "contorno" ? 999 : b.forma === "redondeado" ? Math.round(t * 0.4) : b.forma === "pegatina" ? 10 : 0;
+  const giroFinal = giro ?? (b.forma === "pegatina" ? -3 : 0);
+  const icono =
+    b.icono === "ninguno" ? null : b.icono === "circulo" ? (
+      <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: t * 1.15, height: t * 1.15, borderRadius: 999, background: tinta, color: linea ? "#161326" : hex, fontSize: t * 0.8 }}>→</span>
+    ) : (
+      <span>→</span>
+    );
   return (
     <div
-      style={{
+      style={sin({
         display: "flex",
         alignItems: "center",
-        gap: 14,
+        gap: t * 0.4,
         alignSelf: al,
-        ...(giro ? { transform: `rotate(${giro}deg)` } : {}),
-        background: VERDE,
-        color: "#ffffff",
-        fontSize: tam,
-        fontWeight: 700,
-        padding: `${tam * 0.55}px ${tam * 1.05}px`,
-        borderRadius: 999,
-      }}
+        ...(giroFinal ? { transform: `rotate(${giroFinal}deg)` } : {}),
+        ...(linea ? {} : { background: hex }),
+        ...(b.forma === "contorno" ? { border: `${Math.max(3, Math.round(t * 0.09))}px solid ${hex}` } : {}),
+        ...(b.forma === "subrayado" ? { borderBottom: `${Math.max(3, Math.round(t * 0.1))}px solid ${hex}` } : {}),
+        ...(b.forma === "pegatina" ? { boxShadow: "6px 6px 0 rgba(22,19,38,0.85)" } : {}),
+        color: tinta,
+        fontSize: t,
+        fontWeight: b.forma === "recto" || b.forma === "pegatina" ? 800 : 700,
+        ...(b.forma === "recto" ? { textTransform: "uppercase" as const, letterSpacing: t * 0.04 } : {}),
+        padding: b.forma === "subrayado" ? `${t * 0.15}px 0` : b.icono === "circulo" ? `${t * 0.32}px ${t * 0.35}px ${t * 0.32}px ${t * 0.95}px` : `${t * 0.55}px ${t * 1.05}px`,
+        borderRadius: radio,
+      })}
     >
       <span style={{ display: "flex" }}>{children}</span>
-      <span>→</span>
+      {icono}
     </div>
   );
 }
@@ -208,6 +253,7 @@ export function Banner(p: Pieza) {
   const c = p.copy;
   const el = p.elementos ?? ELEMENTOS_POR_DEFECTO;
   const pintar = p.texto ?? tal;
+  const boton = p.boton ?? BOTON_POR_DEFECTO;
   const plantilla: Plantilla = p.imagen ? p.template : "marca";
   const titular = tamTitular(c.headline, plantilla, p.formato);
   // Lo de arriba (logo, etiqueta de IA) y lo de abajo (texto) respetan la zona segura.
@@ -298,7 +344,7 @@ export function Banner(p: Pieza) {
       ) : null,
       ve("cta") && !o.sinCta ? (
         <div key="c" style={{ display: "flex", marginTop: 8, justifyContent: al }}>
-          <Cta tam={o.cta} al={al}>
+          <Cta tam={o.cta} al={al} b={boton} sobre={o.oscuro ? "oscuro" : "claro"}>
             {pintar("cta", c.cta)}
           </Cta>
         </div>
@@ -391,7 +437,7 @@ export function Banner(p: Pieza) {
         </div>
         {ve("cta") ? (
           <div style={{ position: "absolute", bottom: pad.bottom, left: pad.side, display: "flex" }}>
-            <Cta tam={34}>{pintar("cta", c.cta)}</Cta>
+            <Cta tam={34} b={boton}>{pintar("cta", c.cta)}</Cta>
           </div>
         ) : null}
       </div>
@@ -513,7 +559,7 @@ export function Banner(p: Pieza) {
         </div>
         {ve("cta") ? (
           <div style={{ position: "absolute", bottom: pad.bottom, right: pad.side, display: "flex" }}>
-            <Cta tam={34}>{pintar("cta", c.cta)}</Cta>
+            <Cta tam={34} b={boton} sobre="acento" acento={a.accent}>{pintar("cta", c.cta)}</Cta>
           </div>
         ) : null}
       </div>
@@ -548,7 +594,7 @@ export function Banner(p: Pieza) {
           {textos({ ...oscuro, sinKicker: true, sinTitular: true, sinCta: true })}
           {ve("cta") ? (
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <Cta tam={34} giro={-3}>
+              <Cta tam={34} giro={-3} b={boton}>
                 {pintar("cta", c.cta)}
               </Cta>
             </div>

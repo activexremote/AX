@@ -10,10 +10,12 @@ import {
   OBJETIVOS,
   PLANTILLAS,
   difElementos,
+  leerBoton,
   leerComposicion,
   leerCopy,
   leerElementos,
   otroIdioma,
+  repartirBotones,
   repartirComposiciones,
   usaImagen,
   type Angulo,
@@ -38,6 +40,8 @@ import type { AdBanner, AdBannerStatus, AdCampaign, AdCourse, AdObjective } from
 // ══════════════════════════════════════════════════════════
 
 const MAX_VARIANTES = 6;
+/** Las que se pueden añadir de una vez a una campaña ya creada. */
+const MAX_NUEVAS = 8;
 const MAX_BYTES = 8 * 1024 * 1024;
 const TIPOS = new Set(["image/jpeg", "image/png", "image/webp"]);
 const CALIDADES: Calidad[] = ["low", "medium", "high"];
@@ -162,9 +166,17 @@ async function crearVariantes(
   campaign: AdCampaign,
   angles: Angulo[],
   calidad: Calidad,
+  /** Variantes que se añaden a una campaña: distintas también de las que ya tiene. */
+  nuevas = false,
 ): Promise<{ error?: string }> {
-  const elegidas = leerRefs(campaign.visual_refs);
+  const elegidas = nuevas ? [] : leerRefs(campaign.visual_refs);
   let refs: Ref[] | undefined;
+  let yaHay = "";
+  if (nuevas) {
+    const { data: hechas } = await supabase.from("ad_banners").select("copy").eq("campaign_id", campaign.id);
+    const titulares = (hechas ?? []).map((h) => leerCopy(h.copy).headline).filter(Boolean);
+    if (titulares.length) yaHay = `YA HAY ESTAS VARIANTES EN LA CAMPAÑA: no repitas sus ganchos ni sus escenas; escribe ideas nuevas.\n${titulares.map((t) => `- ${t}`).join("\n")}`;
+  }
   if (usaImagen(campaign.style)) {
     if (elegidas.length) {
       refs = angles.map((_, i) => elegidas[i % elegidas.length]);
@@ -180,7 +192,7 @@ async function crearVariantes(
     angles,
     count: angles.length,
     audience: campaign.audience ?? undefined,
-    notes: campaign.notes ?? undefined,
+    notes: [campaign.notes, yaHay].filter(Boolean).join("\n\n") || undefined,
     refs,
     imageBrief: campaign.image_brief ?? undefined,
   };
@@ -190,7 +202,11 @@ async function crearVariantes(
   return guardarVariantes(supabase, userId, campaign, r.variantes, campaign.style, calidad);
 }
 
-/** Guarda variantes ya escritas y les pinta la foto si la plantilla la lleva. */
+/**
+ * Guarda variantes ya escritas y les pinta la foto si la plantilla la lleva.
+ * Con `igual`, todas con la composición, los elementos y el botón de una
+ * variante («más como esta»); si no, cada una con otros distintos.
+ */
 async function guardarVariantes(
   supabase: Supabase,
   userId: string,
@@ -198,17 +214,20 @@ async function guardarVariantes(
   variantes: Variante[],
   template: string,
   calidad: Calidad,
+  igual?: Pick<AdBanner, "layout" | "elements" | "cta_style">,
 ): Promise<{ error?: string }> {
   const { count } = await supabase.from("ad_banners").select("id", { count: "exact", head: true }).eq("campaign_id", campaign.id);
   const desde = count ?? 0;
   const conFoto = usaImagen(template);
   // Cada variante, con otra composición: así no parecen la misma pieza. Los
   // clones no, que copian la estructura de su referencia.
-  const { data: usadas } = await supabase.from("ad_banners").select("layout").eq("campaign_id", campaign.id);
-  const layouts =
-    campaign.kind === "clon"
+  const { data: usadas } = await supabase.from("ad_banners").select("layout, cta_style").eq("campaign_id", campaign.id);
+  const layouts = igual
+    ? variantes.map(() => igual.layout)
+    : campaign.kind === "clon"
       ? variantes.map(() => "clasica")
       : repartirComposiciones(variantes.length, (usadas ?? []).map((u) => u.layout as string));
+  const botones = igual ? variantes.map(() => igual.cta_style) : repartirBotones(variantes.length, (usadas ?? []).map((u) => u.cta_style));
 
   const { data: filas, error } = await supabase
     .from("ad_banners")
@@ -222,6 +241,8 @@ async function guardarVariantes(
         image_prompt: v.imagePrompt,
         visual_ref: v.ref?.dir ? v.ref : null,
         layout: layouts[i],
+        cta_style: botones[i],
+        ...(igual ? { elements: igual.elements } : {}),
         review: { flags: revisar(v.copy, { imagenIa: conFoto }), checkedAt: new Date().toISOString() },
       })),
     )
@@ -296,13 +317,16 @@ export async function crearCampana(formData: FormData): Promise<{ id?: string; e
   return { id: data.id, error: r.error ?? t.error };
 }
 
-export async function anadirVariantes(campaignId: string, angles: string[]): Promise<{ error?: string }> {
+/** Añade `n` variantes a una campaña, distintas entre sí y de las que ya tiene. Sin ángulos elegidos, todos. */
+export async function anadirVariantes(campaignId: string, angles: string[], n?: number): Promise<{ error?: string }> {
   const { supabase, userId } = await assertAdmin();
   const { data } = await supabase.from("ad_campaigns").select("*").eq("id", campaignId).maybeSingle();
   if (!data) return { error: "La campaña no existe." };
-  const lista = ANGULOS.filter((a) => angles.includes(a)).slice(0, MAX_VARIANTES);
-  if (!lista.length) return { error: "Elige al menos un ángulo." };
-  const r = await crearVariantes(supabase, userId, data as AdCampaign, lista, "medium");
+  const elegidos = ANGULOS.filter((a) => angles.includes(a));
+  const base = elegidos.length ? elegidos : [...ANGULOS].sort(() => Math.random() - 0.5);
+  const total = Math.min(MAX_NUEVAS, Math.max(1, Math.round(n ?? base.length)));
+  const lista = Array.from({ length: total }, (_, i) => base[i % base.length]);
+  const r = await crearVariantes(supabase, userId, data as AdCampaign, lista, "medium", true);
   const t = await traducirPendientes(supabase, userId, campaignId);
   revalidatePath(`/admin/banners/${campaignId}`);
   return { error: r.error ?? t.error };
@@ -317,7 +341,7 @@ async function cargar(supabase: Supabase, id: string) {
 
 export async function guardarBanner(
   id: string,
-  input: { copy: unknown; copyAlt?: unknown; template: string; elements?: unknown; layout?: string },
+  input: { copy: unknown; copyAlt?: unknown; template: string; elements?: unknown; layout?: string; boton?: unknown },
 ): Promise<{ flags?: Flag[]; error?: string }> {
   const { supabase } = await assertAdmin();
   const x = await cargar(supabase, id);
@@ -334,6 +358,7 @@ export async function guardarBanner(
   const template = (PLANTILLAS as string[]).includes(input.template) ? input.template : x.banner.template;
   const elements = input.elements === undefined ? x.banner.elements : difElementos(leerElementos(input.elements));
   const layout = input.layout === undefined ? x.banner.layout : leerComposicion(input.layout);
+  const cta_style = input.boton === undefined ? x.banner.cta_style : leerBoton(input.boton);
   const flags = flagsDe({ copy, copy_alt: copyAlt, elements, image_source: x.banner.image_source, template }, x.campaign);
 
   // Un aprobado que deja de cumplir vuelve a revisión: lo aprobado tiene que
@@ -341,7 +366,7 @@ export async function guardarBanner(
   const status = x.banner.status === "aprobado" && bloquea(flags) ? "borrador" : x.banner.status;
   const { error } = await supabase
     .from("ad_banners")
-    .update({ copy, copy_alt: copyAlt, template, elements, layout, status, review: { flags, checkedAt: ahora() }, updated_at: ahora() })
+    .update({ copy, copy_alt: copyAlt, template, elements, layout, cta_style, status, review: { flags, checkedAt: ahora() }, updated_at: ahora() })
     .eq("id", id);
   if (error) return { error: error.message };
   revalidatePath(`/admin/banners/${x.campaign.id}`);
@@ -646,4 +671,46 @@ export async function idearImagenesAccion(input: {
   // Todavía no hay campaña: el gasto se apunta suelto, cuenta en el mes igual.
   await apuntarGasto(supabase, userId, null, "texto", r.gastos);
   return { ideas: r.ideas, error: r.error };
+}
+
+// ── Más como esta ─────────────────────────────────────────
+/**
+ * `n` variantes del mismo estilo que una que funciona: misma composición,
+ * plantilla, elementos, botón y línea visual; cambian un poco el texto y la
+ * foto.
+ */
+export async function masComoEsta(id: string, n: number): Promise<{ error?: string }> {
+  const { supabase, userId } = await assertAdmin();
+  const x = await cargar(supabase, id);
+  if (!x) return { error: "La variante no existe." };
+  const { banner, campaign } = x;
+  const total = Math.min(MAX_NUEVAS, Math.max(1, Math.round(n)));
+  const angle = ((ANGULOS as readonly string[]).includes(banner.angle ?? "") ? banner.angle : "obstaculo") as Angulo;
+  const ref = leerRefs([banner.visual_ref])[0];
+  const conFoto = usaImagen(banner.template) && banner.image_source !== "subida";
+
+  const r = await generarVariantes({
+    course: campaign.course,
+    objective: campaign.objective,
+    language: campaign.language,
+    angles: Array.from({ length: total }, () => angle),
+    count: total,
+    audience: campaign.audience ?? undefined,
+    notes: campaign.notes ?? undefined,
+    refs: conFoto && ref ? Array.from({ length: total }, () => ref) : undefined,
+    imageBrief: campaign.image_brief ?? undefined,
+    parecidas: { copy: leerCopy(banner.copy), escena: banner.image_prompt ?? "" },
+  });
+  await apuntarGasto(supabase, userId, campaign.id, "texto", r.gastos);
+  if (!r.variantes.length) return { error: r.error ?? "No se ha generado ninguna variante." };
+  // Una foto subida no se puede variar: las nuevas van con la plantilla de marca.
+  const template = conFoto ? banner.template : usaImagen(banner.template) ? "marca" : banner.template;
+  const g = await guardarVariantes(supabase, userId, campaign, r.variantes, template, "medium", {
+    layout: banner.layout,
+    elements: banner.elements,
+    cta_style: banner.cta_style,
+  });
+  const t = await traducirPendientes(supabase, userId, campaign.id);
+  revalidatePath(`/admin/banners/${campaign.id}`);
+  return { error: g.error ?? t.error };
 }

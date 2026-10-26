@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -28,9 +28,11 @@ export function AccionesCampana({
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [angles, setAngles] = useState<Angulo[]>([]);
-  const [n, setN] = useState(3);
+  const [n, setN] = useState(clon ? 3 : 5);
   const [indicacion, setIndicacion] = useState("");
   const [borrando, setBorrando] = useState(false);
+  // Al terminar, el desplegable se cierra: si no, tapa las variantes nuevas.
+  const pop = useRef<HTMLDetailsElement>(null);
 
   return (
     <div className="axr-bancamp__actions">
@@ -87,43 +89,47 @@ export function AccionesCampana({
         </details>
       ) : null}
       {clon ? null : (
-        <details className="axr-ban-pop">
+        <details className="axr-ban-pop" ref={pop}>
           <summary className="axr-btn axr-btn--ghost">
             <Icono n="mas" /> {copy.addVariants}
           </summary>
           <div className="axr-ban-pop__body">
-            {ANGULOS.map((a) => (
-              <label key={a}>
-                <input
-                  type="checkbox"
-                  checked={angles.includes(a)}
-                  onChange={() =>
-                    setAngles((p) =>
-                      p.includes(a) ? p.filter((x) => x !== a) : [...p, a],
-                    )
-                  }
-                />
-                <span>
-                  <strong>{copy.angle[a]}</strong>{" "}
-                  <small>{copy.angleHint[a]}</small>
-                </span>
-              </label>
-            ))}
+            <label className="axr-ban-howmany">
+              <strong>{copy.addHowMany}</strong>
+              <input type="number" min={1} max={8} value={n} onChange={(e) => setN(Math.max(1, Math.min(8, Number(e.target.value) || 1)))} />
+            </label>
+            <small className="axr-ban-help">{copy.addHint}</small>
+            <details className="axr-ban-pop__angles">
+              <summary>{copy.addAngles}</summary>
+              {ANGULOS.map((a) => (
+                <label key={a}>
+                  <input
+                    type="checkbox"
+                    checked={angles.includes(a)}
+                    onChange={() => setAngles((p) => (p.includes(a) ? p.filter((x) => x !== a) : [...p, a]))}
+                  />
+                  <span>
+                    <strong>{copy.angle[a]}</strong> <small>{copy.angleHint[a]}</small>
+                  </span>
+                </label>
+              ))}
+            </details>
             <button
               type="button"
               className="axr-btn"
-              disabled={pending || !angles.length}
+              disabled={pending}
               onClick={() =>
                 start(async () => {
                   setError(null);
-                  const r = await anadirVariantes(id, angles);
+                  const r = await anadirVariantes(id, angles, n);
                   if (r.error) setError(r.error);
+                  if (pop.current) pop.current.open = false;
                   setAngles([]);
                   router.refresh();
                 })
               }
             >
-              <Icono n="chispa" /> {pending ? copy.generating : copy.generate}
+              <Icono n="chispa" /> {pending ? copy.generating : fill(copy.addGo, n)}
             </button>
           </div>
         </details>
