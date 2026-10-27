@@ -15,7 +15,10 @@ const nextConfig: NextConfig = {
   //
   // unpdf (el texto de los PDF que se suben al asistente) trae su propio
   // PDF.js y lo carga con un import dinámico: fuera del bundle también.
-  serverExternalPackages: ["pdfkit", "unpdf"],
+  //
+  // ffmpeg-static (los vídeos de los banners) resuelve la ruta de su binario
+  // desde su propia carpeta: también fuera.
+  serverExternalPackages: ["pdfkit", "unpdf", "ffmpeg-static"],
   // Y además hay que llevarse sus .afm a la función.
   //
   // PDFKit abre las métricas de Helvetica con
@@ -30,9 +33,12 @@ const nextConfig: NextConfig = {
     "/admin/banners/render/[id]/[formato]": ["./src/lib/banners/fonts/**"],
     "/admin/banners/[id]/zip": ["./src/lib/banners/fonts/**"],
     "/admin/banners/galeria/descargar": ["./src/lib/banners/fonts/**"],
+    // El vídeo: las fuentes y el binario de ffmpeg, que nadie importa.
+    "/admin/banners/video/[id]/[formato]": ["./src/lib/banners/fonts/**", "./node_modules/ffmpeg-static/ffmpeg"],
     // El conector de Claude enseña y descarga banners: también compone piezas.
     "/api/mcp": ["./src/lib/banners/fonts/**"],
     "/api/mcp/descarga": ["./src/lib/banners/fonts/**"],
+    "/api/mcp/video": ["./src/lib/banners/fonts/**", "./node_modules/ffmpeg-static/ffmpeg"],
   },
   // La pantalla de «¿Conectar Claude?» no se puede meter en un iframe de otra
   // web: si se pudiera, alguien podría hacer que un administrador pulsara

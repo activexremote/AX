@@ -47,6 +47,15 @@ import type { AdCourse } from "@/lib/supabase/types";
 
 export type CampoTexto = "kicker" | "headline" | "sub" | "extra" | "points" | "cta" | "chat";
 
+/** Lo que entra por separado en el vídeo (video.tsx): cada texto, el logo, la tarjeta… */
+export type Parte = "foto" | "logo" | "ia" | "tarjeta" | "kicker" | "headline" | "sub" | "points" | "extra" | "cta" | "chat";
+
+/** Cómo está una parte en un instante del vídeo: cuánto se ve (0–1), cuánto se ha movido y, la foto, su zoom. */
+export type Instante = { o: number; x?: number; y?: number; zoom?: number };
+
+/** El instante de cada parte (y de cada mensaje o punto, por su índice). */
+export type Animar = (parte: Parte, i?: number) => Instante;
+
 /** Cómo se pinta un texto. Por defecto, tal cual; el editor lo hace editable. */
 export type PintarTexto = (campo: CampoTexto, valor: string, indice?: number) => ReactNode;
 
@@ -68,12 +77,20 @@ export type Pieza = {
   texto?: PintarTexto;
   /** En el editor, un elemento encendido pero vacío se ve (para poder escribir en él). */
   editando?: boolean;
+  /** Un fotograma del vídeo: dónde está cada parte. Sin esto, la pieza quieta. */
+  anim?: Animar;
 };
 
 const tal = (_c: CampoTexto, v: string) => v;
 
 /** Un estilo sin las claves que no tienen valor: Satori revienta con `undefined`. */
 const sin = <T extends Record<string, unknown>>(o: T): T => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as T;
+
+/** Opacidad y desplazamiento de un instante del vídeo, con el giro que ya tuviera el elemento. */
+function mover(m: Instante | undefined, giro?: number): { opacity?: number; transform?: string } {
+  const tr = [m && (m.x || m.y) ? `translate(${Math.round(m.x ?? 0)}px, ${Math.round(m.y ?? 0)}px)` : "", giro ? `rotate(${giro}deg)` : ""].filter(Boolean).join(" ");
+  return { ...(m && m.o < 1 ? { opacity: Math.max(0, Math.round(m.o * 1000) / 1000) } : {}), ...(tr ? { transform: tr } : {}) };
+}
 
 /** Tamaño del titular según cuánto texto lleva. */
 function tamTitular(texto: string, plantilla: Plantilla, formato: FormatoId): number {
@@ -112,11 +129,13 @@ function Cta({
   b = BOTON_POR_DEFECTO,
   sobre = "oscuro",
   acento,
+  mov,
 }: {
   children: ReactNode;
   tam?: number;
   al?: Al;
   giro?: number;
+  mov?: Instante;
   b?: BotonEstilo;
   sobre?: FondoBoton;
   /** El color de fondo cuando `sobre` es «acento». */
@@ -146,7 +165,7 @@ function Cta({
         alignItems: "center",
         gap: t * 0.4,
         alignSelf: al,
-        ...(giroFinal ? { transform: `rotate(${giroFinal}deg)` } : {}),
+        ...mover(mov, giroFinal),
         ...(linea ? {} : { background: hex }),
         ...(b.forma === "contorno" ? { border: `${Math.max(3, Math.round(t * 0.09))}px solid ${hex}` } : {}),
         ...(b.forma === "subrayado" ? { borderBottom: `${Math.max(3, Math.round(t * 0.1))}px solid ${hex}` } : {}),
@@ -165,13 +184,13 @@ function Cta({
   );
 }
 
-function Kicker({ children, fondo, color = "#ffffff", al = "flex-start", giro }: { children: ReactNode; fondo: string; color?: string; al?: Al; giro?: number }) {
+function Kicker({ children, fondo, color = "#ffffff", al = "flex-start", giro, mov }: { children: ReactNode; fondo: string; color?: string; al?: Al; giro?: number; mov?: Instante }) {
   return (
     <div
       style={{
         display: "flex",
         alignSelf: al,
-        ...(giro ? { transform: `rotate(${giro}deg)` } : {}),
+        ...mover(mov, giro),
         background: fondo,
         color,
         fontSize: 26,
@@ -188,7 +207,7 @@ function Kicker({ children, fondo, color = "#ffffff", al = "flex-start", giro }:
 }
 
 /** La línea destacada: un dato con un punto del color del curso delante. */
-function Extra({ children, acento, oscuro, al = "flex-start" }: { children: ReactNode; acento: string; oscuro: boolean; al?: Al }) {
+function Extra({ children, acento, oscuro, al = "flex-start", mov }: { children: ReactNode; acento: string; oscuro: boolean; al?: Al; mov?: Instante }) {
   return (
     <div
       style={{
@@ -202,6 +221,7 @@ function Extra({ children, acento, oscuro, al = "flex-start" }: { children: Reac
         border: `2px solid ${oscuro ? "rgba(255,255,255,0.5)" : "rgba(22,19,38,0.18)"}`,
         padding: "10px 22px",
         borderRadius: 14,
+        ...mover(mov),
       }}
     >
       <div style={{ display: "flex", width: 14, height: 14, borderRadius: 999, background: acento }} />
@@ -210,11 +230,25 @@ function Extra({ children, acento, oscuro, al = "flex-start" }: { children: Reac
   );
 }
 
-function Puntos({ items, acento, oscuro, pintar, al = "flex-start" }: { items: string[]; acento: string; oscuro: boolean; pintar: (v: string, i: number) => ReactNode; al?: Al }) {
+function Puntos({
+  items,
+  acento,
+  oscuro,
+  pintar,
+  al = "flex-start",
+  mov,
+}: {
+  items: string[];
+  acento: string;
+  oscuro: boolean;
+  pintar: (v: string, i: number) => ReactNode;
+  al?: Al;
+  mov?: (i: number) => Instante | undefined;
+}) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12, alignSelf: al }}>
       {items.map((t, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 16, fontSize: 32, fontWeight: 500, lineHeight: 1.3, color: oscuro ? "rgba(255,255,255,0.92)" : "#3A3655" }}>
+        <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 16, fontSize: 32, fontWeight: 500, lineHeight: 1.3, color: oscuro ? "rgba(255,255,255,0.92)" : "#3A3655", ...mover(mov?.(i)) }}>
           <span style={{ display: "flex", color: acento, fontWeight: 800 }}>✓</span>
           <span style={{ display: "flex" }}>{pintar(t, i)}</span>
         </div>
@@ -241,10 +275,15 @@ function EtiquetaIa({ texto, oscuro }: { texto: string; oscuro: boolean }) {
   );
 }
 
-function Fondo({ imagen, w, h }: { imagen: string; w: number; h: number }) {
+function Fondo({ imagen, w, h, mov }: { imagen: string; w: number; h: number; mov?: Instante }) {
+  // En el vídeo, la foto se acerca despacio: más grande que su caja y centrada
+  // (la caja recorta), sin `transform`, que Satori no escala bien.
+  const z = mov?.zoom ?? 1;
+  const [zw, zh] = [Math.round(w * z), Math.round(h * z)];
+  const [left, top] = [Math.round((w - zw) / 2 + (mov?.x ?? 0)), Math.round((h - zh) / 2 + (mov?.y ?? 0))];
   return (
     // eslint-disable-next-line @next/next/no-img-element -- Satori y vista previa, no una imagen de la web
-    <img src={imagen} alt="" width={w} height={h} style={{ position: "absolute", top: 0, left: 0, width: w, height: h, objectFit: "cover" }} />
+    <img src={imagen} alt="" width={zw} height={zh} style={{ position: "absolute", top, left, width: zw, height: zh, objectFit: "cover" }} />
   );
 }
 
@@ -256,6 +295,9 @@ export function Banner(p: Pieza) {
   const el = p.elementos ?? ELEMENTOS_POR_DEFECTO;
   const pintar = p.texto ?? tal;
   const boton = p.boton ?? BOTON_POR_DEFECTO;
+  // En el vídeo, el instante de cada parte; quieta, nada.
+  const ins = (parte: Parte, i = 0) => p.anim?.(parte, i);
+  const mov = (parte: Parte, i = 0) => mover(ins(parte, i));
   const plantilla: Plantilla = p.imagen ? p.template : "marca";
   const titular = tamTitular(c.headline, plantilla, p.formato);
   // Lo de arriba (logo, etiqueta de IA) y lo de abajo (texto) respetan la zona segura.
@@ -280,8 +322,20 @@ export function Banner(p: Pieza) {
   const cabecera = (color: string, oscuro: boolean) =>
     el.logo || (el.aiLabel && p.imagen) ? (
       <div style={{ position: "absolute", top: pad.top, left: pad.side, right: pad.side, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        {el.logo ? <Lockup color={color} /> : <div style={{ display: "flex" }} />}
-        {el.aiLabel && p.imagen ? <EtiquetaIa texto={ETIQUETA_IA[p.language]} oscuro={oscuro} /> : <div style={{ display: "flex" }} />}
+        {el.logo ? (
+          <div style={{ display: "flex", ...mov("logo") }}>
+            <Lockup color={color} />
+          </div>
+        ) : (
+          <div style={{ display: "flex" }} />
+        )}
+        {el.aiLabel && p.imagen ? (
+          <div style={{ display: "flex", ...mov("ia") }}>
+            <EtiquetaIa texto={ETIQUETA_IA[p.language]} oscuro={oscuro} />
+          </div>
+        ) : (
+          <div style={{ display: "flex" }} />
+        )}
       </div>
     ) : null;
 
@@ -310,7 +364,7 @@ export function Banner(p: Pieza) {
     const tam = o.tam ?? titular;
     return [
       ve("kicker") && !o.sinKicker ? (
-        <Kicker key="k" fondo={o.kickerFondo} color={o.kickerColor} al={al}>
+        <Kicker key="k" fondo={o.kickerFondo} color={o.kickerColor} al={al} mov={ins("kicker")}>
           {pintar("kicker", c.kicker)}
         </Kicker>
       ) : null,
@@ -328,24 +382,25 @@ export function Banner(p: Pieza) {
             ...(o.mayus ? { textTransform: "uppercase" as const } : {}),
             color: o.titularColor,
             textShadow: o.sombra,
+            ...mov("headline"),
           })}
         >
           {pintar("headline", c.headline)}
         </div>
       ) : null,
       ve("sub") ? (
-        <div key="s" style={sin({ display: "flex", justifyContent: al, ...(alinear ? { textAlign: alinear } : {}), alignSelf: al, fontSize: o.sub.size, fontWeight: 500, lineHeight: 1.35, color: o.sub.color, maxWidth: o.sub.maxWidth, textShadow: o.sub.sombra })}>
+        <div key="s" style={sin({ display: "flex", justifyContent: al, ...(alinear ? { textAlign: alinear } : {}), alignSelf: al, fontSize: o.sub.size, fontWeight: 500, lineHeight: 1.35, color: o.sub.color, maxWidth: o.sub.maxWidth, textShadow: o.sub.sombra, ...mov("sub") })}>
           {pintar("sub", c.sub)}
         </div>
       ) : null,
-      el.points && items.length ? <Puntos key="p" items={items} acento={a.accent} oscuro={o.oscuro} al={al} pintar={(v, i) => pintar("points", v, i)} /> : null,
+      el.points && items.length ? <Puntos key="p" items={items} acento={a.accent} oscuro={o.oscuro} al={al} pintar={(v, i) => pintar("points", v, i)} mov={(i) => ins("points", i)} /> : null,
       ve("extra") ? (
-        <Extra key="e" acento={a.accent} oscuro={o.oscuro} al={al}>
+        <Extra key="e" acento={a.accent} oscuro={o.oscuro} al={al} mov={ins("extra")}>
           {pintar("extra", c.extra)}
         </Extra>
       ) : null,
       ve("cta") && !o.sinCta ? (
-        <div key="c" style={{ display: "flex", marginTop: 8, justifyContent: al }}>
+        <div key="c" style={{ display: "flex", marginTop: 8, justifyContent: al, ...mov("cta") }}>
           <Cta tam={o.cta} al={al} b={boton} sobre={o.oscuro ? "oscuro" : "claro"}>
             {pintar("cta", c.cta)}
           </Cta>
@@ -382,7 +437,7 @@ export function Banner(p: Pieza) {
         backgroundColor: "#241246",
       }}
     >
-      {foto ? <Fondo imagen={foto} w={iw} h={ih} /> : null}
+      {foto ? <Fondo imagen={foto} w={iw} h={ih} mov={ins("foto")} /> : null}
     </div>
   );
   const capa = (fondo: string, opacidad = 1) => (
@@ -390,13 +445,13 @@ export function Banner(p: Pieza) {
   );
   const etiquetaIa = (oscuro: boolean, top = pad.top, right = pad.side) =>
     el.aiLabel && foto ? (
-      <div style={{ position: "absolute", top, right, display: "flex" }}>
+      <div style={{ position: "absolute", top, right, display: "flex", ...mov("ia") }}>
         <EtiquetaIa texto={ETIQUETA_IA[p.language]} oscuro={oscuro} />
       </div>
     ) : null;
   const logoEn = (color: string, estilo: Record<string, number | string>, size?: number) =>
     el.logo ? (
-      <div style={{ position: "absolute", display: "flex", ...estilo }}>
+      <div style={{ position: "absolute", display: "flex", ...estilo, ...mov("logo") }}>
         <Lockup color={color} size={size} />
       </div>
     ) : null;
@@ -435,7 +490,7 @@ export function Banner(p: Pieza) {
     );
     const ctaNativo = (sobre: "oscuro" | "claro" = "claro", al: Al = "center") =>
       ve("cta") ? (
-        <div style={{ display: "flex", justifyContent: al === "center" ? "center" : "flex-start", marginTop: 12 }}>
+        <div style={{ display: "flex", justifyContent: al === "center" ? "center" : "flex-start", marginTop: 12, ...mov("cta") }}>
           <Cta tam={34} b={boton} sobre={sobre} al={al}>
             {pintar("cta", c.cta)}
           </Cta>
@@ -460,12 +515,12 @@ export function Banner(p: Pieza) {
           </div>
           <div style={{ position: "absolute", top: cab + 34, left: pad.side - 20, right: pad.side - 20, bottom: pad.bottom, display: "flex", flexDirection: "column", gap: 16 }}>
             {ve("headline") ? (
-              <div style={{ display: "flex", alignSelf: "center", maxWidth: "86%", background: wa ? "#FFF3C4" : "rgba(40,60,40,0.42)", color: wa ? "#54470F" : "#ffffff", fontSize: 26, fontWeight: 500, padding: "10px 22px", borderRadius: 14, textAlign: "center", marginBottom: 6 }}>
+              <div style={{ display: "flex", alignSelf: "center", maxWidth: "86%", background: wa ? "#FFF3C4" : "rgba(40,60,40,0.42)", color: wa ? "#54470F" : "#ffffff", fontSize: 26, fontWeight: 500, padding: "10px 22px", borderRadius: 14, textAlign: "center", marginBottom: 6, ...mov("headline") }}>
                 {pintar("headline", c.headline)}
               </div>
             ) : null}
             {msgs.map((m, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: m.yo ? "flex-end" : "flex-start" }}>
+              <div key={i} style={{ display: "flex", justifyContent: m.yo ? "flex-end" : "flex-start", ...mov("chat", i) }}>
                 <div
                   style={{
                     display: "flex",
@@ -502,12 +557,12 @@ export function Banner(p: Pieza) {
           </div>
           <div style={{ position: "absolute", top: pad.top + 140, left: pad.side, right: pad.side, bottom: pad.bottom, display: "flex", flexDirection: "column", gap: 26 }}>
             {ve("headline") ? (
-              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 16 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 16, ...mov("headline") }}>
                 <span style={{ display: "flex", fontSize: 50, fontWeight: 700, lineHeight: 1.15, color: "#1F1F1F" }}>{pintar("headline", c.headline)}</span>
                 <span style={{ display: "flex", fontSize: 22, color: "#444746", background: "#E8EAED", borderRadius: 6, padding: "4px 12px" }}>{es ? "Recibidos" : "Inbox"}</span>
               </div>
             ) : null}
-            <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 20, ...mov("tarjeta") }}>
               {avatar(72)}
               <div style={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 14 }}>
@@ -519,7 +574,7 @@ export function Banner(p: Pieza) {
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 20, fontSize: 38, lineHeight: 1.45, color: "#1F1F1F" }}>
               {msgs.map((m, i) => (
-                <div key={i} style={{ display: "flex" }}>
+                <div key={i} style={{ display: "flex", ...mov("chat", i) }}>
                   {conChat.length ? linea(m.t, i) : m.t}
                 </div>
               ))}
@@ -535,7 +590,7 @@ export function Banner(p: Pieza) {
         <div style={{ ...raiz, backgroundImage: a.mesh, backgroundColor: "#241246" }}>
           {logoEn("#ffffff", { top: pad.top, left: pad.side })}
           <div style={{ position: "absolute", top: pad.top + 90, left: pad.side, right: pad.side, bottom: pad.bottom, display: "flex", flexDirection: "column", justifyContent: "center", gap: 34 }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 26, background: "#ffffff", borderRadius: 28, padding: "44px 46px", boxShadow: "0 30px 80px rgba(0,0,0,0.35)" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 26, background: "#ffffff", borderRadius: 28, padding: "44px 46px", boxShadow: "0 30px 80px rgba(0,0,0,0.35)", ...mov("tarjeta") }}>
               <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
                 {avatar(84)}
                 <div style={{ display: "flex", flexDirection: "column" }}>
@@ -543,11 +598,11 @@ export function Banner(p: Pieza) {
                   <span style={{ display: "flex", fontSize: 26, color: "#536471" }}>The Remote Business School</span>
                 </div>
               </div>
-              {ve("headline") ? <div style={{ display: "flex", fontSize: 46, fontWeight: 700, lineHeight: 1.25, color: "#0F1419" }}>{pintar("headline", c.headline)}</div> : null}
+              {ve("headline") ? <div style={{ display: "flex", fontSize: 46, fontWeight: 700, lineHeight: 1.25, color: "#0F1419", ...mov("headline") }}>{pintar("headline", c.headline)}</div> : null}
               {conChat.length ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 14, fontSize: 38, lineHeight: 1.35, color: "#0F1419" }}>
                   {conChat.map((m, i) => (
-                    <div key={i} style={{ display: "flex" }}>
+                    <div key={i} style={{ display: "flex", ...mov("chat", i) }}>
                       {linea(m.t, i)}
                     </div>
                   ))}
@@ -570,9 +625,9 @@ export function Banner(p: Pieza) {
           </div>
           <div style={{ position: "absolute", top: pad.top + 110, left: pad.side, right: pad.side, bottom: pad.bottom, display: "flex", flexDirection: "column", gap: 26 }}>
             <span style={{ display: "flex", fontSize: 24, color: "#9A9488", alignSelf: "center" }}>{es ? "9 de enero · 09:41" : "January 9 · 09:41"}</span>
-            {ve("headline") ? <div style={{ display: "flex", fontSize: 58, fontWeight: 800, lineHeight: 1.1, color: "#1C1A16" }}>{pintar("headline", c.headline)}</div> : null}
+            {ve("headline") ? <div style={{ display: "flex", fontSize: 58, fontWeight: 800, lineHeight: 1.1, color: "#1C1A16", ...mov("headline") }}>{pintar("headline", c.headline)}</div> : null}
             {msgs.map((m, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 22, fontSize: 42, lineHeight: 1.3, color: "#1C1A16" }}>
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 22, fontSize: 42, lineHeight: 1.3, color: "#1C1A16", ...mov("chat", i) }}>
                 <div style={{ display: "flex", width: 44, height: 44, borderRadius: 999, flexShrink: 0, alignItems: "center", justifyContent: "center", ...(i < msgs.length - 1 ? { background: "#D99A00", color: "#ffffff" } : { border: "3px solid #C9C2B4" }), fontSize: 28 }}>
                   {i < msgs.length - 1 ? "✓" : ""}
                 </div>
@@ -590,20 +645,20 @@ export function Banner(p: Pieza) {
         <div style={{ ...raiz, background: "#F6F7FB" }}>
           {logoEn("#161326", { top: pad.top, left: 0, width: w, justifyContent: "center" }, 30)}
           <div style={{ position: "absolute", top: pad.top + 110, left: pad.side, right: pad.side, bottom: pad.bottom, display: "flex", flexDirection: "column", gap: 30 }}>
-            <div style={{ display: "flex", flexDirection: "column", background: "#ffffff", borderRadius: 34, boxShadow: "0 8px 30px rgba(22,19,38,0.12)", overflow: "hidden" }}>
+            <div style={{ display: "flex", flexDirection: "column", background: "#ffffff", borderRadius: 34, boxShadow: "0 8px 30px rgba(22,19,38,0.12)", overflow: "hidden", ...mov("headline") }}>
               <div style={{ display: "flex", alignItems: "center", gap: 22, padding: "26px 34px", borderBottom: "1px solid #ECECF1" }}>
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="2.4"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
                 <span style={{ display: "flex", fontSize: 38, color: "#1F1F1F" }}>{ve("headline") ? pintar("headline", c.headline) : c.headline}</span>
                 <span style={{ display: "flex", width: 3, height: 44, background: a.accent }} />
               </div>
               {conChat.map((m, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 22, padding: "18px 34px", fontSize: 32, color: "#3C4043" }}>
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 22, padding: "18px 34px", fontSize: 32, color: "#3C4043", ...mov("chat", i) }}>
                   <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#9AA0A6" strokeWidth="2.4"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
                   <span style={{ display: "flex" }}>{linea(m.t, i)}</span>
                 </div>
               ))}
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, background: "#ffffff", borderRadius: 24, padding: "30px 34px", boxShadow: "0 2px 10px rgba(22,19,38,0.06)" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, background: "#ffffff", borderRadius: 24, padding: "30px 34px", boxShadow: "0 2px 10px rgba(22,19,38,0.06)", ...mov("sub") }}>
               <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                 {avatar(44)}
                 <span style={{ display: "flex", fontSize: 26, color: "#4D5156" }}>activexremote.com</span>
@@ -622,13 +677,13 @@ export function Banner(p: Pieza) {
         <div style={{ ...raiz, backgroundImage: a.mesh, backgroundColor: "#241246" }}>
           {logoEn("#ffffff", { top: pad.top, left: pad.side })}
           <div style={{ position: "absolute", top: pad.top + 90, left: pad.side, right: pad.side, bottom: pad.bottom, display: "flex", flexDirection: "column", justifyContent: "center", gap: 34 }}>
-            <div style={{ display: "flex", flexDirection: "column", background: "#ffffff", borderRadius: 28, overflow: "hidden", boxShadow: "0 30px 80px rgba(0,0,0,0.35)" }}>
+            <div style={{ display: "flex", flexDirection: "column", background: "#ffffff", borderRadius: 28, overflow: "hidden", boxShadow: "0 30px 80px rgba(0,0,0,0.35)", ...mov("tarjeta") }}>
               <div style={{ display: "flex", height: 18, background: a.accent }} />
               <div style={{ display: "flex", flexDirection: "column", gap: 24, padding: "40px 46px 46px" }}>
                 <span style={{ display: "flex", fontSize: 24, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", color: a.accent }}>{es ? "Invitación" : "Invitation"}</span>
-                {ve("headline") ? <div style={{ display: "flex", fontSize: 54, fontWeight: 800, lineHeight: 1.1, color: "#161326" }}>{pintar("headline", c.headline)}</div> : null}
+                {ve("headline") ? <div style={{ display: "flex", fontSize: 54, fontWeight: 800, lineHeight: 1.1, color: "#161326", ...mov("headline") }}>{pintar("headline", c.headline)}</div> : null}
                 {msgs.map((m, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 20, fontSize: 34, color: "#3A3655" }}>
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 20, fontSize: 34, color: "#3A3655", ...mov("chat", i) }}>
                     <div style={{ display: "flex", width: 16, height: 16, borderRadius: 4, background: i === 0 ? a.accent : "#C9C6D6", flexShrink: 0 }} />
                     <span style={{ display: "flex" }}>{conChat.length ? linea(m.t, i) : m.t}</span>
                   </div>
@@ -647,25 +702,25 @@ export function Banner(p: Pieza) {
       <div style={{ ...raiz, backgroundImage: a.mesh, backgroundColor: "#241246" }}>
         {logoEn("#ffffff", { top: pad.top, left: pad.side })}
         <div style={{ position: "absolute", top: pad.top + 90, left: pad.side, right: pad.side, bottom: pad.bottom, display: "flex", flexDirection: "column", justifyContent: "center", gap: 34 }}>
-          <div style={{ display: "flex", flexDirection: "column", background: "#ffffff", borderRadius: 30, boxShadow: "0 30px 80px rgba(0,0,0,0.35)", ...(p.formato === "post" ? {} : {}) }}>
+          <div style={{ display: "flex", flexDirection: "column", background: "#ffffff", borderRadius: 30, boxShadow: "0 30px 80px rgba(0,0,0,0.35)", ...mov("tarjeta") }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "30px 44px", background: "#161326", borderTopLeftRadius: 30, borderTopRightRadius: 30 }}>
               <span style={{ display: "flex", fontSize: 24, fontWeight: 800, letterSpacing: 4, color: "#ffffff" }}>{es ? "TARJETA DE EMBARQUE" : "BOARDING PASS"}</span>
               <span style={{ display: "flex", fontSize: 24, fontWeight: 700, color: a.accent === "#5B4BF5" ? "#B9B2FF" : "#FFB59E" }}>AXR · 2027</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, padding: "40px 44px 26px" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, maxWidth: "40%" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, maxWidth: "40%", ...mov("chat", 0) }}>
                 <span style={{ display: "flex", fontSize: 22, fontWeight: 700, letterSpacing: 3, color: "#8A86A0" }}>{es ? "DESDE" : "FROM"}</span>
                 <span style={{ display: "flex", fontSize: 44, fontWeight: 800, lineHeight: 1.05, textTransform: "uppercase", color: "#161326" }}>{conChat.length ? linea(desde, 0) : desde}</span>
               </div>
               <svg width="70" height="70" viewBox="0 0 24 24" fill={a.accent}><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z" /></svg>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, maxWidth: "40%", alignItems: "flex-end" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, maxWidth: "40%", alignItems: "flex-end", ...mov("chat", 1) }}>
                 <span style={{ display: "flex", fontSize: 22, fontWeight: 700, letterSpacing: 3, color: "#8A86A0" }}>{es ? "HASTA" : "TO"}</span>
                 <span style={{ display: "flex", fontSize: 44, fontWeight: 800, lineHeight: 1.05, textTransform: "uppercase", textAlign: "right", color: a.accent }}>{conChat.length > 1 ? linea(hasta, 1) : hasta}</span>
               </div>
             </div>
             <div style={{ display: "flex", margin: "0 44px", borderTop: "4px dashed #DAD7E6" }} />
             <div style={{ display: "flex", flexDirection: "column", gap: 18, padding: "30px 44px 40px" }}>
-              {ve("headline") ? <div style={{ display: "flex", fontSize: 44, fontWeight: 800, lineHeight: 1.12, color: "#161326" }}>{pintar("headline", c.headline)}</div> : null}
+              {ve("headline") ? <div style={{ display: "flex", fontSize: 44, fontWeight: 800, lineHeight: 1.12, color: "#161326", ...mov("headline") }}>{pintar("headline", c.headline)}</div> : null}
               <div style={{ display: "flex", gap: 40 }}>
                 <div style={{ display: "flex", flexDirection: "column" }}>
                   <span style={{ display: "flex", fontSize: 20, fontWeight: 700, letterSpacing: 3, color: "#8A86A0" }}>{es ? "SALIDA" : "DEPARTS"}</span>
@@ -710,7 +765,7 @@ export function Banner(p: Pieza) {
           {textos({ ...oscuro, sinCta: true })}
         </div>
         {ve("cta") ? (
-          <div style={{ position: "absolute", bottom: pad.bottom, left: pad.side, display: "flex" }}>
+          <div style={{ position: "absolute", bottom: pad.bottom, left: pad.side, display: "flex", ...mov("cta") }}>
             <Cta tam={34} b={boton}>{pintar("cta", c.cta)}</Cta>
           </div>
         ) : null}
@@ -791,7 +846,7 @@ export function Banner(p: Pieza) {
         {etiquetaIa(true)}
         {ve("kicker") ? (
           <div style={{ position: "absolute", top: y - 90, left: pad.side + 20, display: "flex" }}>
-            <Kicker fondo="#ffffff" color="#161326" giro={-6}>
+            <Kicker fondo="#ffffff" color="#161326" giro={-6} mov={ins("kicker")}>
               {pintar("kicker", c.kicker)}
             </Kicker>
           </div>
@@ -804,7 +859,7 @@ export function Banner(p: Pieza) {
               left: -60,
               width: w + 120,
               display: "flex",
-              transform: "rotate(-6deg)",
+              ...mover(ins("headline"), -6),
               background: a.accent,
               padding: `38px ${pad.side + 80}px`,
               boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
@@ -832,7 +887,7 @@ export function Banner(p: Pieza) {
           {textos({ ...oscuro, kickerFondo: "#161326", sombra: undefined, mayus: true, titularLh: 0.98, titularLs: 0.035, tam: Math.round(titular * 1.28), sinCta: true, sub: { size: 34, color: "#ffffff", maxWidth: 880 } })}
         </div>
         {ve("cta") ? (
-          <div style={{ position: "absolute", bottom: pad.bottom, right: pad.side, display: "flex" }}>
+          <div style={{ position: "absolute", bottom: pad.bottom, right: pad.side, display: "flex", ...mov("cta") }}>
             <Cta tam={34} b={boton} sobre="acento" acento={a.accent}>{pintar("cta", c.cta)}</Cta>
           </div>
         ) : null}
@@ -849,7 +904,7 @@ export function Banner(p: Pieza) {
         {logoEn("#ffffff", { top: pad.top, left: pad.side })}
         {etiquetaIa(true)}
         {ve("headline") ? (
-          <div style={{ position: "absolute", top: y, left: pad.side, width: Math.round(w * 0.8), display: "flex", flexDirection: "column" }}>
+          <div style={{ position: "absolute", top: y, left: pad.side, width: Math.round(w * 0.8), display: "flex", flexDirection: "column", ...mov("headline") }}>
             <div style={{ display: "flex", background: "#ffffff", borderRadius: 44, padding: "44px 48px", boxShadow: "0 24px 60px rgba(0,0,0,0.25)" }}>
               <div style={{ display: "flex", fontSize: Math.round(titular * 0.78), fontWeight: 800, lineHeight: 1.06, letterSpacing: -titular * 0.02, color: "#161326" }}>{pintar("headline", c.headline)}</div>
             </div>
@@ -859,7 +914,7 @@ export function Banner(p: Pieza) {
         ) : null}
         {ve("kicker") ? (
           <div style={{ position: "absolute", top: y - 44, left: pad.side + 30, display: "flex" }}>
-            <Kicker fondo="#FFD84D" color="#161326" giro={-4}>
+            <Kicker fondo="#FFD84D" color="#161326" giro={-4} mov={ins("kicker")}>
               {pintar("kicker", c.kicker)}
             </Kicker>
           </div>
@@ -867,7 +922,7 @@ export function Banner(p: Pieza) {
         <div style={{ position: "absolute", left: pad.side, right: pad.side, bottom: pad.bottom, display: "flex", flexDirection: "column", gap: 20 }}>
           {textos({ ...oscuro, sinKicker: true, sinTitular: true, sinCta: true })}
           {ve("cta") ? (
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", ...mov("cta") }}>
               <Cta tam={34} giro={-3} b={boton}>
                 {pintar("cta", c.cta)}
               </Cta>
@@ -887,7 +942,7 @@ export function Banner(p: Pieza) {
         <div style={{ position: "absolute", top: m, left: m, width: w - m * 2, height: h - m * 2, display: "flex", border: "4px solid rgba(255,255,255,0.9)" }} />
         {logoEn("#ffffff", { top: pad.top + 10, left: 0, width: w, justifyContent: "center" }, 46)}
         {ve("kicker") ? (
-          <div style={{ position: "absolute", top: pad.top + 90, left: 0, width: w, display: "flex", justifyContent: "center" }}>
+          <div style={{ position: "absolute", top: pad.top + 90, left: 0, width: w, display: "flex", justifyContent: "center", ...mov("kicker") }}>
             <div style={{ display: "flex", fontSize: 24, fontWeight: 700, letterSpacing: 6, textTransform: "uppercase", color: "#ffffff", borderTop: "2px solid #ffffff", borderBottom: "2px solid #ffffff", padding: "8px 18px" }}>{pintar("kicker", c.kicker)}</div>
           </div>
         ) : null}
@@ -903,7 +958,7 @@ export function Banner(p: Pieza) {
   if (plantilla === "foto" && p.imagen) {
     return (
       <div style={{ ...raiz, background: "#161326" }}>
-        <Fondo imagen={p.imagen} w={w} h={h} />
+        <Fondo imagen={p.imagen} w={w} h={h} mov={ins("foto")} />
         {/* Velo: oscuro arriba (logo) y desde la mitad hacia abajo (texto). */}
         <div
           style={{
@@ -937,7 +992,7 @@ export function Banner(p: Pieza) {
   if (plantilla === "tarjeta" && p.imagen) {
     return (
       <div style={{ ...raiz, background: "#161326" }}>
-        <Fondo imagen={p.imagen} w={w} h={h} />
+        <Fondo imagen={p.imagen} w={w} h={h} mov={ins("foto")} />
         <div style={{ position: "absolute", top: 0, left: 0, width: w, height: h, display: "flex", backgroundImage: "linear-gradient(180deg, rgba(22,19,38,0.5) 0%, rgba(22,19,38,0) 22%)" }} />
         {cabecera("#ffffff", true)}
         <div
@@ -953,6 +1008,7 @@ export function Banner(p: Pieza) {
             borderRadius: 26,
             padding: "48px 52px",
             boxShadow: "0 30px 80px rgba(20,16,40,0.35)",
+            ...mov("tarjeta"),
           }}
         >
           {textos({

@@ -287,7 +287,8 @@ $professional: #5b4bf5;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.6rem;
-    small { flex: 1; font-size: 0.6875rem; color: var(--pub-muted); }
+    // Con el botón de vídeo ya no caben en una línea: el texto se queda con su ancho y los botones bajan.
+    small { flex: 1 1 12rem; font-size: 0.6875rem; color: var(--pub-muted); }
     .axr-btn { display: inline-flex; align-items: center; gap: 0.35rem; &[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; } }
   }
 }
@@ -1335,4 +1336,28 @@ $professional: #5b4bf5;
 @media (max-width: 900px) {
   .axr-bangal--carpetas { grid-template-columns: 1fr; }
   .axr-bangal__folders { position: static; ul { display: flex; flex-wrap: wrap; } .axr-bangal__folder { width: auto; } }
+}
+
+// ── Vídeo de una variante ──
+.axr-ban-video {
+  // Se abre hacia la derecha: hacia la izquierda se saldría de la tarjeta.
+  .axr-ban-pop__body { width: min(340px, 86vw); left: 0; right: auto; }
+  &__label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.25rem; }
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    button {
+      padding: 0.3rem 0.65rem;
+      border: 1px solid var(--pub-line);
+      border-radius: 999px;
+      background: #ffffff;
+      font: inherit;
+      font-size: 0.8125rem;
+      cursor: pointer;
+      &[aria-checked="true"] { border-color: #161326; background: #161326; color: #ffffff; }
+    }
+  }
+  &__acciones { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.35rem; }
+  &__estado { display: flex; align-items: center; gap: 0.35rem; }
 }

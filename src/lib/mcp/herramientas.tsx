@@ -24,6 +24,7 @@ import {
   programarVariante,
   regenerarCanal,
 } from "@/app/admin/publicaciones/actions";
+import { ESTILOS_VIDEO, estiloDeVariante } from "@/lib/banners/animacion";
 import { LINEAS } from "@/lib/banners/direcciones";
 import {
   ANGULOS,
@@ -491,6 +492,33 @@ export function registrarHerramientas(server: McpServer) {
       if (ids.length > MAX_GALERIA) return fallo(`Como mucho ${MAX_GALERIA} por descarga.`);
       const t = firmar({ u: userId, i: ids, f: formatos ?? FORMATO_IDS, a: ambos_idiomas ?? true }, 3600);
       return texto(`Enlace de descarga (${ids.length} variantes, válido 1 hora):\n${origen}/api/mcp/descarga?t=${t}`);
+    },
+  );
+
+  server.registerTool(
+    "banners_video",
+    {
+      title: "Vídeo de una variante",
+      description:
+        "Crea un enlace (válido 1 hora) para descargar una variante en MP4: el mismo banner con los textos entrando uno a uno (en los formatos de chat, los mensajes llegan de uno en uno) y la foto acercándose despacio. Sin IA y sin coste; sin sonido. Tarda hasta un minuto en generarse al abrir el enlace.",
+      inputSchema: {
+        banner_id: z.string(),
+        formato: z.enum(FORMATO_IDS as [FormatoId, ...FormatoId[]]).optional().describe("Por defecto, story (9:16)"),
+        estilo: z.enum(ESTILOS_VIDEO).optional().describe("sube, lateral (desde el lado), cae o rapido. Por defecto, uno según la variante"),
+        segundos: z.union([z.literal(6), z.literal(10), z.literal(15)]).optional(),
+        otro_idioma: z.boolean().optional().describe("Con los textos de la traducción, si la variante la tiene"),
+      },
+      annotations: soloLectura,
+    },
+    async ({ banner_id, formato, estilo, segundos, otro_idioma }) => {
+      const { supabase, userId, origen } = ctx();
+      const { data: b } = await supabase.from("ad_banners").select("id, position, copy_alt").eq("id", banner_id).maybeSingle();
+      if (!b) return fallo("No existe esa variante.");
+      const e = estilo ?? estiloDeVariante(b.position as number);
+      const s = segundos ?? 6;
+      const f = formato ?? "story";
+      const t = firmar({ u: userId, i: banner_id, f, e, s, l: Boolean(otro_idioma && b.copy_alt) }, 3600);
+      return texto(`Vídeo MP4 (${FORMATOS[f].label}, ${s} s, animación «${e}»), válido 1 hora:\n${origen}/api/mcp/video?t=${t}`);
     },
   );
 

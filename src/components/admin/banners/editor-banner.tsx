@@ -17,6 +17,7 @@ import {
 } from "@/app/admin/banners/actions";
 import { Editable, Lienzo } from "@/components/admin/banners/lienzo";
 import { ElegirLinea } from "@/components/admin/banners/selector-visual";
+import { VideoBanner } from "@/components/admin/banners/video-banner";
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import {
   CTAS,
@@ -49,7 +50,7 @@ import {
 } from "@/lib/banners/formatos";
 import { lineaDe } from "@/lib/banners/direcciones";
 import { bloquea, revisarVariante } from "@/lib/banners/normas";
-import type { CampoTexto } from "@/lib/banners/pieza";
+import type { Animar, CampoTexto } from "@/lib/banners/pieza";
 import type { BanCopy } from "@/lib/i18n/banners";
 import { fill } from "@/lib/i18n/publicaciones";
 import type { AdBanner, AdCampaign } from "@/lib/supabase/types";
@@ -188,6 +189,8 @@ export function EditorBanner({
   const [lado, setLado] = useState<Lado>("main");
   const [formato, setFormato] = useState<FormatoId>("vertical");
   const [zonas, setZonas] = useState(false);
+  // Mientras se ve la animación del vídeo, el fotograma de cada instante.
+  const [anim, setAnim] = useState<Animar>();
   const [escena, setEscena] = useState(banner.image_prompt ?? "");
   const [linea, setLinea] = useState(banner.visual_ref?.dir ?? "");
   const [instruccion, setInstruccion] = useState("");
@@ -431,6 +434,7 @@ export function EditorBanner({
               boton={boton}
               texto={pintar}
               editando
+              anim={anim}
             />
             {zonas ? (
               <span className="axr-ban-safe" aria-hidden>
@@ -476,6 +480,18 @@ export function EditorBanner({
               <input type="checkbox" checked={zonas} onChange={(e) => setZonas(e.target.checked)} /> {copy.safeZones}
             </label>
             <small>{f.placements}</small>
+            <VideoBanner
+              bannerId={banner.id}
+              posicion={banner.position}
+              formato={formato}
+              alt={lado === "alt"}
+              sucio={sucio}
+              copy={copy}
+              composicion={layout}
+              textos={c}
+              // Es una función: pasada tal cual, React la tomaría por un actualizador.
+              onAnim={(a) => setAnim(() => a)}
+            />
             <a
               className="axr-btn axr-btn--ghost"
               href={`${base}/${formato}?dl=1&v=${version}${lado === "alt" ? "&lang=alt" : ""}`}
