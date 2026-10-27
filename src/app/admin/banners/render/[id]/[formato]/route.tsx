@@ -1,12 +1,9 @@
 import { ImageResponse } from "next/og";
 import type { NextRequest } from "next/server";
 
-import { FORMATOS, PLANTILLAS, leerCopy, leerBoton, leerComposicion, leerElementos, otroIdioma, type FormatoId, type Plantilla } from "@/lib/banners/formatos";
-import { leerImagen } from "@/lib/banners/imagen";
+import { cargarPieza, slugArchivo } from "@/lib/banners/cargar";
+import { FORMATOS } from "@/lib/banners/formatos";
 import { Banner, fuentes } from "@/lib/banners/render";
-import { getCurrentProfile } from "@/lib/data/profile";
-import { createClient } from "@/lib/supabase/server";
-import type { AdBanner, AdCampaign } from "@/lib/supabase/types";
 
 // La pieza en PNG, a tamaño exacto.
 //
@@ -14,67 +11,23 @@ import type { AdBanner, AdCampaign } from "@/lib/supabase/types";
 //     ?lang=alt       los textos en el otro idioma de una campaña bilingüe
 //     &d=<borrador>   textos, plantilla y elementos sin guardar
 //     &dl=1           descarga con el nombre de la carpeta del equipo
-//
-// Sólo administradores: el proxy ya exige sesión en /admin, y esto exige rol.
 
 export const runtime = "nodejs";
 
-function leerBorrador(raw: string | null): { copy?: unknown; template?: string; elements?: unknown; layout?: string; boton?: unknown } | null {
-  if (!raw) return null;
-  try {
-    return JSON.parse(Buffer.from(raw, "base64url").toString("utf8"));
-  } catch {
-    return null;
-  }
-}
-
-const slug = (s: string) =>
-  s
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-zA-Z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 40) || "campana";
-
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string; formato: string }> }) {
-  const profile = await getCurrentProfile();
-  if (profile?.role !== "administrador") return new Response("No autorizado", { status: 403 });
-
   const { id, formato } = await params;
-  if (!(formato in FORMATOS)) return new Response("Formato desconocido", { status: 404 });
-  const f = formato as FormatoId;
-
-  const supabase = await createClient();
-  const { data: banner } = await supabase.from("ad_banners").select("*").eq("id", id).maybeSingle();
-  if (!banner) return new Response("No existe", { status: 404 });
-  const b = banner as AdBanner;
-  const { data: campaign } = await supabase.from("ad_campaigns").select("*").eq("id", b.campaign_id).maybeSingle();
-  const c = campaign as AdCampaign | null;
-  if (!c) return new Response("No existe", { status: 404 });
-
   const sp = req.nextUrl.searchParams;
-  const borrador = leerBorrador(sp.get("d"));
-  const alt = sp.get("lang") === "alt" && Boolean(b.copy_alt);
-  const language = alt ? otroIdioma(c.language) : c.language;
-  const copy = leerCopy(borrador?.copy ?? (alt ? b.copy_alt : b.copy));
-  const elementos = leerElementos(borrador?.elements ?? b.elements);
-  const composicion = leerComposicion(borrador?.layout ?? b.layout);
-  const boton = leerBoton(borrador?.boton ?? b.cta_style);
-  const template = (PLANTILLAS as string[]).includes(borrador?.template ?? "") ? (borrador!.template as Plantilla) : (b.template as Plantilla);
+  const r = await cargarPieza(id, formato, sp);
+  if (r instanceof Response) return r;
+  const { w, h, file } = FORMATOS[r.formato];
 
-  const imagen = b.image_path ? await leerImagen(b.image_path) : null;
-  const { w, h, file } = FORMATOS[f];
-
-  const res = new ImageResponse(
-    <Banner copy={copy} template={template} course={c.course} language={language} formato={f} imagen={imagen} elementos={elementos} composicion={composicion} boton={boton} />,
-    { width: w, height: h, fonts: await fuentes() },
-  );
+  const res = new ImageResponse(<Banner {...r.pieza} />, { width: w, height: h, fonts: await fuentes() });
 
   const headers = new Headers(res.headers);
   // Privado: son borradores de campaña, no se cachean en ningún CDN.
   headers.set("Cache-Control", "private, no-store");
   if (sp.get("dl")) {
-    headers.set("Content-Disposition", `attachment; filename="${file}_${slug(c.name)}_v${b.position + 1}_${language.toUpperCase()}.png"`);
+    headers.set("Content-Disposition", `attachment; filename="${file}_${slugArchivo(r.campaign.name)}_v${r.banner.position + 1}_${r.pieza.language.toUpperCase()}.png"`);
   }
   return new Response(res.body, { status: res.status, headers });
 }
