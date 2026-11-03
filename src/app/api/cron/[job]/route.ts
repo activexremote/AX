@@ -5,11 +5,18 @@ import {
   runStudentProgressDigest,
   runTeacherComplianceDigest,
 } from "@/lib/slack/digests";
+import { procesarCola } from "@/lib/dry-run/cola";
 
 // Endpoints de cron protegidos por CRON_SECRET.
 // Uso:  GET /api/cron/<job>   con  Authorization: Bearer <CRON_SECRET>
 //       o  ?secret=<CRON_SECRET>
-// Jobs: reminders | digest-students | digest-teachers | all
+// Jobs: reminders | digest-students | digest-teachers | correos | all
+//
+// «correos» manda la cola de correos de los dry run. No está en vercel.json:
+// lo llama pg_cron cada cinco minutos (migración 0031), que es más a menudo
+// de lo que dejan los crons de Vercel.
+
+export const maxDuration = 120;
 
 export async function GET(
   request: NextRequest,
@@ -39,6 +46,9 @@ export async function GET(
     }
     if (job === "digest-teachers" || job === "all") {
       result.teacherDigest = await runTeacherComplianceDigest();
+    }
+    if (job === "correos" || job === "all") {
+      result.correos = await procesarCola();
     }
     if (Object.keys(result).length === 1) {
       return NextResponse.json({ error: `job desconocido: ${job}` }, { status: 400 });

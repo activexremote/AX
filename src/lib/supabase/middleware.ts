@@ -15,6 +15,10 @@ const PUBLIC_PATHS = [
   // La landing de campaña. Sin esto el candado del campus mandaba al login a
   // todo el tráfico de anuncios: la ruta es pública, como /bienvenida.
   "/trabajo-remoto",
+  // Las páginas de los dry run: la de cada sesión (adonde llevan los enlaces
+  // de invitación), su .ics y la de baja de correos. La confirmación de plaza
+  // también cuelga de aquí y comprueba la sesión ella misma.
+  "/dry-run",
   // El checkout se hace sin cuenta: la cuenta se crea al confirmarse el pago.
   "/matricula",
   "/login",

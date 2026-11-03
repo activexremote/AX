@@ -4,6 +4,7 @@ import { AssistantWidget } from "@/components/campus/assistant-chat";
 import { hasKnowledge } from "@/lib/asistente/knowledge";
 import { getMyEnrollments } from "@/lib/data/enrollment";
 import { PendingAccess } from "@/components/campus/pending-access";
+import { tieneModulosSueltos } from "@/lib/dry-run/datos";
 import "./campus.scss";
 
 export default async function CampusLayout({ children }: { children: React.ReactNode }) {
@@ -20,7 +21,8 @@ export default async function CampusLayout({ children }: { children: React.React
 
   // Un alumno sin matrícula activa tiene cuenta, pero no campus: se le explica
   // qué le falta en vez de enseñarle módulos vacíos. El equipo entra siempre.
-  if (matriculas && matriculas.length === 0) {
+  // Un módulo suelto (la plaza de un dry run) también es campus.
+  if (matriculas && matriculas.length === 0 && !(await tieneModulosSueltos(profile.id))) {
     return <PendingAccess profile={profile} />;
   }
 

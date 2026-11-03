@@ -243,7 +243,9 @@ export async function proxy(request: NextRequest) {
   // raíz cuando la ve un invitado, que es la portada. Se borra antes por si
   // la cabecera llegara puesta desde fuera.
   headers.delete(TRACKING_HEADER);
-  if (publica || (pathname === "/" && !session.hasUser)) headers.set(TRACKING_HEADER, "1");
+  // Las páginas de los dry run también: sus enlaces llevan utm y es justo el
+  // tráfico que se quiere medir.
+  if (publica || root === "dry-run" || (pathname === "/" && !session.hasUser)) headers.set(TRACKING_HEADER, "1");
 
   let response: NextResponse;
   if (prefixed) {
