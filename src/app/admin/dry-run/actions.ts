@@ -6,7 +6,8 @@ import { after } from "next/server";
 import { encolar, procesarCola, reprogramar, vistaPrevia } from "@/lib/dry-run/cola";
 import { esTipoCorreo } from "@/lib/dry-run/secuencia";
 import { deCampoLocal } from "@/lib/dry-run/tiempo";
-import { CON_PLAZA, type DryRun, type DryRunGuest, type EstadoInvitado } from "@/lib/dry-run/tipos";
+import { urlDeEnlace } from "@/components/admin/dry-run/valores";
+import { CON_PLAZA, type DryRun, type DryRunGuest, type DryRunLink, type EstadoInvitado } from "@/lib/dry-run/tipos";
 import { enviarCorreo, getMailSettings } from "@/lib/correo/envio";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -106,7 +107,7 @@ const codigoDe = (s: string) =>
     .replace(/^-+|-+$/g, "")
     .slice(0, 32);
 
-export async function crearEnlace(runId: string, formData: FormData): Promise<Resultado> {
+export async function crearEnlace(runId: string, formData: FormData): Promise<Resultado<{ url: string }>> {
   await assertAdmin();
   const label = txt(formData, "label", 80);
   const source = codigoDe(txt(formData, "utm_source", 60)).replace(/-/g, "_") || "";
@@ -127,7 +128,7 @@ export async function crearEnlace(runId: string, formData: FormData): Promise<Re
     code = `${base}-${i}`;
   }
 
-  const { error } = await admin.from("dry_run_links").insert({
+  const { data: fila, error } = await admin.from("dry_run_links").insert({
     dry_run_id: runId,
     code,
     label,
@@ -136,10 +137,10 @@ export async function crearEnlace(runId: string, formData: FormData): Promise<Re
     utm_campaign: codigoDe(txt(formData, "utm_campaign", 80)).replace(/-/g, "_") || run.slug.replace(/-/g, "_"),
     utm_content: codigoDe(txt(formData, "utm_content", 80)).replace(/-/g, "_") || null,
     utm_term: codigoDe(txt(formData, "utm_term", 80)).replace(/-/g, "_") || null,
-  });
-  if (error) return { error: error.message };
+  }).select("*").single();
+  if (error || !fila) return { error: error?.message ?? "No se pudo crear el enlace." };
   revalidatePath(`/admin/dry-run/${runId}`);
-  return { ok: true };
+  return { ok: true, url: urlDeEnlace(run.slug, fila as DryRunLink) };
 }
 
 export async function activarEnlace(runId: string, linkId: string, active: boolean): Promise<Resultado> {
