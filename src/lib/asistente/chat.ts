@@ -5,7 +5,8 @@ import { ALL_COURSES } from "@/lib/asistente/courses";
 // ══════════════════════════════════════════════════════════
 //  Respuesta del asistente
 //
-//  Es un buscador, no una IA: devuelve la FAQ o el fragmento de documento
+//  Esto es el buscador: el respaldo de asistente/ia.ts, que es quien contesta
+//  cuando DeepSeek está configurado. Devuelve la FAQ o el fragmento de documento
 //  que mejor encaja con la pregunta, tal como lo escribió el equipo, y lo
 //  que se parece de lejos lo ofrece como «preguntas relacionadas».
 //
@@ -36,8 +37,8 @@ export type Hit = {
 
 export type AssistantReply = {
   answered: boolean;
-  /** La FAQ o el fragmento que responde. */
-  answer: { kind: Hit["kind"]; heading: string; content: string } | null;
+  /** La FAQ o el fragmento que responde, o lo que ha redactado la IA con ellos (ver ia.ts). */
+  answer: { kind: Hit["kind"] | "ia"; heading: string; content: string } | null;
   /** Otras FAQs parecidas, para preguntarlas con un clic. */
   related: string[];
   sourceIds: string[];

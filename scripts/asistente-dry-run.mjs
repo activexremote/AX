@@ -49,7 +49,7 @@ const FAQS = [
   ],
   [
     "¿Quién da la clase del dry run?",
-    "**Isaac**, docente de ActiveXRemote. Antes de la clase lee las fichas de presentación para llamar a cada persona por su nombre y conectar los ejemplos con su caso.",
+    "**Isaac R. Betanzos**, fundador y docente de ActiveXRemote. Lleva años montando alianzas internacionales desde Dubái: hoy asesora a Broadcom a través de su agregador regional, y antes llevó el crecimiento de partners en EMEA en **Deel** y la gestión de partners en **Oyster**, dos de las plataformas con las que se contrata talento remoto en cualquier país. Formado en Goldsmiths, University of London.\n\nAntes de la clase lee las fichas de presentación para llamar a cada persona por su nombre y conectar los ejemplos con su caso. Su perfil: [LinkedIn](https://ae.linkedin.com/in/isaacrbetanzos).",
   ],
   [
     "¿Cómo me conecto a la clase del dry run?",

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
@@ -6,7 +7,9 @@ import { after } from "next/server";
 
 import { reservar } from "@/app/dry-run/actions";
 import { BrandMark } from "@/components/brand-mark";
+import { CuentaAtras } from "@/components/dry-run/cuenta-atras";
 import { getSesionPublica } from "@/lib/dry-run/datos";
+import { docenteDe } from "@/lib/dry-run/docente";
 import { cuandoEs, diaLargo, horaMadrid } from "@/lib/dry-run/tiempo";
 import { CON_PLAZA, leerAgenda } from "@/lib/dry-run/tipos";
 import { usuarioActual } from "@/lib/data/usuario";
@@ -30,9 +33,10 @@ type Busqueda = Record<string, string | string[] | undefined>;
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug } = await params;
   const sesion = await getSesionPublica(slug);
-  if (!sesion) return { title: "Dry run · ActiveXRemote" };
-  const titulo = `${sesion.run.title} · ActiveXRemote`;
-  const descripcion = `Clase de prueba gratuita con ${sesion.run.teacher_name}. ${cuandoEs(sesion.run.starts_at, sesion.run.ends_at)}.`;
+  if (!sesion) return { title: "Dry run" };
+  // El layout ya añade « · ActiveXRemote».
+  const titulo = sesion.run.title;
+  const descripcion = `Clase de prueba gratuita y en directo con ${docenteDe(sesion.run.teacher_name)?.name ?? sesion.run.teacher_name}. ${cuandoEs(sesion.run.starts_at, sesion.run.ends_at)}.`;
   return {
     title: titulo,
     description: descripcion,
@@ -97,110 +101,203 @@ export default async function DryRunLanding({ params, searchParams }: { params: 
   const agenda = leerAgenda(run.agenda);
   const nombre = invitado?.full_name?.trim().split(/\s+/)[0];
   const dia = diaLargo(run.starts_at);
+  const docente = docenteDe(run.teacher_name);
+  const nombreDocente = docente?.name ?? run.teacher_name;
+  // 9:30–14:00 son «4,5 h», no «5 h».
+  const horas = (Math.round(((new Date(run.ends_at).getTime() - new Date(run.starts_at).getTime()) / 3_600_000) * 2) / 2)
+    .toLocaleString("es-ES");
+
+  const reserva = (id: string) =>
+    yaTienePlaza ? (
+      <>
+        <p className="axr-dr__ok">✓ Ya tienes tu plaza.</p>
+        <Link href="/preparacion" className="axr-dr__cta">
+          Ir a mi preparación <span aria-hidden>→</span>
+        </Link>
+      </>
+    ) : abierto ? (
+      <form action={reservar} id={id}>
+        <input type="hidden" name="slug" value={run.slug} />
+        <input type="hidden" name="ref" value={ref} />
+        <input type="hidden" name="inv" value={inv} />
+        {(["source", "medium", "campaign", "content", "term"] as const).map((k) => (
+          <input key={k} type="hidden" name={`utm_${k}`} value={uno(sp[`utm_${k}`]).slice(0, 120)} />
+        ))}
+        <button type="submit" className="axr-dr__cta">
+          <span className="axr-dr__cta-g">
+            <GoogleG />
+          </span>
+          Reservar mi plaza gratis
+          <span aria-hidden>→</span>
+        </button>
+        <p className="axr-dr__hint">
+          {libres !== null ? (
+            <>
+              <strong>
+                Quedan {libres} {libres === 1 ? "plaza" : "plazas"}.
+              </strong>{" "}
+            </>
+          ) : null}
+          Entras con tu cuenta de Google y el Módulo {modulo.numero} se abre en el campus al momento.
+        </p>
+      </form>
+    ) : (
+      <p className="axr-dr__msg axr-dr__msg--warn">
+        {terminado ? "Esta sesión ya se ha celebrado. ¡Gracias a quienes vinieron!" : libres === 0 ? "No quedan plazas." : "La inscripción está cerrada."}
+      </p>
+    );
 
   return (
-    <main className="axr-dr">
-      <header className="axr-dr__bar">
-        <Link href="/bienvenida" className="axr-dr__brand">
-          <BrandMark size={20} />
-          <span>ActiveXRemote</span>
-        </Link>
-        <span className="axr-dr__bar-tag">Dry run · Módulo {modulo.numero}</span>
-      </header>
-
-      <section className="axr-dr__hero">
-        <div className="axr-dr__hero-text">
-          <p className="axr-dr__eyebrow">
-            <span aria-hidden>■</span> Clase de prueba · Plazas limitadas
-          </p>
-          <h1>{nombre ? `${nombre}, prueba gratis la primera clase de ActiveXRemote` : "Prueba gratis la primera clase de ActiveXRemote"}</h1>
-          <p className="axr-dr__lead">
-            Antes de abrir el programa damos el módulo <strong>{modulo.title}</strong> a un grupo reducido, en directo y con {run.teacher_name}. Queremos ver cómo funciona la clase con gente real y escuchar qué te parece.
-          </p>
-          {modulo.description ? <p className="axr-dr__desc">{modulo.description}</p> : null}
+    <main className="axr-dr axr-dr--landing">
+      <div className="axr-dr__hero-wrap">
+        <div className="axr-dr__mesh" aria-hidden />
+        <div className="axr-dr__glyph" aria-hidden>
+          <BrandMark size={520} />
         </div>
 
-        <aside className="axr-dr__card" aria-label="Reserva">
-          <dl className="axr-dr__facts">
-            <div>
-              <dt>Cuándo</dt>
-              <dd>
-                {dia.charAt(0).toUpperCase() + dia.slice(1)}
-                <br />
-                {horaMadrid(run.starts_at)}–{horaMadrid(run.ends_at)} · hora de Madrid
-              </dd>
-            </div>
-            <div>
-              <dt>Dónde</dt>
-              <dd>En directo, online, con Google Classroom</dd>
-            </div>
-            <div>
-              <dt>Docente</dt>
-              <dd>{run.teacher_name}</dd>
-            </div>
-            <div>
-              <dt>Precio</dt>
-              <dd>Gratis</dd>
-            </div>
-          </dl>
+        <header className="axr-dr__bar">
+          <Link href="/bienvenida" className="axr-dr__brand">
+            <BrandMark size={20} />
+            <span>ActiveXRemote</span>
+          </Link>
+          <span className="axr-dr__bar-tag">Dry run · Módulo {modulo.numero}</span>
+        </header>
 
-          {estado ? <p className={`axr-dr__msg axr-dr__msg--${estado.tono}`}>{estado.texto}</p> : null}
-
-          {yaTienePlaza ? (
-            <>
-              <p className="axr-dr__ok">Ya tienes tu plaza.</p>
-              <Link href="/preparacion" className="axr-dr__cta">
-                Ir a mi preparación <span aria-hidden>→</span>
-              </Link>
-            </>
-          ) : abierto ? (
-            <form action={reservar}>
-              <input type="hidden" name="slug" value={run.slug} />
-              <input type="hidden" name="ref" value={ref} />
-              <input type="hidden" name="inv" value={inv} />
-              {(["source", "medium", "campaign", "content", "term"] as const).map((k) => (
-                <input key={k} type="hidden" name={`utm_${k}`} value={uno(sp[`utm_${k}`]).slice(0, 120)} />
-              ))}
-              <button type="submit" className="axr-dr__cta">
-                <GoogleG /> Reservar mi plaza con Google
-              </button>
-              <p className="axr-dr__hint">
-                {libres !== null ? `Quedan ${libres} ${libres === 1 ? "plaza" : "plazas"}. ` : ""}
-                Entras con tu cuenta de Google y tienes acceso al módulo en el campus al momento.
-              </p>
-            </form>
-          ) : (
-            <p className="axr-dr__msg axr-dr__msg--warn">
-              {terminado ? "Esta sesión ya se ha celebrado. ¡Gracias a quienes vinieron!" : libres === 0 ? "No quedan plazas." : "La inscripción está cerrada."}
+        <section className="axr-dr__hero">
+          <div className="axr-dr__hero-text">
+            <p className="axr-dr__eyebrow">
+              <span className="axr-dr__pulse" aria-hidden /> Clase de prueba en directo · Plazas limitadas
             </p>
-          )}
-        </aside>
-      </section>
+            <h1>
+              {nombre ? <span className="axr-dr__hi">{nombre}, </span> : null}
+              {nombre ? "vive" : "Vive"} la primera clase de <em>ActiveXRemote</em> antes que nadie
+            </h1>
+            <p className="axr-dr__lead">
+              Damos el módulo <strong>{modulo.title}</strong> a un grupo reducido, en directo y con {nombreDocente}. Una clase real, gratis, para que nos digas qué te parece antes de abrir el programa.
+            </p>
+
+            <CuentaAtras inicio={run.starts_at} fin={run.ends_at} />
+
+            {docente ? (
+              <a href="#docente" className="axr-dr__teacher-chip">
+                <Image src={docente.photo} alt="" width={40} height={40} />
+                <span>
+                  Con <strong>{docente.name}</strong>
+                  <small>{docente.es.role}</small>
+                </span>
+              </a>
+            ) : null}
+          </div>
+
+          <aside className="axr-dr__card" aria-label="Reserva">
+            <p className="axr-dr__card-kicker">Tu plaza</p>
+            <dl className="axr-dr__facts">
+              <div>
+                <dt>Cuándo</dt>
+                <dd>
+                  {dia.charAt(0).toUpperCase() + dia.slice(1)}
+                  <small>
+                    {horaMadrid(run.starts_at)}–{horaMadrid(run.ends_at)} · hora de Madrid
+                  </small>
+                </dd>
+              </div>
+              <div>
+                <dt>Dónde</dt>
+                <dd>
+                  Online, en directo
+                  <small>Con Google Classroom</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Docente</dt>
+                <dd>{nombreDocente}</dd>
+              </div>
+              <div>
+                <dt>Precio</dt>
+                <dd className="axr-dr__free">Gratis</dd>
+              </div>
+            </dl>
+
+            {estado ? <p className={`axr-dr__msg axr-dr__msg--${estado.tono}`}>{estado.texto}</p> : null}
+            {reserva("reserva")}
+          </aside>
+        </section>
+
+        <ul className="axr-dr__stats" aria-label="La sesión en cifras">
+          <li>
+            <strong>{horas} h</strong>
+            <span>de clase en directo</span>
+          </li>
+          <li>
+            <strong>{lecciones.length || 1}</strong>
+            <span>{lecciones.length === 1 ? "lección" : "lecciones"} en el campus</span>
+          </li>
+          <li>
+            <strong>0 €</strong>
+            <span>sin tarjeta, sin letra pequeña</span>
+          </li>
+          <li>
+            <strong>{libres !== null ? libres : "∞"}</strong>
+            <span>{libres !== null ? "plazas libres" : "grupo reducido"}</span>
+          </li>
+        </ul>
+      </div>
 
       <section className="axr-dr__section">
-        <h2>Qué es un dry run</h2>
+        <p className="axr-dr__kicker">Qué es un dry run</p>
+        <h2>Un ensayo general, con público. Y el público eres tú.</h2>
         <div className="axr-dr__grid3">
           <article>
-            <span className="axr-dr__num">01</span>
+            <span className="axr-dr__icon axr-dr__icon--1" aria-hidden>
+              ▶
+            </span>
             <h3>Una clase real</h3>
             <p>El mismo módulo, con los mismos ejercicios y el mismo ritmo que tendrá el curso. No es una demo ni una charla comercial.</p>
           </article>
           <article>
-            <span className="axr-dr__num">02</span>
-            <h3>Con el campus abierto</h3>
-            <p>Desde que te apuntas tienes el módulo en el campus: lecciones, audios, plantillas, el material previo y un asistente para tus dudas.</p>
+            <span className="axr-dr__icon axr-dr__icon--2" aria-hidden>
+              ◆
+            </span>
+            <h3>El campus, abierto</h3>
+            <p>Desde que te apuntas tienes el módulo en el campus: lecciones, audios, plantillas, el material previo y un asistente con IA para tus dudas.</p>
           </article>
           <article>
-            <span className="axr-dr__num">03</span>
-            <h3>Tu opinión cuenta</h3>
+            <span className="axr-dr__icon axr-dr__icon--3" aria-hidden>
+              ✦
+            </span>
+            <h3>Tu opinión manda</h3>
             <p>Al terminar te pedimos tres minutos de feedback. Lo que nos digas cambia la versión final del curso.</p>
           </article>
         </div>
       </section>
 
+      {docente ? (
+        <section className="axr-dr__section axr-dr__teacher" id="docente">
+          <div className="axr-dr__teacher-photo">
+            <Image src={docente.photo} alt={`Retrato de ${docente.name}`} width={320} height={320} />
+          </div>
+          <div className="axr-dr__teacher-text">
+            <p className="axr-dr__kicker">Quién da la clase</p>
+            <h2>{docente.name}</h2>
+            <p className="axr-dr__teacher-role">{docente.es.role}</p>
+            <p>{docente.es.bio}</p>
+            <ul className="axr-dr__tags">
+              {docente.es.tags.map((t) => (
+                <li key={t}>{t}</li>
+              ))}
+            </ul>
+            <a href={docente.url} target="_blank" rel="noreferrer" className="axr-dr__link">
+              Ver su perfil en LinkedIn <span aria-hidden>↗</span>
+            </a>
+          </div>
+        </section>
+      ) : null}
+
       {lecciones.length ? (
         <section className="axr-dr__section">
-          <h2>Lo que vas a trabajar</h2>
+          <p className="axr-dr__kicker">Módulo {modulo.numero}</p>
+          <h2>{modulo.title}</h2>
+          {modulo.description ? <p className="axr-dr__section-lead">{modulo.description}</p> : null}
           <ol className="axr-dr__lessons">
             {lecciones.map((l, i) => (
               <li key={l.title}>
@@ -217,30 +314,37 @@ export default async function DryRunLanding({ params, searchParams }: { params: 
 
       {agenda.length ? (
         <section className="axr-dr__section">
+          <p className="axr-dr__kicker">{dia.charAt(0).toUpperCase() + dia.slice(1)}</p>
           <h2>La agenda del día</h2>
-          <table className="axr-dr__agenda">
-            <tbody>
-              {agenda.map((a) => (
-                <tr key={`${a.hora}${a.que}`}>
-                  <th scope="row">{a.hora}</th>
-                  <td>{a.que}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ol className="axr-dr__timeline">
+            {agenda.map((a) => (
+              <li key={`${a.hora}${a.que}`} className={/^pausa|^cierre/i.test(a.que) ? "is-quiet" : undefined}>
+                <time>{a.hora}</time>
+                <span>{a.que}</span>
+              </li>
+            ))}
+          </ol>
         </section>
       ) : null}
 
       <section className="axr-dr__section axr-dr__ask">
-        <h2>Qué te pedimos a cambio</h2>
-        <ul>
-          <li>Una o dos horas de material previo antes de la clase. Te guiamos paso a paso.</li>
-          <li>Conectarte el día de la clase con cámara y micrófono, y participar.</li>
-          <li>Tres minutos de feedback sincero al terminar.</li>
-        </ul>
+        <p className="axr-dr__kicker">El trato</p>
+        <h2>Gratis. A cambio te pedimos tres cosas.</h2>
+        <ol>
+          <li>
+            <strong>Llegar con el material previo hecho.</strong> Una o dos horas, a tu ritmo. Te guiamos paso a paso.
+          </li>
+          <li>
+            <strong>Conectarte con cámara y micrófono.</strong> Y participar: es una clase, no un webinar.
+          </li>
+          <li>
+            <strong>Tres minutos de feedback sincero.</strong> Lo bueno y, sobre todo, lo mejorable.
+          </li>
+        </ol>
       </section>
 
       <section className="axr-dr__section">
+        <p className="axr-dr__kicker">Dudas</p>
         <h2>Preguntas frecuentes</h2>
         <div className="axr-dr__faq">
           {PREGUNTAS.map(([q, a]) => (
@@ -251,6 +355,23 @@ export default async function DryRunLanding({ params, searchParams }: { params: 
           ))}
         </div>
       </section>
+
+      <section className="axr-dr__closing">
+        <div className="axr-dr__mesh" aria-hidden />
+        <div className="axr-dr__closing-inner">
+          <h2>{nombre ? `${nombre}, te guardamos un sitio` : "Te guardamos un sitio"}</h2>
+          <p>
+            {dia.charAt(0).toUpperCase() + dia.slice(1)} · {horaMadrid(run.starts_at)}–{horaMadrid(run.ends_at)} · online y en directo con {nombreDocente}
+          </p>
+          {reserva("reserva-final")}
+        </div>
+      </section>
+
+      {abierto && !yaTienePlaza ? (
+        <a href="#reserva" className="axr-dr__sticky">
+          Reservar plaza gratis <span aria-hidden>→</span>
+        </a>
+      ) : null}
 
       <footer className="axr-dr__foot">
         <span>ActiveXRemote · The Remote Business School</span>
