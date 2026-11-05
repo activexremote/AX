@@ -48,7 +48,7 @@ export type Partner = {
 
 export const PARTNERS: readonly Partner[] = [
   { key: "remoteandtalent", name: "Remote & Talent", logo: "remoteandtalent.svg", ratio: 80 / 90, dark: true, url: "https://remoteandtalent.com", hero: true },
-  { key: "quantum",         name: "Quantum Mindset Solutions", logo: "quantum.png", ratio: 1,     url: "https://quantummindsetsolutions.com", hero: true },
+  { key: "quantum",         name: "Quantum Mindset Solutions", logo: "quantum.svg", ratio: 1,     url: "https://quantummindsetsolutions.com", hero: true },
 ];
 
 // ⚠︎ Deel NO va en esta lista, y no por olvido. Hay acuerdo (Deel acredita
