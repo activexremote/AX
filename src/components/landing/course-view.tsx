@@ -1,5 +1,7 @@
 import { BrandMark } from "@/components/brand-mark";
 import { PartnerSection, PartnerStrip } from "@/components/landing/partners";
+import { DeelSeal, DeelSection, DeelTag } from "@/components/landing/deel";
+import { deelArea, deelCopy } from "@/app/bienvenida/deel";
 import { LandingNav } from "@/components/landing/landing-nav";
 import { RatingBadges } from "@/components/landing/rating-badges";
 import { LandingFooter } from "@/components/landing/landing-footer";
@@ -65,6 +67,7 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
           </a>
 
           <RatingBadges items={landingCopy[locale].ratings} />
+          <DeelSeal />
 
 
         </div>
@@ -205,6 +208,7 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
                     <span className="axr-cp__module-n">{m.n}</span>
                     <div className="axr-cp__module-body">
                       <strong>{m.title}</strong>
+                      {deelArea(slug, m.n, locale) ? <DeelTag label={deelCopy[locale].tag} area={deelArea(slug, m.n, locale)} /> : null}
                       <p>{m.lead}</p>
                       <ul className="axr-cp__module-points">
                         {m.points.map((p) => (
@@ -225,6 +229,9 @@ export async function CourseView({ slug }: { slug: CourseSlug }) {
           </div>
         ))}
       </section>
+
+      {/* ── Deel ────────────────────────────────────── */}
+      <DeelSection />
 
       {/* ── Metodología ─────────────────────────────── */}
       <section id="metodo" className="axr-cp__method">

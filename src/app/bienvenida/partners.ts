@@ -51,17 +51,12 @@ export const PARTNERS: readonly Partner[] = [
   { key: "quantum",         name: "Quantum Mindset Solutions", logo: "quantum.png", ratio: 1,     url: "https://quantummindsetsolutions.com", hero: true },
 ];
 
-// ⚠︎ Deel está RETIRADO, no borrado. Vuelve entrando esta línea en la lista:
-//
-//   { key: "deel", name: "Deel", logo: "deel.svg", ratio: 78 / 27,
-//     url: "https://www.deel.com", hero: true },
-//
-// Su SVG sigue en public/logos/partners/. Se quitó a petición del equipo
-// mientras se aclara el acuerdo, y esta lista es la única fuente: afecta a
-// la portada y a la landing de campaña a la vez, que es como tiene que ser.
-// Un partner no puede estar anunciado en una página y no en la otra: es una
-// afirmación sobre un tercero, y o es cierta en las dos o no lo es en
-// ninguna.
+// ⚠︎ Deel NO va en esta lista, y no por olvido. Hay acuerdo (Deel acredita
+// siete módulos y somos Platinum y Global Partner), pero su guía de marca no
+// permite usar el wordmark de Deel suelto —que es lo que pinta esta tira, y
+// encima a una tinta— en lugar del badge de partner. Deel tiene sus propias
+// piezas con el badge oficial: components/landing/deel.tsx, copy en
+// bienvenida/deel.ts.
 
 // Aquí vivía un código de color por familia (talento / dinero / legal /
 // producto) que pintaba el borde y la categoría de cada pastilla del héroe.
@@ -99,8 +94,9 @@ const es: PartnerCopy = {
   },
   benefitLabel: "Beneficio para alumnos",
   // El diploma sigue siendo lo que es, y eso no lo cambia tener acuerdos:
-  // ninguno de estos partners acredita el programa ni lo certifica.
-  note: "Cada marca es propiedad de su compañía. Los partners aportan beneficios y condiciones para nuestros alumnos, pero no acreditan el programa ni emiten el diploma: lo emite ActiveXRemote detallando los módulos superados, y es una certificación privada de empresa, no un título oficial ni un grado universitario.",
+  // estos partners no acreditan el programa. Quien acredita módulos es Deel,
+  // y eso tiene su propia sección (bienvenida/deel.ts).
+  note: "Cada marca es propiedad de su compañía. Estos partners aportan beneficios y condiciones para nuestros alumnos, pero no acreditan el programa ni emiten el diploma: lo emite ActiveXRemote detallando los módulos superados, y es una certificación privada de empresa, no un título oficial ni un grado universitario.",
 };
 
 const en: PartnerCopy = {
@@ -113,7 +109,7 @@ const en: PartnerCopy = {
     quantum:         { area: "Mindset & Performance", desc: "Trains the head to sustain the change, not just the technique." },
   },
   benefitLabel: "Student benefit",
-  note: "Each brand belongs to its own company. Partners provide benefits and conditions for our students, but they do not accredit the programme or issue the diploma: ActiveXRemote issues it, listing the modules passed, and it is a private company certification, not an official qualification or a university degree.",
+  note: "Each brand belongs to its own company. These partners provide benefits and conditions for our students, but they do not accredit the programme or issue the diploma: ActiveXRemote issues it, listing the modules passed, and it is a private company certification, not an official qualification or a university degree.",
 };
 
 export const partnerCopy: Record<Locale, PartnerCopy> = { es, en };

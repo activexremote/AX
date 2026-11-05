@@ -10,6 +10,8 @@ import { TOOL_ICONS } from "@/components/landing/tool-icons";
 import { AdClocks, AdFx, AdHeroVideo, AdLiveVideo, AdStickyBar } from "@/components/landing/ad-fx";
 import { AdMap } from "@/components/landing/ad-map";
 import { RemoteCompanies } from "@/components/landing/ad-logos";
+import { DeelSeal, DeelSection, DeelTag } from "@/components/landing/deel";
+import { deelArea, deelCopy, type Camino } from "@/app/bienvenida/deel";
 import { adCopy } from "@/app/trabajo-remoto/copy";
 import { COHORT_START, STACK_TOOLS, WHATSAPP_NUMBER } from "@/app/trabajo-remoto/contact";
 import { landingCopy } from "@/app/bienvenida/copy";
@@ -315,6 +317,7 @@ export async function AdLandingView() {
               <em>{c.hero.titleBottom}</em>
             </h1>
             <p className="axr-ad__hero-lead">{c.hero.lead}</p>
+            <DeelSeal />
           </div>
 
           <div className="axr-ad__form-card">
@@ -612,7 +615,9 @@ export async function AdLandingView() {
 
           <div data-reveal>
             <div className="axr-ad__program-panel" data-spot>
-              {c.program.groups.map((g, i) => (
+              {c.program.groups.map((g, i) => {
+                const camino = (["core", "remote-professional", "remote-founder"] as Camino[])[i];
+                return (
                 <details key={g.name} className="axr-ad__fold" open={i === 0}>
                   <summary>
                     <span>
@@ -625,12 +630,21 @@ export async function AdLandingView() {
                     {g.modules.map((m) => (
                       <li key={m.n}>
                         <span>{m.n}</span>
-                        {m.title}
+                        <em className="axr-ad__fold-title">
+                          {m.title}
+                          {deelArea(camino, m.n, locale) ? (
+                            <>
+                              {" "}
+                              <DeelTag label={deelCopy[locale].tag} area={deelArea(camino, m.n, locale)} />
+                            </>
+                          ) : null}
+                        </em>
                       </li>
                     ))}
                   </ol>
                 </details>
-              ))}
+                );
+              })}
             </div>
             <a href="#solicitar" className="axr-ad__program-cta axr-ad__buzz">
               {c.program.cta}
@@ -639,6 +653,9 @@ export async function AdLandingView() {
           </div>
         </div>
       </section>
+
+      {/* ── Deel ──────────────────────────────────────── */}
+      <DeelSection />
 
       {/* ── Cronograma ────────────────────────────────── */}
       {/* Cinco hitos sobre una línea que se dibuja al entrar. Es la forma más

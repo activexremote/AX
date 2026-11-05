@@ -1185,7 +1185,8 @@
     color: var(--ad-body);
     list-style: none;
 
-    span {
+    // Sólo el número: la etiqueta «Acreditado por Deel» también es un span.
+    > span:first-child {
       flex: none;
       font-size: 0.75rem;
       font-weight: 700;
@@ -1193,6 +1194,8 @@
       font-variant-numeric: tabular-nums;
     }
   }
+
+  &-title { font-style: normal; }
 }
 
 // ── Empresas referentes ──────────────────────────────────
