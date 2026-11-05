@@ -5,6 +5,7 @@ import { getCurrentProfile, userInitials } from "@/lib/data/profile";
 import { getI18n } from "@/lib/i18n/server";
 import { pubCopy } from "@/lib/i18n/publicaciones";
 import { banCopy } from "@/lib/i18n/banners";
+import { drCopy } from "@/lib/i18n/dry-run";
 import { contarPendientes } from "@/lib/social/panel";
 import "@/app/admin/admin.scss";
 
@@ -40,6 +41,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             items: [
               { href: "/admin/matriculas", label: a.navOrdersShort, icon: "tarjeta" },
               { href: "/admin/usuarios", label: a.navUsers, icon: "usuarios" },
+              { href: "/admin/dry-run", label: drCopy[locale].nav, icon: "play" },
             ],
           },
           {

@@ -7,6 +7,7 @@ import { getProgressForCurrentUser } from "@/lib/data/progress";
 import { firstName, getCurrentProfile } from "@/lib/data/profile";
 import { CampusHeader } from "@/components/campus-header";
 import { FlashPanel } from "@/components/campus/flash-panel";
+import { AvisoDryRun } from "@/components/campus/dry-run/aviso-dry-run";
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import { campusACopy } from "@/lib/i18n/campus-v2-a";
 import { fmt } from "@/lib/i18n/dictionaries";
@@ -144,6 +145,9 @@ export default async function CampusHome() {
             </div>
           </div>
         </section>
+
+        {/* Quien tiene plaza en un dry run: cuándo es y su preparación. */}
+        <AvisoDryRun />
 
         {/* Sin matrícula activa la base de datos no devuelve ni un módulo
             (política has_course_access). El layout ya enseña la pantalla de

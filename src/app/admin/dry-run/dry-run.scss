@@ -1,0 +1,124 @@
+// ══════════════════════════════════════════════════════════
+//  Panel de dry run (/admin/dry-run)
+//  Sólo lo propio: el resto son las piezas comunes de admin.scss.
+// ══════════════════════════════════════════════════════════
+
+.axr-dra {
+  .axr-adm-stats { margin-bottom: 1.25rem; }
+  .axr-adm-stat__value small { font-size: 0.9rem; color: var(--adm-muted); font-weight: 500; }
+  > .axr-adm-note { margin-bottom: 1.25rem; }
+}
+
+.axr-dra-lead { margin: -0.5rem 0 1rem; color: var(--adm-muted); font-size: 0.875rem; line-height: 1.5; max-width: 80ch; }
+.axr-dra-pad { margin: 0; padding: 0 1.35rem 1.25rem; }
+.axr-dra-back { display: inline-block; margin-bottom: 0.75rem; font-size: 0.8125rem; color: var(--adm-muted); }
+
+.axr-dra-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+.axr-dra-run { display: grid; gap: 0.4rem; justify-items: end; .axr-adm-note { margin: 0; } }
+
+.axr-dra-runs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.axr-dra-run-card {
+  display: grid;
+  gap: 0.4rem;
+  align-content: start;
+  margin: 0;
+  color: var(--adm-ink);
+  text-decoration: none;
+  transition: border-color 0.12s;
+  .axr-adm-pill { justify-self: start; }
+  strong { font-size: 1.0625rem; }
+  &:hover { border-color: var(--adm-accent); text-decoration: none; color: var(--adm-ink); }
+  &__when { font-size: 0.8125rem; color: var(--adm-muted); }
+  &__nums { display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; font-size: 0.8125rem; color: #3d3d44; }
+}
+
+.axr-dra-new {
+  summary { cursor: pointer; list-style: none; &::-webkit-details-marker { display: none; } }
+  summary h2 { display: inline; margin: 0; }
+  &[open] summary { margin-bottom: 1rem; }
+}
+
+.axr-dra-linkform {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--adm-line);
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem 1rem;
+    @media (max-width: 900px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    @media (max-width: 520px) { grid-template-columns: 1fr; }
+  }
+}
+
+.axr-dra-table { margin: 0 -1.35rem; }
+.axr-dra-url {
+  display: block;
+  max-width: 34rem;
+  margin-top: 0.2rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: var(--adm-muted);
+}
+.axr-dra-utm small, .axr-dra-sub { display: block; margin-top: 0.15rem; font-size: 0.75rem; color: var(--adm-muted); }
+.axr-dra-bad { color: var(--adm-bad); }
+.axr-admin-table tr.is-off td { opacity: 0.5; }
+.axr-dra-flush-title { display: flex; align-items: center; gap: 0.5rem; padding: 1.25rem 1.35rem 0; }
+
+.axr-dra-person {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  select {
+    padding: 0.3rem 0.5rem;
+    border: 1px solid var(--adm-line-strong);
+    border-radius: 8px;
+    background: #ffffff;
+    font: inherit;
+    font-size: 0.8125rem;
+  }
+  .axr-adm-note { margin: 0; padding: 0.2rem 0.5rem; font-size: 0.75rem; }
+}
+.axr-dra-test { display: inline-grid; gap: 0.3rem; .axr-adm-note { margin: 0; font-size: 0.75rem; } }
+
+.axr-dra-fb-avg {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  > div {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid var(--adm-line);
+    border-radius: 10px;
+    span { font-size: 0.75rem; color: var(--adm-muted); }
+    strong { font-size: 1.375rem; letter-spacing: -0.02em; }
+    small { font-size: 0.75rem; color: var(--adm-muted); }
+  }
+}
+.axr-dra-fb-list {
+  display: grid;
+  gap: 0.75rem;
+  article {
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--adm-line);
+    border-radius: 10px;
+    header { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; }
+    p { margin: 0.3rem 0 0; font-size: 0.875rem; line-height: 1.5; color: #3d3d44; white-space: pre-wrap; }
+  }
+}
