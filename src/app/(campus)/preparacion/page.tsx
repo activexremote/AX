@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -8,6 +9,7 @@ import { ListaPreparacion, type PasoVista } from "@/components/campus/dry-run/li
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import { enlaceGoogleCalendar, enlaceIcs } from "@/lib/dry-run/correos";
 import { getMiDryRun, marcarPaso } from "@/lib/dry-run/datos";
+import { docenteDe } from "@/lib/dry-run/docente";
 import { PASOS } from "@/lib/dry-run/preparacion";
 import { cuandoEs, diaLargo, horaMadrid, partesMadrid } from "@/lib/dry-run/tiempo";
 import { leerAgenda } from "@/lib/dry-run/tipos";
@@ -32,6 +34,7 @@ export default async function PreparacionPage({ searchParams }: { searchParams: 
   const [mio, { bienvenida }] = await Promise.all([getMiDryRun(), searchParams]);
   if (!mio) redirect("/");
   const { run, guest } = mio;
+  const docente = docenteDe(run.teacher_name);
 
   const admin = createAdminClient();
   const [{ data: modulo }, { data: lecciones }] = await Promise.all([
@@ -113,7 +116,7 @@ export default async function PreparacionPage({ searchParams }: { searchParams: 
             <span className="axr-c-pill axr-c-pill--accent">Dry run · Módulo {numero}</span>
             <h1>Tu preparación para el {dia}</h1>
             <p>
-              {cuandoEs(run.starts_at, run.ends_at)}. Clase en directo con <strong>{run.teacher_name}</strong> sobre <strong>{modulo?.title}</strong>.
+              {cuandoEs(run.starts_at, run.ends_at)}. Clase en directo con <strong>{docenteDe(run.teacher_name)?.name ?? run.teacher_name}</strong> sobre <strong>{modulo?.title}</strong>.
             </p>
             <div className="axr-prep__actions">
               {run.meet_url ? (
@@ -143,6 +146,23 @@ export default async function PreparacionPage({ searchParams }: { searchParams: 
           <ListaPreparacion pasos={pasos} />
 
           <div className="axr-prep__side">
+            {docente ? (
+              <section className="axr-c-card axr-prep__teacher">
+                <h2 className="axr-c-card__title">Quién da la clase</h2>
+                <div className="axr-prep__teacher-head">
+                  <Image src={docente.photo} alt="" width={64} height={64} />
+                  <div>
+                    <strong>{docente.name}</strong>
+                    <span>{docente.es.role}</span>
+                  </div>
+                </div>
+                <p className="axr-prep__text">{docente.es.bio}</p>
+                <a href={docente.url} target="_blank" rel="noreferrer" className="axr-prep__teacher-link">
+                  Ver su perfil en LinkedIn ↗
+                </a>
+              </section>
+            ) : null}
+
             {agenda.length ? (
               <section className="axr-c-card">
                 <h2 className="axr-c-card__title">La agenda del día</h2>

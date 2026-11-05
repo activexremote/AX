@@ -1,18 +1,21 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { coursesFor, reply } from "@/lib/asistente/chat";
+import { coursesFor } from "@/lib/asistente/chat";
+import { replyIA, type Turno } from "@/lib/asistente/ia";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
-// POST /api/asistente   { question }
+// POST /api/asistente   { question, history? }
 //
-// Busca la pregunta en la base del asistente y devuelve la respuesta como
-// JSON (ver `AssistantReply`). Cada pregunta queda registrada en
+// Contesta con DeepSeek a partir de la base del asistente (o con el buscador
+// si no hay IA) y devuelve la respuesta como JSON (ver `AssistantReply`).
+// `history` son los últimos turnos del chat, para entender preguntas como
+// «¿y a qué hora?». Cada pregunta queda registrada en
 // `assistant_questions`: las que no encuentran nada son la lista de FAQs que
 // le faltan al equipo.
 
-/** Preguntas por hora para un alumno. No cuestan dinero, pero llenan el registro. */
-const LIMITE_HORA = 60;
+/** Preguntas por hora para un alumno: cada una es una llamada a DeepSeek. */
+const LIMITE_HORA = 40;
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -22,8 +25,14 @@ export async function POST(request: NextRequest) {
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
   if (!profile) return NextResponse.json({ error: "no-auth" }, { status: 401 });
 
-  const body = (await request.json().catch(() => null)) as { question?: unknown } | null;
+  const body = (await request.json().catch(() => null)) as { question?: unknown; history?: unknown } | null;
   const question = typeof body?.question === "string" ? body.question.trim().slice(0, 2000) : "";
+  const history: Turno[] = (Array.isArray(body?.history) ? body.history : [])
+    .filter(
+      (t): t is Turno =>
+        Boolean(t) && (t.role === "user" || t.role === "assistant") && typeof t.content === "string" && t.content.trim() !== "",
+    )
+    .slice(-6);
   if (!question) return NextResponse.json({ error: "Falta la pregunta." }, { status: 400 });
 
   const admin = createAdminClient();
@@ -45,12 +54,12 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const result = await reply(question, await coursesFor(user.id, profile.role));
+    const result = await replyIA(question, history, await coursesFor(user.id, profile.role), { userId: user.id, esEquipo });
 
     const { error } = await admin.from("assistant_questions").insert({
       user_id: user.id,
       question,
-      answer: result.answer ? `${result.answer.heading}\n\n${result.answer.content}`.slice(0, 4000) : null,
+      answer: result.answer ? [result.answer.heading, result.answer.content].filter(Boolean).join("\n\n").slice(0, 4000) : null,
       answered: result.answered,
       source_ids: result.sourceIds,
     });

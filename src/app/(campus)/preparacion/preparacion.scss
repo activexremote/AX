@@ -224,4 +224,19 @@
     span { font-size: 0.875rem; }
   }
   &:hover { text-decoration: none; border-color: var(--cmp-accent); color: var(--cmp-accent-ink); }
+
+}
+
+// La ficha del docente, en la columna lateral.
+.axr-prep {
+  &__teacher-head {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin-bottom: 0.75rem;
+    img { width: 64px; height: 64px; object-fit: cover; border: 1px solid var(--axr-border-ink); }
+    strong { display: block; font-size: 1.05rem; }
+    span { display: block; font-size: 0.85rem; color: var(--axr-text-secondary); }
+  }
+  &__teacher-link { display: inline-block; margin-top: 0.5rem; font-weight: 600; }
 }

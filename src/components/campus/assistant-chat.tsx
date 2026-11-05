@@ -16,9 +16,9 @@ type Message =
 /**
  * La conversación con el asistente del campus.
  *
- * Cada pregunta se busca por separado en el material del equipo: no hay IA
- * que recuerde el hilo. Vive sólo en el navegador —al recargar se empieza de
- * cero—; lo que se pregunta sí queda en el servidor para el equipo.
+ * Con cada pregunta van los últimos turnos, para que la IA entienda «¿y a
+ * qué hora?». Vive sólo en el navegador —al recargar se empieza de cero—; lo
+ * que se pregunta sí queda en el servidor para el equipo.
  */
 export function AssistantChat({ onClose, enfocar = true }: { onClose?: () => void; /** Al abrirse, el cursor al campo. No en el panel, donde el chat está dentro de la página: allí la hacía saltar hasta él. */ enfocar?: boolean }) {
   const { t } = useI18n();
@@ -51,7 +51,12 @@ export function AssistantChat({ onClose, enfocar = true }: { onClose?: () => voi
       const res = await fetch("/api/asistente", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({
+          question,
+          history: messages.slice(-6).map((m) =>
+            m.role === "user" ? m : { role: "assistant", content: m.reply.answer?.content ?? "" },
+          ),
+        }),
       });
       const data = (await res.json().catch(() => null)) as (AssistantReply & { error?: string }) | null;
       if (!res.ok || !data) {
