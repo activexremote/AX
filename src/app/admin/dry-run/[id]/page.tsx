@@ -190,7 +190,24 @@ export default async function DryRunPage({ params }: { params: Promise<{ id: str
         ) : (
           <p className="axr-dra-lead">{copy.lNone}</p>
         )}
-        <FormEnlace runId={run.id} campana={run.slug.replace(/-/g, "_")} copy={copy} />
+        <FormEnlace
+          runId={run.id}
+          slug={run.slug}
+          campana={run.slug.replace(/-/g, "_")}
+          persona={profile.full_name?.trim().split(/\s+/)[0] ?? ""}
+          // Quien ya comparte enlaces: lo que va tras el último « · » del nombre
+          // («LinkedIn · publicación · Oriol»), si es un nombre y no el formato.
+          personas={[
+            ...new Set(
+              links
+                .map((l) => l.label.split(" · "))
+                .filter((partes) => partes.length >= 2 && /^\p{Lu}/u.test(partes.at(-1) ?? ""))
+                .map((partes) => partes.at(-1) as string),
+            ),
+          ]}
+          existentes={links.map((l) => ({ source: l.utm_source, medium: l.utm_medium, content: l.utm_content }))}
+          copy={copy}
+        />
       </section>
 
       {/* ── Invitar ── */}
