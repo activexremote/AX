@@ -323,6 +323,8 @@ export const landingCopy = {
     // puede sostener. Ahora se describen como lo que son —las herramientas que
     // se estudian— y la nota final incluye el descargo de marcas. Si algún día
     // hay acuerdo por escrito, se podrá volver a hablar de certificación.
+    // Ese acuerdo ya existe con Deel (nov. 2026): acredita siete módulos y tiene
+    // su propia sección, con su badge oficial. Ver bienvenida/deel.ts.
     // ⚠︎ PLACEHOLDER — cifras, valoraciones, testimonios y marcas son
     // ejemplos de maquetación. Sustituir por datos reales antes de publicar:
     // un testimonio inventado atribuido a una persona es publicidad engañosa.
@@ -490,7 +492,7 @@ export const landingCopy = {
         { q: "¿Qué herramientas voy a usar?", a: "Notion, Slack, Wise, Deel, Zapier y modelos de IA, entre otras. Montas tu propio stack remoto durante el programa." },
         { q: "¿Es en directo o asíncrono?", a: "Las clases son en vivo, y tienes material, audio narrado y ejercicios para avanzar a tu ritmo en asíncrono." },
         { q: "¿Cuándo empieza la próxima convocatoria?", a: "El 9 de enero de 2027. Son siete fines de semana, hasta el 21 de febrero, con dos clases de 4 h cada fin de semana. Los grupos son de 25 plazas: solicita información y te enviamos calendario y horarios." },
-        { q: "¿El diploma es un título oficial?", a: "No. Es una certificación privada que emite ActiveXRemote: el diploma detalla los módulos superados y las horas lectivas. No equivale a un grado universitario ni a un título académico oficial, y no lo acredita ninguna de las plataformas que se estudian en el programa." },
+        { q: "¿El diploma es un título oficial?", a: "No. Es una certificación privada que emite ActiveXRemote: el diploma detalla los módulos superados y las horas lectivas. No equivale a un grado universitario ni a un título académico oficial, Siete de sus módulos están acreditados por Deel, y el diploma lo indica." },
       ],
     },
     finalCta: {
@@ -983,7 +985,7 @@ export const landingCopy = {
         { q: "What tools will I use?", a: "Notion, Slack, Wise, Deel, Zapier and AI models, among others. You build your own remote stack during the program." },
         { q: "Is it live or async?", a: "Classes are live, and you get materials, narrated audio and exercises to progress at your own pace, async." },
         { q: "When does the next cohort start?", a: "9 January 2027. It runs over seven weekends, until 21 February, with two 4h classes each weekend. Groups are capped at 25 seats: request information and we'll send you the calendar and schedule." },
-        { q: "Is the diploma an official degree?", a: "No. It is a private certification issued by ActiveXRemote: the diploma lists the modules you completed and the teaching hours. It is not equivalent to a university or official academic degree, and none of the platforms studied in the program accredits it." },
+        { q: "Is the diploma an official degree?", a: "No. It is a private certification issued by ActiveXRemote: the diploma lists the modules you completed and the teaching hours. It is not equivalent to a university or official academic degree, Seven of its modules are accredited by Deel, and the diploma says so." },
       ],
     },
     finalCta: {

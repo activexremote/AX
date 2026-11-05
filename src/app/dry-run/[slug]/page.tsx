@@ -8,6 +8,7 @@ import { after } from "next/server";
 import { reservar } from "@/app/dry-run/actions";
 import { BrandMark } from "@/components/brand-mark";
 import { CuentaAtras } from "@/components/dry-run/cuenta-atras";
+import { DeelSeal, DeelShort } from "@/components/landing/deel";
 import { getSesionPublica } from "@/lib/dry-run/datos";
 import { docenteDe } from "@/lib/dry-run/docente";
 import { cuandoEs, diaLargo, horaMadrid } from "@/lib/dry-run/tiempo";
@@ -187,6 +188,8 @@ export default async function DryRunLanding({ params, searchParams }: { params: 
                 </span>
               </a>
             ) : null}
+
+            <DeelSeal />
           </div>
 
           <aside className="axr-dr__card" aria-label="Reserva">
@@ -242,6 +245,12 @@ export default async function DryRunLanding({ params, searchParams }: { params: 
           </li>
         </ul>
       </div>
+
+      {/* El módulo del dry run no es de los acreditados, pero el programa sí
+          los tiene: se dice así, sin dar a entender que esta clase lo esté. */}
+      <section className="axr-dr__section" id="deel">
+        <DeelShort href="/bienvenida#deel" />
+      </section>
 
       <section className="axr-dr__section">
         <p className="axr-dr__kicker">Qué es un dry run</p>

@@ -3,6 +3,8 @@ import { LocaleLink } from "@/components/locale-link";
 import { BrandMark } from "@/components/brand-mark";
 import { SlackLogo } from "@/components/slack-logo";
 import { PartnerSection, PartnerStrip } from "@/components/landing/partners";
+import { DeelSeal, DeelSection, DeelTag } from "@/components/landing/deel";
+import { deelArea, deelCopy, type Camino } from "@/app/bienvenida/deel";
 import { LandingNav } from "@/components/landing/landing-nav";
 import { RatingBadges } from "@/components/landing/rating-badges";
 import { LandingFooter } from "@/components/landing/landing-footer";
@@ -130,6 +132,7 @@ export async function LandingView() {
           {/* Dentro de la columna del texto y no a todo el ancho del héroe:
               la columna del formulario es más alta, así que aquí hay hueco
               de sobra y la tira no le suma ni un píxel al alto del héroe. */}
+          <DeelSeal />
           <PartnerStrip tone="dark" />
         </div>
 
@@ -163,6 +166,11 @@ export async function LandingView() {
           de leer la promesa y lo siguiente que necesita es saber de qué
           tamaño es lo que se le ofrece. */}
       <StackBand />
+
+      {/* ── Deel ────────────────────────────────────── */}
+      {/* Justo después del tamaño del programa: es el respaldo más fuerte que
+          tiene y tiene que verse antes de elegir camino. */}
+      <DeelSection />
 
       <section id="caminos" className="axr-lp__paths">
         <header className="axr-lp__paths-head">
@@ -339,6 +347,7 @@ export async function LandingView() {
                 <div>
                   <strong>{m.title}</strong>
                   <p>{m.desc}</p>
+                  {deelArea("core", m.n, locale) ? <DeelTag label={deelCopy[locale].tag} area={deelArea("core", m.n, locale)} /> : null}
                 </div>
               </li>
             ))}
@@ -371,6 +380,9 @@ export async function LandingView() {
                       <div>
                         <strong>{m.title}</strong>
                         <p>{m.desc}</p>
+                        {deelArea(track.href.split("/").pop() as Camino, m.n, locale) ? (
+                          <DeelTag label={deelCopy[locale].tag} area={deelArea(track.href.split("/").pop() as Camino, m.n, locale)} tone="dark" />
+                        ) : null}
                       </div>
                     </li>
                   ))}

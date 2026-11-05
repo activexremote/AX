@@ -428,7 +428,7 @@ export const adCopy = {
     // tarjetas aceptadas y quién cobra), así que su texto sale de
     // bienvenida/copy.ts y aquí sólo queda lo propio de esta página.
     footer: {
-      note: "Cada marca es propiedad de su compañía: los partners aportan beneficios para nuestros alumnos, pero no acreditan el curso ni emiten el diploma. El diploma lo emite ActiveXRemote detallando los módulos superados: es una certificación privada de empresa, no un título oficial ni un grado universitario.",
+      note: "Cada marca es propiedad de su compañía: los partners aportan beneficios para nuestros alumnos y Deel acredita siete módulos del programa, pero ninguno emite el diploma. El diploma lo emite ActiveXRemote detallando los módulos superados: es una certificación privada de empresa, no un título oficial ni un grado universitario.",
     },
   },
 
@@ -735,7 +735,7 @@ export const adCopy = {
     },
 
     footer: {
-      note: "Each brand belongs to its own company: partners provide benefits for our students, but they do not accredit the course or issue the diploma. The diploma is issued by ActiveXRemote listing the modules passed: it is a private company certification, not an official qualification or a university degree.",
+      note: "Each brand belongs to its own company: partners provide benefits for our students and Deel accredits seven modules of the programme, but none of them issues the diploma. The diploma is issued by ActiveXRemote listing the modules passed: it is a private company certification, not an official qualification or a university degree.",
     },
   },
 } satisfies Record<Locale, unknown>;
