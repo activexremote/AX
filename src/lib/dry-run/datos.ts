@@ -157,6 +157,8 @@ export async function reservarPlaza(
         full_name: guest.full_name || user.nombre,
         status: "registrado",
         registered_at: ahora,
+        // Reservar es confirmar; si el equipo ya le marcó la asistencia, se queda.
+        tracking: guest.tracking === "pendiente" || guest.tracking === "rechazado" ? "confirmado" : guest.tracking,
         link_id: guest.link_id ?? link?.id ?? null,
         utm: Object.keys(guest.utm ?? {}).length ? guest.utm : utm,
         unsubscribed_at: null,
@@ -176,6 +178,7 @@ export async function reservarPlaza(
         full_name: user.nombre,
         user_id: user.id,
         status: "registrado",
+        tracking: "confirmado",
         registered_at: ahora,
         utm,
       })

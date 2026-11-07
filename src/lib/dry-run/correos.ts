@@ -227,7 +227,7 @@ ${cuerpo}
 </table>
 </td></tr>
 </table>
-<p style="margin:20px 0 0 0;font-family:${FUENTE};font-size:11px;line-height:1.5;color:#8d8d8d;max-width:560px;">Recibes este correo en ${esc(ctx.guest.email)} por el dry run de ActiveXRemote. <a href="${esc(baja)}" style="color:#8d8d8d;text-decoration:underline;">No quiero recibir más correos de este dry run</a>.</p>
+<p style="margin:20px 0 0 0;font-family:${FUENTE};font-size:11px;line-height:1.5;color:#8d8d8d;max-width:560px;">Recibes este correo en ${esc(ctx.guest.email ?? "")} por el dry run de ActiveXRemote. <a href="${esc(baja)}" style="color:#8d8d8d;text-decoration:underline;">No quiero recibir más correos de este dry run</a>.</p>
 </td></tr>
 </table>
 </body>

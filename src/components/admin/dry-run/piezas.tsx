@@ -5,20 +5,17 @@ import { useRouter } from "next/navigation";
 
 import {
   activarEnlace,
-  cambiarEstado,
   crearEnlace,
   enviarPrueba,
   guardarCorreo,
   invitar,
   probarCorreo,
   procesarAhora,
-  reenviarInvitacion,
 } from "@/app/admin/dry-run/actions";
 import { CANALES, PAQUETE_BASICO, proponer, slugPersona, type Canal, type Propuesta } from "@/components/admin/dry-run/canales";
 import { urlDeEnlace } from "@/components/admin/dry-run/valores";
 import type { DryRunCopy } from "@/lib/i18n/dry-run";
 import { rellenar } from "@/lib/i18n/dry-run";
-import type { EstadoInvitado } from "@/lib/dry-run/tipos";
 
 // Las piezas con estado del panel de dry run: formularios pequeños y botones
 // que llaman a una acción y enseñan qué ha pasado.
@@ -326,52 +323,6 @@ export function FormInvitar({ runId, enlaces, copy }: { runId: string; enlaces: 
         </button>
       </div>
     </form>
-  );
-}
-
-// ── Personas ─────────────────────────────────────────────
-
-const ESTADOS: EstadoInvitado[] = ["invitado", "registrado", "asistio", "no_asistio", "baja"];
-
-export function AccionesPersona({ guestId, status, conCuenta, copy }: { guestId: string; status: EstadoInvitado; conCuenta: boolean; copy: DryRunCopy }) {
-  const { pending, aviso, correr } = useAccion();
-  return (
-    <div className="axr-dra-person">
-      <select
-        aria-label={copy.pStatus}
-        value={status}
-        disabled={pending}
-        onChange={(e) => {
-          const nuevo = e.target.value as EstadoInvitado;
-          correr(async () => {
-            const r = await cambiarEstado(guestId, nuevo);
-            return r.ok ? null : { ok: false, texto: r.error };
-          });
-        }}
-      >
-        {ESTADOS.filter((s) => s !== "invitado" || status === "invitado" || !conCuenta).map((s) => (
-          <option key={s} value={s}>
-            {copy.statuses[s]}
-          </option>
-        ))}
-      </select>
-      {status === "invitado" ? (
-        <button
-          type="button"
-          className="axr-btn axr-btn--ghost axr-btn--small"
-          disabled={pending}
-          onClick={() =>
-            correr(async () => {
-              const r = await reenviarInvitacion(guestId);
-              return r.ok ? { ok: true, texto: "✓" } : { ok: false, texto: r.error };
-            })
-          }
-        >
-          {copy.pResend}
-        </button>
-      ) : null}
-      <Nota aviso={aviso} />
-    </div>
   );
 }
 

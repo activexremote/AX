@@ -183,7 +183,8 @@ export async function procesarCola(opciones: { limite?: number; guestIds?: strin
       continue;
     }
 
-    const motivo = motivoParaNoEnviar(fila.kind, sesion.run, guest as DryRunGuest, new Date(fila.send_at));
+    // Invitado por teléfono que aún no ha reservado: no hay adónde escribir.
+    const motivo = guest.email ? motivoParaNoEnviar(fila.kind, sesion.run, guest as DryRunGuest, new Date(fila.send_at)) : "sin correo";
     if (motivo) {
       await terminar({ status: "omitido", error: motivo });
       resultado.omitidos++;
@@ -193,7 +194,7 @@ export async function procesarCola(opciones: { limite?: number; guestIds?: strin
     const correo = componer(fila.kind, await contextoDe(admin, guest as DryRunGuest, sesion));
     const envio = await enviarCorreo(
       {
-        to: guest.email,
+        to: guest.email as string,
         toName: guest.full_name,
         subject: correo.asunto,
         html: correo.html,
