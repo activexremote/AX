@@ -7,7 +7,7 @@ import { encolar, procesarCola, reprogramar, vistaPrevia } from "@/lib/dry-run/c
 import { esTipoCorreo } from "@/lib/dry-run/secuencia";
 import { deCampoLocal } from "@/lib/dry-run/tiempo";
 import { urlDeEnlace } from "@/components/admin/dry-run/valores";
-import { CON_PLAZA, type DryRun, type DryRunGuest, type DryRunLink, type EstadoInvitado } from "@/lib/dry-run/tipos";
+import { CON_PLAZA, SEGUIMIENTOS, type DryRun, type DryRunGuest, type DryRunLink, type EstadoInvitado, type Seguimiento } from "@/lib/dry-run/tipos";
 import { enviarCorreo, getMailSettings } from "@/lib/correo/envio";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -166,7 +166,8 @@ function leerPersonas(texto: string) {
 }
 
 export async function invitar(runId: string, formData: FormData): Promise<Resultado<{ nuevas: number; repetidas: number }>> {
-  await assertAdmin();
+  const yo = await assertAdmin();
+  const invitador = yo.full_name?.trim().split(/\s+/)[0] || null;
   const personas = leerPersonas(String(formData.get("personas") ?? "").slice(0, 50_000));
   if (!personas.length) return { error: "No hay ningún correo válido." };
   if (personas.length > 300) return { error: "Como mucho 300 por tanda." };
@@ -184,7 +185,7 @@ export async function invitar(runId: string, formData: FormData): Promise<Result
     const ahora = new Date().toISOString();
     const { data: filas, error } = await admin
       .from("dry_run_guests")
-      .insert(nuevas.map((p) => ({ dry_run_id: runId, email: p.email, full_name: p.nombre, link_id: linkId, status: "invitado", invited_at: ahora })))
+      .insert(nuevas.map((p) => ({ dry_run_id: runId, email: p.email, full_name: p.nombre, inviter: invitador, link_id: linkId, status: "invitado", invited_at: ahora, shared_at: ahora, shared_via: "email" })))
       .select("*");
     if (error) return { error: error.message };
     for (const g of (filas ?? []) as DryRunGuest[]) await encolar(g, run as DryRun, "invitados");
@@ -242,6 +243,157 @@ export async function cambiarEstado(guestId: string, status: EstadoInvitado): Pr
   }
 
   revalidatePath(`/admin/dry-run/${guest.dry_run_id}`);
+  return { ok: true };
+}
+
+// ── Tabla de invitados ───────────────────────────────────
+
+/** Las columnas de la tabla que se editan a mano. */
+const CAMPOS = { full_name: 120, email: 200, phone: 40, country: 60, inviter: 60, profile: 160, notes: 2000 } as const;
+type Campo = keyof typeof CAMPOS;
+
+/** El valor limpio de una celda, o un error que enseñar en la fila. */
+function limpiarCampo(campo: Campo, bruto: string): { valor: string | null } | { error: string } {
+  // Las notas conservan los saltos de línea; lo demás es una línea.
+  const v = (campo === "notes" ? bruto.replace(/[ \t]+/g, " ") : bruto.replace(/\s+/g, " ")).trim().slice(0, CAMPOS[campo]);
+  if (!v) return { valor: null };
+  if (campo === "email") {
+    const e = v.toLowerCase();
+    return /^[^\s@<>,;"']+@[^\s@<>,;"']+\.[a-z]{2,}$/i.test(e) ? { valor: e } : { error: "Ese correo no parece válido." };
+  }
+  if (campo === "phone") {
+    if (/[^\d\s+().-]/.test(v)) return { error: "El teléfono solo admite números, espacios y +." };
+    // «0034 659…» es «+34 659…».
+    return { valor: v.replace(/^00/, "+") };
+  }
+  return { valor: v };
+}
+
+const duplicado = (m: string) => (/duplicate|unique/i.test(m) ? "Ya hay otro invitado con ese correo en esta sesión." : m);
+
+export async function crearInvitado(runId: string, datos: Partial<Record<Campo, string>> & { tracking?: string }): Promise<Resultado<{ id: string }>> {
+  await assertAdmin();
+  const fila: Record<string, unknown> = { dry_run_id: runId, status: "invitado" };
+  for (const campo of Object.keys(CAMPOS) as Campo[]) {
+    const r = limpiarCampo(campo, datos[campo] ?? "");
+    if ("error" in r) return { error: r.error };
+    fila[campo] = r.valor;
+  }
+  if (!fila.full_name && !fila.email && !fila.phone) return { error: "Pon al menos el nombre." };
+  if (datos.tracking && SEGUIMIENTOS.includes(datos.tracking as Seguimiento)) fila.tracking = datos.tracking;
+
+  const { data, error } = await createAdminClient().from("dry_run_guests").insert(fila).select("id").single();
+  if (error || !data) return { error: duplicado(error?.message ?? "No se pudo añadir.") };
+  revalidatePath(`/admin/dry-run/${runId}`);
+  return { ok: true, id: data.id };
+}
+
+/** Pegar filas de una hoja de cálculo: nombre, correo, teléfono, país, invitador, estado, perfil, notas. */
+export async function importarInvitados(runId: string, texto: string): Promise<Resultado<{ nuevas: number; saltadas: number }>> {
+  await assertAdmin();
+  const orden: (Campo | "tracking")[] = ["full_name", "email", "phone", "country", "inviter", "tracking", "profile", "notes"];
+  const estados: Record<string, Seguimiento> = {
+    pendiente: "pendiente", confirmado: "confirmado", rechazado: "rechazado", asistio: "asistio", "asistió": "asistio",
+    "no asistio": "no_asistio", "no asistió": "no_asistio",
+  };
+  const lineas = texto.slice(0, 100_000).split(/\r?\n/).filter((l) => l.trim());
+  if (lineas.length > 300) return { error: "Como mucho 300 filas por tanda." };
+  let nuevas = 0;
+  let saltadas = 0;
+  for (const linea of lineas) {
+    // Sin tabuladores (pegado de otro sitio), se separa por comas o punto y coma.
+    const celdas = (linea.includes("\t") ? linea.split("\t") : linea.split(/[;,]/)).map((c) => c.trim());
+    // Una columna «ALU-001» delante, como en la hoja, se ignora; la cabecera también.
+    if (/^alu-\d+$/i.test(celdas[0] ?? "")) celdas.shift();
+    if (/^nombre/i.test(celdas[0] ?? "")) continue;
+    const datos: Partial<Record<Campo, string>> & { tracking?: string } = {};
+    orden.forEach((k, i) => {
+      const v = celdas[i] ?? "";
+      if (k === "tracking") datos.tracking = estados[v.toLowerCase()] ?? undefined;
+      else datos[k] = v;
+    });
+    const r = await crearInvitado(runId, datos);
+    if (r.ok) nuevas++;
+    else saltadas++;
+  }
+  revalidatePath(`/admin/dry-run/${runId}`);
+  return { ok: true, nuevas, saltadas };
+}
+
+export async function actualizarInvitado(guestId: string, campo: string, valor: string): Promise<Resultado<{ valor: string | null }>> {
+  await assertAdmin();
+  if (!(campo in CAMPOS)) return { error: "Campo no válido." };
+  const r = limpiarCampo(campo as Campo, valor);
+  if ("error" in r) return { error: r.error };
+  const admin = createAdminClient();
+  const { data: guest } = await admin.from("dry_run_guests").select("dry_run_id, user_id").eq("id", guestId).maybeSingle();
+  if (!guest) return { error: "No existe." };
+  // Con plaza, el correo es el de su cuenta de Google: ahí le llegan los correos.
+  if (campo === "email" && guest.user_id && !r.valor) return { error: "Tiene plaza: el correo no se puede dejar vacío." };
+  const { error } = await admin.from("dry_run_guests").update({ [campo]: r.valor }).eq("id", guestId);
+  if (error) return { error: duplicado(error.message) };
+  revalidatePath(`/admin/dry-run/${guest.dry_run_id}`);
+  return { ok: true, valor: r.valor };
+}
+
+/**
+ * El estado de la tabla. Asistió y no asistió también cambian el del sistema
+ * si tiene plaza: de eso depende que le llegue el correo de feedback.
+ */
+export async function cambiarSeguimiento(guestId: string, tracking: Seguimiento): Promise<Resultado> {
+  await assertAdmin();
+  if (!SEGUIMIENTOS.includes(tracking)) return { error: "Estado no válido." };
+  const admin = createAdminClient();
+  const { data: guest } = await admin.from("dry_run_guests").select("dry_run_id, status").eq("id", guestId).maybeSingle();
+  if (!guest) return { error: "No existe." };
+  const cambios: Record<string, unknown> = { tracking };
+  if (CON_PLAZA.includes(guest.status as EstadoInvitado)) {
+    cambios.status = tracking === "asistio" || tracking === "no_asistio" ? tracking : "registrado";
+  }
+  const { error } = await admin.from("dry_run_guests").update(cambios).eq("id", guestId);
+  if (error) return { error: error.message };
+  revalidatePath(`/admin/dry-run/${guest.dry_run_id}`);
+  return { ok: true };
+}
+
+/** Alguien del equipo ha copiado o abierto su invitación. */
+export async function marcarCompartido(guestId: string, via: string): Promise<Resultado> {
+  await assertAdmin();
+  if (!["whatsapp", "email", "directo"].includes(via)) return { error: "Canal no válido." };
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("dry_run_guests")
+    .update({ shared_at: new Date().toISOString(), shared_via: via })
+    .eq("id", guestId)
+    .select("dry_run_id")
+    .maybeSingle();
+  if (error || !data) return { error: error?.message ?? "No existe." };
+  revalidatePath(`/admin/dry-run/${data.dry_run_id}`);
+  return { ok: true };
+}
+
+/** Borra la fila, sus correos y, si se lo dio este dry run, el acceso al módulo. */
+export async function eliminarInvitado(guestId: string): Promise<Resultado> {
+  await assertAdmin();
+  const admin = createAdminClient();
+  const { data: guest } = await admin.from("dry_run_guests").select("dry_run_id, user_id").eq("id", guestId).maybeSingle();
+  if (!guest) return { error: "No existe." };
+  if (guest.user_id) {
+    const { data: run } = await admin.from("dry_runs").select("module_id").eq("id", guest.dry_run_id).maybeSingle();
+    if (run) await admin.from("module_grants").delete().eq("user_id", guest.user_id).eq("module_id", run.module_id).eq("source", "dry-run");
+  }
+  const { error } = await admin.from("dry_run_guests").delete().eq("id", guestId);
+  if (error) return { error: error.message };
+  revalidatePath(`/admin/dry-run/${guest.dry_run_id}`);
+  return { ok: true };
+}
+
+export async function guardarMensaje(runId: string, texto: string): Promise<Resultado> {
+  await assertAdmin();
+  const limpio = texto.replace(/\r\n/g, "\n").trim().slice(0, 4000);
+  const { error } = await createAdminClient().from("dry_runs").update({ invite_message: limpio || null }).eq("id", runId);
+  if (error) return { error: error.message };
+  revalidatePath(`/admin/dry-run/${runId}`);
   return { ok: true };
 }
 

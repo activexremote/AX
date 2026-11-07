@@ -24,8 +24,8 @@ import "@/app/dry-run/dry-run.scss";
 //  Adonde llevan todos los enlaces de invitación (los del panel, con sus utm,
 //  y el personal de cada correo). Cuenta la sesión, qué se pide a cambio y
 //  tiene un solo botón: reservar con Google. Cada visita humana con ?ref=
-//  suma una al enlace; las de los robots que generan las vistas previas de
-//  WhatsApp o LinkedIn no.
+//  suma una al enlace, y con ?inv= al invitado; las de los robots que generan
+//  las vistas previas de WhatsApp o LinkedIn no.
 // ══════════════════════════════════════════════════════════
 
 type Params = { slug: string };
@@ -90,9 +90,12 @@ export default async function DryRunLanding({ params, searchParams }: { params: 
       )
     : false;
 
-  if (ref && !isBot(ua)) {
+  if (!isBot(ua) && (ref || invitado)) {
     after(async () => {
-      await createAdminClient().rpc("dry_run_visit", { link_code: ref });
+      const db = createAdminClient();
+      if (ref) await db.rpc("dry_run_visit", { link_code: ref });
+      // El enlace personal de la tabla de invitados: la visita es suya.
+      if (invitado) await db.rpc("dry_run_guest_visit", { guest_token: inv });
     });
   }
 
