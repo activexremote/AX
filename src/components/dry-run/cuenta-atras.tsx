@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 
 /**
- * Cuenta atrás hasta el inicio de la sesión. En el servidor (y hasta que el
- * navegador hidrata) enseña guiones, para no pintar una hora que ya no vale.
+ * Cuenta atrás hasta el inicio de la sesión. Sale ya con los números desde el
+ * servidor (`servidor` es su hora al pintar la página), y en cuanto el
+ * navegador hidrata sigue con su propio reloj. Antes enseñaba guiones hasta
+ * hidratar, y en un móvil lento eso eran varios segundos de «-- -- --».
  * Durante la clase dice «En directo ahora»; después, nada.
  */
-export function CuentaAtras({ inicio, fin }: { inicio: string; fin: string }) {
-  const [ahora, setAhora] = useState<number | null>(null);
+export function CuentaAtras({ inicio, fin, servidor }: { inicio: string; fin: string; servidor: number }) {
+  const [ahora, setAhora] = useState<number>(servidor);
 
   useEffect(() => {
     setAhora(Date.now());
@@ -19,8 +21,8 @@ export function CuentaAtras({ inicio, fin }: { inicio: string; fin: string }) {
   const a = new Date(inicio).getTime();
   const b = new Date(fin).getTime();
 
-  if (ahora !== null && ahora >= b) return null;
-  if (ahora !== null && ahora >= a) {
+  if (ahora >= b) return null;
+  if (ahora >= a) {
     return (
       <p className="axr-dr-count axr-dr-count--live">
         <span className="axr-dr-count__dot" aria-hidden /> En directo ahora
@@ -28,19 +30,19 @@ export function CuentaAtras({ inicio, fin }: { inicio: string; fin: string }) {
     );
   }
 
-  const falta = ahora === null ? null : Math.max(0, a - ahora);
-  const partes: [string, number | null][] = [
-    ["días", falta === null ? null : Math.floor(falta / 86_400_000)],
-    ["horas", falta === null ? null : Math.floor(falta / 3_600_000) % 24],
-    ["min", falta === null ? null : Math.floor(falta / 60_000) % 60],
-    ["seg", falta === null ? null : Math.floor(falta / 1000) % 60],
+  const falta = Math.max(0, a - ahora);
+  const partes: [string, number][] = [
+    ["días", Math.floor(falta / 86_400_000)],
+    ["horas", Math.floor(falta / 3_600_000) % 24],
+    ["min", Math.floor(falta / 60_000) % 60],
+    ["seg", Math.floor(falta / 1000) % 60],
   ];
 
   return (
     <div className="axr-dr-count" role="timer" aria-label="Tiempo hasta el inicio de la clase">
       {partes.map(([etiqueta, n]) => (
         <div key={etiqueta} className="axr-dr-count__cell">
-          <strong suppressHydrationWarning>{n === null ? "--" : String(n).padStart(2, "0")}</strong>
+          <strong suppressHydrationWarning>{String(n).padStart(2, "0")}</strong>
           <span>{etiqueta}</span>
         </div>
       ))}

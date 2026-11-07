@@ -15,28 +15,35 @@ import { MetaPixel } from "@/components/analytics/meta-pixel";
 //  Orden, que importa:
 //   1. ConsentDefaultScript (también en el <head>, antes que esto) deja
 //      Consent Mode en «denied», o en lo que ya decidió la persona.
-//   2. GTM y gtag.js de Google Ads. Respetan Consent Mode solos: sin permiso
-//      de marketing no escriben cookies ni identifican a nadie.
+//   2. GTM y gtag.js de Google Ads, cuando la página ya ha cargado. Respetan
+//      Consent Mode solos: sin permiso de marketing no escriben cookies ni
+//      identifican a nadie.
 //   3. El píxel de Meta NO entiende Consent Mode, así que ni se descarga
 //      hasta que hay permiso de marketing (componente MetaPixel).
 // ══════════════════════════════════════════════════════════
 
-const gtm = `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${GTM_ID}');`;
-
+// Los eventos entran en el dataLayer desde el primer momento (gtm.start, la
+// configuración de Ads y lo que empuje la página), pero los dos scripts de
+// Google se descargan cuando la página ya ha cargado y el navegador está
+// libre: en un móvil con 4G se llevaban el ancho de banda antes que el código
+// de la propia página y la dejaban sin responder unos segundos. GTM y gtag.js
+// leen al llegar todo lo que haya en la cola, así que no se pierde nada.
 // `window.gtag` ya lo define ConsentDefaultScript sobre el mismo dataLayer.
-const googleAds = `window.gtag('js', new Date());window.gtag('config', '${GOOGLE_ADS_ID}');`;
+const loader = `(function(w,d){
+w.dataLayer=w.dataLayer||[];
+w.dataLayer.push({'gtm.start':new Date().getTime(),event:'gtm.js'});
+w.gtag('js',new Date());w.gtag('config','${GOOGLE_ADS_ID}');
+function add(src){var j=d.createElement('script');j.async=true;j.src=src;d.head.appendChild(j);}
+function go(){add('https://www.googletagmanager.com/gtm.js?id=${GTM_ID}');add('https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}');}
+function idle(){(w.requestIdleCallback||function(f){setTimeout(f,1)})(go,{timeout:2500});}
+if(d.readyState==='complete')idle();else w.addEventListener('load',idle,{once:true});
+})(window,document);`;
 
-/** Va en el <head>: GTM y la etiqueta de Google piden estar lo más arriba posible. */
+/** Va en el <head>, después de ConsentDefaultScript. */
 export function MarketingHead() {
   if (!IDS_VALID) return null;
-  return (
-    <>
-      {/* IDs validados contra un patrón cerrado: no entra nada del usuario. */}
-      <script id="axr-gtm" dangerouslySetInnerHTML={{ __html: gtm }} />
-      <script async src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`} />
-      <script id="axr-google-ads" dangerouslySetInnerHTML={{ __html: googleAds }} />
-    </>
-  );
+  // IDs validados contra un patrón cerrado: no entra nada del usuario.
+  return <script id="axr-marketing" dangerouslySetInnerHTML={{ __html: loader }} />;
 }
 
 /**

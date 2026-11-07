@@ -5,6 +5,13 @@ import { LOCALES, type Locale } from "@/lib/i18n/config";
 import { withLocale } from "@/lib/i18n/routing";
 
 export const SITE_URL = `https://${ENTITY.domain}`;
+/**
+ * Donde de verdad se sirve la web: Vercel redirige el dominio desnudo a www.
+ * Para los enlaces que se mandan a mano (invitaciones por WhatsApp, correos):
+ * así el primer clic no paga una redirección y una conexión de más, que en
+ * un móvil se nota.
+ */
+export const LINK_URL = `https://www.${ENTITY.domain}`;
 export const SITE_NAME = "ActiveXRemote";
 
 /** Código completo por idioma. Google prefiere el par idioma-región cuando el

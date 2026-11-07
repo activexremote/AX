@@ -166,7 +166,7 @@ export function ConsentBanner({ copy }: { copy: ConsentCopy }) {
           </button>
         </div>
 
-        <Link href="/legal/cookies" className="axr-consent__more">
+        <Link href="/legal/cookies" className="axr-consent__more" prefetch={false}>
           {copy.more}
         </Link>
       </div>
