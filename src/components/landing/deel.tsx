@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { DEEL_BADGES, DEEL_URL, deelArea, deelCopy } from "@/app/bienvenida/deel";
 import { getLocale } from "@/lib/i18n/server";
 import "@/components/landing/deel.scss";
@@ -17,10 +19,9 @@ import "@/components/landing/deel.scss";
 
 function Badge({ index, size }: { index: number; size: number }) {
   const b = DEEL_BADGES[index];
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={b.src} alt={b.alt} width={size} height={size} className="axr-deel-badge" decoding="async" />
-  );
+  // Los PNG de Deel son de 640 px: next/image sirve el tamaño que se ve, sin
+  // tocar el dibujo (ni filtros ni color, como piden sus reglas).
+  return <Image src={b.src} alt={b.alt} width={size} height={size} sizes={`${size}px`} className="axr-deel-badge" />;
 }
 
 /** El sello del héroe. Lleva a la sección de la misma página. */

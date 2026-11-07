@@ -1,4 +1,4 @@
-import { SITE_URL } from "@/lib/seo";
+import { LINK_URL } from "@/lib/seo";
 
 // ══════════════════════════════════════════════════════════
 //  La invitación personal de la tabla de invitados
@@ -43,7 +43,7 @@ const aCodigo = (s: string) =>
     .replace(/^_+|_+$/g, "");
 
 export function enlacePersonal(slug: string, g: { token: string; seq: number; inviter: string | null }, via: Via) {
-  const u = new URL(`/dry-run/${slug}`, SITE_URL);
+  const u = new URL(`/dry-run/${slug}`, LINK_URL);
   u.searchParams.set("inv", g.token);
   u.searchParams.set("utm_source", via);
   u.searchParams.set("utm_medium", "invitacion_personal");

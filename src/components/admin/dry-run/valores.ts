@@ -1,7 +1,7 @@
 import type { ValoresSesion } from "@/components/admin/dry-run/form-sesion";
 import { aCampoLocal } from "@/lib/dry-run/tiempo";
 import type { DryRun, DryRunLink } from "@/lib/dry-run/tipos";
-import { SITE_URL } from "@/lib/seo";
+import { LINK_URL } from "@/lib/seo";
 
 /** Los valores del formulario de la sesión a partir de su fila (fechas en hora de Madrid). */
 export function valoresDe(r: DryRun): ValoresSesion {
@@ -24,7 +24,7 @@ export function valoresDe(r: DryRun): ValoresSesion {
 
 /** La dirección completa de un enlace de invitación, con su ref y sus utm. */
 export function urlDeEnlace(slug: string, l: Pick<DryRunLink, "code" | "utm_source" | "utm_medium" | "utm_campaign" | "utm_content" | "utm_term">) {
-  const u = new URL(`/dry-run/${slug}`, SITE_URL);
+  const u = new URL(`/dry-run/${slug}`, LINK_URL);
   u.searchParams.set("ref", l.code);
   u.searchParams.set("utm_source", l.utm_source);
   u.searchParams.set("utm_medium", l.utm_medium);

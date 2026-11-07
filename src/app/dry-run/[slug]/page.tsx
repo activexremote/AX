@@ -99,7 +99,8 @@ export default async function DryRunLanding({ params, searchParams }: { params: 
     });
   }
 
-  const terminado = new Date(run.ends_at).getTime() < Date.now();
+  const ahora = Date.now();
+  const terminado = new Date(run.ends_at).getTime() < ahora;
   const libres = run.capacity ? Math.max(run.capacity - sesion.ocupadas, 0) : null;
   const abierto = run.registration_open && !terminado && libres !== 0;
   const agenda = leerAgenda(run.agenda);
@@ -115,7 +116,7 @@ export default async function DryRunLanding({ params, searchParams }: { params: 
     yaTienePlaza ? (
       <>
         <p className="axr-dr__ok">✓ Ya tienes tu plaza.</p>
-        <Link href="/preparacion" className="axr-dr__cta">
+        <Link href="/preparacion" className="axr-dr__cta" prefetch={false}>
           Ir a mi preparación <span aria-hidden>→</span>
         </Link>
       </>
@@ -160,7 +161,7 @@ export default async function DryRunLanding({ params, searchParams }: { params: 
         </div>
 
         <header className="axr-dr__bar">
-          <Link href="/bienvenida" className="axr-dr__brand">
+          <Link href="/bienvenida" className="axr-dr__brand" prefetch={false}>
             <BrandMark size={20} />
             <span>ActiveXRemote</span>
           </Link>
@@ -180,11 +181,11 @@ export default async function DryRunLanding({ params, searchParams }: { params: 
               Damos el módulo <strong>{modulo.title}</strong> a un grupo reducido, en directo y con {nombreDocente}. Una clase real, gratis, para que nos digas qué te parece antes de abrir el programa.
             </p>
 
-            <CuentaAtras inicio={run.starts_at} fin={run.ends_at} />
+            <CuentaAtras inicio={run.starts_at} fin={run.ends_at} servidor={ahora} />
 
             {docente ? (
               <a href="#docente" className="axr-dr__teacher-chip">
-                <Image src={docente.photo} alt="" width={40} height={40} />
+                <Image src={docente.photo} alt="" width={40} height={40} loading="eager" />
                 <span>
                   Con <strong>{docente.name}</strong>
                   <small>{docente.es.role}</small>
@@ -387,7 +388,7 @@ export default async function DryRunLanding({ params, searchParams }: { params: 
 
       <footer className="axr-dr__foot">
         <span>ActiveXRemote · The Remote Business School</span>
-        <Link href="/legal/privacidad">Privacidad</Link>
+        <Link href="/legal/privacidad" prefetch={false}>Privacidad</Link>
       </footer>
     </main>
   );

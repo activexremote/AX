@@ -1,6 +1,6 @@
 import { leerAgenda, type DryRun, type DryRunGuest } from "@/lib/dry-run/tipos";
 import { cuandoEs, diaLargo, horaMadrid, sello } from "@/lib/dry-run/tiempo";
-import { SITE_URL } from "@/lib/seo";
+import { LINK_URL } from "@/lib/seo";
 
 // ══════════════════════════════════════════════════════════
 //  Los correos del dry run
@@ -54,7 +54,7 @@ export type Correo = { asunto: string; preheader: string; html: string; texto: s
 
 /** Las utm de los correos de seguimiento: se sabe qué correo trajo cada visita. */
 function conUtm(url: string, run: DryRun, kind: TipoCorreo) {
-  const u = new URL(url, SITE_URL);
+  const u = new URL(url, LINK_URL);
   u.searchParams.set("utm_source", "email");
   u.searchParams.set("utm_medium", "dry-run");
   u.searchParams.set("utm_campaign", run.slug);
@@ -63,7 +63,7 @@ function conUtm(url: string, run: DryRun, kind: TipoCorreo) {
 }
 
 export function enlaceLanding(ctx: Pick<Contexto, "run" | "guest" | "invitacion">) {
-  const u = new URL(`/dry-run/${ctx.run.slug}`, SITE_URL);
+  const u = new URL(`/dry-run/${ctx.run.slug}`, LINK_URL);
   u.searchParams.set("ref", ctx.invitacion.ref);
   u.searchParams.set("inv", ctx.guest.token);
   u.searchParams.set("utm_source", ctx.invitacion.source);
@@ -85,7 +85,7 @@ export function enlaceGoogleCalendar(run: DryRun) {
       `Clase de prueba con ${run.teacher_name}.`,
       run.meet_url ? `Enlace de la clase: ${run.meet_url}` : null,
       run.classroom_url ? `Google Classroom: ${run.classroom_url}` : null,
-      `Tu preparación: ${SITE_URL}/preparacion`,
+      `Tu preparación: ${LINK_URL}/preparacion`,
     ]
       .filter(Boolean)
       .join("\n"),
@@ -94,8 +94,8 @@ export function enlaceGoogleCalendar(run: DryRun) {
   return u.toString();
 }
 
-export const enlaceIcs = (run: DryRun) => `${SITE_URL}/dry-run/${run.slug}/evento.ics`;
-export const enlaceBaja = (token: string) => `${SITE_URL}/dry-run/baja?t=${token}`;
+export const enlaceIcs = (run: DryRun) => `${LINK_URL}/dry-run/${run.slug}/evento.ics`;
+export const enlaceBaja = (token: string) => `${LINK_URL}/dry-run/baja?t=${token}`;
 
 // ── Pintado ──────────────────────────────────────────────
 
@@ -209,7 +209,7 @@ function pintar(ctx: Contexto, asunto: string, preheader: string, titulo: string
 </td></tr>
 <tr><td style="padding:36px 40px 28px 40px;font-family:${FUENTE};">
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;"><tr>
-<td style="padding-right:12px;" valign="middle"><img src="${SITE_URL}/email/logo-axr.png" width="46" height="28" alt="ActiveXRemote" style="display:block;border:0;outline:none;width:46px;height:28px;"></td>
+<td style="padding-right:12px;" valign="middle"><img src="${LINK_URL}/email/logo-axr.png" width="46" height="28" alt="ActiveXRemote" style="display:block;border:0;outline:none;width:46px;height:28px;"></td>
 <td valign="middle" style="font-family:${FUENTE};"><div style="font-size:15px;font-weight:700;letter-spacing:0.14em;color:${TINTA};">ACTIVEXREMOTE</div><div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:${SUAVE};padding-top:2px;">The Remote Business School</div></td>
 </tr></table>
 <h1 style="margin:0 0 16px 0;font-size:26px;line-height:1.2;font-weight:700;color:${TINTA};">${esc(titulo)}</h1>

@@ -15,7 +15,7 @@ import { CON_PLAZA, idInvitado, type DryRun, type DryRunEmail, type DryRunGuest,
 import { getCurrentProfile } from "@/lib/data/profile";
 import { drCopy, rellenar } from "@/lib/i18n/dry-run";
 import { getI18n } from "@/lib/i18n/server";
-import { SITE_URL } from "@/lib/seo";
+import { LINK_URL } from "@/lib/seo";
 import { createAdminClient } from "@/lib/supabase/admin";
 import "@/app/admin/ia/ia.scss";
 import "@/app/admin/dry-run/dry-run.scss";
@@ -107,7 +107,7 @@ export default async function DryRunPage({ params }: { params: Promise<{ id: str
       };
     });
 
-  const publica = `${SITE_URL}/dry-run/${run.slug}`;
+  const publica = `${LINK_URL}/dry-run/${run.slug}`;
   const listo = correoListo(ajustes);
   const opciones = (modulos ?? []).map((m) => ({ id: m.id, label: `${m.course} · ${m.order_index} · ${m.title}` }));
 

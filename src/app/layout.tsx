@@ -26,6 +26,9 @@ const plexMono = IBM_Plex_Mono({
   variable: "--font-plex-mono",
   subsets: ["latin"],
   weight: ["400", "500"],
+  // Sólo la usan el campus y el editor de lecciones: que no la descargue
+  // cada página pública por adelantado.
+  preload: false,
 });
 
 // `metadataBase` es lo que permite que el resto de páginas declaren rutas
