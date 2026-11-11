@@ -5,16 +5,17 @@
 //  la calculadora del gestor leen de aquí. (La web y Stripe tienen su propio
 //  catálogo en lib/stripe/catalog.ts.)
 //
-//  Con un curso, a plazos se paga más que al contado: nunca se anuncia como
-//  «sin intereses». Sin imports a propósito: los scripts de los PDF lo leen
+//  A plazos se paga más que al contado (con un curso y con los dos): nunca
+//  se anuncia como «sin intereses». Sin imports a propósito: los scripts de los PDF lo leen
 //  con Node.
 // ══════════════════════════════════════════════════════════
 
 /** Céntimos, como Stripe: nada de euros en coma flotante. */
 export const PRECIO_CONTADO = 199_000;
 export const PRECIO_PLAZOS = 219_000;
-/** Los dos cursos (lib/stripe/catalog.ts, «pack-dos»): el mismo precio al contado o a plazos. */
-export const PRECIO_DOS = 299_000;
+/** Los dos cursos (lib/stripe/catalog.ts, «pack-dos»): el mismo descuento por pagar al contado que con uno. */
+export const PRECIO_DOS_CONTADO = 279_000;
+export const PRECIO_DOS_PLAZOS = 299_000;
 export const PLAZOS_POR_DEFECTO = 3;
 /** Entre cuántos plazos se puede repartir. Fuera de esto, lo decide el equipo. */
 export const PLAZOS_MIN = 2;
@@ -28,7 +29,7 @@ export const PRODUCTOS: Record<Producto, { contado: number; plazos: number; maxC
   uno: { contado: PRECIO_CONTADO, plazos: PRECIO_PLAZOS, maxCuotas: PLAZOS_MAX, avisoFinCurso: true },
   // Hasta 10 cuotas: con los dos cursos el pago se alarga más allá del curso
   // a propósito, así que no se avisa.
-  dos: { contado: PRECIO_DOS, plazos: PRECIO_DOS, maxCuotas: PLAZOS_MAX_DOS, avisoFinCurso: false },
+  dos: { contado: PRECIO_DOS_CONTADO, plazos: PRECIO_DOS_PLAZOS, maxCuotas: PLAZOS_MAX_DOS, avisoFinCurso: false },
 };
 
 /** El día de hoy en Madrid, como «2026-11-11». */

@@ -753,7 +753,7 @@ const TERMINOS_ES: LegalDoc = {
           rows: [
             ["Un curso (Remote Professional o Remote Founder), en pago único", "1.990 €."],
             ["Un curso (Remote Professional o Remote Founder), a plazos", "2.190 € en total, en 3 cargos mensuales de 730 €."],
-            ["Los dos cursos (Remote Professional y Remote Founder)", "2.990 €, en pago único o hasta en 10 cargos mensuales por el mismo total."],
+            ["Los dos cursos (Remote Professional y Remote Founder)", "2.790 € en pago único, o 2.990 € en total a plazos, hasta en 10 cargos mensuales."],
           ],
         },
         {
@@ -1564,7 +1564,7 @@ const TERMINOS_EN: LegalDoc = {
           rows: [
             ["One course (Remote Professional or Remote Founder), single payment", "€1,990."],
             ["One course (Remote Professional or Remote Founder), in instalments", "€2,190 in total, in 3 monthly charges of €730."],
-            ["Both courses (Remote Professional and Remote Founder)", "€2,990, in a single payment or in up to 10 monthly charges for the same total."],
+            ["Both courses (Remote Professional and Remote Founder)", "€2,790 in a single payment, or €2,990 in total in instalments, in up to 10 monthly charges."],
           ],
         },
         {

@@ -381,7 +381,7 @@ export const landingCopy = {
       // ⚠︎ SIN PRECIOS por ahora, a petición del equipo, y sin botón de
       // matrícula: la única salida es pedir información. Los importes de
       // salida (noviembre de 2026) son 1.990 € por curso en pago único,
-      // 2.190 € a plazos (3 × 730 €) y 2.990 € los dos (ver
+      // 2.190 € a plazos (3 × 730 €) y los dos 2.790 € o 2.990 € a plazos (ver
       // lib/stripe/catalog.ts); si vuelven a la web, van aquí y en el FAQ.
       planStart: "Arranca el 9 de enero de 2027 · grupos de 25 plazas",
       features: [

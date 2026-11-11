@@ -100,10 +100,10 @@ export const OFFERS: Record<OfferKey, Offer> = {
     courses: 2,
     mode: "payment",
     plan: "unico",
-    // Precio de salida (noviembre de 2026). Era 3.900 €. A plazos (hasta
-    // 10 cuotas, mismo total) lo cobra el equipo con un enlace de pago: el
-    // checkout de la web sólo hace los plazos de un curso.
-    unitAmount: 299000,
+    // Precio de salida (noviembre de 2026) en pago único. Era 3.900 €. A
+    // plazos son 2.990 € (hasta 10 cuotas) y los cobra el equipo con un
+    // enlace de pago: el checkout de la web sólo hace los plazos de un curso.
+    unitAmount: 279000,
     charges: 1,
     currency: "eur",
     priceEnv: "STRIPE_PRICE_PACK_DOS",

@@ -12,14 +12,15 @@
 //  script del PDF con Node, sin compilar.
 // ══════════════════════════════════════════════════════════
 
-import { calcularPlazos, euros, PLAZOS_MAX_DOS, PLAZOS_POR_DEFECTO, PRECIO_CONTADO, PRECIO_DOS, PRECIO_PLAZOS, resumenPlazos } from "./precios.ts";
+import { calcularPlazos, euros, PLAZOS_MAX_DOS, PLAZOS_POR_DEFECTO, PRECIO_CONTADO, PRECIO_DOS_CONTADO, PRECIO_DOS_PLAZOS, PRECIO_PLAZOS, resumenPlazos } from "./precios.ts";
 
 const CONTADO = euros(PRECIO_CONTADO);
 const APLAZADO = euros(PRECIO_PLAZOS);
 const CUOTAS = resumenPlazos(calcularPlazos(PRECIO_PLAZOS, PLAZOS_POR_DEFECTO, "2027-01-01"));
 const AHORRO = euros(PRECIO_PLAZOS - PRECIO_CONTADO);
-const DOS = euros(PRECIO_DOS);
-const DOS_CUOTAS = resumenPlazos(calcularPlazos(PRECIO_DOS, PLAZOS_MAX_DOS, "2027-01-01"));
+const DOS = euros(PRECIO_DOS_CONTADO);
+const DOS_APLAZADO = euros(PRECIO_DOS_PLAZOS);
+const DOS_CUOTAS = resumenPlazos(calcularPlazos(PRECIO_DOS_PLAZOS, PLAZOS_MAX_DOS, "2027-01-01"));
 
 export type Bloque =
   | { t: "p"; x: string }
@@ -78,14 +79,14 @@ export const PLAYBOOK: Seccion[] = [
           ["Idioma", "Clases en español · materiales en español e inglés"],
           ["Nivel previo", "Ninguno"],
           ["Si faltas a una clase", "Queda grabada en el campus, sin caducidad"],
-          ["Precio de salida", `${CONTADO} en pago único · ${APLAZADO} a plazos (por ejemplo, ${CUOTAS}) · los dos cursos, ${DOS} (al contado o hasta en ${DOS_CUOTAS})`],
+          ["Precio de salida", `${CONTADO} en pago único · ${APLAZADO} a plazos (por ejemplo, ${CUOTAS}) · los dos cursos, ${DOS} al contado o ${DOS_APLAZADO} a plazos (hasta en ${DOS_CUOTAS})`],
           ["Pago", "Con tarjeta, por Stripe · factura por cada pago"],
           ["Desistimiento", "14 días naturales (ver «Lo que nunca decimos»)"],
         ],
       },
       {
         t: "aviso",
-        x: `Los precios no están publicados en la web: se dan en la conversación, cuando la persona ya sabe qué le aporta el curso. Nunca los mandes en el primer mensaje sin contexto. Con un curso, a plazos se pagan ${AHORRO} más que al contado: nunca digas «sin intereses». Con los dos cursos, el precio es el mismo al contado o a plazos. Para calcular las cuotas y sus fechas, usa la calculadora del gestor.`,
+        x: `Los precios no están publicados en la web: se dan en la conversación, cuando la persona ya sabe qué le aporta el curso. Nunca los mandes en el primer mensaje sin contexto. A plazos se pagan ${AHORRO} más que al contado, con un curso y con los dos: nunca digas «sin intereses». Para calcular las cuotas y sus fechas, usa la calculadora del gestor.`,
       },
       {
         t: "p",
@@ -118,7 +119,7 @@ export const PLAYBOOK: Seccion[] = [
           { titulo: "¿Quieres trabajar para una empresa o para ti?", texto: "Si la respuesta es «para una empresa», es Remote Professional. Si es «para mí» o «tengo clientes», es Remote Founder." },
           { titulo: "¿Cobras hoy por horas?", texto: "Si es freelance y cobra por horas, Founder le enseña a salir de ese techo. Si quiere estabilidad y nómina, Professional." },
           { titulo: "¿No lo tiene claro?", texto: "Tranquilidad: la elección llega en el cuarto fin de semana y es reversible. Empieza por el núcleo común y decide con más información." },
-          { titulo: "¿Quiere los dos?", texto: `Los dos cursos juntos son ${DOS}, al contado o a plazos por el mismo precio, hasta en ${DOS_CUOTAS}. Ofrécelo solo si de verdad quiere ambos caminos.` },
+          { titulo: "¿Quiere los dos?", texto: `Los dos cursos juntos son ${DOS} al contado, o ${DOS_APLAZADO} a plazos, hasta en ${DOS_CUOTAS}. Ofrécelo solo si de verdad quiere ambos caminos.` },
         ],
       },
     ],
@@ -326,8 +327,8 @@ export const PLAYBOOK: Seccion[] = [
           "Testimonios, valoraciones o número de alumnos: aún no tenemos datos publicables.",
           "Nombres de docentes que no estén confirmados.",
           "Precios de Deel, que Deel es exclusivo nuestro, o productos de Deel que no ha anunciado.",
-          `Descuentos, becas u ofertas que no existan. Un curso: ${CONTADO} o ${APLAZADO} a plazos; los dos, ${DOS}.`,
-          "«Sin intereses» con un curso: a plazos se paga más.",
+          `Descuentos, becas u ofertas que no existan. Un curso: ${CONTADO} o ${APLAZADO} a plazos; los dos: ${DOS} o ${DOS_APLAZADO} a plazos.`,
+          "«Sin intereses»: a plazos siempre se paga más.",
           "Urgencia falsa: «últimas plazas» sin el número real.",
           "«Líder», «el mejor», «número 1».",
         ],
