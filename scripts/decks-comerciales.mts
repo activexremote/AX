@@ -14,7 +14,7 @@
 //     alumna de ejemplo.
 //   · Embudo, cambio de modelo, sueldos, Deel y herramientas: los
 //     mismos ficheros de copy que pintan las landings.
-//   · Precios: src/lib/comercial/precios.ts.
+//   · Sin precios: se piden a admisiones (CONTACTO), que hace la propuesta.
 //
 //  Reglas que se cumplen aquí: sin testimonios ni cifras de alumnos (aún no
 //  hay), sin docentes sin confirmar, «curso» y nunca «máster», los sellos de
@@ -26,7 +26,6 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { MATERIAL, type MaterialId } from "../src/lib/comercial/material.ts";
-import { calcularPlazos, euros, PLAZOS_MAX_DOS, PLAZOS_POR_DEFECTO, PRECIO_CONTADO, PRECIO_DOS, PRECIO_PLAZOS, resumenPlazos } from "../src/lib/comercial/precios.ts";
 import { DEEL_BADGES, deelCopy } from "../src/app/bienvenida/deel.ts";
 import { CATEGORIES, COURSE_CATEGORIES, TOOLS } from "../src/app/bienvenida/tools.ts";
 import { TOOL_ICONS } from "../src/components/landing/tool-icons.ts";
@@ -417,18 +416,22 @@ function paraQuien(camino?: "professional" | "founder") {
     <p class="nota">No hace falta nivel previo. Lo que sí hace falta es dominar tu oficio: el curso te enseña a llevarlo al mercado internacional.</p>`);
 }
 
-function inversion(destacar: "uno" | "dos") {
-  const cuotasUno = resumenPlazos(calcularPlazos(PRECIO_PLAZOS, PLAZOS_POR_DEFECTO, "2027-01-01"));
-  const cuotasDos = resumenPlazos(calcularPlazos(PRECIO_DOS, PLAZOS_MAX_DOS, "2027-01-01"));
-  const card = (activo: boolean, tag: string, precio: string, det: string, linea: string) =>
-    `<div class="precio${activo ? " precio--on" : ""}"><span class="precio__tag">${tag}</span><strong>${precio}</strong><p>${det}</p><small>${linea}</small></div>`;
+// Sin importes a propósito: el precio se da en la conversación, con la
+// propuesta de cada persona. El dosier dice qué opciones hay y a quién
+// pedirlas.
+function inversion() {
+  const opcion = (tag: string, titulo: string, det: string) => `<div class="precio"><span class="precio__tag">${tag}</span><h3>${titulo}</h3><p>${det}</p></div>`;
   return slide(`
     ${kicker("Inversión")}
-    <h2>Precio de salida para la cohorte de enero.</h2>
+    <h2>Te preparamos una propuesta a tu medida.</h2>
     <div class="precios">
-      ${card(destacar === "uno", "Un curso · pago único", euros(PRECIO_CONTADO), "Remote Professional o Remote Founder, con el núcleo común.", "Un solo cargo.")}
-      ${card(false, "Un curso · a plazos", euros(PRECIO_PLAZOS), `En ${cuotasUno}.`, "Un cargo al mes.")}
-      ${card(destacar === "dos", "Los dos cursos", euros(PRECIO_DOS), "El núcleo común y los dos caminos: 21 módulos.", `Al contado o hasta en ${cuotasDos}, por el mismo total.`)}
+      ${opcion("Un curso", "Remote Professional o Remote Founder", "Con el núcleo común: 14 módulos en directo y el campus sin caducidad.")}
+      ${opcion("Los dos cursos", "Los dos caminos completos", "El núcleo común y las dos especializaciones: 21 módulos.")}
+      ${opcion("Forma de pago", "Pago único o a plazos", "Eliges cómo pagarlo. Cuotas mensuales con tarjeta, cada una con su factura.")}
+    </div>
+    <div class="consulta">
+      <div><span>Precios y condiciones</span><strong>Consúltalos con ${CONTACTO.email}</strong></div>
+      <p>Te respondemos en menos de 24 horas laborables con las opciones para tu caso.</p>
     </div>
     <div class="garantias">
       <span>Pago seguro con Stripe</span><span>Factura de cada pago</span><span>14 días de desistimiento, según las condiciones</span><span>Si se aplaza un grupo, cambias de grupo o recuperas lo pagado</span>
@@ -557,7 +560,7 @@ function dosier(id: MaterialId): string[] {
       profesores(muestraCompleta()),
       paraQuien(),
       incluye(),
-      inversion("uno"),
+      inversion(),
       siguientesPasos(t),
     ];
   }
@@ -581,7 +584,7 @@ function dosier(id: MaterialId): string[] {
     herramientas(id),
     profesores([...de("nucleo"), ...de(c)].filter((m) => m.camino !== "nucleo" || [2, 5, 7].includes(m.n)).concat(de("nucleo").filter((m) => ![2, 5, 7].includes(m.n)))),
     incluye(),
-    inversion("uno"),
+    inversion(),
     siguientesPasos(t),
   ];
 }
@@ -771,15 +774,17 @@ h3 { font-size: 19px; letter-spacing: -.01em; font-weight: 750; line-height: 1.2
 .incluye strong { display: block; font-size: 17px; margin-bottom: 6px; }
 .incluye p { font-size: 15px; color: #514d69; line-height: 1.45; }
 
-/* Inversión */
-.precios { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 34px; }
-.precio { padding: 28px 28px 26px; border-radius: 22px; border: 1px solid #e7e4f5; background: #fff; }
-.precio--on { border: 0; background: ${t.grad}; color: #fff; box-shadow: 0 30px 60px -28px ${t.acento}; }
-.precio__tag { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
-.precio strong { display: block; margin: 12px 0 10px; font-size: 52px; font-weight: 800; letter-spacing: -.04em; line-height: 1; }
-.precio p { font-size: 17px; line-height: 1.45; }
-.precio small { display: block; margin-top: 12px; font-size: 15px; opacity: .8; }
-.garantias { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+/* Inversión, sin importes */
+.precios { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 30px; }
+.precio { padding: 24px 26px; border-radius: 20px; border: 1px solid #e7e4f5; background: #fff; }
+.precio__tag { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: ${t.acento}; }
+.precio h3 { margin: 10px 0 8px; font-size: 21px; }
+.precio p { font-size: 15px; line-height: 1.45; color: #514d69; }
+.consulta { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 18px; padding: 24px 28px; border-radius: 20px; background: ${t.grad}; color: #fff; box-shadow: 0 30px 60px -30px ${t.acento}; }
+.consulta span { display: block; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; opacity: .8; }
+.consulta strong { display: block; margin-top: 4px; font-size: 28px; font-weight: 800; letter-spacing: -.02em; }
+.consulta p { max-width: 320px; font-size: 15px; line-height: 1.45; opacity: .9; }
+.garantias { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
 .garantias span { padding: 9px 16px; border-radius: 99px; background: #f4f3fb; font-size: 14px; color: #514d69; }
 
 /* Cierre */
