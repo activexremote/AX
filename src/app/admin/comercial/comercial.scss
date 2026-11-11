@@ -361,3 +361,77 @@
     pre { margin: 0.5rem 0 0; padding: 0.7rem 0.8rem; border-radius: 8px; background: #f7f6fc; font-family: inherit; font-size: 0.8125rem; line-height: 1.5; white-space: pre-wrap; }
   }
 }
+
+// ── Calculadora de plazos ────────────────────────────────
+.axr-com-calcpage { max-width: 760px; }
+.axr-calc {
+  display: grid;
+  gap: 1rem;
+  &__controls { display: flex; flex-wrap: wrap; gap: 1rem 1.25rem; align-items: flex-end; }
+  &__field {
+    display: grid;
+    gap: 0.35rem;
+    > span { font-size: 0.75rem; font-weight: 600; color: var(--adm-muted); }
+    input { min-height: 38px; padding: 0.4rem 0.6rem; border: 1px solid var(--adm-line-strong); border-radius: 8px; font: inherit; font-size: 0.875rem; }
+  }
+  &__seg {
+    display: inline-flex;
+    padding: 3px;
+    border-radius: 10px;
+    background: #f0f0f3;
+    button {
+      display: grid;
+      justify-items: center;
+      min-width: 44px;
+      padding: 0.4rem 0.8rem;
+      border: 0;
+      border-radius: 8px;
+      background: none;
+      font: inherit;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--adm-muted);
+      cursor: pointer;
+      small { font-size: 0.7rem; font-weight: 500; }
+      &.is-on { background: #ffffff; color: var(--adm-ink); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
+      &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(91, 75, 245, 0.25); }
+    }
+  }
+  &__result {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem 2rem;
+    padding: 1rem 1.15rem;
+    border-radius: 12px;
+    background: var(--adm-accent-bg);
+    > div { display: grid; gap: 0.15rem; }
+    span { font-size: 0.75rem; font-weight: 600; color: var(--adm-muted); }
+    strong { font-size: 1.75rem; font-weight: 750; letter-spacing: -0.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    small { font-size: 0.75rem; color: var(--adm-muted); }
+    p { flex-basis: 100%; margin: 0; font-size: 0.8125rem; color: var(--adm-ink); }
+  }
+  &__warn { margin: 0; padding: 0.6rem 0.8rem; border: 1px solid #fed7aa; border-radius: 8px; background: #fff7ed; color: #9a3412; font-size: 0.8125rem; }
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+    caption { margin-bottom: 0.4rem; text-align: left; font-size: 0.75rem; font-weight: 600; color: var(--adm-muted); }
+    th { padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--adm-line); text-align: left; font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--adm-muted); }
+    td { padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--adm-line); }
+    td:last-child, th:last-child { text-align: right; }
+    tr.is-late td { color: #9a3412; background: #fff7ed; }
+  }
+  &__msg {
+    display: grid;
+    gap: 0.4rem;
+    > span { font-size: 0.75rem; font-weight: 600; color: var(--adm-muted); }
+    pre { margin: 0; padding: 0.75rem 0.85rem; border-radius: 8px; background: #e7f8e3; font-family: inherit; font-size: 0.8125rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+  }
+  // En la ficha, en la columna estrecha.
+  &--compact {
+    .axr-calc__controls { gap: 0.75rem; }
+    .axr-calc__result strong { font-size: 1.4rem; }
+  }
+}

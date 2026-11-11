@@ -3,12 +3,16 @@
 //
 //  Los mismos en el playbook (y su PDF) y en la ficha de cada lead, donde se
 //  copian o se abren ya escritos en WhatsApp con los datos de la persona.
-//  Sin imports a propósito: el script que genera el PDF lee este fichero con
-//  Node directamente.
+//  Sólo importa los precios, con la extensión .ts: así lo lee también el
+//  script del PDF con Node, sin compilar.
 //
 //  Marcas: {nombre}, {comercial}, {curso}, {dryrun} (el enlace a la clase de
 //  prueba) y {dryrun_cuando} (su día y su hora).
 // ══════════════════════════════════════════════════════════
+
+import { calcularPlazos, euros, PLAZOS_POR_DEFECTO, PRECIO_CONTADO, PRECIO_PLAZOS, resumenPlazos } from "./precios.ts";
+
+const PAGO = `pago único de ${euros(PRECIO_CONTADO)}, o a plazos: ${euros(PRECIO_PLAZOS)} en total (${resumenPlazos(calcularPlazos(PRECIO_PLAZOS, PLAZOS_POR_DEFECTO, "2027-01-01"))})`;
 
 export type Plantilla = {
   id: string;
@@ -96,7 +100,7 @@ Me dices y lo miramos juntos, sin compromiso.`,
     texto: `Genial, {nombre}.
 
 Para reservar tu plaza en {curso} necesito confirmar contigo:
-1. La forma de pago: pago único o 3 plazos sin intereses.
+1. La forma de pago: ${PAGO}.
 2. Tus datos para la factura.
 
 En cuanto lo tenga te llega el enlace de pago seguro, con Stripe. Las plazas se asignan por orden de reserva.`,

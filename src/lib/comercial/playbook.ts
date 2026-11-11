@@ -8,8 +8,16 @@
 //
 //  Cada dato sale de lo publicado en la web y en las condiciones. Si algo
 //  cambia (fechas, precios, docentes), se cambia aquí y se regenera el PDF.
-//  Sin imports a propósito: el script lo lee con Node directamente.
+//  Sólo importa los precios, con la extensión .ts: así lo lee también el
+//  script del PDF con Node, sin compilar.
 // ══════════════════════════════════════════════════════════
+
+import { calcularPlazos, euros, PLAZOS_POR_DEFECTO, PRECIO_CONTADO, PRECIO_PLAZOS, resumenPlazos } from "./precios.ts";
+
+const CONTADO = euros(PRECIO_CONTADO);
+const APLAZADO = euros(PRECIO_PLAZOS);
+const CUOTAS = resumenPlazos(calcularPlazos(PRECIO_PLAZOS, PLAZOS_POR_DEFECTO, "2027-01-01"));
+const AHORRO = euros(PRECIO_PLAZOS - PRECIO_CONTADO);
 
 export type Bloque =
   | { t: "p"; x: string }
@@ -68,14 +76,14 @@ export const PLAYBOOK: Seccion[] = [
           ["Idioma", "Clases en español · materiales en español e inglés"],
           ["Nivel previo", "Ninguno"],
           ["Si faltas a una clase", "Queda grabada en el campus, sin caducidad"],
-          ["Precio", "2.400 € por curso, en pago único o en 3 plazos de 800 € sin intereses · los dos cursos, 3.900 €"],
+          ["Precio de salida", `${CONTADO} en pago único · ${APLAZADO} a plazos (por ejemplo, ${CUOTAS})`],
           ["Pago", "Con tarjeta, por Stripe · factura por cada pago"],
           ["Desistimiento", "14 días naturales (ver «Lo que nunca decimos»)"],
         ],
       },
       {
         t: "aviso",
-        x: "Los precios no están publicados en la web: se dan en la conversación, cuando la persona ya sabe qué le aporta el curso. Nunca los mandes en el primer mensaje sin contexto. La matrícula anticipada (2.100 €) terminó el 31 de octubre: no la ofrezcas.",
+        x: `Los precios no están publicados en la web: se dan en la conversación, cuando la persona ya sabe qué le aporta el curso. Nunca los mandes en el primer mensaje sin contexto. A plazos se pagan ${AHORRO} más que al contado: nunca digas «sin intereses». Para calcular las cuotas y sus fechas, usa la calculadora del gestor. El precio de los dos cursos juntos lo confirma el equipo.`,
       },
       {
         t: "p",
@@ -108,7 +116,7 @@ export const PLAYBOOK: Seccion[] = [
           { titulo: "¿Quieres trabajar para una empresa o para ti?", texto: "Si la respuesta es «para una empresa», es Remote Professional. Si es «para mí» o «tengo clientes», es Remote Founder." },
           { titulo: "¿Cobras hoy por horas?", texto: "Si es freelance y cobra por horas, Founder le enseña a salir de ese techo. Si quiere estabilidad y nómina, Professional." },
           { titulo: "¿No lo tiene claro?", texto: "Tranquilidad: la elección llega en el cuarto fin de semana y es reversible. Empieza por el núcleo común y decide con más información." },
-          { titulo: "¿Quiere los dos?", texto: "Existe el pack de los dos cursos por 3.900 €. Ofrécelo solo si de verdad quiere ambos caminos." },
+          { titulo: "¿Quiere los dos?", texto: "Se pueden hacer los dos caminos. El precio de los dos juntos lo confirma el equipo: pregúntalo antes de darlo." },
         ],
       },
     ],
@@ -152,7 +160,7 @@ export const PLAYBOOK: Seccion[] = [
           "Te cuenta su situación con detalle: trabajo, país, objetivo, plazo",
           "Tiene un motivo con fecha: «quiero cambiar antes del verano», «me mudo en marzo»",
           "Contesta rápido y propone él o ella la hora de la llamada",
-          "Pregunta por los plazos sin intereses",
+          "Pregunta si se puede pagar a plazos",
           "Se apunta a la clase de prueba o abre varias veces el enlace",
           "Habla en primera persona del futuro: «cuando esté en el curso…»",
         ],
@@ -220,7 +228,7 @@ export const PLAYBOOK: Seccion[] = [
           { titulo: "Que lo pruebe gratis", texto: "La clase de prueba (dry run) es tu mejor herramienta: una clase real, en directo y gratis. Quien la vive deja de imaginar y decide. Usa el mensaje «Invitación a la clase de prueba»." },
           { titulo: "Conecta con su caso, no con el temario", texto: "Elige el módulo que resuelve su problema y cuéntaselo: «Me dijiste que te da miedo la fiscalidad si te vas a Portugal; el módulo 2 compara tu situación con tres destinos.»" },
           { titulo: "Haz visible el coste de no hacer nada", texto: "Sin dramatizar: «Si sigues buscando como hasta ahora, ¿cuánto tiempo más crees que tardarás?» Que lo diga la otra persona." },
-          { titulo: "Quita riesgo", texto: "3 plazos sin intereses. Clases grabadas si falta a alguna. La elección de camino es reversible. 14 días de desistimiento según las condiciones." },
+          { titulo: "Quita riesgo", texto: `Pago a plazos (${CUOTAS}). Clases grabadas si falta a alguna. La elección de camino es reversible. 14 días de desistimiento según las condiciones.` },
           { titulo: "Dale espacio, con fecha", texto: "«Piénsalo con calma. ¿Te escribo el viernes y me dices?» Y escríbele el viernes. El seguimiento sin fecha se pierde." },
         ],
       },
@@ -238,7 +246,7 @@ export const PLAYBOOK: Seccion[] = [
       {
         t: "objeciones",
         x: [
-          { dice: "Es caro.", piensa: "No sé si me lo voy a devolver.", responde: "Compáralo con lo que busca: un sueldo internacional o el primer cliente de fuera. Son 56 h en directo con grupos de 25, entregables y acceso sin caducidad. Si el problema es pagarlo de golpe: 3 plazos de 800 € sin intereses." },
+          { dice: "Es caro.", piensa: "No sé si me lo voy a devolver.", responde: `Compáralo con lo que busca: un sueldo internacional o el primer cliente de fuera. Son 56 h en directo con grupos de 25, entregables y acceso sin caducidad. Si el problema es pagarlo de golpe: a plazos, ${APLAZADO} en total (${CUOTAS}). Si puede pagarlo de una vez, ${CONTADO} y se ahorra ${AHORRO}.` },
           { dice: "No tengo tiempo.", piensa: "Me da miedo no poder seguirlo.", responde: "Son los fines de semana: 8 h de clase y 2 – 3 h de ejercicio por semana, durante 7 semanas. Si falta a una clase, queda grabada. ¿Qué fin de semana te preocupa?" },
           { dice: "Me lo pienso.", piensa: "Hay algo que no me has resuelto.", responde: "«Claro. ¿Qué es lo que más te hace dudar?» Y trabaja esa duda. Cierra con fecha: «¿Te escribo el viernes?»" },
           { dice: "Lo puedo aprender gratis en YouTube.", piensa: "No veo la diferencia.", responde: "Es verdad que la información está. Lo que no está es el orden, el feedback sobre tu ejercicio, las preguntas en directo y un grupo que avanza contigo. ¿Cuánto tiempo llevas aprendiendo así?" },
@@ -285,7 +293,7 @@ export const PLAYBOOK: Seccion[] = [
       },
       {
         t: "p",
-        x: "Cuando alguien dice sí: confirma el curso, la forma de pago (único o 3 plazos) y los datos de factura, márcalo como «Inscrito» y avisa al equipo, que le envía el enlace de pago seguro. La matrícula se cierra hablando con el equipo: hoy la web no vende directamente.",
+        x: `Cuando alguien dice sí: confirma el curso, la forma de pago (${CONTADO} en pago único o ${APLAZADO} a plazos, con las cuotas de la calculadora) y los datos de factura, márcalo como «Inscrito» y avisa al equipo, que le envía el enlace de pago seguro. La matrícula se cierra hablando con el equipo: hoy la web no vende directamente.`,
       },
     ],
   },
@@ -316,7 +324,8 @@ export const PLAYBOOK: Seccion[] = [
           "Testimonios, valoraciones o número de alumnos: aún no tenemos datos publicables.",
           "Nombres de docentes que no estén confirmados.",
           "Precios de Deel, que Deel es exclusivo nuestro, o productos de Deel que no ha anunciado.",
-          "Descuentos, becas u ofertas que no existan. La anticipada ya terminó.",
+          `Descuentos, becas u ofertas que no existan. Hay dos precios: ${CONTADO} y ${APLAZADO}.`,
+          "«Sin intereses» al hablar de los plazos: a plazos se paga más.",
           "Urgencia falsa: «últimas plazas» sin el número real.",
           "«Líder», «el mejor», «número 1».",
         ],
@@ -337,6 +346,7 @@ export const PLAYBOOK: Seccion[] = [
         x: [
           { titulo: "El gestor comercial", texto: "www.activexremote.com/admin/comercial. Todas las solicitudes de la web, con su estado, temperatura, próxima acción e historial. Los que tienen la próxima acción vencida salen arriba." },
           { titulo: "La ficha de cada lead", texto: "Botón de llamar y de WhatsApp, los mensajes de este playbook rellenos con sus datos, y el historial de todo lo hablado. Cada vez que cambias el estado queda registrado." },
+          { titulo: "La calculadora de plazos", texto: "En el gestor y en la ficha de cada lead: eliges el número de cuotas y el día del primer cargo, y te da los importes, las fechas y el mensaje listo para mandar." },
           { titulo: "Este playbook", texto: "En el gestor, apartado «Playbook», siempre en su última versión, y en PDF." },
           { titulo: "La clase de prueba", texto: "El enlace de reserva del dry run está en la ficha de cada lead, dentro del mensaje de invitación." },
         ],

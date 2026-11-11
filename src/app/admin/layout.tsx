@@ -38,6 +38,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     label: cc.navGroup,
     items: [
       { href: `${RUTA_COMERCIAL}/leads`, label: cc.navLeads, icon: "maletin" },
+      { href: `${RUTA_COMERCIAL}/calculadora`, label: cc.navCalc, icon: "euro" },
       { href: `${RUTA_COMERCIAL}/playbook`, label: cc.navPlaybook, icon: "manual" },
     ],
   };

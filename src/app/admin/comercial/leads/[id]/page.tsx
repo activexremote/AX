@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { Calculadora } from "@/components/admin/comercial/calculadora";
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import { Historial, Mensajes, Seguimiento, NuevoContacto } from "@/components/admin/comercial/ficha-lead";
 import { Desplegable } from "@/components/admin/comercial/tabla-leads";
 import { exigirComercial } from "@/lib/comercial/acceso";
-import { whatsappDe, type EventoLead, type Lead } from "@/lib/comercial/tipos";
+import { hoyMadrid, whatsappDe, type EventoLead, type Lead } from "@/lib/comercial/tipos";
 import { diaLargo, horaMadrid } from "@/lib/dry-run/tiempo";
 import { comCopy } from "@/lib/i18n/comercial";
 import { getLocale } from "@/lib/i18n/server";
@@ -160,6 +161,11 @@ export default async function LeadPage({ params }: { params: Promise<Params> }) 
                 <dd>{lead.owner_id ? nombre.get(lead.owner_id) || c.none : c.none}</dd>
               </div>
             </dl>
+          </section>
+
+          <section className="axr-admin-card">
+            <h2>{c.calcTitle}</h2>
+            <Calculadora hoy={hoyMadrid()} c={c} nombre={lead.first_name.trim().split(/\s+/)[0]} curso={curso === "el curso" ? undefined : curso} leadId={lead.id} compacta />
           </section>
 
           <section className="axr-admin-card">
