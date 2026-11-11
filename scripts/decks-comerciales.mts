@@ -12,7 +12,7 @@
 //     exportación de la tabla modules (vuelve a exportarla si cambian).
 //   · Capturas del campus: scripts/decks/capturas/, el campus real con una
 //     alumna de ejemplo.
-//   · Embudo, cambio de modelo, sueldos, Deel, docente y herramientas: los
+//   · Embudo, cambio de modelo, sueldos, Deel y herramientas: los
 //     mismos ficheros de copy que pintan las landings.
 //   · Precios: src/lib/comercial/precios.ts.
 //
@@ -31,7 +31,6 @@ import { DEEL_BADGES, deelCopy } from "../src/app/bienvenida/deel.ts";
 import { CATEGORIES, COURSE_CATEGORIES, TOOLS } from "../src/app/bienvenida/tools.ts";
 import { TOOL_ICONS } from "../src/components/landing/tool-icons.ts";
 import { funnelCopy, modelCopy } from "../src/app/cursos/signature.ts";
-import { TEACHERS } from "../src/app/trabajo-remoto/faculty.ts";
 import { adCopy } from "../src/app/trabajo-remoto/copy.ts";
 
 const RAIZ = path.resolve(import.meta.dirname, "..");
@@ -87,7 +86,6 @@ const IMG = {
   hero: datos("public/video/hero-lp.jpg"),
   skyline: datos("public/img/skyline-remoto.jpg"),
   clase: datos("public/video/clase-directo.jpg"),
-  isaac: datos("public/team/isaac-betanzos.jpg"),
   leccion: datos("scripts/decks/capturas/leccion-nucleo.jpg"),
   leccionPro: datos("scripts/decks/capturas/leccion-professional.jpg"),
   modulo: datos("scripts/decks/capturas/modulo.jpg"),
@@ -351,20 +349,38 @@ function herramientas(camino?: "remote-professional" | "remote-founder") {
     <p class="nota nota--abajo">Cada marca pertenece a su dueño. Se muestran sólo para identificar las herramientas que se enseñan en el curso.</p>`);
 }
 
-function docente() {
-  const t = TEACHERS[0];
+// El profesorado, sin nombres ni caras: el equipo de cada grupo se presenta
+// antes de formalizar la matrícula. La «terminal» enseña la idea central,
+// un especialista por módulo, con módulos reales del dosier.
+function profesores(ms: Modulo[]) {
+  const total = ms.length;
+  const filas = ms.slice(0, 9);
+  const pilares = [
+    ["Un especialista por módulo", "Nadie imparte catorce temas. Cada módulo lo da quien domina esa materia en su trabajo diario."],
+    ["Técnicas en producción", "Solo se enseña lo que el docente aplica hoy con clientes, equipos o empresas reales. Nada de teoría de manual."],
+    ["Demo en directo", "Pantalla compartida y herramienta real: ves el flujo completo, de la primera línea al resultado."],
+    ["Feedback del sector", "Tu entregable lo revisa alguien que sabe cómo se evalúa ese trabajo fuera del aula."],
+  ];
   return slide(`
-    <div class="docente">
-      <figure><img src="${IMG.isaac}" alt="${esc(t.name)}"></figure>
+    <div class="profes">
       <div>
         ${kicker("Quién da la clase")}
-        <h2>${esc(t.name)}</h2>
-        <p class="docente__rol">${esc(t.es.role)}</p>
-        <p class="lead lead--corto">${esc(t.es.bio)}</p>
-        <div class="tags">${t.es.tags.map((x) => `<span>${esc(x)}</span>`).join("")}</div>
-        <p class="nota">Clases de fundadores y perfiles que trabajan en remoto a diario. El equipo docente completo de tu grupo se comunica antes de formalizar la matrícula.</p>
+        <h2>Lo enseña quien lo usa en producción.</h2>
+        <p class="lead lead--corto">Nuestro profesorado no vive de dar clase. Trabaja en remoto, contrata, negocia, factura y automatiza cada semana, y trae a clase exactamente eso: su forma real de trabajar, con sus herramientas abiertas en pantalla.</p>
+        <div class="profes__pilares">${pilares.map(([a, b]) => `<div><strong>${a}</strong><p>${b}</p></div>`).join("")}</div>
       </div>
-    </div>`);
+      <div class="term">
+        <div class="term__barra"><i></i><i></i><i></i><span>docentes.sh</span></div>
+        <div class="term__cuerpo">
+          <p><span class="t-p">$</span> activexremote docentes --asignar por-modulo</p>
+          <p class="t-dim"># 1 módulo · 1 especialista · experiencia en activo</p>
+          ${filas.map((m) => `<p class="t-fila"><span class="t-ok">✓</span><span class="t-n">${num(m.n)}</span><span class="t-mod">${esc(m.titulo)}</span><span class="t-dim">→ especialista</span></p>`).join("")}
+          ${total > filas.length ? `<p class="t-dim">  … y ${total - filas.length} módulos más</p>` : ""}
+          <p class="t-fin"><span class="t-ok">✓</span> ${total}/${total} módulos con su especialista<span class="t-cursor"></span></p>
+        </div>
+      </div>
+    </div>
+    <p class="nota nota--abajo">El equipo docente de tu grupo se presenta, con nombre y trayectoria, antes de formalizar la matrícula.</p>`);
 }
 
 function incluye() {
@@ -509,6 +525,13 @@ function resumenCamino(c: "professional" | "founder", tema: Tema) {
   );
 }
 
+// Para el curso completo: tres del núcleo y tres de cada camino, variados.
+const muestraCompleta = () => {
+  const elige = (c: Camino, ns: number[]) => de(c).filter((m) => ns.includes(m.n));
+  const vista = [...elige("nucleo", [2, 5, 7]), ...elige("professional", [9, 11, 12]), ...elige("founder", [8, 10, 13])];
+  return [...vista, ...MODULOS.filter((m) => !vista.includes(m))];
+};
+
 // ── Los tres dosieres ────────────────────────────────────
 
 const ILUS_PRO = ["criba-candidatura", "convergencia", "amplificador", "pantalla-voz", "balanza", "asincronia", "bifurcacion"];
@@ -531,7 +554,7 @@ function dosier(id: MaterialId): string[] {
       campusMovil(),
       deel(),
       herramientas(),
-      docente(),
+      profesores(muestraCompleta()),
       paraQuien(),
       incluye(),
       inversion("uno"),
@@ -556,7 +579,7 @@ function dosier(id: MaterialId): string[] {
     campusMovil(),
     deel(c),
     herramientas(id),
-    docente(),
+    profesores([...de("nucleo"), ...de(c)].filter((m) => m.camino !== "nucleo" || [2, 5, 7].includes(m.n)).concat(de("nucleo").filter((m) => ![2, 5, 7].includes(m.n)))),
     incluye(),
     inversion("uno"),
     siguientesPasos(t),
@@ -710,14 +733,28 @@ h3 { font-size: 19px; letter-spacing: -.01em; font-weight: 750; line-height: 1.2
 .tool .mono { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: #161326; color: #fff; font-weight: 800; }
 .tool > span:last-child { font-size: 11px; text-align: center; color: #514d69; line-height: 1.2; }
 
-/* Docente */
-.docente { display: grid; grid-template-columns: 360px 1fr; gap: 54px; align-items: center; height: 100%; }
-.docente figure { margin: 0; position: relative; }
-.docente figure::before { content: ""; position: absolute; inset: -14px; border-radius: 34px; background: ${t.grad}; opacity: .5; filter: blur(26px); }
-.docente img { position: relative; width: 360px; height: 420px; object-fit: cover; border-radius: 26px; }
-.docente__rol { margin-top: 6px; font-size: 16px; font-weight: 600; color: ${t.acento}; }
-.tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
-.tags span { padding: 6px 12px; border-radius: 99px; background: ${t.suave}; color: ${t.acento}; font-size: 13px; font-weight: 600; }
+/* Profesorado */
+.profes { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; align-items: center; height: 100%; }
+.profes h2 { font-size: 38px; }
+.profes__pilares { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 22px; }
+.profes__pilares div { padding: 14px 16px; border-radius: 14px; background: ${t.suave}; }
+.profes__pilares strong { display: block; font-size: 14.5px; color: #161326; margin-bottom: 4px; }
+.profes__pilares p { font-size: 13px; line-height: 1.45; color: #514d69; }
+.term { border-radius: 16px; overflow: hidden; background: #0f0c1d; box-shadow: 0 34px 80px -30px rgba(20,8,60,.7), 0 0 0 1px rgba(255,255,255,.06); font-family: "JetBrains Mono", ui-monospace, monospace; }
+.term__barra { display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 14px; background: #1b1730; }
+.term__barra i { width: 10px; height: 10px; border-radius: 50%; background: #3a3555; }
+.term__barra i:nth-child(1) { background: #ff5f57; } .term__barra i:nth-child(2) { background: #febc2e; } .term__barra i:nth-child(3) { background: #28c840; }
+.term__barra span { margin-left: 12px; font-size: 11px; color: #8c86ad; }
+.term__cuerpo { padding: 18px 20px 20px; font-size: 13px; line-height: 1.75; color: #e9e6ff; }
+.term__cuerpo p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.t-p { color: ${t.acento === "#e4462f" ? "#ff8a5c" : "#a79bff"}; margin-right: 8px; }
+.t-dim { color: #7f79a3; }
+.t-fila { display: grid; grid-template-columns: 18px 30px 1fr auto; gap: 8px; }
+.t-ok { color: #4ade80; }
+.t-n { color: ${t.acento === "#e4462f" ? "#ff8a5c" : "#a79bff"}; font-weight: 600; }
+.t-mod { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.t-fin { margin-top: 6px; color: #fff; font-weight: 600; }
+.t-cursor { display: inline-block; width: 8px; height: 15px; margin-left: 6px; vertical-align: -2px; background: #e9e6ff; }
 
 /* Para quién */
 .paraquien { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 30px; }
@@ -803,7 +840,7 @@ mkdirSync(SALIDA, { recursive: true });
 for (const m of MATERIAL) {
   const diapos = dosier(m.id);
   const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${esc(m.titulo)} · ActiveXRemote</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><style>${css(TEMAS[m.id])}</style></head>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"><style>${css(TEMAS[m.id])}</style></head>
 <body>${diapos.join("\n")}</body></html>`;
   const pagina = await navegadorPw.newPage({ viewport: { width: 1280, height: 720 } });
   await pagina.setContent(html, { waitUntil: "networkidle" });
