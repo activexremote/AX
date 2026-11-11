@@ -1,6 +1,6 @@
 import { Calculadora } from "@/components/admin/comercial/calculadora";
 import { exigirComercial } from "@/lib/comercial/acceso";
-import { hoyMadrid } from "@/lib/comercial/tipos";
+import { hoyMadrid } from "@/lib/comercial/precios";
 import { comCopy } from "@/lib/i18n/comercial";
 import { getLocale } from "@/lib/i18n/server";
 import "../comercial.scss";

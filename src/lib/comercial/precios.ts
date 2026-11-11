@@ -5,21 +5,34 @@
 //  la calculadora del gestor leen de aquí. (La web y Stripe tienen su propio
 //  catálogo en lib/stripe/catalog.ts.)
 //
-//  A plazos se paga más que al contado: nunca se anuncia como «sin
-//  intereses». Sin imports a propósito: el script del PDF lo lee con Node.
+//  Con un curso, a plazos se paga más que al contado: nunca se anuncia como
+//  «sin intereses». Sin imports a propósito: los scripts de los PDF lo leen
+//  con Node.
 // ══════════════════════════════════════════════════════════
 
 /** Céntimos, como Stripe: nada de euros en coma flotante. */
 export const PRECIO_CONTADO = 199_000;
 export const PRECIO_PLAZOS = 219_000;
-/** Los dos cursos, en pago único (lib/stripe/catalog.ts, «pack-dos»). */
-export const PRECIO_DOS = 390_000;
+/** Los dos cursos (lib/stripe/catalog.ts, «pack-dos»): el mismo precio al contado o a plazos. */
+export const PRECIO_DOS = 299_000;
 export const PLAZOS_POR_DEFECTO = 3;
 /** Entre cuántos plazos se puede repartir. Fuera de esto, lo decide el equipo. */
 export const PLAZOS_MIN = 2;
 export const PLAZOS_MAX = 6;
-/** El último día del curso: un cargo después de esta fecha se avisa. */
+export const PLAZOS_MAX_DOS = 10;
+/** El último día del curso: con un curso, un cargo después de esta fecha se avisa. */
 export const FIN_CURSO = "2027-02-21";
+
+export type Producto = "uno" | "dos";
+export const PRODUCTOS: Record<Producto, { contado: number; plazos: number; maxCuotas: number; avisoFinCurso: boolean }> = {
+  uno: { contado: PRECIO_CONTADO, plazos: PRECIO_PLAZOS, maxCuotas: PLAZOS_MAX, avisoFinCurso: true },
+  // Hasta 10 cuotas: con los dos cursos el pago se alarga más allá del curso
+  // a propósito, así que no se avisa.
+  dos: { contado: PRECIO_DOS, plazos: PRECIO_DOS, maxCuotas: PLAZOS_MAX_DOS, avisoFinCurso: false },
+};
+
+/** El día de hoy en Madrid, como «2026-11-11». */
+export const hoyMadrid = (d = new Date()) => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(d);
 
 const ENTEROS = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", useGrouping: "always", maximumFractionDigits: 0 });
 const DECIMALES = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", useGrouping: "always", minimumFractionDigits: 2 });
@@ -40,7 +53,8 @@ function sumarMeses(iso: string, meses: number) {
 /**
  * Las cuotas de un pago a plazos: iguales, redondeadas a 5 céntimos y con lo
  * que sobre en la primera, y una al mes desde el primer cargo. Con 2.190 €
- * salen exactas de 2 a 6 plazos (1.095, 730, 547,50, 438 y 365 €).
+ * salen exactas de 2 a 6 plazos (1.095, 730, 547,50, 438 y 365 €); con
+ * 2.990 €, en 10 son 299 €.
  */
 export function calcularPlazos(total: number, plazos: number, primerCargo: string): Cuota[] {
   const base = Math.floor(total / plazos / 5) * 5;

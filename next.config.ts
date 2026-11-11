@@ -29,6 +29,8 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     // El PDF del playbook comercial: fuera de public/, se lee del disco.
     "/admin/comercial/playbook/pdf": ["./private/comercial/**"],
+    // Los corchetes de la ruta dinámica, escapados: la clave es un glob.
+    "/admin/comercial/material/archivo/\\[nombre\\]": ["./private/comercial/**"],
     "/lens/calculadora-matriculas/pdf": ["./node_modules/pdfkit/js/data/**"],
     // Las piezas de banners se componen con Inter estática leída del disco
     // (Satori no entiende fuentes variables): misma historia que los .afm.

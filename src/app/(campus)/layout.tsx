@@ -15,7 +15,7 @@ export default async function CampusLayout({ children }: { children: React.React
   // resto de rutas del campus): les servimos la landing pública en esa URL.
   if (!profile) return <LandingView />;
   // El equipo comercial no tiene clases: su sitio es el gestor.
-  if (profile.role === "comercial") redirect("/admin/comercial/leads");
+  if (profile.role === "comercial") redirect("/admin/comercial");
 
   // Las dos consultas a la vez: no dependen la una de la otra.
   const [matriculas, conAsistente] = await Promise.all([

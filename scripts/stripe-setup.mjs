@@ -81,7 +81,7 @@ const CATALOG = [
     env: "STRIPE_PRICE_PACK_DOS",
     product: "Curso ActiveXRemote · los dos caminos",
     description: "Los 21 módulos: el núcleo común y los dos caminos completos.",
-    unitAmount: 390000,
+    unitAmount: 299000,
     recurring: null,
   },
 ];
