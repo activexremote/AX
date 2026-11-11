@@ -12,13 +12,14 @@
 //  script del PDF con Node, sin compilar.
 // ══════════════════════════════════════════════════════════
 
-import { calcularPlazos, euros, PLAZOS_POR_DEFECTO, PRECIO_CONTADO, PRECIO_DOS, PRECIO_PLAZOS, resumenPlazos } from "./precios.ts";
+import { calcularPlazos, euros, PLAZOS_MAX_DOS, PLAZOS_POR_DEFECTO, PRECIO_CONTADO, PRECIO_DOS, PRECIO_PLAZOS, resumenPlazos } from "./precios.ts";
 
 const CONTADO = euros(PRECIO_CONTADO);
 const APLAZADO = euros(PRECIO_PLAZOS);
 const CUOTAS = resumenPlazos(calcularPlazos(PRECIO_PLAZOS, PLAZOS_POR_DEFECTO, "2027-01-01"));
 const AHORRO = euros(PRECIO_PLAZOS - PRECIO_CONTADO);
 const DOS = euros(PRECIO_DOS);
+const DOS_CUOTAS = resumenPlazos(calcularPlazos(PRECIO_DOS, PLAZOS_MAX_DOS, "2027-01-01"));
 
 export type Bloque =
   | { t: "p"; x: string }
@@ -52,7 +53,7 @@ export const PLAYBOOK: Seccion[] = [
           { titulo: "Responde rápido", texto: "Prometemos contestar en menos de 24 horas laborables. Cuanto antes llamas, más fácil es que conteste, que se acuerde de qué pidió y que no haya hablado aún con otra escuela." },
           { titulo: "Escucha más de lo que hablas", texto: "La regla es 70/30: el 70 % de la llamada habla la otra persona. Nadie compra un temario; compran lo que el temario les resuelve." },
           { titulo: "Di siempre la verdad", texto: "Sin prisas inventadas, sin promesas de empleo, sin cifras que no podamos demostrar. La confianza es lo que vendemos." },
-          { titulo: "Apúntalo todo", texto: "Cada llamada, mensaje y objeción va al gestor comercial. Si no está apuntado, no ha pasado." },
+          { titulo: "Apúntalo todo", texto: "Cada llamada, mensaje y objeción va a su ficha de Zoho. Si no está apuntado, no ha pasado." },
         ],
       },
     ],
@@ -77,14 +78,14 @@ export const PLAYBOOK: Seccion[] = [
           ["Idioma", "Clases en español · materiales en español e inglés"],
           ["Nivel previo", "Ninguno"],
           ["Si faltas a una clase", "Queda grabada en el campus, sin caducidad"],
-          ["Precio de salida", `${CONTADO} en pago único · ${APLAZADO} a plazos (por ejemplo, ${CUOTAS}) · los dos cursos, ${DOS}`],
+          ["Precio de salida", `${CONTADO} en pago único · ${APLAZADO} a plazos (por ejemplo, ${CUOTAS}) · los dos cursos, ${DOS} (al contado o hasta en ${DOS_CUOTAS})`],
           ["Pago", "Con tarjeta, por Stripe · factura por cada pago"],
           ["Desistimiento", "14 días naturales (ver «Lo que nunca decimos»)"],
         ],
       },
       {
         t: "aviso",
-        x: `Los precios no están publicados en la web: se dan en la conversación, cuando la persona ya sabe qué le aporta el curso. Nunca los mandes en el primer mensaje sin contexto. A plazos se pagan ${AHORRO} más que al contado: nunca digas «sin intereses». Para calcular las cuotas y sus fechas, usa la calculadora del gestor.`,
+        x: `Los precios no están publicados en la web: se dan en la conversación, cuando la persona ya sabe qué le aporta el curso. Nunca los mandes en el primer mensaje sin contexto. Con un curso, a plazos se pagan ${AHORRO} más que al contado: nunca digas «sin intereses». Con los dos cursos, el precio es el mismo al contado o a plazos. Para calcular las cuotas y sus fechas, usa la calculadora del gestor.`,
       },
       {
         t: "p",
@@ -117,7 +118,7 @@ export const PLAYBOOK: Seccion[] = [
           { titulo: "¿Quieres trabajar para una empresa o para ti?", texto: "Si la respuesta es «para una empresa», es Remote Professional. Si es «para mí» o «tengo clientes», es Remote Founder." },
           { titulo: "¿Cobras hoy por horas?", texto: "Si es freelance y cobra por horas, Founder le enseña a salir de ese techo. Si quiere estabilidad y nómina, Professional." },
           { titulo: "¿No lo tiene claro?", texto: "Tranquilidad: la elección llega en el cuarto fin de semana y es reversible. Empieza por el núcleo común y decide con más información." },
-          { titulo: "¿Quiere los dos?", texto: `Los dos cursos juntos son ${DOS}, en pago único. Ofrécelo solo si de verdad quiere ambos caminos.` },
+          { titulo: "¿Quiere los dos?", texto: `Los dos cursos juntos son ${DOS}, al contado o a plazos por el mismo precio, hasta en ${DOS_CUOTAS}. Ofrécelo solo si de verdad quiere ambos caminos.` },
         ],
       },
     ],
@@ -191,7 +192,7 @@ export const PLAYBOOK: Seccion[] = [
       },
       {
         t: "p",
-        x: "En el gestor comercial marca la temperatura de cada lead después de cada conversación. La lista se ordena sola para que empieces el día por los calientes.",
+        x: "En Zoho deja anotada la temperatura de cada lead después de cada conversación, y empieza cada día por los calientes y por las tareas vencidas.",
       },
     ],
   },
@@ -207,7 +208,7 @@ export const PLAYBOOK: Seccion[] = [
           { titulo: "2 · Su situación (5 min)", texto: "«¿A qué te dedicas ahora?» «¿Desde dónde trabajas?» «¿Qué te hizo pedir información?» Deja que hable. Apunta sus palabras exactas: las vas a usar." },
           { titulo: "3 · Su objetivo y lo que le frena (5 min)", texto: "«¿Dónde te gustaría estar dentro de un año?» «¿Qué has probado hasta ahora?» «¿Qué crees que te falta?» Aquí está la venta: la distancia entre dónde está y dónde quiere estar." },
           { titulo: "4 · Cómo encaja (5 min)", texto: "Recomienda un curso y explícalo con SUS palabras: «Me has dicho que te descartan en el filtro automático; el módulo 9 trabaja justo eso». Dos o tres argumentos, no diez." },
-          { titulo: "5 · Siguiente paso (2 min)", texto: "Nunca cuelgues sin acordar algo concreto: reservar plaza, ir a la clase de prueba, o una segunda llamada con fecha. Apúntalo como próxima acción en el gestor." },
+          { titulo: "5 · Siguiente paso (2 min)", texto: "Nunca cuelgues sin acordar algo concreto: reservar plaza, ir a la clase de prueba, o una segunda llamada con fecha. Apúntalo como próxima tarea en Zoho, con fecha." },
         ],
       },
       {
@@ -277,12 +278,12 @@ export const PLAYBOOK: Seccion[] = [
           ["Día 3", "WhatsApp «No contesta», con algo útil."],
           ["Día 7", "Último intento: llamada y correo corto."],
           ["Día 14", "Si no ha respondido: «Cerrar con buen sabor de boca» y descartado (motivo: sin respuesta)."],
-          ["Tras una llamada", "El mismo día, el correo «Resumen después de la llamada». Próxima acción con fecha en el gestor."],
+          ["Tras una llamada", "El mismo día, el correo «Resumen después de la llamada». Próxima tarea con fecha en Zoho."],
         ],
       },
       {
         t: "tabla",
-        cab: ["Estado en el gestor", "Qué significa"],
+        cab: ["En qué punto está", "Qué significa"],
         filas: [
           ["Nuevo", "Ha pedido información. Nadie ha hablado aún con esta persona."],
           ["Contactado", "Ya hemos hablado o escrito y contestado. Aún no sabemos si encaja."],
@@ -294,14 +295,14 @@ export const PLAYBOOK: Seccion[] = [
       },
       {
         t: "p",
-        x: `Cuando alguien dice sí: confirma el curso, la forma de pago (${CONTADO} en pago único o ${APLAZADO} a plazos, con las cuotas de la calculadora) y los datos de factura, márcalo como «Inscrito» y avisa al equipo, que le envía el enlace de pago seguro. La matrícula se cierra hablando con el equipo: hoy la web no vende directamente.`,
+        x: `Cuando alguien dice sí: confirma el curso, la forma de pago (${CONTADO} en pago único o ${APLAZADO} a plazos, con las cuotas de la calculadora) y los datos de factura, márcalo como inscrito en Zoho y avisa al equipo, que le envía el enlace de pago seguro. La matrícula se cierra hablando con el equipo: hoy la web no vende directamente.`,
       },
     ],
   },
   {
     id: "mensajes",
     titulo: "Mensajes listos para usar",
-    entradilla: "Personalízalos siempre con algo que te haya contado. En el gestor se rellenan solos con su nombre y su curso, y se abren ya escritos en WhatsApp.",
+    entradilla: "Personalízalos siempre con algo que te haya contado: cambia {nombre}, {curso} y el resto de huecos por sus datos antes de mandarlos.",
     bloques: [{ t: "plantillas" }],
   },
   {
@@ -326,7 +327,7 @@ export const PLAYBOOK: Seccion[] = [
           "Nombres de docentes que no estén confirmados.",
           "Precios de Deel, que Deel es exclusivo nuestro, o productos de Deel que no ha anunciado.",
           `Descuentos, becas u ofertas que no existan. Un curso: ${CONTADO} o ${APLAZADO} a plazos; los dos, ${DOS}.`,
-          "«Sin intereses» al hablar de los plazos: a plazos se paga más.",
+          "«Sin intereses» con un curso: a plazos se paga más.",
           "Urgencia falsa: «últimas plazas» sin el número real.",
           "«Líder», «el mejor», «número 1».",
         ],
@@ -340,16 +341,16 @@ export const PLAYBOOK: Seccion[] = [
   {
     id: "herramientas",
     titulo: "Tus herramientas y tu primer día",
-    entradilla: "Todo lo que necesitas está en el gestor comercial del campus. Entra con tu cuenta de Google de ActiveXRemote.",
+    entradilla: "Los leads y su seguimiento, en Zoho. Todo lo demás, en el gestor comercial del campus: entra con tu cuenta de Google de ActiveXRemote.",
     bloques: [
       {
         t: "pasos",
         x: [
-          { titulo: "El gestor comercial", texto: "www.activexremote.com/admin/comercial. Todas las solicitudes de la web, con su estado, temperatura, próxima acción e historial. Los que tienen la próxima acción vencida salen arriba." },
-          { titulo: "La ficha de cada lead", texto: "Botón de llamar y de WhatsApp, los mensajes de este playbook rellenos con sus datos, y el historial de todo lo hablado. Cada vez que cambias el estado queda registrado." },
-          { titulo: "La calculadora de plazos", texto: "En el gestor y en la ficha de cada lead: eliges el número de cuotas y el día del primer cargo, y te da los importes, las fechas y el mensaje listo para mandar." },
+          { titulo: "Zoho CRM", texto: "Cada solicitud de la web entra sola en Zoho. Ahí llevas el estado, las notas, la temperatura y la próxima tarea con fecha de cada lead." },
+          { titulo: "Material de apoyo", texto: "En el gestor (www.activexremote.com/admin/comercial): el dosier del curso completo y los de Remote Professional y Remote Founder, en PDF, para descargar y mandar a cada lead." },
+          { titulo: "La calculadora de plazos", texto: "En el gestor: eliges un curso o los dos, el número de cuotas y el día del primer cargo, y te da los importes, las fechas y el mensaje listo para mandar." },
           { titulo: "Este playbook", texto: "En el gestor, apartado «Playbook», siempre en su última versión, y en PDF." },
-          { titulo: "La clase de prueba", texto: "El enlace de reserva del dry run está en la ficha de cada lead, dentro del mensaje de invitación." },
+          { titulo: "La clase de prueba", texto: "Reserva en www.activexremote.com/dry-run/modulo-1. Usa el mensaje «Invitación a la clase de prueba»." },
         ],
       },
       {
@@ -358,7 +359,7 @@ export const PLAYBOOK: Seccion[] = [
           "Lee este playbook entero y la landing www.activexremote.com/bienvenida.",
           "Mira la página de la clase de prueba: www.activexremote.com/dry-run/modulo-1.",
           "Ensaya la llamada de descubrimiento en voz alta, dos veces.",
-          "Abre el gestor y ordena los leads por fecha: empieza por los más recientes.",
+          "Abre Zoho y ordena los leads por fecha: empieza por los más recientes.",
           "Haz tus primeras 5 llamadas y apunta cada una.",
           "Al final del día, comparte con el equipo las dos preguntas que más te han hecho.",
         ],

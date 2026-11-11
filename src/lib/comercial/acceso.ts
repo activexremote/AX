@@ -7,8 +7,9 @@ import type { UserRole } from "@/lib/supabase/types";
 // ══════════════════════════════════════════════════════════
 //  Quién entra al gestor comercial
 //
-//  El equipo comercial y la administración. El rol «comercial» no ve nada
-//  más del panel: el layout de /admin lo devuelve aquí desde cualquier otra
+//  El equipo comercial y la administración. Los leads se llevan en Zoho;
+//  aquí están el material de apoyo, la calculadora y el playbook. El rol
+//  «comercial» no ve nada más del panel: el layout de /admin lo devuelve aquí desde cualquier otra
 //  ruta, y el campus lo manda al panel (no tiene clases que ver).
 // ══════════════════════════════════════════════════════════
 

@@ -163,7 +163,7 @@ export async function updateSession(
     const { data: perfil } = await supabase.from("profiles").select("role").eq("id", claimsData!.claims.sub).maybeSingle();
     if (perfil?.role === "comercial") {
       const url = request.nextUrl.clone();
-      url.pathname = "/admin/comercial/leads";
+      url.pathname = "/admin/comercial";
       url.search = "";
       return { redirect: NextResponse.redirect(url), cookies, hasUser: true };
     }

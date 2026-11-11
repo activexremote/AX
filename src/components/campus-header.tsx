@@ -49,7 +49,7 @@ export async function CampusHeader({
             </Link>
           ))}
           {isStaff ? (
-            <Link href={profile?.role === "comercial" ? "/admin/comercial/leads" : "/admin"} className={`axr-header__link axr-header__link--panel${active === "admin" ? " is-active" : ""}`}>
+            <Link href={profile?.role === "comercial" ? "/admin/comercial" : "/admin"} className={`axr-header__link axr-header__link--panel${active === "admin" ? " is-active" : ""}`}>
               <Icono n="ajustes" size={18} />
               <span>{t.nav.admin}</span>
             </Link>
