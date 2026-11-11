@@ -43,9 +43,10 @@ if (WRITE && !key.startsWith("sk_test_")) {
 
 const stripe = new Stripe(key);
 
-// ⚠︎ Los cuatro precios del programa largo se repiten aquí a mano: son fijos,
-// llevan meses sin moverse y duplicarlos cuesta menos que lo que costaría
-// desmontarlos. Los relámpago NO: se leen del registro real (ver más abajo),
+// ⚠︎ Los cuatro precios del programa largo se repiten aquí a mano y tienen que
+// coincidir con lib/stripe/catalog.ts: si cambia un importe, este script crea
+// un price_… nuevo (no reutiliza el viejo) y hay que pegar el id nuevo en las
+// variables de entorno, en local y en Vercel. Los relámpago NO: se leen del registro real (ver más abajo),
 // porque su precio también lo anuncia la landing y tener dos copias de un
 // precio es cómo se acaba cobrando 75 € por algo anunciado a 65.
 const CATALOG = [
@@ -54,7 +55,7 @@ const CATALOG = [
     env: "STRIPE_PRICE_CURSO_UNICO",
     product: "Curso ActiveXRemote · un camino",
     description: "14 módulos en directo: 7 de núcleo común y 7 del camino elegido.",
-    unitAmount: 240000,
+    unitAmount: 199000,
     recurring: null,
   },
   {
@@ -71,9 +72,9 @@ const CATALOG = [
     env: "STRIPE_PRICE_CURSO_PLAZOS",
     product: "Curso ActiveXRemote · un camino",
     description: "14 módulos en directo: 7 de núcleo común y 7 del camino elegido.",
-    unitAmount: 80000,
+    unitAmount: 73000,
     recurring: { interval: "month" },
-    nickname: "3 plazos sin intereses",
+    nickname: "3 plazos de 730 €",
   },
   {
     offer: "pack-dos",

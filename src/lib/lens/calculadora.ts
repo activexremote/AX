@@ -169,9 +169,10 @@ export type LensScenarioData = {
 export function defaultLensScenario(): LensScenarioData {
   return {
     plans: [
-      { id: "unico", name: "Pago único", price: 2400, mix: 40, payMonths: 1 },
-      { id: "anticipada", name: "Matrícula anticipada", price: 2100, mix: 35, payMonths: 1 },
-      { id: "plazos", name: "Pago a plazos (3×)", price: 2400, mix: 25, payMonths: 3 },
+      // Sin matrícula anticipada desde noviembre de 2026: su parte de la
+      // mezcla pasa al pago único, que es lo que era.
+      { id: "unico", name: "Pago único", price: 1990, mix: 75, payMonths: 1 },
+      { id: "plazos", name: "Pago a plazos (3×)", price: 2190, mix: 25, payMonths: 3 },
     ],
     channels: [
       { id: "meta", name: "Meta Ads", spend: 3000, students: 12 },

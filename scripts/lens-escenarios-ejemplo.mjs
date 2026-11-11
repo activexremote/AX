@@ -13,6 +13,9 @@
 //   · Stripe España 2026: 1,5 % + 0,25 € tarjeta estándar del EEE, 1,9 %
 //     premium del EEE, 3,25 % internacional y +2 % si hay cambio de divisa.
 //     El % de cada escenario es la mezcla esperada de tarjetas, no una tarifa.
+//   · Precios: los de salida de noviembre de 2026 (1.990 € pago único,
+//     2.190 € a plazos); la anticipada ya no existe y su parte de la mezcla
+//     pasa al pago único.
 //   · Los CPA son rangos de mercado para formación de 2.000-2.600 € en
 //     español, no datos de esta casa. En cuanto haya tres convocatorias
 //     hechas, esos números salen de Stripe y del administrador de anuncios y
@@ -42,9 +45,8 @@ export const PESIMISTA = {
   calendar: { firstStartDay: 20, startEveryDays: 168, marketingLeadDays: 45 },
   // Mitad a plazos: sin marca, el pago único cuesta mucho más de vender.
   plans: [
-    { id: "unico", name: "Pago único", price: 2400, mix: 25, payMonths: 1 },
-    { id: "anticipada", name: "Matrícula anticipada", price: 2100, mix: 25, payMonths: 1 },
-    { id: "plazos", name: "Pago a plazos (3×)", price: 2400, mix: 50, payMonths: 3 },
+    { id: "unico", name: "Pago único", price: 1990, mix: 50, payMonths: 1 },
+    { id: "plazos", name: "Pago a plazos (3×)", price: 2190, mix: 50, payMonths: 3 },
   ],
   // CPA de arranque en frío: sin píxel maduro ni creatividades probadas.
   channels: [
@@ -87,9 +89,8 @@ export const REALISTA = {
   // Cada 13 semanas: 12 de clase y una de respiro para cerrar y montar.
   calendar: { firstStartDay: 15, startEveryDays: 91, marketingLeadDays: 35 },
   plans: [
-    { id: "unico", name: "Pago único", price: 2400, mix: 35, payMonths: 1 },
-    { id: "anticipada", name: "Matrícula anticipada", price: 2100, mix: 30, payMonths: 1 },
-    { id: "plazos", name: "Pago a plazos (3×)", price: 2400, mix: 35, payMonths: 3 },
+    { id: "unico", name: "Pago único", price: 1990, mix: 65, payMonths: 1 },
+    { id: "plazos", name: "Pago a plazos (3×)", price: 2190, mix: 35, payMonths: 3 },
   ],
   channels: [
     { id: "meta", name: "Meta Ads", spend: 5500, students: 10 },
@@ -130,9 +131,8 @@ export const OPTIMISTA = {
   // Cada 8 semanas: los grupos se solapan y hay dos en marcha casi siempre.
   calendar: { firstStartDay: 12, startEveryDays: 56, marketingLeadDays: 30 },
   plans: [
-    { id: "unico", name: "Pago único", price: 2600, mix: 45, payMonths: 1 },
-    { id: "anticipada", name: "Matrícula anticipada", price: 2300, mix: 30, payMonths: 1 },
-    { id: "plazos", name: "Pago a plazos (3×)", price: 2600, mix: 25, payMonths: 3 },
+    { id: "unico", name: "Pago único", price: 1990, mix: 75, payMonths: 1 },
+    { id: "plazos", name: "Pago a plazos (3×)", price: 2190, mix: 25, payMonths: 3 },
   ],
   // Píxel maduro, creatividades probadas y una comunidad que ya recomienda.
   channels: [

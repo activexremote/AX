@@ -12,6 +12,8 @@
 /** Céntimos, como Stripe: nada de euros en coma flotante. */
 export const PRECIO_CONTADO = 199_000;
 export const PRECIO_PLAZOS = 219_000;
+/** Los dos cursos, en pago único (lib/stripe/catalog.ts, «pack-dos»). */
+export const PRECIO_DOS = 390_000;
 export const PLAZOS_POR_DEFECTO = 3;
 /** Entre cuántos plazos se puede repartir. Fuera de esto, lo decide el equipo. */
 export const PLAZOS_MIN = 2;
