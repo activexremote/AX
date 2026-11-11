@@ -27,6 +27,8 @@ const nextConfig: NextConfig = {
   // ve y en producción la función se despliega sin los .afm: el PDF revienta
   // al escribir la primera letra, y sólo allí, nunca en local.
   outputFileTracingIncludes: {
+    // El PDF del playbook comercial: fuera de public/, se lee del disco.
+    "/admin/comercial/playbook/pdf": ["./private/comercial/**"],
     "/lens/calculadora-matriculas/pdf": ["./node_modules/pdfkit/js/data/**"],
     // Las piezas de banners se componen con Inter estática leída del disco
     // (Satori no entiende fuentes variables): misma historia que los .afm.

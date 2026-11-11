@@ -51,6 +51,12 @@ export const LOCALE_HEADER = "x-axr-locale";
  */
 export const TRACKING_HEADER = "x-axr-public";
 
+/**
+ * La ruta pedida, para los layouts (que no la reciben). La usa el del panel
+ * para dejar al equipo comercial sólo en su sección.
+ */
+export const PATH_HEADER = "x-axr-path";
+
 // ══════════════════════════════════════════════════════════
 //  Segmentos traducidos.
 //

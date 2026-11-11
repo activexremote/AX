@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 import { getCurrentProfile } from "@/lib/data/profile";
 import { LandingView } from "@/components/landing/landing-view";
 import { AssistantWidget } from "@/components/campus/assistant-chat";
@@ -12,6 +14,8 @@ export default async function CampusLayout({ children }: { children: React.React
   // Invitados sólo pueden llegar aquí por la raíz "/" (el middleware bloquea el
   // resto de rutas del campus): les servimos la landing pública en esa URL.
   if (!profile) return <LandingView />;
+  // El equipo comercial no tiene clases: su sitio es el gestor.
+  if (profile.role === "comercial") redirect("/admin/comercial/leads");
 
   // Las dos consultas a la vez: no dependen la una de la otra.
   const [matriculas, conAsistente] = await Promise.all([

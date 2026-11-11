@@ -87,6 +87,10 @@ const D = {
   capas: <path d="M12 3l9 5-9 5-9-5zM3 13l9 5 9-5" />,
   enchufe: <path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4" />,
   play: <path d="M8 5.5v13l10.5-6.5z" />,
+  // Gestor comercial
+  maletin: <path d="M3 8h18v12H3zM8.5 8V5h7v3M3 13.5h18" />,
+  telefono: <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1z" />,
+  correo: <path d="M3 5.5h18v13H3zM3.5 6l8.5 7 8.5-7" />,
   carpeta: <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2.5h8.5A1.5 1.5 0 0 1 21 9v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z" />,
 };
 

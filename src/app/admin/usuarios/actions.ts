@@ -18,6 +18,7 @@ async function assertAdmin() {
 
 export async function changeUserRole(userId: string, role: UserRole) {
   const selfId = await assertAdmin();
+  if (!["alumno", "profesor", "comercial", "administrador"].includes(role)) return { error: "Rol desconocido." };
   if (userId === selfId && role !== "administrador") {
     return { error: "No puedes quitarte a ti mismo el rol de administrador." };
   }
@@ -33,7 +34,7 @@ export async function inviteUser(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const fullName = String(formData.get("full_name") ?? "").trim();
   const pedido = String(formData.get("role") ?? "alumno");
-  const role: UserRole = pedido === "profesor" || pedido === "administrador" ? pedido : "alumno";
+  const role: UserRole = pedido === "profesor" || pedido === "administrador" || pedido === "comercial" ? pedido : "alumno";
 
   if (!email) return { error: "El email es obligatorio." };
 

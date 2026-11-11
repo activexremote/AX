@@ -8,6 +8,7 @@ import { isBot, negotiateLocale } from "@/lib/i18n/negotiate";
 import {
   LOCALE_HEADER,
   LOCALIZED_ROOTS,
+  PATH_HEADER,
   TRACKING_HEADER,
   translatePath,
   untranslatePath,
@@ -246,6 +247,8 @@ export async function proxy(request: NextRequest) {
   // Las páginas de los dry run también: sus enlaces llevan utm y es justo el
   // tráfico que se quiere medir.
   if (publica || root === "dry-run" || (pathname === "/" && !session.hasUser)) headers.set(TRACKING_HEADER, "1");
+  // La ruta, para el layout del panel. Se pisa siempre: nunca la de fuera.
+  headers.set(PATH_HEADER, pathname);
 
   let response: NextResponse;
   if (prefixed) {

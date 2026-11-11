@@ -155,6 +155,20 @@ export async function updateSession(
     return { redirect: NextResponse.redirect(url), cookies, hasUser: true };
   }
 
+  // El equipo comercial sólo tiene su gestor dentro del panel. Se mira aquí y
+  // no en el layout de /admin porque los layouts no se vuelven a ejecutar al
+  // navegar entre páginas: el proxy sí, en cada petición. Cuesta una consulta
+  // por clave primaria, y sólo en las rutas del panel.
+  if (hayUsuario && (path === "/admin" || path.startsWith("/admin/")) && path !== "/admin/comercial" && !path.startsWith("/admin/comercial/")) {
+    const { data: perfil } = await supabase.from("profiles").select("role").eq("id", claimsData!.claims.sub).maybeSingle();
+    if (perfil?.role === "comercial") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/comercial/leads";
+      url.search = "";
+      return { redirect: NextResponse.redirect(url), cookies, hasUser: true };
+    }
+  }
+
   if (hayUsuario && path === "/login") {
     const url = request.nextUrl.clone();
     url.pathname = "/";

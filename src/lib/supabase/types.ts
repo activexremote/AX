@@ -1,7 +1,7 @@
 // Auto-regenerable with: npx supabase gen types typescript --project-id jzmllhwkplpfmjddqknh
 // For now we type the parts we use manually.
 
-export type UserRole = "alumno" | "profesor" | "administrador";
+export type UserRole = "alumno" | "profesor" | "administrador" | "comercial";
 /**
  * Cursos del catálogo.
  *
