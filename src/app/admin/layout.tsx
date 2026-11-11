@@ -8,6 +8,7 @@ import { pubCopy } from "@/lib/i18n/publicaciones";
 import { banCopy } from "@/lib/i18n/banners";
 import { drCopy } from "@/lib/i18n/dry-run";
 import { comCopy } from "@/lib/i18n/comercial";
+import { kpisCopy } from "@/lib/i18n/kpis";
 import { PATH_HEADER } from "@/lib/i18n/routing";
 import { RUTA_COMERCIAL, rutaPermitida } from "@/lib/comercial/acceso";
 import { contarPendientes } from "@/lib/social/panel";
@@ -40,6 +41,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       { href: `${RUTA_COMERCIAL}/material`, label: cc.navMaterial, icon: "maletin" },
       { href: `${RUTA_COMERCIAL}/calculadora`, label: cc.navCalc, icon: "euro" },
       { href: `${RUTA_COMERCIAL}/playbook`, label: cc.navPlaybook, icon: "manual" },
+      // Inversión, ingresos y coste por alumno: sólo administración.
+      ...(profile.role === "administrador" ? [{ href: `${RUTA_COMERCIAL}/kpis`, label: kpisCopy[locale].nav, icon: "grafica" as const }] : []),
     ],
   };
 
