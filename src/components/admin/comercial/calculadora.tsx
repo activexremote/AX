@@ -38,7 +38,7 @@ export function Calculadora({ hoy, c }: { /** Hoy en Madrid, «2026-11-11»: el 
   const mensaje = useMemo(() => {
     const saludo = nombre.trim() ? `Hola, ${nombre.trim()}.` : "Hola.";
     if (modo === "contado") {
-      const alternativa = diferencia ? `Si lo prefieres a plazos, son ${euros(p.plazos)} en total.` : `Si lo prefieres, también puedes pagarlo a plazos, hasta en ${p.maxCuotas} cuotas, por el mismo precio.`;
+      const alternativa = `Si lo prefieres a plazos, son ${euros(p.plazos)} en total, hasta en ${p.maxCuotas} cuotas.`;
       return `${saludo} Te paso las condiciones para ${curso}:
 
 · Pago único: ${euros(p.contado)}.
@@ -47,7 +47,7 @@ export function Calculadora({ hoy, c }: { /** Hoy en Madrid, «2026-11-11»: el 
 ${alternativa} Me dices y te lo preparo.`;
     }
     const lineas = cuotas.map((q) => `${q.n}. ${fecha(q.fecha)}: ${euros(q.importe)}`).join("\n");
-    const cierre = diferencia ? `\n\nSi te viene mejor pagarlo de una vez, son ${euros(p.contado)} (te ahorras ${euros(diferencia)}).` : "";
+    const cierre = `\n\nSi te viene mejor pagarlo de una vez, son ${euros(p.contado)} (te ahorras ${euros(diferencia)}).`;
     return `${saludo} Te paso las condiciones para ${curso} a plazos:
 
 · Total: ${euros(p.plazos)}, en ${resumenPlazos(cuotas)}.
@@ -113,7 +113,7 @@ ${lineas}${cierre}`;
             {cuotas[0].importe !== cuotas[cuotas.length - 1].importe ? <small>1.ª: {euros(cuotas[0].importe)}</small> : null}
           </div>
         ) : null}
-        <p>{diferencia ? rellenar(modo === "contado" ? c.calcSaves : c.calcCosts, { x: euros(diferencia) }) : rellenar(c.calcSame, { n: p.maxCuotas })}</p>
+        <p>{rellenar(modo === "contado" ? c.calcSaves : c.calcCosts, { x: euros(diferencia) })}</p>
       </div>
 
       {tardio ? (
