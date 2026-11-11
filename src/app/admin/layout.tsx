@@ -1,4 +1,5 @@
-import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { notFound, redirect } from "next/navigation";
 
 import { MenuAdmin, type GrupoMenu } from "@/components/admin/menu-admin";
 import { getCurrentProfile, userInitials } from "@/lib/data/profile";
@@ -6,23 +7,46 @@ import { getI18n } from "@/lib/i18n/server";
 import { pubCopy } from "@/lib/i18n/publicaciones";
 import { banCopy } from "@/lib/i18n/banners";
 import { drCopy } from "@/lib/i18n/dry-run";
+import { comCopy } from "@/lib/i18n/comercial";
+import { PATH_HEADER } from "@/lib/i18n/routing";
+import { RUTA_COMERCIAL, rutaPermitida } from "@/lib/comercial/acceso";
 import { contarPendientes } from "@/lib/social/panel";
 import "@/app/admin/admin.scss";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
-  if (profile.role !== "administrador" && profile.role !== "profesor") {
+  if (profile.role !== "administrador" && profile.role !== "profesor" && profile.role !== "comercial") {
     redirect("/");
+  }
+  // El equipo comercial sólo tiene su gestor. Sin la ruta (no debería
+  // pasar: la pone el proxy) no se arriesga nada: 404 antes que enseñar otra
+  // sección, y sin redirigir, que podría dar vueltas.
+  const comercial = profile.role === "comercial";
+  if (comercial) {
+    const ruta = (await headers()).get(PATH_HEADER);
+    if (!ruta) notFound();
+    if (!rutaPermitida(profile.role, ruta)) redirect(RUTA_COMERCIAL);
   }
   const admin = profile.role === "administrador";
   const [{ t, locale }, pendientes] = await Promise.all([getI18n(), admin ? contarPendientes() : null]);
   const pc = pubCopy[locale];
   const bc = banCopy[locale];
   const a = t.admin;
+  const cc = comCopy[locale];
+  const grupoComercial: GrupoMenu = {
+    label: cc.navGroup,
+    items: [
+      { href: `${RUTA_COMERCIAL}/leads`, label: cc.navLeads, icon: "maletin" },
+      { href: `${RUTA_COMERCIAL}/calculadora`, label: cc.navCalc, icon: "euro" },
+      { href: `${RUTA_COMERCIAL}/playbook`, label: cc.navPlaybook, icon: "manual" },
+    ],
+  };
 
   // El profesorado ve lo suyo (formación); el resto es del equipo.
-  const grupos: GrupoMenu[] = [
+  const grupos: GrupoMenu[] = comercial
+    ? [grupoComercial]
+    : [
     { items: [{ href: "/admin", label: a.navSummary, icon: "inicio", exact: true }] },
     {
       label: a.navGroupTeaching,
@@ -44,6 +68,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               { href: "/admin/dry-run", label: drCopy[locale].nav, icon: "play" },
             ],
           },
+          grupoComercial,
           {
             label: a.navGroupMarketing,
             items: [
@@ -85,7 +110,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           },
         ] satisfies GrupoMenu[])
       : []),
-  ];
+      ];
 
   return (
     <div className="axr-admin">

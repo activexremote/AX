@@ -10,6 +10,7 @@ const es = {
     role_alumno: "Alumno",
     role_profesor: "Profesor",
     role_administrador: "Administrador",
+    role_comercial: "Comercial",
   },
   nav: {
     home: "Inicio",
@@ -555,6 +556,7 @@ const en: Dictionary = {
     role_alumno: "Student",
     role_profesor: "Teacher",
     role_administrador: "Administrator",
+    role_comercial: "Sales",
   },
   nav: {
     home: "Home",

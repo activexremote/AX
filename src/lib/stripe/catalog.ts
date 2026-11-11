@@ -63,7 +63,8 @@ export const OFFERS: Record<OfferKey, Offer> = {
     courses: 1,
     mode: "payment",
     plan: "unico",
-    unitAmount: 240000,
+    // Precio de salida (noviembre de 2026). Era 2.400 €.
+    unitAmount: 199000,
     charges: 1,
     currency: "eur",
     priceEnv: "STRIPE_PRICE_CURSO_UNICO",
@@ -87,7 +88,9 @@ export const OFFERS: Record<OfferKey, Offer> = {
     // cuando cuenta la tercera factura pagada.
     mode: "subscription",
     plan: "plazos",
-    unitAmount: 80000,
+    // 3 × 730 € = 2.190 €: a plazos se paga más que al contado, así que en
+    // ningún sitio se anuncian como «sin intereses». Eran 3 × 800 €.
+    unitAmount: 73000,
     charges: 3,
     currency: "eur",
     priceEnv: "STRIPE_PRICE_CURSO_PLAZOS",
@@ -171,19 +174,19 @@ export function availableOffers(now: Date = new Date()): Offer[] {
 /**
  * Ofertas del programa largo. `availableOffers()` NO las incluye a propósito:
  * la pantalla de matrícula vende el programa, y colar ahí un curso de 75 €
- * junto a uno de 2.400 € sólo consigue que nadie entienda qué está comprando.
+ * junto a uno de 1.990 € sólo consigue que nadie entienda qué está comprando.
  */
 export function totalAmount(offer: Offer): number {
   return offer.unitAmount * offer.charges;
 }
 
 /**
- * Importe con el formato de cada idioma: 2.400 € / €2,400.
+ * Importe con el formato de cada idioma: 1.990 € / €1,990.
  *
  * `useGrouping: "always"` no es cosmético. En español, CLDR no agrupa los
- * números de cuatro cifras, así que por defecto salía "2400 €" mientras el
+ * números de cuatro cifras, así que por defecto salía "1990 €" mientras el
  * resto de la web —FAQ, bloque de precio, landings de curso— escribe
- * "2.400 €". Que la cifra cambie de aspecto justo en la pantalla de pago es
+ * "1.990 €". Que la cifra cambie de aspecto justo en la pantalla de pago es
  * de las cosas que hacen dudar de si es el mismo importe.
  */
 export function formatAmount(cents: number, locale: string): string {

@@ -67,8 +67,8 @@ export const checkoutCopy: Record<Locale, {
         note: "Precio reducido hasta el 31 de octubre.",
       },
       "curso-plazos": {
-        name: "3 plazos sin intereses",
-        detail: "Un curso. Tres cargos mensuales de 800 €.",
+        name: "3 plazos",
+        detail: "Un curso. Tres cargos mensuales de 730 €.",
         note: "El primer cargo es hoy; los otros dos, el mismo día de los dos meses siguientes. Se detiene solo al tercero.",
       },
       "pack-dos": { name: "Los dos caminos", detail: "Los 14 módulos completos de ambos cursos." },
@@ -155,8 +155,8 @@ export const checkoutCopy: Record<Locale, {
         note: "Reduced price until October 31.",
       },
       "curso-plazos": {
-        name: "3 interest-free instalments",
-        detail: "One course. Three monthly charges of €800.",
+        name: "3 instalments",
+        detail: "One course. Three monthly charges of €730.",
         note: "The first charge is today; the other two on the same day of the following two months. It stops on its own after the third.",
       },
       "pack-dos": { name: "Both paths", detail: "All 14 modules of both courses." },

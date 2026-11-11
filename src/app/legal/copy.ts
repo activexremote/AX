@@ -751,9 +751,9 @@ const TERMINOS_ES: LegalDoc = {
           t: "table",
           head: ["Concepto", "Importe"],
           rows: [
-            ["Un curso (Remote Professional o Remote Founder)", "2.400 €, en pago único o en 3 plazos de 800 € sin intereses."],
+            ["Un curso (Remote Professional o Remote Founder), en pago único", "1.990 €."],
+            ["Un curso (Remote Professional o Remote Founder), a plazos", "2.190 € en total, en 3 cargos mensuales de 730 €."],
             ["Los dos cursos", "3.900 €."],
-            ["Matrícula anticipada", "2.100 €, disponible hasta el 31 de octubre."],
           ],
         },
         {
@@ -1562,9 +1562,9 @@ const TERMINOS_EN: LegalDoc = {
           t: "table",
           head: ["Item", "Price"],
           rows: [
-            ["One course (Remote Professional or Remote Founder)", "€2,400, in a single payment or 3 interest-free instalments of €800."],
+            ["One course (Remote Professional or Remote Founder), single payment", "€1,990."],
+            ["One course (Remote Professional or Remote Founder), in instalments", "€2,190 in total, in 3 monthly charges of €730."],
             ["Both courses", "€3,900."],
-            ["Early-bird enrolment", "€2,100, available until 31 October."],
           ],
         },
         {

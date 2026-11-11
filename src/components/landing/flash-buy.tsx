@@ -10,7 +10,7 @@ import { LocaleLink } from "@/components/locale-link";
 // Deliberadamente NO reutiliza el checkout del programa. Ahí hay que elegir
 // oferta, elegir camino y entender qué incluye cada plan; aquí hay un producto,
 // un precio y tres campos. Meter una compra de 75 € por impulso en una pantalla
-// que empieza preguntando entre tres modalidades de 2.400 € es la forma más
+// que empieza preguntando entre dos formas de pago de casi 2.000 € es la forma más
 // segura de perderla.
 //
 // El importe NO se manda: va en la clave de la oferta (`relampago-web-abc`) y

@@ -67,7 +67,7 @@ export function ListaUsuarios({
           label={copy.uRole}
           valor={rol}
           onChange={setRol}
-          opciones={(["todos", "alumno", "profesor", "administrador"] as FiltroRol[]).map((k) => ({ key: k, label: copy.uRoles[k], n: cuenta(k) }))}
+          opciones={(["todos", "alumno", "profesor", "comercial", "administrador"] as FiltroRol[]).map((k) => ({ key: k, label: copy.uRoles[k], n: cuenta(k) }))}
         />
       </div>
 

@@ -63,6 +63,7 @@ export function InviteUserButton({ copy }: { copy: AdminV2BCopy }) {
             <select id="inv-role" name="role" defaultValue="alumno">
               <option value="alumno">{t.common.role_alumno}</option>
               <option value="profesor">{t.common.role_profesor}</option>
+              <option value="comercial">{t.common.role_comercial}</option>
               <option value="administrador">{t.common.role_administrador}</option>
             </select>
           </div>

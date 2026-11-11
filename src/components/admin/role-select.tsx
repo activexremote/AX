@@ -39,6 +39,7 @@ export function RoleSelect({ userId, role, disabled, label }: { userId: string; 
       >
         <option value="alumno">{t.common.role_alumno}</option>
         <option value="profesor">{t.common.role_profesor}</option>
+        <option value="comercial">{t.common.role_comercial}</option>
         <option value="administrador">{t.common.role_administrador}</option>
       </select>
       {error ? <small>{error}</small> : null}

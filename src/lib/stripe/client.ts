@@ -47,6 +47,25 @@ export function priceIdFor(offer: Offer): string {
   return id;
 }
 
+/**
+ * El price_… de una oferta, comprobado contra Stripe antes de cobrar: su
+ * importe, su moneda y si es mensual tienen que ser los del catálogo. Si el
+ * catálogo cambia de precio y nadie ha creado el price_… nuevo (ver
+ * scripts/stripe-setup.mjs), la web enseñaría un importe y Stripe cobraría
+ * otro; así, el pago se para en vez de cobrar mal.
+ */
+export async function verifiedPriceId(offer: Offer): Promise<string> {
+  const id = priceIdFor(offer);
+  const price = await stripe().prices.retrieve(id);
+  const mensual = price.recurring?.interval === "month";
+  if (!price.active || price.unit_amount !== offer.unitAmount || price.currency !== offer.currency || mensual !== (offer.mode === "subscription")) {
+    throw new Error(
+      `${offer.priceEnv} (${id}) cobra ${price.unit_amount} ${price.currency}${mensual ? "/mes" : ""} y el catálogo dice ${offer.unitAmount} ${offer.currency}. Ejecuta "node scripts/stripe-setup.mjs --write" y actualiza la variable.`,
+    );
+  }
+  return id;
+}
+
 /** Todas las variables de precio que faltan, para avisar de una vez. */
 export function missingPriceEnvs(): string[] {
   return Object.values(OFFERS)

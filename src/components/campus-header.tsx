@@ -23,7 +23,7 @@ export async function CampusHeader({
   active?: "home" | "progress" | "admin" | "tasks";
 }) {
   const [profile, { t }, abiertas] = await Promise.all([getCurrentProfile(), getI18n(), contarMisTareasAbiertas()]);
-  const isStaff = profile?.role === "administrador" || profile?.role === "profesor";
+  const isStaff = profile?.role === "administrador" || profile?.role === "profesor" || profile?.role === "comercial";
   const roleLabel = profile ? t.common[`role_${profile.role}` as const] : t.common.role_alumno;
 
   const links = [
@@ -49,7 +49,7 @@ export async function CampusHeader({
             </Link>
           ))}
           {isStaff ? (
-            <Link href="/admin" className={`axr-header__link axr-header__link--panel${active === "admin" ? " is-active" : ""}`}>
+            <Link href={profile?.role === "comercial" ? "/admin/comercial/leads" : "/admin"} className={`axr-header__link axr-header__link--panel${active === "admin" ? " is-active" : ""}`}>
               <Icono n="ajustes" size={18} />
               <span>{t.nav.admin}</span>
             </Link>

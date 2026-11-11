@@ -379,9 +379,10 @@ export const landingCopy = {
       lead: "Cada convocatoria es un grupo reducido: clases en directo, campus virtual con las grabaciones y acompañamiento en Slack durante todo el programa.",
       planName: "Un curso · 14 módulos",
       // ⚠︎ SIN PRECIOS por ahora, a petición del equipo, y sin botón de
-      // matrícula: la única salida es pedir información. Los importes eran
-      // 2.400 € por curso (o 3 plazos de 800 €), 3.900 € los dos y 2.100 € de
-      // matrícula anticipada; si vuelven, van aquí y en el FAQ.
+      // matrícula: la única salida es pedir información. Los importes de
+      // salida (noviembre de 2026) son 1.990 € por curso en pago único,
+      // 2.190 € a plazos (3 × 730 €) y 3.900 € los dos (ver
+      // lib/stripe/catalog.ts); si vuelven a la web, van aquí y en el FAQ.
       planStart: "Arranca el 9 de enero de 2027 · grupos de 25 plazas",
       features: [
         "14 módulos en directo (56 h lectivas)",

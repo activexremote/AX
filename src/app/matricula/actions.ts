@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 
 import { getLocale } from "@/lib/i18n/server";
 import { withLocale } from "@/lib/i18n/routing";
-import { priceIdFor, stripe, stripeConfigured } from "@/lib/stripe/client";
+import { verifiedPriceId, stripe, stripeConfigured } from "@/lib/stripe/client";
 import {
   ALL_OFFERS,
   isCourseKey,
@@ -91,7 +91,7 @@ export async function startCheckout(formData: FormData): Promise<CheckoutResult>
   try {
     const session = await stripe().checkout.sessions.create({
       mode: offer.mode,
-      line_items: [{ price: priceIdFor(offer), quantity: 1 }],
+      line_items: [{ price: await verifiedPriceId(offer), quantity: 1 }],
       customer_email: email,
       // Idioma de la pasarela: llegar a Stripe y que cambie de idioma de
       // golpe es la clase de sorpresa que hace abandonar un pago.
@@ -131,7 +131,7 @@ export async function startCheckout(formData: FormData): Promise<CheckoutResult>
         ? `${back("/matricula/gracias")}?session_id={CHECKOUT_SESSION_ID}&relampago=${relampago.slug}`
         : `${back("/matricula/gracias")}?session_id={CHECKOUT_SESSION_ID}`,
       // Quien abandona vuelve a la página desde la que salió, no a la de
-      // matrícula del programa: acabar en una pantalla de 2.400 € después de
+      // matrícula del programa: acabar en una pantalla de casi 2.000 € después de
       // dudar sobre una de 75 € es la peor recuperación posible.
       cancel_url: relampago
         ? `${back(`/cursos-relampago/${relampago.slug}`)}?cancelado=1&pedido=${orderId}`
@@ -171,7 +171,7 @@ async function getOrigin() {
  * nada de lo que se cobra.
  *
  * ── Por qué aquí NO se pide el email antes ────────────────
- * En el checkout del programa sí se pide, y con razón: son 2.400 €, la
+ * En el checkout del programa sí se pide, y con razón: son 1.990 €, la
  * decisión es larga y quien abandona a mitad es alguien a quien llamar.
  *
  * Un relámpago de 75 € se compra por impulso desde un anuncio. Meter tres
@@ -194,7 +194,7 @@ export async function startDirectCheckout(offerKey: string): Promise<CheckoutRes
   if (!isOfferAvailable(offer)) return { error: "offer_expired" };
 
   // Sólo los relámpago. El programa largo tiene su propio embudo y su
-  // formulario, y colar aquí una compra de 2.400 € sin recoger un dato sería
+  // formulario, y colar aquí una compra de 1.990 € sin recoger un dato sería
   // regalar el peor de los dos mundos.
   const relampago = offerKey.startsWith("relampago-")
     ? flashByKey(offerKey.slice("relampago-".length))
@@ -220,7 +220,7 @@ export async function startDirectCheckout(offerKey: string): Promise<CheckoutRes
   try {
     const session = await stripe().checkout.sessions.create({
       mode: offer.mode,
-      line_items: [{ price: priceIdFor(offer), quantity: 1 }],
+      line_items: [{ price: await verifiedPriceId(offer), quantity: 1 }],
       locale: locale === "en" ? "en" : "es",
       client_reference_id: orderId,
       integration_identifier: "axr-directo-pwkzmthc",
