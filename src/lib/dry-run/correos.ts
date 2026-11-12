@@ -182,7 +182,9 @@ function bloqueTexto(b: Bloque): string {
   }
 }
 
-function pintar(ctx: Contexto, asunto: string, preheader: string, titulo: string, bloques: Bloque[]): Correo {
+function pintar(ctx: Contexto, tema: string, preheader: string, titulo: string, bloques: Bloque[]): Correo {
+  // La marca delante: en la bandeja de entrada se ve de quién es sin abrirlo.
+  const asunto = `ActiveXRemote · ${tema}`;
   const baja = enlaceBaja(ctx.guest.token);
   const cuerpo = bloques.map(bloqueHtml).join("\n");
   const html = `<!doctype html>

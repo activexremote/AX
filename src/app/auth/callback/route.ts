@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
@@ -19,6 +20,15 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get("next") ?? "/";
 
   if (code) {
+    // Una sesión vieja en el navegador (alguien que ya había entrado y le
+    // caducó) se va antes de canjear. Si no, el cliente intenta renovarla al
+    // arrancar, no puede, y al darla por perdida borra también la cookie
+    // `-code-verifier` del acceso con Google: el canje falla y sale «Este
+    // enlace ya no sirve» por mucho que se repita. La sesión nueva la
+    // sustituye igualmente.
+    const jar = await cookies();
+    for (const c of jar.getAll()) if (/-auth-token(\.\d+)?$/.test(c.name)) jar.delete(c.name);
+
     const supabase = await createClient();
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
