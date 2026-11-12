@@ -165,8 +165,9 @@ export async function proxy(request: NextRequest) {
   // navegador (alguien que ya había entrado y caducó), mirar la sesión aquí
   // la da por perdida y Supabase borra con ella la cookie `-code-verifier`
   // del acceso con Google, justo antes de que /auth/callback la necesite: el
-  // canje falla y sale «Este enlace ya no sirve», una y otra vez.
-  if (request.nextUrl.pathname === "/auth/callback") return NextResponse.next();
+  // canje falla y sale «Este enlace ya no sirve», una y otra vez. Lo mismo
+  // con /auth/google, que pone un verificador nuevo.
+  if (request.nextUrl.pathname === "/auth/callback" || request.nextUrl.pathname === "/auth/google") return NextResponse.next();
 
   const { pathname, searchParams } = request.nextUrl;
   const [, first, ...rest] = pathname.split("/");
