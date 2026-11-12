@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { COOKIE_REINTENTO, COOKIE_SESION, VIA_GOOGLE } from "@/lib/auth/google";
 import { createClient } from "@/lib/supabase/server";
 import { PHONE_OTP_ENABLED } from "@/lib/auth/phone";
 
@@ -27,7 +28,9 @@ export async function GET(request: NextRequest) {
     // enlace ya no sirve» por mucho que se repita. La sesión nueva la
     // sustituye igualmente.
     const jar = await cookies();
-    for (const c of jar.getAll()) if (/-auth-token(\.\d+)?$/.test(c.name)) jar.delete(c.name);
+    for (const c of jar.getAll()) if (COOKIE_SESION.test(c.name)) jar.delete(c.name);
+    const reintentado = jar.has(COOKIE_REINTENTO);
+    if (reintentado) jar.delete(COOKIE_REINTENTO);
 
     const supabase = await createClient();
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
@@ -39,6 +42,16 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(verify);
       }
       return NextResponse.redirect(`${origin}${next}`);
+    }
+
+    // El acceso con Google se empezó en otro navegador (el de una app de
+    // correo que luego pasa Google al de verdad) y aquí no está su
+    // verificador: se empieza otra vez desde éste, una sola vez.
+    console.error(`[auth] canje fallido (${searchParams.get("via") ?? "enlace"}${reintentado ? ", reintento" : ""}): ${error.code ?? ""} ${error.message}`);
+    if (searchParams.get("via") === VIA_GOOGLE && !reintentado) {
+      const otra = new URL("/auth/google", origin);
+      otra.searchParams.set("next", next);
+      return NextResponse.redirect(otra);
     }
   }
 

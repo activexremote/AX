@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 
+import { urlDeVuelta } from "@/lib/auth/google";
 import { createClient } from "@/lib/supabase/server";
 import { getI18n } from "@/lib/i18n/server";
 
@@ -49,8 +50,7 @@ export async function signInWithGoogle(formData: FormData) {
 
 /** Destino de vuelta de Google: siempre el callback, con el destino final. */
 async function callbackUrl(next: string) {
-  const origin = await getOrigin();
-  return `${origin}/auth/callback?next=${encodeURIComponent(next || "/")}`;
+  return urlDeVuelta(await getOrigin(), next);
 }
 
 async function getOrigin() {
