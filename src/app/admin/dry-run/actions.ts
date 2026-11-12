@@ -177,12 +177,32 @@ export async function invitar(runId: string, formData: FormData): Promise<Result
   if (!run) return { error: "No existe la sesión." };
   const linkId = txt(formData, "link_id", 40) || null;
 
-  const { data: existentes } = await admin.from("dry_run_guests").select("email").eq("dry_run_id", runId).in("email", personas.map((p) => p.email));
+  const { data: existentes } = await admin
+    .from("dry_run_guests")
+    .select("*, dry_run_emails(kind, status)")
+    .eq("dry_run_id", runId)
+    .in("email", personas.map((p) => p.email));
   const ya = new Set((existentes ?? []).map((e) => e.email));
   const nuevas = personas.filter((p) => !ya.has(p.email));
 
+  // Quien ya estaba en la lista sin plaza y sin invitación enviada (lo
+  // apuntado desde la tabla, o una invitación que falló o se quedó sin salir)
+  // también la recibe. A quien ya la recibió, se reserva o se dio de baja,
+  // no se le vuelve a escribir: para eso está «Reenviar».
+  const pendientes = ((existentes ?? []) as (DryRunGuest & { dry_run_emails: { kind: string; status: string }[] | null })[]).filter(
+    (g) => g.status === "invitado" && !g.unsubscribed_at && !(g.dry_run_emails ?? []).some((e) => e.kind === "invitacion" && e.status === "enviado"),
+  );
+  const ahora = new Date().toISOString();
+  for (const g of pendientes) {
+    await admin.from("dry_run_guests").update({ invited_at: ahora }).eq("id", g.id);
+    await encolar({ ...g, invited_at: ahora }, run as DryRun, "invitados", { reenviar: true });
+  }
+  if (pendientes.length) {
+    const ids = pendientes.map((g) => g.id);
+    after(() => procesarCola({ guestIds: ids, limite: 300 }).catch((e) => console.error(`[dry-run] cola: ${e}`)));
+  }
+
   if (nuevas.length) {
-    const ahora = new Date().toISOString();
     const { data: filas, error } = await admin
       .from("dry_run_guests")
       .insert(nuevas.map((p) => ({ dry_run_id: runId, email: p.email, full_name: p.nombre, inviter: invitador, link_id: linkId, status: "invitado", invited_at: ahora, shared_at: ahora, shared_via: "email" })))
@@ -194,7 +214,8 @@ export async function invitar(runId: string, formData: FormData): Promise<Result
   }
 
   revalidatePath(`/admin/dry-run/${runId}`);
-  return { ok: true, nuevas: nuevas.length, repetidas: personas.length - nuevas.length };
+  const encoladas = nuevas.length + pendientes.length;
+  return { ok: true, nuevas: encoladas, repetidas: personas.length - encoladas };
 }
 
 export async function reenviarInvitacion(guestId: string): Promise<Resultado> {

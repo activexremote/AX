@@ -93,7 +93,7 @@ const es = {
   inviteLinkNone: "Correo directo (email / invitacion)",
   inviteSend: "Enviar invitaciones",
   inviteDone: "{n} invitaciones en cola.",
-  inviteSkipped: "{n} ya estaban invitadas o con plaza.",
+  inviteSkipped: "{n} ya tenían la invitación enviada, plaza o se dieron de baja.",
 
   // Personas
   peopleTitle: "Personas",
@@ -295,7 +295,7 @@ const en: DryRunCopy = {
   inviteLinkNone: "Direct email (email / invitacion)",
   inviteSend: "Send invitations",
   inviteDone: "{n} invitations queued.",
-  inviteSkipped: "{n} were already invited or registered.",
+  inviteSkipped: "{n} already had the invitation, a seat, or unsubscribed.",
 
   peopleTitle: "People",
   pName: "Person",
