@@ -27,7 +27,10 @@ const ORIGIN_FIELDS = [
   "campaign",
   "term",
   "content",
+  "gclid",
+  "fbclid",
   "clickId",
+  "landing",
   "referrer",
 ] as const satisfies readonly (keyof LeadOrigin)[];
 
@@ -70,7 +73,8 @@ export async function submitLead(formData: FormData): Promise<LeadResult> {
       // campo de texto y Slack interpreta el suyo como marcado.
       .replace(/[\u0000-\u001f\u007f]/g, " ")
       .trim()
-      .slice(0, 120);
+      // El tope de los campos de texto de Zoho.
+      .slice(0, 255);
     if (valor) origin[campo] = valor;
   }
 

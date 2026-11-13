@@ -48,7 +48,7 @@ Zoho se lee por la API de registros, no por COQL: COQL pide el scope `ZohoCRM.co
 
 GA4 seguirá a cero mientras la etiqueta de GA4 no esté publicada en Tag Manager (`GTM-MQLQ25DC`). Al publicarla, pausa antes las etiquetas de Meta y de Google Ads del contenedor: la web ya las carga desde el código y se contarían dos veces.
 
-Ojo con el evento del formulario: la web manda `generate_lead` al dataLayer (`src/lib/analytics/events.ts`), pero el activador del contenedor espera `lead_form_submit`. Cambia el nombre del evento del activador a `generate_lead`.
+El formulario manda al dataLayer `lead_form_submit` (el que espera el activador del contenedor, en `src/lib/analytics/atribucion.ts`) y también `generate_lead` (`src/lib/analytics/events.ts`). Usa sólo uno de los dos en los activadores o el lead se contará dos veces.
 
 ## Conectar Google Ads (con el script, sin API)
 
@@ -64,4 +64,6 @@ La alternativa es la API de Google Ads (`GOOGLE_ADS_DEVELOPER_TOKEN`, `GOOGLE_AD
 
 ## El origen de los leads
 
-A 12/11/2026 ningún lead de Zoho tiene «Lead Source», así que no se sabe qué canal trae a los que se matriculan. El formulario de la web lo rellena (`Advertisement` para los que llegan de anuncios y `ZOHO_LEAD_SOURCE` para el resto, en `src/lib/zoho/crm.ts`), así que esos leads están entrando por otra vía: a mano, desde formularios de Meta o desde otra integración. Comprueba que `ZOHO_LEAD_SOURCE` está también en Vercel (Production) y pon el origen en Zoho a los que se crean por fuera de la web.
+Cada página pública guarda en el navegador los `utm_*`, gclid, fbclid y la página de entrada de la visita (`src/lib/analytics/atribucion.ts`), y el formulario los manda con el lead. En Zoho se rellenan `UTM_Source`, `UTM_Medium`, `UTM_Campaign`, `UTM_Content`, `UTM_Term` y `Landing_Page`, y `Lead_Source` queda en «Facebook» si viene de Meta (utm_source facebook o instagram, o fbclid), «Advertisement» si viene de Google Ads (gclid, o utm_source google con utm_medium cpc) y vacío en el resto (`src/lib/zoho/crm.ts`).
+
+Los leads que se crean por fuera de la web (a mano, formularios de Meta, otras integraciones) no pasan por aquí: ponles el origen en Zoho.
