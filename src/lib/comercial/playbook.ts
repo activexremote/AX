@@ -164,7 +164,7 @@ export const PLAYBOOK: Seccion[] = [
           "Tiene un motivo con fecha: «quiero cambiar antes del verano», «me mudo en marzo»",
           "Contesta rápido y propone él o ella la hora de la llamada",
           "Pregunta si se puede pagar a plazos",
-          "Se apunta a la clase de prueba o abre varias veces el enlace",
+          "Abre varias veces el enlace o la información que le mandas",
           "Habla en primera persona del futuro: «cuando esté en el curso…»",
         ],
         ambar: [
@@ -187,7 +187,7 @@ export const PLAYBOOK: Seccion[] = [
         cab: ["Temperatura", "Cómo reconocerla", "Qué haces"],
         filas: [
           ["Caliente", "Dos o más señales verdes y una necesidad concreta", "Llamada en el día. Precio, forma de pago y siguiente paso en la misma conversación."],
-          ["Templado", "Interés real con alguna señal ámbar", "Invítale a la clase de prueba. Resuelve la duda concreta. Seguimiento en 3 – 5 días."],
+          ["Templado", "Interés real con alguna señal ámbar", "Resuelve la duda concreta. Seguimiento en 3 – 5 días."],
           ["Frío", "Curiosidad sin motivo ni plazo, o señales rojas", "Un mensaje útil y a la lista de próximos grupos. No insistas."],
         ],
       },
@@ -209,7 +209,7 @@ export const PLAYBOOK: Seccion[] = [
           { titulo: "2 · Su situación (5 min)", texto: "«¿A qué te dedicas ahora?» «¿Desde dónde trabajas?» «¿Qué te hizo pedir información?» Deja que hable. Apunta sus palabras exactas: las vas a usar." },
           { titulo: "3 · Su objetivo y lo que le frena (5 min)", texto: "«¿Dónde te gustaría estar dentro de un año?» «¿Qué has probado hasta ahora?» «¿Qué crees que te falta?» Aquí está la venta: la distancia entre dónde está y dónde quiere estar." },
           { titulo: "4 · Cómo encaja (5 min)", texto: "Recomienda un curso y explícalo con SUS palabras: «Me has dicho que te descartan en el filtro automático; el módulo 9 trabaja justo eso». Dos o tres argumentos, no diez." },
-          { titulo: "5 · Siguiente paso (2 min)", texto: "Nunca cuelgues sin acordar algo concreto: reservar plaza, ir a la clase de prueba, o una segunda llamada con fecha. Apúntalo como próxima tarea en Zoho, con fecha." },
+          { titulo: "5 · Siguiente paso (2 min)", texto: "Nunca cuelgues sin acordar algo concreto: reservar plaza o una segunda llamada con fecha. Apúntalo como próxima tarea en Zoho, con fecha." },
         ],
       },
       {
@@ -228,7 +228,6 @@ export const PLAYBOOK: Seccion[] = [
         t: "pasos",
         x: [
           { titulo: "Encuentra la duda real", texto: "«Se lo está pensando» casi nunca es la duda real. Pregunta: «¿Qué es lo que te frena: las fechas, el precio o saber si es para ti?» Con la duda concreta, se puede trabajar." },
-          { titulo: "Que lo pruebe gratis", texto: "La clase de prueba (dry run) es tu mejor herramienta: una clase real, en directo y gratis. Quien la vive deja de imaginar y decide. Usa el mensaje «Invitación a la clase de prueba»." },
           { titulo: "Conecta con su caso, no con el temario", texto: "Elige el módulo que resuelve su problema y cuéntaselo: «Me dijiste que te da miedo la fiscalidad si te vas a Portugal; el módulo 2 compara tu situación con tres destinos.»" },
           { titulo: "Haz visible el coste de no hacer nada", texto: "Sin dramatizar: «Si sigues buscando como hasta ahora, ¿cuánto tiempo más crees que tardarás?» Que lo diga la otra persona." },
           { titulo: "Quita riesgo", texto: `Pago a plazos (${CUOTAS}). Clases grabadas si falta a alguna. La elección de camino es reversible. 14 días de desistimiento según las condiciones.` },
@@ -257,7 +256,7 @@ export const PLAYBOOK: Seccion[] = [
           { dice: "No sé si tengo el nivel.", piensa: "No quiero hacer el ridículo.", responde: "No hace falta nivel previo. Lo que sí hace falta es dominar tu oficio: el curso te enseña a llevarlo al mercado internacional." },
           { dice: "¿Me garantizáis un trabajo?", piensa: "No quiero tirar el dinero.", responde: "No, y desconfía de quien lo garantice. Lo que garantizamos es lo que te llevas: los entregables de cada módulo, hechos con feedback. Encontrar el trabajo depende de ti; el curso te da el método." },
           { dice: "¿Es un máster? ¿Es un título oficial?", piensa: "¿Me sirve el diploma?", responde: "Es un curso. Al terminar recibes el diploma de ActiveXRemote, una certificación privada y verificable, con los módulos que has superado y los acreditados por Deel. No es un título universitario oficial." },
-          { dice: "¿La empresa está en Dubái? ¿Es fiable?", piensa: "¿Y si pago y desaparecéis?", responde: "La escuela opera desde Emiratos y el curso es 100 % online. El pago va por Stripe (no vemos tu tarjeta), recibes factura de cada pago y tienes los derechos de consumidor de tu país, con 14 días de desistimiento. Y antes de pagar puedes venir gratis a la clase de prueba." },
+          { dice: "¿La empresa está en Dubái? ¿Es fiable?", piensa: "¿Y si pago y desaparecéis?", responde: "La escuela opera desde Emiratos y el curso es 100 % online. El pago va por Stripe (no vemos tu tarjeta), recibes factura de cada pago y tienes los derechos de consumidor de tu país, con 14 días de desistimiento." },
           { dice: "¿Quiénes son los profesores?", piensa: "¿Saben de lo que hablan?", responde: "Isaac R. Betanzos (ex-Deel y ex-Oyster) da la primera clase. El equipo docente completo se comunica antes de formalizar la matrícula: si te lo preguntan, pásalo al equipo y no des nombres que no estén confirmados." },
           { dice: "¿Y si cancelan el curso?", piensa: "Riesgo.", responde: "Si la escuela cancela o aplaza un grupo, eliges entre pasar al siguiente o recuperar todo lo pagado. Está en las condiciones." },
           { dice: "Lo tengo que hablar con mi pareja o con mi empresa.", piensa: "No decido solo.", responde: "Perfecto. ¿Qué crees que te va a preguntar? Te mando un resumen por escrito para que lo veáis juntos. Y propón una llamada con las dos personas si hace falta." },
@@ -351,14 +350,12 @@ export const PLAYBOOK: Seccion[] = [
           { titulo: "Material de apoyo", texto: "En el gestor (www.activexremote.com/admin/comercial): el dosier del curso completo y los de Remote Professional y Remote Founder, en PDF, para descargar y mandar a cada lead." },
           { titulo: "La calculadora de plazos", texto: "En el gestor: eliges un curso o los dos, el número de cuotas y el día del primer cargo, y te da los importes, las fechas y el mensaje listo para mandar." },
           { titulo: "Este playbook", texto: "En el gestor, apartado «Playbook», siempre en su última versión, y en PDF." },
-          { titulo: "La clase de prueba", texto: "Reserva en www.activexremote.com/dry-run/modulo-1. Usa el mensaje «Invitación a la clase de prueba»." },
         ],
       },
       {
         t: "lista",
         x: [
           "Lee este playbook entero y la landing www.activexremote.com/bienvenida.",
-          "Mira la página de la clase de prueba: www.activexremote.com/dry-run/modulo-1.",
           "Ensaya la llamada de descubrimiento en voz alta, dos veces.",
           "Abre Zoho y ordena los leads por fecha: empieza por los más recientes.",
           "Haz tus primeras 5 llamadas y apunta cada una.",

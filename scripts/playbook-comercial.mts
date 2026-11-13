@@ -27,12 +27,10 @@ const txt = (s: string) => esc(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>
 
 const MARCA = `<svg viewBox="0 0 46 28" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 2 L20 26 L2 26 Z"/><path d="M26 2 L44 2 L35 14 Z"/><path d="M26 26 L44 26 L35 14 Z"/></svg>`;
 
-// En el PDF las marcas de la clase de prueba van con el dato del día; el
-// nombre y el curso se quedan como hueco para rellenar.
+// En el PDF va el nombre de la comercial; el nombre del lead y el curso se
+// quedan como hueco para rellenar.
 const EJEMPLO = {
   comercial: "Ainhoa",
-  dryrun_cuando: "sábado 21 de noviembre, de 9:30 a 14:00 (hora de Madrid)",
-  dryrun: "www.activexremote.com/dry-run/modulo-1",
 };
 
 function bloque(b: Bloque): string {
