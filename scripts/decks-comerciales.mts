@@ -448,7 +448,6 @@ function siguientesPasos(tema: Tema) {
         <li><span>2</span><div><strong>Reservas tu plaza</strong><p>Eliges la forma de pago y recibes el enlace de pago seguro.</p></div></li>
         <li><span>3</span><div><strong>Entras al campus</strong><p>Con el material previo del módulo 01 y tu grupo en Slack.</p></div></li>
       </ol>
-      <p class="cierre__prueba">¿Quieres verlo antes de decidir? Pregúntanos por la próxima clase de prueba gratuita en directo.</p>
       <div class="contacto">
         <div><span>Tu contacto</span><strong>${CONTACTO.nombre} · ${CONTACTO.rol}</strong></div>
         <div><span>Correo</span><strong>${CONTACTO.email}</strong></div>
@@ -796,7 +795,6 @@ h3 { font-size: 19px; letter-spacing: -.01em; font-weight: 750; line-height: 1.2
 .pasos li > span { flex: none; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #fff; color: #161326; font-weight: 800; }
 .pasos strong { font-size: 16px; }
 .pasos p { font-size: 14px; color: rgba(255,255,255,.8); margin-top: 3px; line-height: 1.4; }
-.cierre__prueba { margin-top: 22px; font-size: 16px; color: rgba(255,255,255,.88); }
 .contacto { display: flex; gap: 36px; margin-top: 28px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,.25); }
 .contacto span { display: block; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.6); }
 .contacto strong { font-size: 17px; }

@@ -6,8 +6,7 @@
 //  Sólo importa los precios, con la extensión .ts: así lo lee también el
 //  script del PDF con Node, sin compilar.
 //
-//  Marcas: {nombre}, {comercial}, {curso}, {dryrun} (el enlace a la clase de
-//  prueba) y {dryrun_cuando} (su día y su hora).
+//  Marcas: {nombre}, {comercial} y {curso}.
 // ══════════════════════════════════════════════════════════
 
 import { calcularPlazos, euros, PLAZOS_POR_DEFECTO, PRECIO_CONTADO, PRECIO_PLAZOS, resumenPlazos } from "./precios.ts";
@@ -68,20 +67,6 @@ Cualquier duda, me escribes por aquí o por WhatsApp.
 ActiveXRemote`,
   },
   {
-    id: "invitacion-dry-run",
-    titulo: "Invitación a la clase de prueba",
-    cuando: "A quien duda: que lo vea por dentro antes de decidir.",
-    canal: "whatsapp",
-    texto: `{nombre}, se me ocurre algo mejor que contártelo: verlo.
-
-El {dryrun_cuando} damos gratis la primera clase del curso, en directo, con Isaac R. Betanzos. Plazas limitadas.
-
-Te reservas con tu cuenta de Google en un minuto:
-{dryrun}
-
-Después hablamos y me cuentas qué te ha parecido.`,
-  },
-  {
     id: "duda",
     titulo: "Para quien «se lo está pensando»",
     cuando: "Unos días después de la llamada, si no ha decidido.",
@@ -118,7 +103,7 @@ Mucha suerte con todo.`,
   },
 ];
 
-export type MarcaPlantilla = "nombre" | "comercial" | "curso" | "dryrun" | "dryrun_cuando";
+export type MarcaPlantilla = "nombre" | "comercial" | "curso";
 
 /** Rellena las marcas; las que no tengan valor se quedan tal cual, para verlas. */
 export function rellenarPlantilla(texto: string, valores: Partial<Record<MarcaPlantilla, string>>) {
