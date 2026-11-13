@@ -6,6 +6,7 @@ import "@/styles/globals.scss";
 import { I18nProvider } from "@/lib/i18n/provider";
 import { ConsentDefaultScript } from "@/components/consent/consent-default-script";
 import { ConsentMount } from "@/components/consent/consent-mount";
+import { CapturaAtribucion } from "@/components/analytics/captura-atribucion";
 import { MarketingBody, MarketingHead } from "@/components/analytics/marketing-tags";
 import { ExtensionNoiseScript } from "@/components/dev/extension-noise-script";
 import { HashSessionCatcher } from "@/components/auth/hash-session-catcher";
@@ -60,7 +61,8 @@ export default async function RootLayout({
   const { locale, t } = await getI18n();
   // Etiquetas de marketing: sólo en producción y sólo en páginas públicas
   // (el proxy marca cuáles). El campus y el panel no llevan ninguna.
-  const tracking = TRACKING_ENABLED && (await headers()).get(TRACKING_HEADER) === "1";
+  const publica = (await headers()).get(TRACKING_HEADER) === "1";
+  const tracking = TRACKING_ENABLED && publica;
 
   return (
     <html
@@ -80,6 +82,9 @@ export default async function RootLayout({
           calla los ATRIBUTOS de esta etiqueta, no lo que hay dentro. */}
       <body suppressHydrationWarning>
         {tracking && <MarketingBody />}
+        {/* De dónde viene cada lead: en todas las páginas públicas, también
+            fuera de producción, para poder probarlo. */}
+        {publica && <CapturaAtribucion />}
         {/* Y calla a las extensiones del navegador, que en desarrollo tapan
             la pantalla con errores que no son de esta web. */}
         <ExtensionNoiseScript />

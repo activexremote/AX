@@ -31,21 +31,10 @@ const DEAL_STAGE = process.env.ZOHO_DEAL_STAGE ?? "Closed Won";
 
 // ⚠︎ `Lead_Source` es una LISTA DE VALORES en Zoho, no un texto libre: un
 // valor que no esté en la lista hace que Zoho rechace el registro entero y el
-// lead se pierde. Antes había un "Web" por defecto que NO existe en la lista
-// de esta cuenta (`npm run zoho:probe` la imprime), así que sin la variable
-// puesta el formulario habría dejado de escribir en el CRM sin avisar.
-//
-// Sin variable, el campo no se manda y Zoho aplica su propio valor por
-// defecto. Es la única opción que no puede romper nada.
+// lead se pierde (`npm run zoho:probe` imprime la lista de esta cuenta). En
+// los contactos que compran sin pasar por el formulario va esta variable; sin
+// ella, el campo no se manda y Zoho aplica su propio valor por defecto.
 const LEAD_SOURCE = process.env.ZOHO_LEAD_SOURCE || undefined;
-
-// Origen de quien llega por un anuncio. "Advertisement" viene en la lista por
-// defecto de Zoho, así que funciona sin tocar nada; si en tu cuenta la lista
-// está personalizada, esta variable es la que lo arregla.
-const LEAD_SOURCE_ADS = process.env.ZOHO_LEAD_SOURCE_ADS ?? "Advertisement";
-
-/** Medios que son tráfico de pago, en minúsculas. */
-const MEDIOS_PAGO = new Set(["cpc", "ppc", "paid", "paidsocial", "paid_social", "display", "banner"]);
 
 /**
  * De dónde venía quien rellenó el formulario. Todo opcional: la portada no
@@ -59,24 +48,28 @@ export type LeadOrigin = {
   campaign?: string;
   term?: string;
   content?: string;
+  /** Identificador de clic de Google Ads. */
+  gclid?: string;
+  /** Identificador de clic de Meta. */
+  fbclid?: string;
   /** gclid, wbraid, fbclid… El identificador de clic de la plataforma. */
   clickId?: string;
+  /** Primera página de la visita que trajo los `utm_*`. */
+  landing?: string;
   /** Sólo el dominio de procedencia. */
   referrer?: string;
 };
 
 /**
- * ¿Es tráfico de pago?
- *
- * Tres señales, y basta con una: identificador de clic (lo pone la propia
- * plataforma y es la más fiable), medio de pago declarado en la URL, o estar
- * en la landing de campaña, que sólo recibe anuncios.
+ * El `Lead_Source` del lead: «Facebook» si viene de Meta, «Advertisement» si
+ * viene de Google Ads y nada en cualquier otro caso. Los dos valores están en
+ * la lista de Zoho de esta cuenta.
  */
-function esDeAnuncio(o?: LeadOrigin): boolean {
-  if (!o) return false;
-  if (o.clickId) return true;
-  if (o.medium && MEDIOS_PAGO.has(o.medium.toLowerCase())) return true;
-  return /^\/(?:[a-z]{2}\/)?trabajo-remoto\/?$/.test(o.page ?? "");
+export function leadSource(o?: LeadOrigin): "Facebook" | "Advertisement" | undefined {
+  const fuente = o?.source?.toLowerCase();
+  if (o?.fbclid || fuente === "facebook" || fuente === "instagram") return "Facebook";
+  if (o?.gclid || (fuente === "google" && o?.medium?.toLowerCase() === "cpc")) return "Advertisement";
+  return undefined;
 }
 
 /** Las líneas de campaña que se escriben en la ficha. */
@@ -89,6 +82,7 @@ function lineasOrigen(o?: LeadOrigin): string[] {
     o.content ? `Anuncio: ${o.content}` : null,
     o.clickId ? `Id de clic: ${o.clickId}` : null,
     o.referrer ? `Procedencia: ${o.referrer}` : null,
+    o.landing && o.landing !== o.page ? `Entró por: ${o.landing}` : null,
     o.page ? `Página: ${o.page}` : null,
   ].filter((l): l is string => Boolean(l));
 }
@@ -118,8 +112,8 @@ export async function upsertZohoLead(lead: ZohoLeadInput): Promise<string | null
   if (!zohoConfigured()) return null;
 
   const cursos = lead.courses.length ? lead.courses.join(" + ") : "sin especificar";
-  const deAnuncio = esDeAnuncio(lead.origin);
-  const fuente = deAnuncio ? LEAD_SOURCE_ADS : LEAD_SOURCE;
+  const fuente = leadSource(lead.origin);
+  const o = lead.origin ?? {};
 
   const reply = await zohoFetch<ZohoRecordReply>("/Leads/upsert", {
     method: "POST",
@@ -132,15 +126,23 @@ export async function upsertZohoLead(lead: ZohoLeadInput): Promise<string | null
           Email: lead.email,
           Phone: lead.phone || undefined,
           City: lead.city || undefined,
-          // `undefined` desaparece al serializar a JSON: sin variable puesta,
-          // el campo no viaja y Zoho aplica su valor por defecto.
+          // `undefined` desaparece al serializar a JSON: lo que no viene no
+          // viaja, y en un lead que ya existía se queda lo que tenía.
           Lead_Source: fuente,
+          UTM_Source: o.source,
+          UTM_Medium: o.medium,
+          UTM_Campaign: o.campaign,
+          UTM_Content: o.content,
+          UTM_Term: o.term,
+          Landing_Page: o.landing ?? o.page,
           Description: [
             `Curso(s) de interés: ${cursos}`,
             lead.locale ? `Idioma de la web: ${lead.locale}` : null,
-            deAnuncio
-              ? "Origen: campaña de pago (landing de anuncios)"
-              : "Origen: formulario de la web de ActiveXRemote",
+            fuente === "Facebook"
+              ? "Origen: anuncio de Meta"
+              : fuente === "Advertisement"
+                ? "Origen: anuncio de Google"
+                : "Origen: formulario de la web de ActiveXRemote",
             ...lineasOrigen(lead.origin),
           ]
             .filter(Boolean)
