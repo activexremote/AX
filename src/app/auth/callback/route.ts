@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { COOKIE_REINTENTO, COOKIE_SESION, VIA_GOOGLE } from "@/lib/auth/google";
+import { borrarSesion, COOKIE_REINTENTO, VIA_GOOGLE } from "@/lib/auth/google";
 import { createClient } from "@/lib/supabase/server";
 import { PHONE_OTP_ENABLED } from "@/lib/auth/phone";
 
@@ -28,11 +28,11 @@ export async function GET(request: NextRequest) {
     // enlace ya no sirve» por mucho que se repita. La sesión nueva la
     // sustituye igualmente.
     const jar = await cookies();
-    for (const c of jar.getAll()) if (COOKIE_SESION.test(c.name)) jar.delete(c.name);
+    borrarSesion(jar);
     const reintentado = jar.has(COOKIE_REINTENTO);
-    if (reintentado) jar.delete(COOKIE_REINTENTO);
+    if (reintentado) jar.set(COOKIE_REINTENTO, "", { path: "/", maxAge: 0 });
 
-    const supabase = await createClient();
+    const supabase = await createClient({ sinSesion: true });
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
       const user = data.user;

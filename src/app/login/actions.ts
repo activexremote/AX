@@ -29,7 +29,9 @@ import { getI18n } from "@/lib/i18n/server";
 export async function signInWithGoogle(formData: FormData) {
   const { t } = await getI18n();
   const redirectTo = String(formData.get("redirect") ?? "/");
-  const supabase = await createClient();
+  // Sin la sesión que hubiera: si es vieja, renovarla falla y arrastra el
+  // verificador nuevo (ver lib/supabase/server.ts).
+  const supabase = await createClient({ sinSesion: true });
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",

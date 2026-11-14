@@ -103,8 +103,21 @@ export async function updateSession(
   // servidor de Supabase en cada petición, como hacía `getUser()`. Si el
   // token ha caducado, lo refresca (eso sí es una llamada) y deja las cookies
   // nuevas en `cookies`.
-  const { data: claimsData } = await supabase.auth.getClaims();
+  // Antes de getClaims(): si no puede renovar la sesión, la vacía aquí mismo.
+  const cookiesSesion = request.cookies
+    .getAll()
+    .filter((c) => /-auth-token(\.\d+)?$/.test(c.name))
+    .map((c) => `${c.name}(${c.value.length})`);
+  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
   const hayUsuario = typeof claimsData?.claims?.sub === "string";
+  // Trae cookie de sesión y aun así no hay nadie: es lo que deja a alguien
+  // dando vueltas entre el campus y el login. Al log, sin valores, para ver
+  // qué cookies manda ese navegador.
+  if (!hayUsuario && cookiesSesion.length) {
+    console.warn(
+      `[auth] cookie de sesión sin sesión en ${path}: ${cookiesSesion.join(", ")}${claimsError ? ` · ${claimsError.code ?? ""} ${claimsError.message}` : ""}`,
+    );
+  }
   // El usuario completo sólo hace falta para el candado del SMS (mira si el
   // teléfono está confirmado). Con el SMS apagado, no se pide.
   const user = hayUsuario && PHONE_OTP_ENABLED ? (await supabase.auth.getUser()).data.user : null;
