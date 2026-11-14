@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { COOKIE_REINTENTO, COOKIE_SESION, destinoSeguro, urlDeVuelta } from "@/lib/auth/google";
+import { borrarSesion, COOKIE_REINTENTO, destinoSeguro, urlDeVuelta } from "@/lib/auth/google";
 import { createClient } from "@/lib/supabase/server";
 
 // GET /auth/google?next=<destino>
@@ -20,9 +20,9 @@ export async function GET(request: NextRequest) {
   // Una sesión caducada haría que el cliente, al no poder renovarla, se
   // llevara por delante el verificador nuevo (ver /auth/callback).
   const jar = await cookies();
-  for (const c of jar.getAll()) if (COOKIE_SESION.test(c.name)) jar.delete(c.name);
+  borrarSesion(jar);
 
-  const supabase = await createClient();
+  const supabase = await createClient({ sinSesion: true });
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: { redirectTo: urlDeVuelta(origin, next), queryParams: { prompt: "select_account" } },
