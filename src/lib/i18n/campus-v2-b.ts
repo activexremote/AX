@@ -23,6 +23,11 @@ const es = {
   withMission: "Misión · {n} min",
   onThisPage: "En esta lección",
 
+  // Descargas de las horas de clase, cerradas hasta que empieza la clase
+  downloadsLocked: "Este material se podrá descargar cuando empiece la clase, el {when} (hora de Madrid).",
+  downloadsLockedLabel: "Tiempo hasta que se abran las descargas",
+  downloadsUnits: ["días", "horas", "min", "seg"] as [string, string, string, string],
+
   // Final de la lección
   finishTitle: "¿Has terminado esta lección?",
   finishBody: "Márcala como completada y sigue con la siguiente. Puedes volver cuando quieras.",
@@ -66,6 +71,10 @@ const en: CampusLessonCopy = {
   noAudio: "Audio coming soon",
   withMission: "Mission · {n} min",
   onThisPage: "In this lesson",
+
+  downloadsLocked: "You can download this material once the class starts, on {when} (Madrid time).",
+  downloadsLockedLabel: "Time until downloads open",
+  downloadsUnits: ["days", "hours", "min", "sec"],
 
   finishTitle: "Finished this lesson?",
   finishBody: "Mark it as completed and move on to the next one. You can come back any time.",

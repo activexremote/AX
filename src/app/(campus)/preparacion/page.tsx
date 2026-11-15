@@ -209,7 +209,7 @@ export default async function PreparacionPage({ searchParams }: { searchParams: 
             <div className="axr-c-card axr-prep__tile">
               <Icono n="descarga" size={20} />
               <strong>Plantillas y descargas</strong>
-              <span>Al final de cada lección: plantillas en Excel y Word, lecturas y los enunciados de las tareas.</span>
+              <span>Al final de cada lección: plantillas en Excel y Word, lecturas y los enunciados de las tareas. Las de las horas de clase se abren cuando empieza la clase.</span>
             </div>
             <Link href="/mi-progreso" className="axr-c-card axr-prep__tile">
               <Icono n="calendario" size={20} />
