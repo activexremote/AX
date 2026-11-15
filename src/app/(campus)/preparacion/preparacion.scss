@@ -109,7 +109,7 @@
     padding: 0;
     li {
       display: grid;
-      grid-template-columns: 3.5rem minmax(0, 1fr);
+      grid-template-columns: 6.75rem minmax(0, 1fr);
       gap: 0.75rem;
       padding: 0.55rem 0;
       font-size: 0.875rem;
@@ -147,7 +147,22 @@
     svg { color: var(--cmp-accent); }
     span { font-size: 0.8125rem; line-height: 1.5; color: var(--cmp-muted); }
   }
-  a.axr-prep__tile:hover { border-color: var(--cmp-accent); text-decoration: none; color: var(--cmp-ink); }
+  a.axr-prep__tile:hover,
+  button.axr-prep__tile:hover { border-color: var(--cmp-accent); text-decoration: none; color: var(--cmp-ink); }
+  button.axr-prep__tile { font: inherit; text-align: left; cursor: pointer; width: 100%; }
+  &__tile.is-soon { opacity: 0.75; }
+  &__link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-weight: 600;
+    color: var(--cmp-accent-ink);
+    cursor: pointer;
+  }
 
   // ── Feedback ──
   &__feedback { scroll-margin-top: 80px; }
@@ -239,4 +254,36 @@
     span { display: block; font-size: 0.85rem; color: var(--axr-text-secondary); }
   }
   &__teacher-link { display: inline-block; margin-top: 0.5rem; font-weight: 600; }
+}
+
+// ── Prueba de equipo ─────────────────────────────────────
+.axr-eq__title { margin: 0 0 0.4rem; font-size: 1.375rem; }
+.axr-eq {
+  display: grid;
+  gap: 0.9rem;
+  margin: 1rem 0;
+  &__screen {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 9;
+    max-width: 100%;
+    border-radius: 12px;
+    background: #16161a;
+    overflow: hidden;
+    video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    .axr-btn { position: relative; z-index: 1; }
+  }
+  &__rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+  &__row {
+    display: grid;
+    grid-template-columns: auto minmax(90px, auto) 1fr;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.875rem;
+    &.is-ok { color: var(--cmp-ok); }
+    &.is-mal { color: var(--cmp-bad); }
+    span { color: var(--cmp-text); }
+  }
+  &__level { display: grid; gap: 0.3rem; small { color: var(--cmp-muted); } }
 }

@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import { CampusHeader } from "@/components/campus-header";
 import { UnlockDownload } from "@/components/campus/unlock-download";
+import { localize } from "@/lib/data/localize";
 import { usuarioActual } from "@/lib/data/usuario";
 import { createClient } from "@/lib/supabase/server";
 import { unlockContent, unlockFilename } from "@/lib/relampago/unlocks";
@@ -35,8 +36,10 @@ export default async function UnlockPage({ params }: { params: Promise<{ key: st
   //  · que el desbloqueo exista y tenga acceso al curso (la RLS de `unlocks`
   //    filtra por has_course_access),
   //  · y que se lo haya ganado de verdad.
-  const [{ data: unlock }, { data: ganado }, { data: perfil }] = await Promise.all([
-    supabase.from("unlocks").select("key, title, description, course").eq("key", key).maybeSingle(),
+  const [{ data: fila }, { data: ganado }, { data: perfil }] = await Promise.all([
+    // `*`: title_en/description_en llegan con la migración 0037, y nombrar una
+    // columna que todavía no existe tumbaría la consulta (y la página, en 404).
+    supabase.from("unlocks").select("*").eq("key", key).maybeSingle(),
     supabase
       .from("user_unlocks")
       .select("unlock_key, granted_at")
@@ -52,6 +55,7 @@ export default async function UnlockPage({ params }: { params: Promise<{ key: st
   // su propio temario. Se marca como revisión para que no se confunda con
   // haberlo ganado.
   const revisando = perfil?.role === "profesor" || perfil?.role === "administrador";
+  const unlock = fila ? localize(fila, locale) : null;
 
   if (!unlock || (!ganado && !revisando)) notFound();
 

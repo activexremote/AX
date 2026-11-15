@@ -45,11 +45,11 @@ const FAQS = [
   ],
   [
     "¿A qué tengo acceso en el campus con el dry run?",
-    "Al **Módulo 1 completo**: el material previo (lección «Antes de la clase»), las cuatro horas de la clase con sus plantillas y tareas, los audios de cada lección y este asistente. El resto de módulos del programa se abren con la matrícula del curso.",
+    "Al **Módulo 1 completo**: el material previo (lección «Antes de la clase»), las cuatro horas de la clase con sus actividades y tareas (se hacen dentro del campus), los audios de cada lección y este asistente. El resto de módulos del programa se abren con la matrícula del curso.",
   ],
   [
     "¿Quién da la clase del dry run?",
-    "**Isaac R. Betanzos**, fundador y docente de ActiveXRemote. Lleva años montando alianzas internacionales desde Dubái: hoy asesora a Broadcom a través de su agregador regional, y antes llevó el crecimiento de partners en EMEA en **Deel** y la gestión de partners en **Oyster**, dos de las plataformas con las que se contrata talento remoto en cualquier país. Formado en Goldsmiths, University of London.\n\nAntes de la clase lee las fichas de presentación para llamar a cada persona por su nombre y conectar los ejemplos con su caso. Su perfil: [LinkedIn](https://ae.linkedin.com/in/isaacrbetanzos).",
+    "**Isaac R. Betanzos**, cofundador y docente de ActiveXRemote. Lleva más de 12 años levantando ecosistemas de venta directa y de canal en empresas de tecnología, en seis continentes: **Broadcom**, **Deel** o **Rossum AI**, entre otras. Vive en Dubái, donde ejerce como experto en nomadismo digital, y viene de la psicología: es autor publicado sobre Psicología Cuántica.\n\nAntes de la clase lee las fichas de presentación para llamar a cada persona por su nombre y conectar los ejemplos con su caso. Su perfil: [LinkedIn](https://ae.linkedin.com/in/isaacrbetanzos).",
   ],
   [
     "¿Cómo me conecto a la clase del dry run?",

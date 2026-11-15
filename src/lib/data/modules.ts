@@ -99,9 +99,16 @@ export async function getLessonForView(lessonId: string) {
 
 export async function getLearningPath() {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("learning_path_steps")
-    .select("*")
-    .order("order_index");
-  return (data ?? []) as LearningPathStep[];
+  const [locale, { data }] = await Promise.all([
+    getLocale(),
+    supabase.from("learning_path_steps").select("*").order("order_index"),
+  ]);
+  return ((data ?? []) as LearningPathStep[]).map((step) => {
+    if (locale !== "en") return step;
+    return {
+      ...step,
+      label: step.label_en?.trim() ? step.label_en : step.label,
+      description: step.description_en?.trim() ? step.description_en : step.description,
+    };
+  });
 }

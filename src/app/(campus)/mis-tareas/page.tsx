@@ -4,6 +4,10 @@ import { Icono } from "@/components/admin/publicaciones/iconos";
 import { getMyAssignments } from "@/lib/data/assignments";
 import { getI18n } from "@/lib/i18n/server";
 import { campusV2CCopy } from "@/lib/i18n/campus-v2-c";
+import { misTareasDeActividades } from "@/lib/actividades/datos";
+import { tx } from "@/lib/actividades/tipos";
+import { actividadesCopy } from "@/lib/i18n/actividades";
+import { ZONA } from "@/lib/dry-run/tiempo";
 import "@/app/(campus)/mis-tareas/tareas.scss";
 
 // ══════════════════════════════════════════════════════════
@@ -25,9 +29,60 @@ const diasEntre = (desde: string, hasta: string) => Math.round((Date.parse(`${ha
 const ORDEN: Record<MiTarea["estado"], number> = { vencida: 0, pronto: 1, en_curso: 2, pendiente: 3, completada: 4 };
 
 export default async function MisTareasPage() {
-  const [assignments, { t, locale }] = await Promise.all([getMyAssignments(), getI18n()]);
+  const { t, locale } = await getI18n();
+  const [assignments, actividades] = await Promise.all([getMyAssignments(), misTareasDeActividades(locale)]);
   const copy = campusV2CCopy[locale];
+  const ac = actividadesCopy[locale];
   const hoy = hoyMadrid();
+  const diaMadrid = (iso: string) => new Intl.DateTimeFormat("en-CA", { timeZone: ZONA }).format(new Date(iso));
+  const venceEn = new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "es-ES", {
+    timeZone: ZONA,
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  });
+
+  // Cada actividad del campus es una tarea con su plazo y su enlace directo.
+  const deActividades: MiTarea[] = actividades.map((x) => {
+    const dias = x.plazo ? diasEntre(hoy, diaMadrid(x.plazo)) : null;
+    const vencida = x.plazo ? Date.now() > new Date(x.plazo).getTime() : false;
+    const st = x.fila?.status;
+    const estado: MiTarea["estado"] = x.hecha
+      ? "completada"
+      : vencida
+        ? "vencida"
+        : dias !== null && dias <= 3
+          ? "pronto"
+          : st === "borrador" || st === "devuelta" || (x.fila && x.actividad.tipo === "test")
+            ? "en_curso"
+            : "pendiente";
+    const etiqueta = st === "devuelta" ? ac.status.devuelta : x.hecha ? ac.status[st === "revisada" ? "revisada" : "enviada"] : copy.tStatus[estado];
+    return {
+      id: `act-${x.actividad.key}`,
+      module_title: x.moduleTitle,
+      module_slug: "",
+      total: 0,
+      done: 0,
+      due_date: x.plazo ? diaMadrid(x.plazo) : null,
+      completed_at: x.hecha ? (x.fila?.submitted_at ?? null) : null,
+      dias,
+      note: st === "devuelta" || st === "revisada" ? (x.fila?.feedback ?? null) : null,
+      estado,
+      actividad: {
+        titulo: tx(x.actividad.titulo, locale),
+        donde: `${x.moduleTitle} · ${x.lessonTitle}`,
+        href: `/lecciones/${x.lessonId}#act-${x.actividad.key}`,
+        vence: x.plazo ? venceEn.format(new Date(x.plazo)) : null,
+        etiqueta,
+        cta: x.hecha ? ac.mtSee : st === "devuelta" ? ac.mtRedo : ac.mtDo,
+        nivel: x.actividad.obligatoria ? ac.required : x.actividad.tipo === "juego" ? ac.optional : ac.recommended,
+        resumen: `${ac.minutes.replace("{n}", String(x.actividad.minutos))} · ${x.actividad.plazo === "antes-clase" ? ac.mtBeforeClass : ac.mtWeek}`,
+      },
+    };
+  });
 
   const tareas: MiTarea[] = assignments
     .map((a) => {
@@ -55,6 +110,7 @@ export default async function MisTareasPage() {
         estado,
       };
     })
+    .concat(deActividades)
     .sort((x, y) => ORDEN[x.estado] - ORDEN[y.estado] || (x.dias ?? 9999) - (y.dias ?? 9999));
 
   const n = (e: MiTarea["estado"][]) => tareas.filter((x) => e.includes(x.estado)).length;

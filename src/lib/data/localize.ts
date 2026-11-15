@@ -11,6 +11,8 @@ import type { Locale } from "@/lib/i18n/config";
 // ══════════════════════════════════════════════════════════
 
 type Localizable = {
+  code?: string | null;
+  code_en?: string | null;
   title?: string;
   title_en?: string | null;
   description?: string | null;
@@ -26,6 +28,7 @@ type Localizable = {
 export function localize<T extends Localizable>(row: T, locale: Locale): T {
   if (locale !== "en") return row;
   const out = { ...row };
+  if (row.code_en?.trim()) out.code = row.code_en;
   if (row.title_en?.trim()) out.title = row.title_en;
   if (row.description_en?.trim()) out.description = row.description_en;
   if (row.subtitle_en?.trim()) out.subtitle = row.subtitle_en;

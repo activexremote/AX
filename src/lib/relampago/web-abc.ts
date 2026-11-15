@@ -1521,8 +1521,10 @@ export const WEB_ABC: FlashCourse = {
   key: "web-abc",
   slug: "the-web-abc",
   code: "RELÁMPAGO 01",
+  code_en: "FLASH 01",
   title: "The Web ABC",
   claim: "Entiende. Construye. Publica.",
+  claim_en: "Understand. Build. Ship.",
   problem:
     "Sé hacer una web con HTML/CSS/IA, pero… ¿cómo coño la pongo online? ¿Dónde se guardan los datos? ¿Qué es un servidor? ¿Necesito una base de datos? ¿Qué diferencia hay entre GitHub, Vercel y Supabase?",
   lead: "En 4 horas construyes un proyecto web completo. No lo ves construir: lo construyes tú, lo conectas a una base de datos, le añades usuarios, le montas un panel y lo pones online. Y mientras lo haces, entiendes qué está pasando debajo.",

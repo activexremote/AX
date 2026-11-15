@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { actividadesCopy } from "@/lib/i18n/actividades";
 import { notFound, redirect } from "next/navigation";
 
 import { MenuAdmin, type GrupoMenu } from "@/components/admin/menu-admin";
@@ -57,6 +58,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         { href: "/admin/manual", label: a.navManual, icon: "manual" },
         { href: "/admin/modulos", label: a.navModulesShort, icon: "libro" },
         { href: "/admin/tareas", label: a.navTasksShort, icon: "tareas" },
+        { href: "/admin/respuestas", label: actividadesCopy[locale].aNav, icon: "revisar" },
         { href: "/admin/guia-profesores", label: a.navTeacherGuideShort, icon: "birrete" },
         { href: "/admin/asistente", label: a.navAssistantShort, icon: "chat" },
       ],

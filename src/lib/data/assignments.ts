@@ -1,6 +1,8 @@
 import { cache } from "react";
 
+import { localize } from "@/lib/data/localize";
 import { usuarioActual } from "@/lib/data/usuario";
+import { getLocale } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import type { AssignmentStatus } from "@/lib/supabase/types";
 
@@ -30,10 +32,11 @@ async function hydrate(
   const studentIds = [...new Set(rows.map((r) => r.student_id))];
   const moduleIds = [...new Set(rows.map((r) => r.module_id))];
 
-  const [{ data: students }, { data: modules }, { data: lessons }, { data: progress }] =
+  const [locale, { data: students }, { data: modules }, { data: lessons }, { data: progress }] =
     await Promise.all([
+      getLocale(),
       supabase.from("profiles").select("id, full_name, email").in("id", studentIds),
-      supabase.from("modules").select("id, title, slug").in("id", moduleIds),
+      supabase.from("modules").select("id, title, title_en, slug").in("id", moduleIds),
       supabase.from("lessons").select("id, module_id").in("module_id", moduleIds),
       supabase
         .from("user_lesson_progress")
@@ -42,7 +45,7 @@ async function hydrate(
     ]);
 
   const studentById = new Map((students ?? []).map((s) => [s.id, s]));
-  const moduleById = new Map((modules ?? []).map((m) => [m.id, m]));
+  const moduleById = new Map((modules ?? []).map((m) => [m.id, localize(m, locale)]));
 
   return rows.map((r) => {
     const moduleLessons = (lessons ?? []).filter((l) => l.module_id === r.module_id);

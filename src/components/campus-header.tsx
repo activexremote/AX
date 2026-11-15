@@ -5,6 +5,7 @@ import { BrandMark } from "@/components/brand-mark";
 import { LocaleToggle } from "@/components/locale-toggle";
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import { contarMisTareasAbiertas } from "@/lib/data/assignments";
+import { contarActividadesAbiertas } from "@/lib/actividades/datos";
 import { getCurrentProfile, firstName, userInitials } from "@/lib/data/profile";
 import { getI18n } from "@/lib/i18n/server";
 
@@ -22,7 +23,9 @@ export async function CampusHeader({
 }: {
   active?: "home" | "progress" | "admin" | "tasks";
 }) {
-  const [profile, { t }, abiertas] = await Promise.all([getCurrentProfile(), getI18n(), contarMisTareasAbiertas()]);
+  const [profile, { t }, asignadas, actividades] = await Promise.all([getCurrentProfile(), getI18n(), contarMisTareasAbiertas(), contarActividadesAbiertas()]);
+  // Las tareas que asigna el profesor y las actividades obligatorias que faltan.
+  const abiertas = asignadas + actividades;
   const isStaff = profile?.role === "administrador" || profile?.role === "profesor" || profile?.role === "comercial";
   const roleLabel = profile ? t.common[`role_${profile.role}` as const] : t.common.role_alumno;
 

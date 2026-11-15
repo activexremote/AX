@@ -52,10 +52,10 @@ export async function FlashPanel({ copy }: { copy: Copy }) {
             <header className="axr-flash__head">
               <div>
                 <span className="axr-c-pill axr-c-pill--accent">
-                  <Icono n="chispa" size={12} /> {c.flashTag} · {curso.code}
+                  <Icono n="chispa" size={12} /> {c.flashTag} · {(locale === "en" && curso.code_en) || curso.code}
                 </span>
                 <h2>{curso.title}</h2>
-                <p>{curso.claim}</p>
+                <p>{(locale === "en" && curso.claim_en) || curso.claim}</p>
               </div>
               <div className="axr-flash__score">
                 <strong>{pct}%</strong>

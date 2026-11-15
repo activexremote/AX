@@ -197,6 +197,16 @@ export function AssistantWidget() {
   // conversación, ni cortar una respuesta que todavía está llegando.
   const [started, setStarted] = useState(false);
 
+  // Otras partes del campus (la preparación del dry run) lo abren con un evento.
+  useEffect(() => {
+    const abrir = () => {
+      setStarted(true);
+      setOpen(true);
+    };
+    window.addEventListener("axr:abrir-asistente", abrir);
+    return () => window.removeEventListener("axr:abrir-asistente", abrir);
+  }, []);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);

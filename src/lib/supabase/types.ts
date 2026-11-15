@@ -97,6 +97,7 @@ export interface Module {
   /** A qué curso pertenece. "core" es el núcleo compartido. */
   course: CourseKey;
   /** Versión inglesa. Vacía = se sirve la española. */
+  code_en?: string | null;
   title_en?: string | null;
   description_en?: string | null;
   created_at: string;
@@ -176,7 +177,9 @@ export interface Unlock {
   course: CourseKey;
   order_index: number;
   title: string;
+  title_en?: string | null;
   description: string | null;
+  description_en?: string | null;
   /** Sólo viaja al navegador si está ganado. */
   url: string | null;
   icon: string | null;
@@ -214,7 +217,11 @@ export interface LearningPathStep {
   id: string;
   order_index: number;
   label: string;
-  state: "done" | "current" | "pending";
+  label_en?: string | null;
+  description: string | null;
+  description_en?: string | null;
+  /** No es una columna: lo calcula la pantalla si sabe calcularlo. */
+  state?: "done" | "current" | "pending";
 }
 
 export interface UserLessonProgress {

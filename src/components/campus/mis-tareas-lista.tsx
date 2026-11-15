@@ -27,6 +27,19 @@ export type MiTarea = {
   dias: number | null;
   note: string | null;
   estado: "pendiente" | "en_curso" | "pronto" | "vencida" | "completada";
+  /** Una actividad del campus (ficha, tarea, test) en vez de un módulo asignado. */
+  actividad?: {
+    titulo: string;
+    /** «Módulo 01 · Hora 1 …» */
+    donde: string;
+    href: string;
+    /** La fecha y hora límite, ya escrita: «sábado, 21 de noviembre, 09:30». */
+    vence: string | null;
+    etiqueta: string;
+    cta: string;
+    nivel: string;
+    resumen: string;
+  };
 };
 
 type Filtro = "abiertas" | "pronto" | "vencida" | "completada" | "todas";
@@ -98,6 +111,40 @@ export function ListaMisTareas({ tareas, copy, locale }: { tareas: MiTarea[]; co
       {visibles.length ? (
         <ul className="axr-mt__list">
           {visibles.map((x) => {
+            if (x.actividad) {
+              const a = x.actividad;
+              return (
+                <li key={x.id} className={`axr-mt__card axr-mt__card--${x.estado}`}>
+                  <div className="axr-mt__top">
+                    <span className={`axr-c-pill ${TONO[x.estado]}`}>{a.etiqueta}</span>
+                    <span className={`axr-mt__due axr-mt__due--${x.estado}`} title={a.vence ?? undefined}>
+                      <Icono n="calendario" size={14} /> {plazo(x)}
+                    </span>
+                  </div>
+                  <h2 className="axr-mt__title">{a.titulo}</h2>
+                  <p className="axr-mt__note">
+                    {a.donde} · {a.nivel}
+                    {a.vence ? (
+                      <>
+                        <br />
+                        <strong>{copy.tDueOn.replace("{n}", a.vence)}</strong>
+                      </>
+                    ) : null}
+                  </p>
+                  {x.note ? (
+                    <p className="axr-mt__note">
+                      <strong>{copy.tFromTeacher}</strong> {x.note}
+                    </p>
+                  ) : null}
+                  <div className="axr-mt__foot">
+                    <small className="axr-mt__summary">{a.resumen}</small>
+                    <Link href={a.href} className={`axr-btn axr-btn--small${x.estado === "completada" ? " axr-btn--ghost" : ""}`}>
+                      {a.cta} <Icono n="flecha" size={14} />
+                    </Link>
+                  </div>
+                </li>
+              );
+            }
             const pct = x.total ? Math.round((x.done / x.total) * 100) : 0;
             const cta = x.estado === "completada" ? copy.tReview : x.done > 0 ? copy.tContinue : copy.tStart;
             return (

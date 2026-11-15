@@ -32,6 +32,12 @@ import "@/components/content/inline-edit.scss";
 // se traen sus estilos. A un alumno no le llegan: el componente que los usa
 // sólo se pinta para el profesorado.
 import "@/components/admin/block-editor.scss";
+import "@/components/actividades/actividades.scss";
+import { ActividadForm } from "@/components/actividades/actividad-form";
+import { actividadesDe } from "@/lib/actividades/catalogo";
+import { cuentaComoHecha, misRespuestas, plazoDe, plazosDelModulo } from "@/lib/actividades/datos";
+import { tx } from "@/lib/actividades/tipos";
+import { actividadesCopy } from "@/lib/i18n/actividades";
 
 // ══════════════════════════════════════════════════════════
 //  Una lección (campus v2)
@@ -133,6 +139,23 @@ export default async function LessonPage({
 
   const tieneTest = Boolean(quiz && questions.length > 0);
 
+  // Las actividades de la lección (la ficha, los cuestionarios, las tareas,
+  // el test): se hacen aquí y, cuando están las obligatorias, la lección se
+  // da por terminada sola. Sin actividades, queda el «marcar como completada».
+  const actividades = actividadesDe(module.slug, lesson.order_index);
+  const [respuestas, plazos] = actividades.length ? await Promise.all([misRespuestas(), plazosDelModulo(module.id)]) : [new Map(), null];
+  const ac = actividadesCopy[locale];
+  const formatoPlazo = new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "es-ES", {
+    timeZone: ZONA,
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  });
+  const faltan = actividades.filter((a) => a.obligatoria && !cuentaComoHecha(a, respuestas.get(a.key)));
+
   // Las descargas de las horas de clase del dry run se abren cuando empieza
   // la clase: antes, el invitado ve qué material hay y una cuenta atrás. La
   // primera lección del módulo es el material previo y ésa queda abierta.
@@ -159,6 +182,8 @@ export default async function LessonPage({
           etiqueta: c.downloadsLockedLabel,
         }
       : undefined;
+
+  const bloqueoActividades = bloqueo ? fmt(ac.locked, { when: formatoPlazo.format(new Date(bloqueo.desde)) }) : null;
 
   return (
     <>
@@ -325,7 +350,7 @@ export default async function LessonPage({
                     {bloques.length === 0 ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.content_md}</ReactMarkdown> : null}
                   </>
                 ) : bloques.length ? (
-                  <BlockList blocks={bloques} storageKey={lesson.id} bloqueo={bloqueo} />
+                  <BlockList blocks={bloques} storageKey={lesson.id} bloqueo={bloqueo} locale={locale} />
                 ) : (
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.content_md}</ReactMarkdown>
                 )}
@@ -368,7 +393,45 @@ export default async function LessonPage({
               />
             ) : null}
 
-            {!tieneTest && !esRelampago ? (
+            {actividades.length ? (
+              <section className="axr-acts" id="actividades" aria-labelledby="acts-title">
+                <header className="axr-acts__head">
+                  <h2 id="acts-title">{ac.sectionTitle}</h2>
+                  <p>{ac.sectionLead}</p>
+                </header>
+                {actividades.map((a) => {
+                  const pl = plazos ? plazoDe(a, plazos) : null;
+                  return (
+                    <ActividadForm
+                      key={a.key}
+                      act={a}
+                      lessonId={lesson.id}
+                      fila={respuestas.get(a.key) ?? null}
+                      locale={locale}
+                      copy={ac}
+                      plazo={pl ? formatoPlazo.format(new Date(pl)) : null}
+                      bloqueo={bloqueoActividades}
+                    />
+                  );
+                })}
+                <div className={`axr-lsn__card axr-lsn__finish${alreadyDone ? " is-done" : ""}`}>
+                  <span className="axr-lsn__card-icon" aria-hidden>
+                    <Icono n={alreadyDone || !faltan.length ? "ok" : "tareas"} size={20} />
+                  </span>
+                  <div className="axr-lsn__finish-text">
+                    <h2>{alreadyDone ? ac.lessonDone : faltan.length ? c.finishTitle : ac.lessonAllDone}</h2>
+                    <p>{faltan.length ? fmt(ac.lessonPending, { list: faltan.map((a) => tx(a.titulo, locale)).join(" · ") }) : ac.lessonAllDone}</p>
+                  </div>
+                  {alreadyDone || !faltan.length ? (
+                    <Link href={siguienteHref} className="axr-btn">
+                      {siguienteLabel} →
+                    </Link>
+                  ) : null}
+                </div>
+              </section>
+            ) : null}
+
+            {!tieneTest && !esRelampago && !actividades.length ? (
               <section className={`axr-lsn__card axr-lsn__finish${alreadyDone ? " is-done" : ""}`}>
                 <span className="axr-lsn__card-icon" aria-hidden>
                   <Icono n="ok" size={20} />

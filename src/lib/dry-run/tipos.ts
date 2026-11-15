@@ -5,6 +5,8 @@ export type DryRun = {
   id: string;
   slug: string;
   title: string;
+  /** Migración 0036: la versión inglesa del nombre. Vacía, se usa `title`. */
+  title_en?: string | null;
   module_id: string;
   starts_at: string;
   ends_at: string;
@@ -13,6 +15,8 @@ export type DryRun = {
   classroom_code: string | null;
   meet_url: string | null;
   agenda: string;
+  /** Migración 0036: la agenda en inglés. Vacía, se usa `agenda`. */
+  agenda_en?: string | null;
   capacity: number | null;
   access_until: string | null;
   registration_open: boolean;
