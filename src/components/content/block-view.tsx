@@ -1,6 +1,7 @@
 import type { Block, ChartKind } from "@/lib/content/blocks";
 import { ChecklistBlock } from "@/components/content/checklist-block";
 import { CuentaDescargas, type BloqueoDescargas } from "@/components/content/cuenta-descargas";
+import type { Locale } from "@/lib/i18n/config";
 
 // ══════════════════════════════════════════════════════════
 //  Cómo se pinta cada bloque
@@ -26,15 +27,17 @@ function color(i: number) {
   return CAT[i % CAT.length];
 }
 
-/** Número con separador español y su unidad pegada. */
-function cifra(v: number, unit?: string) {
-  const n = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 2 }).format(v);
+const NUMEROS: Record<Locale, string> = { es: "es-ES", en: "en-GB" };
+
+/** Número con el separador del idioma y su unidad pegada. */
+function cifra(v: number, unit?: string, locale: Locale = "es") {
+  const n = new Intl.NumberFormat(NUMEROS[locale] ?? NUMEROS.es, { maximumFractionDigits: 2 }).format(v);
   return unit ? `${n} ${unit}` : n;
 }
 
 // ── Gráficos ─────────────────────────────────────────────
 
-function BarChart({ series, unit }: { series: { label: string; value: number }[]; unit?: string }) {
+function BarChart({ series, unit, locale }: { series: { label: string; value: number }[]; unit?: string; locale?: Locale }) {
   // La escala arranca en cero SIEMPRE. Empezarla en el mínimo es el truco
   // más viejo para que una diferencia del 3 % parezca que triplica.
   const tope = Math.max(...series.map((s) => Math.abs(s.value)), 1);
@@ -50,14 +53,14 @@ function BarChart({ series, unit }: { series: { label: string; value: number }[]
               style={{ width: `${(Math.abs(s.value) / tope) * 100}%`, background: color(i) }}
             />
           </span>
-          <span className="axr-blk__bars-value">{cifra(s.value, unit)}</span>
+          <span className="axr-blk__bars-value">{cifra(s.value, unit, locale)}</span>
         </li>
       ))}
     </ul>
   );
 }
 
-function LineChart({ series, unit }: { series: { label: string; value: number }[]; unit?: string }) {
+function LineChart({ series, unit, locale }: { series: { label: string; value: number }[]; unit?: string; locale?: Locale }) {
   const W = 640;
   const H = 220;
   const P = 28;
@@ -71,7 +74,7 @@ function LineChart({ series, unit }: { series: { label: string; value: number }[
 
   return (
     <div className="axr-blk__line">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={series.map((s) => `${s.label}: ${cifra(s.value, unit)}`).join(". ")}>
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={series.map((s) => `${s.label}: ${cifra(s.value, unit, locale)}`).join(". ")}>
         {/* Tres guías, no una rejilla: sitúan la vista sin competir con el dato. */}
         {[0, 0.5, 1].map((p) => (
           <line key={p} x1={P} x2={W - P} y1={P + p * (H - P * 2)} y2={P + p * (H - P * 2)} className="axr-blk__line-grid" />
@@ -84,7 +87,7 @@ function LineChart({ series, unit }: { series: { label: string; value: number }[
       <ul className="axr-blk__line-legend">
         {series.map((s, i) => (
           <li key={`${s.label}-${i}`}>
-            <strong>{cifra(s.value, unit)}</strong>
+            <strong>{cifra(s.value, unit, locale)}</strong>
             <span>{s.label}</span>
           </li>
         ))}
@@ -93,7 +96,7 @@ function LineChart({ series, unit }: { series: { label: string; value: number }[
   );
 }
 
-function PieChart({ series, unit }: { series: { label: string; value: number }[]; unit?: string }) {
+function PieChart({ series, unit, locale }: { series: { label: string; value: number }[]; unit?: string; locale?: Locale }) {
   const total = series.reduce((a, s) => a + s.value, 0) || 1;
   const R = 80;
   const C = 100;
@@ -118,7 +121,7 @@ function PieChart({ series, unit }: { series: { label: string; value: number }[]
 
   return (
     <div className="axr-blk__pie">
-      <svg viewBox="0 0 200 200" role="img" aria-label={series.map((s) => `${s.label}: ${cifra(s.value, unit)}`).join(". ")}>
+      <svg viewBox="0 0 200 200" role="img" aria-label={series.map((s) => `${s.label}: ${cifra(s.value, unit, locale)}`).join(". ")}>
         {arcos.map(({ d, s, i }) => (
           <path key={`${s.label}-${i}`} d={d} fill={color(i)} />
         ))}
@@ -129,7 +132,7 @@ function PieChart({ series, unit }: { series: { label: string; value: number }[]
             <span className="axr-blk__dot" style={{ background: color(i) }} aria-hidden />
             <span>{s.label}</span>
             <strong>
-              {cifra(s.value, unit)}
+              {cifra(s.value, unit, locale)}
               <em>{Math.round((s.value / total) * 100)} %</em>
             </strong>
           </li>
@@ -139,7 +142,7 @@ function PieChart({ series, unit }: { series: { label: string; value: number }[]
   );
 }
 
-function Chart({ kind, ...rest }: { kind: ChartKind; series: { label: string; value: number }[]; unit?: string }) {
+function Chart({ kind, ...rest }: { kind: ChartKind; series: { label: string; value: number }[]; unit?: string; locale?: Locale }) {
   if (kind === "line") return <LineChart {...rest} />;
   if (kind === "pie") return <PieChart {...rest} />;
   return <BarChart {...rest} />;
@@ -147,7 +150,21 @@ function Chart({ kind, ...rest }: { kind: ChartKind; series: { label: string; va
 
 // ── El bloque ────────────────────────────────────────────
 
-export function BlockView({ block, storageKey, bloqueo }: { block: Block; storageKey?: string; bloqueo?: BloqueoDescargas }) {
+/** Las descargas de una lección tienen un ancla fija (#descargas) para enlazarlas desde fuera. */
+const anclaDescargas = (titulo?: string) => (titulo && /^(descargas|downloads)$/i.test(titulo.trim()) ? "descargas" : undefined);
+
+export function BlockView({
+  block,
+  storageKey,
+  bloqueo,
+  locale = "es",
+}: {
+  block: Block;
+  storageKey?: string;
+  bloqueo?: BloqueoDescargas;
+  /** El idioma de las cifras de los gráficos. */
+  locale?: Locale;
+}) {
   switch (block.t) {
     case "h":
       return block.level === 3 ? (
@@ -312,7 +329,7 @@ export function BlockView({ block, storageKey, bloqueo }: { block: Block; storag
       return (
         <figure className="axr-blk__chart" data-kind={block.kind}>
           {block.title ? <figcaption className="axr-blk__chart-title">{block.title}</figcaption> : null}
-          <Chart kind={block.kind} series={block.series} unit={block.unit} />
+          <Chart kind={block.kind} series={block.series} unit={block.unit} locale={locale} />
           {block.source ? <figcaption className="axr-blk__chart-src">{block.source}</figcaption> : null}
         </figure>
       );
@@ -337,7 +354,7 @@ export function BlockView({ block, storageKey, bloqueo }: { block: Block; storag
       // no sale del servidor, así que no está ni en el HTML.
       if (bloqueo) {
         return (
-          <section className="axr-blk__resources is-locked">
+          <section className="axr-blk__resources is-locked" id={anclaDescargas(block.title)}>
             {block.title ? <strong className="axr-blk__resources-title">{block.title}</strong> : null}
             <ul>
               {block.items.map((r, i) => {
@@ -362,7 +379,7 @@ export function BlockView({ block, storageKey, bloqueo }: { block: Block; storag
         );
       }
       return (
-        <section className="axr-blk__resources">
+        <section className="axr-blk__resources" id={anclaDescargas(block.title)}>
           {block.title ? <strong className="axr-blk__resources-title">{block.title}</strong> : null}
           <ul>
             {block.items.map((r, i) => {
@@ -421,11 +438,21 @@ function slug(text: string) {
     .slice(0, 60);
 }
 
-export function BlockList({ blocks, storageKey, bloqueo }: { blocks: Block[]; storageKey?: string; bloqueo?: BloqueoDescargas }) {
+export function BlockList({
+  blocks,
+  storageKey,
+  bloqueo,
+  locale,
+}: {
+  blocks: Block[];
+  storageKey?: string;
+  bloqueo?: BloqueoDescargas;
+  locale?: Locale;
+}) {
   return (
     <div className="axr-blk">
       {blocks.map((b, i) => (
-        <BlockView key={i} block={b} storageKey={storageKey ? `${storageKey}:${i}` : undefined} bloqueo={bloqueo} />
+        <BlockView key={i} block={b} storageKey={storageKey ? `${storageKey}:${i}` : undefined} bloqueo={bloqueo} locale={locale} />
       ))}
     </div>
   );

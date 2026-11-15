@@ -1,4 +1,6 @@
+import { localize } from "@/lib/data/localize";
 import { usuarioActual } from "@/lib/data/usuario";
+import { getLocale } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type {
@@ -41,30 +43,34 @@ export async function listSubmissions(): Promise<Submission[]> {
  */
 export async function getFlashProgress(course: CourseKey) {
   const supabase = await createClient();
-  const user = await usuarioActual();
+  const [user, locale] = await Promise.all([usuarioActual(), getLocale()]);
 
-  const { data: modules } = await supabase
+  const { data: filas } = await supabase
     .from("modules")
-    .select("id, slug, title, code, order_index, accent, icon")
+    // `*` y no la lista de columnas: code_en llega con la migración 0037, y
+    // pedir por nombre una columna que todavía no existe tumba la consulta.
+    .select("*")
     .eq("course", course)
     .order("order_index");
+  const modules = (filas ?? []).map((m) => localize(m, locale));
 
-  const moduleIds = (modules ?? []).map((m) => m.id);
+  const moduleIds = modules.map((m) => m.id);
   if (moduleIds.length === 0) {
     return { modules: [], lessons: [], done: 0, passed: 0, submitted: 0, total: 0, complete: false };
   }
 
-  const { data: lessons } = await supabase
+  const { data: filasLecciones } = await supabase
     .from("lessons")
-    .select("id, module_id, slug, title, order_index, duration_min")
+    .select("id, module_id, slug, title, title_en, order_index, duration_min")
     .in("module_id", moduleIds)
     .order("order_index");
+  const lessons = (filasLecciones ?? []).map((l) => localize(l, locale));
 
-  const lessonIds = (lessons ?? []).map((l) => l.id);
+  const lessonIds = lessons.map((l) => l.id);
   if (!user || lessonIds.length === 0) {
     return {
-      modules: modules ?? [],
-      lessons: lessons ?? [],
+      modules,
+      lessons,
       done: 0,
       passed: 0,
       submitted: 0,
@@ -99,8 +105,8 @@ export async function getFlashProgress(course: CourseKey) {
   const submitted = (subs ?? []).length;
 
   return {
-    modules: modules ?? [],
-    lessons: lessons ?? [],
+    modules,
+    lessons,
     done,
     passed: passedQuizzes.size,
     submitted,
@@ -119,7 +125,7 @@ export async function getFlashProgress(course: CourseKey) {
 /** El catálogo de premios del curso, con su estado para el alumno. */
 export async function getUnlocks(course: CourseKey) {
   const supabase = await createClient();
-  const user = await usuarioActual();
+  const [user, locale] = await Promise.all([usuarioActual(), getLocale()]);
 
   const { data: unlocks } = await supabase
     .from("unlocks")
@@ -134,7 +140,7 @@ export async function getUnlocks(course: CourseKey) {
   }
 
   return ((unlocks ?? []) as Unlock[]).map((u) => ({
-    ...u,
+    ...localize(u, locale),
     earned: ganados.has(u.key),
     // ⚠︎ La URL sólo viaja si está ganada. Mandarla siempre y esconder el
     // botón con CSS es regalar el material a quien abra el inspector.

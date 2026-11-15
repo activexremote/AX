@@ -138,8 +138,12 @@ export type FlashCourse = {
   /** Segmento de URL. */
   slug: string;
   code: string;
+  /** El código en inglés, para el campus. Vacío: `code`. */
+  code_en?: string;
   title: string;
   claim: string;
+  /** El lema en inglés, para el campus. Vacío: `claim`. */
+  claim_en?: string;
   /** El problema, en las palabras del alumno. Es el copy nuclear del curso. */
   problem: string;
   lead: string;

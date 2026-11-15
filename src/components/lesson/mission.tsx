@@ -3,6 +3,7 @@
 import { useId, useState, useTransition } from "react";
 
 import { submitMission } from "@/app/(campus)/lecciones/actions";
+import { useI18n } from "@/lib/i18n/provider";
 import type { Submission } from "@/lib/supabase/types";
 
 // La misión de una lección relámpago: el enunciado, la entrega y la
@@ -55,6 +56,7 @@ export function LessonMission({
   copy,
 }: Props) {
   const uid = useId();
+  const { locale } = useI18n();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   // Se abre el formulario si no hay entrega; si la hay, se enseña la
@@ -151,7 +153,7 @@ export function LessonMission({
       {submission && !open && (
         <div className="axr-mission__done">
           <p className="axr-mission__sent">
-            {copy.sentAt} {new Date(submission.created_at).toLocaleDateString()}
+            {copy.sentAt} {new Date(submission.created_at).toLocaleDateString(locale === "en" ? "en-GB" : "es-ES")}
           </p>
           <button type="button" className="axr-btn axr-btn--ghost" onClick={() => setOpen(true)}>
             {copy.resubmit}

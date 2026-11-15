@@ -8,7 +8,7 @@ import type { PasoPreparacion } from "@/lib/dry-run/preparacion";
 
 export type PasoVista = PasoPreparacion & {
   hecho: boolean;
-  enlaces?: { texto: string; href: string; externo?: boolean }[];
+  enlaces?: { texto: string; href: string; externo?: boolean; /** Abre el chat del asistente en vez de navegar. */ asistente?: boolean }[];
 };
 
 /**
@@ -16,7 +16,9 @@ export type PasoVista = PasoPreparacion & {
  * automáticos (la cuenta, la lección abierta, la pregunta al asistente) se
  * marcan solos y no tienen casilla.
  */
-export function ListaPreparacion({ pasos }: { pasos: PasoVista[] }) {
+export type ListaCopy = { title: string; count: string; done: string; pending: string };
+
+export function ListaPreparacion({ pasos, copy }: { pasos: PasoVista[]; copy: ListaCopy }) {
   const [, startTransition] = useTransition();
   const [vista, cambiar] = useOptimistic(pasos, (actual, { key, hecho }: { key: string; hecho: boolean }) =>
     actual.map((p) => (p.key === key ? { ...p, hecho } : p)),
@@ -28,10 +30,10 @@ export function ListaPreparacion({ pasos }: { pasos: PasoVista[] }) {
     <section className="axr-c-card axr-prep__list" aria-labelledby="prep-lista">
       <div className="axr-prep__list-head">
         <h2 id="prep-lista" className="axr-c-card__title">
-          Tu lista antes de la clase
+          {copy.title}
         </h2>
         <span className="axr-c-pill axr-c-pill--accent">
-          {hechos} de {vista.length}
+          {copy.count.replace("{a}", String(hechos)).replace("{b}", String(vista.length))}
         </span>
       </div>
       <span className="axr-c-progress" aria-hidden>
@@ -42,7 +44,7 @@ export function ListaPreparacion({ pasos }: { pasos: PasoVista[] }) {
         {vista.map((p) => (
           <li key={p.key} data-done={p.hecho || undefined}>
             {p.automatico ? (
-              <span className="axr-prep__mark" aria-label={p.hecho ? "Hecho" : "Pendiente"}>
+              <span className="axr-prep__mark" aria-label={p.hecho ? copy.done : copy.pending}>
                 {p.hecho ? <Icono n="ok" size={14} /> : null}
               </span>
             ) : (
@@ -65,11 +67,17 @@ export function ListaPreparacion({ pasos }: { pasos: PasoVista[] }) {
               <p>{p.detalle}</p>
               {p.enlaces?.length ? (
                 <p className="axr-prep__links">
-                  {p.enlaces.map((l) => (
-                    <a key={l.href} href={l.href} {...(l.externo ? { target: "_blank", rel: "noreferrer" } : {})}>
-                      {l.texto} <Icono n="flecha" size={12} />
-                    </a>
-                  ))}
+                  {p.enlaces.map((l) =>
+                    l.asistente ? (
+                      <button key={l.href} type="button" className="axr-prep__link-btn" onClick={() => window.dispatchEvent(new Event("axr:abrir-asistente"))}>
+                        {l.texto} <Icono n="flecha" size={12} />
+                      </button>
+                    ) : (
+                      <a key={l.href} href={l.href} {...(l.externo ? { target: "_blank", rel: "noreferrer" } : {})}>
+                        {l.texto} <Icono n="flecha" size={12} />
+                      </a>
+                    ),
+                  )}
                 </p>
               ) : null}
             </div>

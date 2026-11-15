@@ -34,7 +34,7 @@ const texto = (v: FormDataEntryValue | null) => String(v ?? "").trim().slice(0, 
 /** El formulario de feedback. Se puede volver a enviar: manda el último. */
 export async function enviarFeedback(guestId: string, formData: FormData) {
   const user = await quien();
-  if (!user) return { error: "Tu sesión ha caducado. Vuelve a entrar." };
+  if (!user) return { error: "errSession" };
 
   const admin = createAdminClient();
   const { data: guest } = await admin
@@ -44,7 +44,7 @@ export async function enviarFeedback(guestId: string, formData: FormData) {
     .eq("user_id", user.id)
     .in("status", CON_PLAZA)
     .maybeSingle();
-  if (!guest) return { error: "No encontramos tu plaza." };
+  if (!guest) return { error: "errNoSeat" };
 
   const pagaria = String(formData.get("pagaria") ?? "");
   const feedback: Partial<Feedback> = {
@@ -59,13 +59,13 @@ export async function enviarFeedback(guestId: string, formData: FormData) {
     cambiaria: texto(formData.get("cambiaria")),
     comentario: texto(formData.get("comentario")),
   };
-  if (feedback.nps === undefined) return { error: "Falta la nota de 0 a 10." };
+  if (feedback.nps === undefined) return { error: "errNps" };
 
   const { error } = await admin
     .from("dry_run_guests")
     .update({ feedback, feedback_at: new Date().toISOString() })
     .eq("id", guest.id);
-  if (error) return { error: "No se pudo guardar. Inténtalo otra vez." };
+  if (error) return { error: "errSave" };
 
   // El recordatorio de feedback ya no toca.
   await admin
@@ -87,6 +87,15 @@ export async function enviarFeedback(guestId: string, formData: FormData) {
     ].filter(Boolean),
   }).catch(() => undefined);
 
+  revalidatePath("/preparacion");
+  return { ok: true };
+}
+
+/** La prueba de cámara y micrófono del campus ha ido bien: marca el paso. */
+export async function equipoProbado() {
+  const user = await quien();
+  if (!user) return { error: "errSession" };
+  await marcarPaso(user.id, "equipo");
   revalidatePath("/preparacion");
   return { ok: true };
 }

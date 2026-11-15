@@ -8,25 +8,17 @@ import type { Locale } from "@/lib/i18n/config";
 //  inventados que sigue usando la portada, con su aviso de «datos de muestra».
 //  Aquí no hace falta ese aviso porque aquí no hay nada inventado.
 //
-//  ⚠︎ TODO lo que se afirma abajo está sacado de fuentes públicas y se puede
-//  comprobar (el enlace a LinkedIn está en la propia ficha):
+//  ⚠︎ Lo que se afirma abajo es la bio que dio la escuela (oct. 2026),
+//  contrastada con su perfil público:
 //
-//   · Broadcom Aggregator Advisor — su cargo actual, el que da el título de
-//     su perfil.
-//   · EMEA Partner Growth Manager en Deel, y antes Lead Partner Manager en
-//     Oyster — dos plataformas de contratación internacional que se estudian
-//     en el curso, así que no es relleno de currículum: es exactamente la
-//     materia.
-//   · Basado en Dubái, que es además donde está la sede de la escuela.
-//   · Goldsmiths, University of London.
+//   · Más de 12 años levantando ecosistemas de venta directa y de canal en
+//     tecnología, en seis continentes: Broadcom (hoy), Deel y Rossum AI.
+//   · Basado en Dubái, experto en nomadismo digital.
+//   · Viene de la psicología y es autor publicado sobre Psicología Cuántica.
 //
-//  Lo que NO se publica, de momento: hay fuentes que lo describen también
-//  como autor de novela especializado en Quantum Psychology, con formación
-//  en Psicología Clínica y un MRes en métodos de investigación. Encaja —el
-//  partner Quantum Mindset Solutions apunta ahí—, pero los buscadores avisan
-//  de que podría tratarse de un homónimo, y una credencial atribuida a una
-//  persona con nombre y apellidos no se publica con un «probablemente».
-//  Cuando él lo confirme, se añade.
+//  Nunca trabajó en Oyster: los buscadores le atribuían una publicación de
+//  otro perfil. No lo pongas. Tampoco Goldsmiths ni la lista de países, que
+//  no tienen fuente.
 // ══════════════════════════════════════════════════════════
 
 export type Teacher = {
@@ -47,13 +39,13 @@ export const TEACHERS: readonly Teacher[] = [
     name: "Isaac R. Betanzos",
     url: "https://ae.linkedin.com/in/isaacrbetanzos",
     es: {
-      role: "Broadcom Aggregator Advisor · Fundador",
-      bio: "Lleva años montando alianzas internacionales desde Dubái: hoy asesora a Broadcom a través de su agregador regional, y antes llevó el crecimiento de partners en EMEA en Deel y la gestión de partners en Oyster. Es decir, ha trabajado dentro de las plataformas con las que hoy se contrata talento remoto en cualquier país, que es justo lo que se enseña en el curso. Formado en Goldsmiths, University of London, y con proyectos en Reino Unido, Sudáfrica, Kenia, Grecia y Chequia.",
+      role: "Cofundador · Negocio y alianzas",
+      bio: "Más de 12 años levantando ecosistemas de venta directa y de canal en empresas de tecnología, en seis continentes: Broadcom, Deel o Rossum AI, entre otras. Es decir, ha trabajado dentro de las plataformas con las que hoy se contrata talento remoto en cualquier país, como Deel, que es justo lo que se enseña en el curso. Vive en Dubái, donde ejerce como experto en nomadismo digital, y viene de la psicología: es autor publicado sobre Psicología Cuántica.",
       tags: ["Contratación internacional", "Alianzas y partnerships", "Trabajo sin fronteras"],
     },
     en: {
-      role: "Broadcom Aggregator Advisor · Founder",
-      bio: "He has spent years building international partnerships out of Dubai: today he advises Broadcom through its regional aggregator, and before that he ran EMEA partner growth at Deel and partner management at Oyster. Which means he has worked inside the platforms companies now use to hire remote talent in any country — exactly what the course teaches. Educated at Goldsmiths, University of London, with projects across the UK, South Africa, Kenya, Greece and Czechia.",
+      role: "Co-founder · Business & partnerships",
+      bio: "12+ years building direct and channel sales ecosystems at technology companies across six continents — Broadcom, Deel and Rossum AI among them. Which means he has worked inside the platforms companies now use to hire remote talent in any country, Deel included — exactly what the course teaches. Based in Dubai as a digital-nomad expert, with a background in psychology and published work on Quantum Psychology.",
       tags: ["International hiring", "Partnerships", "Working without borders"],
     },
   },

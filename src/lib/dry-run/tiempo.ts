@@ -67,24 +67,44 @@ export function deCampoLocal(valor: string): Date | null {
   return enMadrid(+m[1], +m[2], +m[3], +m[4], +m[5]);
 }
 
-const fechaLarga = new Intl.DateTimeFormat("es-ES", { timeZone: ZONA, weekday: "long", day: "numeric", month: "long" });
-const fechaCorta = new Intl.DateTimeFormat("es-ES", { timeZone: ZONA, day: "numeric", month: "short" });
-const hora = new Intl.DateTimeFormat("es-ES", { timeZone: ZONA, hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
-const fechaHora = new Intl.DateTimeFormat("es-ES", { timeZone: ZONA, day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+/** El idioma de las fechas. Por defecto, español: los correos van siempre en español. */
+export type IdiomaFecha = "es" | "en";
 
-/** «sábado, 21 de noviembre» */
-export const diaLargo = (d: Date | string) => fechaLarga.format(new Date(d));
+const BCP47: Record<IdiomaFecha, string> = { es: "es-ES", en: "en-GB" };
+
+const formatos = {
+  largo: { timeZone: ZONA, weekday: "long", day: "numeric", month: "long" },
+  corto: { timeZone: ZONA, day: "numeric", month: "short" },
+  hora: { timeZone: ZONA, hour: "2-digit", minute: "2-digit", hourCycle: "h23" },
+  fechaHora: { timeZone: ZONA, day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" },
+} satisfies Record<string, Intl.DateTimeFormatOptions>;
+
+// Un formateador por formato e idioma, creado la primera vez que se pide.
+const cache = new Map<string, Intl.DateTimeFormat>();
+function formateador(f: keyof typeof formatos, locale: IdiomaFecha): Intl.DateTimeFormat {
+  const k = `${f}:${locale}`;
+  let x = cache.get(k);
+  if (!x) {
+    x = new Intl.DateTimeFormat(BCP47[locale] ?? BCP47.es, formatos[f]);
+    cache.set(k, x);
+  }
+  return x;
+}
+
+/** «sábado, 21 de noviembre» · en: «Saturday 21 November» */
+export const diaLargo = (d: Date | string, locale: IdiomaFecha = "es") => formateador("largo", locale).format(new Date(d));
 /** «21 nov» */
-export const diaCorto = (d: Date | string) => fechaCorta.format(new Date(d));
+export const diaCorto = (d: Date | string, locale: IdiomaFecha = "es") => formateador("corto", locale).format(new Date(d));
 /** «09:30» */
-export const horaMadrid = (d: Date | string) => hora.format(new Date(d));
+export const horaMadrid = (d: Date | string, locale: IdiomaFecha = "es") => formateador("hora", locale).format(new Date(d));
 /** «21 nov, 09:30» */
-export const fechaYHora = (d: Date | string) => fechaHora.format(new Date(d));
+export const fechaYHora = (d: Date | string, locale: IdiomaFecha = "es") => formateador("fechaHora", locale).format(new Date(d));
 
-/** «Sábado, 21 de noviembre · 09:30–14:00 (hora de Madrid)» */
-export function cuandoEs(inicio: string, fin: string): string {
-  const dia = diaLargo(inicio);
-  return `${dia.charAt(0).toUpperCase()}${dia.slice(1)} · ${horaMadrid(inicio)}–${horaMadrid(fin)} (hora de Madrid)`;
+/** «Sábado, 21 de noviembre · 09:30–14:00 (hora de Madrid)» · en: «Saturday 21 November · 09:30–14:00 (Madrid time)» */
+export function cuandoEs(inicio: string, fin: string, locale: IdiomaFecha = "es"): string {
+  const dia = diaLargo(inicio, locale);
+  const zona = locale === "en" ? "(Madrid time)" : "(hora de Madrid)";
+  return `${dia.charAt(0).toUpperCase()}${dia.slice(1)} · ${horaMadrid(inicio, locale)}–${horaMadrid(fin, locale)} ${zona}`;
 }
 
 /** Fecha en el formato de Google Calendar y de los .ics: 20261121T083000Z */
