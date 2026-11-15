@@ -23,6 +23,8 @@ import { CampusLessonEditor } from "@/components/content/campus-lesson-editor";
 import { parseBlocks } from "@/lib/content/blocks";
 import { EditLangSwitch, readEditLang } from "@/components/content/edit-lang-switch";
 import { getCurrentProfile } from "@/lib/data/profile";
+import { getMiDryRun } from "@/lib/dry-run/datos";
+import { ZONA } from "@/lib/dry-run/tiempo";
 import { editorCopy } from "@/lib/i18n/editor";
 import "@/components/content/content.scss";
 import "@/components/content/inline-edit.scss";
@@ -90,7 +92,7 @@ export default async function LessonPage({
   const { id } = await params;
   const { editar } = await searchParams;
   // La lección y quién la mira, a la vez.
-  const [data, perfil] = await Promise.all([getLessonForView(id), getCurrentProfile()]);
+  const [data, perfil, dryRun] = await Promise.all([getLessonForView(id), getCurrentProfile(), getMiDryRun()]);
   if (!data) notFound();
   const { lesson, module, siblings, quiz, questions, raw } = data;
   // Una lección relámpago se distingue por tener misión: el resto de la
@@ -130,6 +132,33 @@ export default async function LessonPage({
   const numero = pos >= 0 ? pos + 1 : lesson.order_index;
 
   const tieneTest = Boolean(quiz && questions.length > 0);
+
+  // Las descargas de las horas de clase del dry run se abren cuando empieza
+  // la clase: antes, el invitado ve qué material hay y una cuenta atrás. La
+  // primera lección del módulo es el material previo y ésa queda abierta.
+  // El equipo lo ve todo siempre.
+  const inicioClase = dryRun?.run.module_id === module.id ? dryRun.run.starts_at : null;
+  const ahora = Date.now();
+  const bloqueo =
+    !esEquipo && inicioClase && pos > 0 && ahora < new Date(inicioClase).getTime()
+      ? {
+          desde: inicioClase,
+          servidor: ahora,
+          aviso: fmt(c.downloadsLocked, {
+            when: new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "es-ES", {
+              timeZone: ZONA,
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              hour: "2-digit",
+              minute: "2-digit",
+              hourCycle: "h23",
+            }).format(new Date(inicioClase)),
+          }),
+          unidades: c.downloadsUnits,
+          etiqueta: c.downloadsLockedLabel,
+        }
+      : undefined;
 
   return (
     <>
@@ -296,7 +325,7 @@ export default async function LessonPage({
                     {bloques.length === 0 ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.content_md}</ReactMarkdown> : null}
                   </>
                 ) : bloques.length ? (
-                  <BlockList blocks={bloques} storageKey={lesson.id} />
+                  <BlockList blocks={bloques} storageKey={lesson.id} bloqueo={bloqueo} />
                 ) : (
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.content_md}</ReactMarkdown>
                 )}

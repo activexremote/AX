@@ -602,7 +602,8 @@
 
     li + li { border-top: 1px solid var(--axr-border); }
 
-    a {
+    a,
+    &-row {
       display: grid;
       grid-template-columns: 3rem 1fr auto;
       gap: 0.75rem;
@@ -851,6 +852,51 @@
       &[data-kind="sheet"] { background: #defbe6; color: #198038; }
       &[data-kind="doc"] { background: #edf5ff; color: #0f62fe; }
       &[data-kind="slides"] { background: #fff4ef; color: #c93b12; }
+    }
+
+    // Cerradas hasta la clase: la lista atenuada y, debajo, la cuenta atrás.
+    &.is-locked ul { opacity: 0.55; }
+    &.is-locked &-row { cursor: not-allowed; }
+  }
+
+  &__locked {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    margin-top: 0.6rem;
+    padding: 0.85rem 1rem;
+    border-radius: 14px;
+    background: var(--blk-accent-bg);
+    color: #2b2b33;
+
+    p {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+      margin: 0;
+      flex: 1 1 16rem;
+      font-size: 0.875rem;
+      line-height: 1.45;
+
+      svg { flex: none; margin-top: 0.15rem; color: var(--blk-accent); }
+    }
+
+    &-count {
+      display: flex;
+      gap: 0.4rem;
+
+      > span {
+        min-width: 3.1rem;
+        padding: 0.4rem 0.35rem 0.3rem;
+        border-radius: 10px;
+        background: #ffffff;
+        text-align: center;
+      }
+
+      strong { display: block; font-size: 1.15rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; color: var(--blk-accent); }
+      small { display: block; margin-top: 0.2rem; font-size: 0.625rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--blk-muted); }
     }
   }
 

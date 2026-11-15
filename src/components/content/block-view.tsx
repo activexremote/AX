@@ -1,5 +1,6 @@
 import type { Block, ChartKind } from "@/lib/content/blocks";
 import { ChecklistBlock } from "@/components/content/checklist-block";
+import { CuentaDescargas, type BloqueoDescargas } from "@/components/content/cuenta-descargas";
 
 // ══════════════════════════════════════════════════════════
 //  Cómo se pinta cada bloque
@@ -146,7 +147,7 @@ function Chart({ kind, ...rest }: { kind: ChartKind; series: { label: string; va
 
 // ── El bloque ────────────────────────────────────────────
 
-export function BlockView({ block, storageKey }: { block: Block; storageKey?: string }) {
+export function BlockView({ block, storageKey, bloqueo }: { block: Block; storageKey?: string; bloqueo?: BloqueoDescargas }) {
   switch (block.t) {
     case "h":
       return block.level === 3 ? (
@@ -332,6 +333,34 @@ export function BlockView({ block, storageKey }: { block: Block; storageKey?: st
       );
 
     case "resources":
+      // Bloqueadas: se ve qué hay, pero sin enlace. La dirección del archivo
+      // no sale del servidor, así que no está ni en el HTML.
+      if (bloqueo) {
+        return (
+          <section className="axr-blk__resources is-locked">
+            {block.title ? <strong className="axr-blk__resources-title">{block.title}</strong> : null}
+            <ul>
+              {block.items.map((r, i) => {
+                const ext = resourceKind(r.url);
+                return (
+                  <li key={i}>
+                    <span className="axr-blk__resources-row" aria-disabled>
+                      <span className="axr-blk__resources-kind" data-kind={ext.kind}>
+                        {ext.label}
+                      </span>
+                      <span className="axr-blk__resources-text">
+                        <span>{r.label}</span>
+                        {r.note ? <em>{r.note}</em> : null}
+                      </span>
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+            <CuentaDescargas {...bloqueo} />
+          </section>
+        );
+      }
       return (
         <section className="axr-blk__resources">
           {block.title ? <strong className="axr-blk__resources-title">{block.title}</strong> : null}
@@ -392,11 +421,11 @@ function slug(text: string) {
     .slice(0, 60);
 }
 
-export function BlockList({ blocks, storageKey }: { blocks: Block[]; storageKey?: string }) {
+export function BlockList({ blocks, storageKey, bloqueo }: { blocks: Block[]; storageKey?: string; bloqueo?: BloqueoDescargas }) {
   return (
     <div className="axr-blk">
       {blocks.map((b, i) => (
-        <BlockView key={i} block={b} storageKey={storageKey ? `${storageKey}:${i}` : undefined} />
+        <BlockView key={i} block={b} storageKey={storageKey ? `${storageKey}:${i}` : undefined} bloqueo={bloqueo} />
       ))}
     </div>
   );
