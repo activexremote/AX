@@ -8,6 +8,7 @@ import { tx, type FilaRespuesta } from "@/lib/actividades/tipos";
 import { actividadesCopy } from "@/lib/i18n/actividades";
 import { getI18n } from "@/lib/i18n/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { alumnosVisibles, puedeVer } from "@/lib/actividades/acceso";
 import "@/components/actividades/actividades.scss";
 import "@/app/admin/respuestas/respuestas.scss";
 
@@ -21,6 +22,8 @@ export default async function RespuestaPage({ params }: { params: Promise<{ id: 
   const fila = data as FilaRespuesta | null;
   const act = fila ? actividad(fila.activity_key) : null;
   if (!fila || !act || act.anonima) notFound();
+  // Un profesor sólo ve las de sus alumnos.
+  if (!puedeVer(await alumnosVisibles(), fila.user_id)) notFound();
   const [{ data: perfil }, { data: leccion }] = await Promise.all([
     admin.from("profiles").select("full_name, email").eq("id", fila.user_id).maybeSingle(),
     admin.from("lessons").select("title").eq("id", fila.lesson_id).maybeSingle(),
@@ -37,11 +40,16 @@ export default async function RespuestaPage({ params }: { params: Promise<{ id: 
         <div>
           <h1>{tx(act.titulo, locale)}</h1>
           <p>
-            <strong>{perfil?.full_name || perfil?.email}</strong> · {perfil?.email} · {leccion?.title}
+            <Link href={`/admin/respuestas/alumnos/${fila.user_id}`}>
+              <strong>{perfil?.full_name || perfil?.email}</strong>
+            </Link>{" "}
+            · {perfil?.email} · {leccion?.title}
             <br />
             {c.status[fila.status]}
             {fila.submitted_at ? ` · ${c.submittedOn.replace("{d}", fecha(fila.submitted_at))}` : ""}
             {fila.reviewed_at ? ` · ${c.reviewedOn.replace("{d}", fecha(fila.reviewed_at))}` : ""} · {c.aAttempts.replace("{n}", String(fila.attempts))}
+            {fila.grade !== null && fila.grade !== undefined ? ` · ${c.gradeLabel}: ${String(fila.grade).replace(".", ",")}/10` : ""}
+            {fila.notified_at ? ` · ${c.aNotifiedOn.replace("{d}", fecha(fila.notified_at))}` : ""}
           </p>
         </div>
       </div>
@@ -57,7 +65,7 @@ export default async function RespuestaPage({ params }: { params: Promise<{ id: 
             <FormRevision
               id={fila.id}
               rubrica={(act.rubrica ?? []).map((r) => ({ k: r.k, titulo: tx(r.titulo, locale), niveles: r.niveles.map((n) => tx(n, locale)) }))}
-              inicial={{ rubric: fila.rubric ?? {}, feedback: fila.feedback ?? "" }}
+              inicial={{ rubric: fila.rubric ?? {}, feedback: fila.feedback ?? "", nota: fila.grade !== null && fila.grade !== undefined ? Number(fila.grade) : null }}
               copy={c}
             />
           </aside>

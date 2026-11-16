@@ -106,7 +106,19 @@ export type FilaRespuesta = {
   feedback: string | null;
   reviewed_at: string | null;
   updated_at: string;
+  /** La nota del profesor, de 0 a 10. */
+  grade?: number | null;
+  /** Cuándo se avisó al alumno por correo de la corrección. */
+  notified_at?: string | null;
 };
+
+/** La nota que sugiere la rúbrica (cada criterio de 1 a 4), sobre 10. */
+export function notaDeRubrica(rubric: Record<string, number> | null | undefined, criterios: number): number | null {
+  if (!rubric || !criterios) return null;
+  const vals = Object.values(rubric).filter((n) => Number.isFinite(n));
+  if (vals.length < criterios) return null;
+  return Math.round((vals.reduce((s, n) => s + n, 0) / (4 * criterios)) * 100) / 10;
+}
 
 export const tx = (t: Texto | undefined, locale: Locale) => (t ? t[locale] || t.es : "");
 

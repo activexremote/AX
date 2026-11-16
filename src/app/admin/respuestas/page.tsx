@@ -8,6 +8,7 @@ import { CON_PLAZA } from "@/lib/dry-run/tipos";
 import { actividadesCopy } from "@/lib/i18n/actividades";
 import { getI18n } from "@/lib/i18n/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { alumnosVisibles } from "@/lib/actividades/acceso";
 import "@/app/admin/respuestas/respuestas.scss";
 
 // ══════════════════════════════════════════════════════════
@@ -25,7 +26,10 @@ const TONO: Record<FilaRespuesta["status"], string> = { borrador: "warn", enviad
 export default async function RespuestasPage({ searchParams }: { searchParams: Promise<{ act?: string }> }) {
   const [{ act: elegida }, { locale }] = await Promise.all([searchParams, getI18n()]);
   const c = actividadesCopy[locale];
-  const { filas, quien } = await todasLasRespuestas(ACTIVIDADES.map((a) => a.key));
+  const [todas, visibles] = await Promise.all([todasLasRespuestas(ACTIVIDADES.map((a) => a.key)), alumnosVisibles()]);
+  // Un profesor ve las de sus alumnos; la administración, todas.
+  const filas = todas.filas.filter((x) => visibles.todos || visibles.ids.has(x.user_id));
+  const quien = todas.quien;
   const act = elegida ? buscar(elegida) : null;
   const fecha = (iso: string) => new Date(iso).toLocaleString(locale === "en" ? "en-GB" : "es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" });
 
@@ -49,7 +53,7 @@ export default async function RespuestasPage({ searchParams }: { searchParams: P
       const { data: guests } = runs?.length
         ? await admin
             .from("dry_run_guests")
-            .select("user_id, name, email")
+            .select("user_id, full_name, email")
             .in(
               "dry_run_id",
               runs.map((r) => r.id),
@@ -59,12 +63,12 @@ export default async function RespuestasPage({ searchParams }: { searchParams: P
         : { data: [] };
       const conRespuesta = new Set(filas.filter((x) => x.activity_key === act.key).map((x) => x.user_id));
       sinEmpezar = (guests ?? [])
-        .filter((g) => !conRespuesta.has(g.user_id as string))
-        .map((g) => ({ id: g.user_id as string, nombre: (g.name as string) || (g.email as string) || "—" }));
+        .filter((g) => !conRespuesta.has(g.user_id as string) && (visibles.todos || visibles.ids.has(g.user_id as string)))
+        .map((g) => ({ id: g.user_id as string, nombre: (g.full_name as string) || (g.email as string) || "—" }));
     }
   }
 
-  const visibles = act ? filas.filter((x) => x.activity_key === act.key) : filas.filter((x) => x.status !== "borrador");
+  const mostradas = act ? filas.filter((x) => x.activity_key === act.key) : filas.filter((x) => x.status !== "borrador");
 
   return (
     <div className="axr-admin-page axr-resp">
@@ -76,6 +80,12 @@ export default async function RespuestasPage({ searchParams }: { searchParams: P
       </div>
 
       <div className="axr-resp__grid">
+        <Link href="/admin/respuestas/alumnos" className="axr-resp__tile">
+          <strong>
+            <Icono n="usuarios" size={14} /> {c.aByStudent}
+          </strong>
+          <span>{c.aByStudentTile}</span>
+        </Link>
         <Link href="/admin/respuestas" className={`axr-resp__tile${!act ? " is-on" : ""}`}>
           <strong>{c.aAll}</strong>
           <span>
@@ -101,12 +111,12 @@ export default async function RespuestasPage({ searchParams }: { searchParams: P
       </div>
 
       {act?.anonima ? (
-        <Anonima act={act} filas={visibles} locale={locale} c={c} />
+        <Anonima act={act} filas={mostradas} locale={locale} c={c} />
       ) : (
         <>
-          {act?.tipo === "diagnostico" || act?.tipo === "test" || act?.tipo === "juego" ? <Media act={act} filas={visibles} locale={locale} c={c} /> : null}
+          {act?.tipo === "diagnostico" || act?.tipo === "test" || act?.tipo === "juego" ? <Media act={act} filas={mostradas} locale={locale} c={c} /> : null}
 
-          {visibles.length ? (
+          {mostradas.length ? (
             <div className="axr-resp__table">
               <table className="axr-admin-table">
                 <thead>
@@ -120,13 +130,15 @@ export default async function RespuestasPage({ searchParams }: { searchParams: P
                   </tr>
                 </thead>
                 <tbody>
-                  {visibles.map((x) => {
+                  {mostradas.map((x) => {
                     const a = buscar(x.activity_key);
                     if (!a || a.anonima) return null;
                     return (
                       <tr key={x.id}>
                         <td>
-                          <strong>{quien.get(x.user_id)?.nombre ?? "—"}</strong>
+                          <Link href={`/admin/respuestas/alumnos/${x.user_id}`}>
+                            <strong>{quien.get(x.user_id)?.nombre ?? "—"}</strong>
+                          </Link>
                           <br />
                           <small>{quien.get(x.user_id)?.email}</small>
                         </td>
@@ -170,6 +182,7 @@ export default async function RespuestasPage({ searchParams }: { searchParams: P
 
 function resultadoCorto(a: Actividad, x: FilaRespuesta, locale: "es" | "en") {
   const r = x.result ?? (x.status !== "borrador" ? calcular(a, x.answers) : null);
+  if (x.grade !== null && x.grade !== undefined) return `${String(x.grade).replace(".", ",")}/10`;
   if (!r) return x.rubric ? Object.values(x.rubric).join(" · ") : "—";
   if (a.tipo === "diagnostico") return `${a.estadios?.[r.estadio ?? 0] ? tx(a.estadios[r.estadio ?? 0].titulo, locale) : ""} · ${r.pct} %`;
   return `${r.puntos}/${r.max}`;
