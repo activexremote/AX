@@ -28,6 +28,8 @@ export type AlumnoSeg = {
   /** Pasos de la preparación del dry run hechos, o null si no es invitado. */
   preparacion: { hechos: number; total: number } | null;
   completadas: Set<string>;
+  /** Lecciones en las que ha entrado alguna vez. */
+  visitadas: Set<string>;
   /** Lecciones que para él aún no se han abierto (horas del dry run antes de la clase). */
   cerradas: Set<string>;
   abiertos: Map<string, Map<string, string>>;
@@ -128,6 +130,7 @@ export async function seguimiento() {
         email: (p.email as string) ?? "",
         preparacion: g ? { hechos: PASOS.filter((x) => pasos[x.key]).length, total: PASOS.length } : null,
         completadas: new Set(mios.filter((x) => x.status === "completada").map((x) => x.lesson_id as string)),
+        visitadas: new Set(mios.map((x) => x.lesson_id as string)),
         cerradas,
         abiertos,
         respuestas,
@@ -173,6 +176,43 @@ export function resumenDe(s: Seguimiento, a: AlumnoSeg) {
     media: notas.length ? Math.round((notas.reduce((t, n) => t + n, 0) / notas.length) * 10) / 10 : null,
     porCorregir,
   };
+}
+
+export type EstadoLeccion = "cerrada" | "hecha" | "en-curso" | "sin-empezar";
+
+/** Cómo va un alumno en una lección: estado, material, actividades y si tiene algo por corregir. */
+export function estadoLeccion(s: Seguimiento, l: LeccionSeg, a: AlumnoSeg) {
+  const acts = actividadesDeLeccion(s, l);
+  const obl = acts.filter((x) => x.obligatoria);
+  const m = materialDe(l, a);
+  const enviadas = acts.filter((x) => {
+    const r = a.respuestas.get(x.key);
+    return r && r.status !== "borrador";
+  });
+  const pendiente = acts.some((x) => x.revisa && a.respuestas.get(x.key)?.status === "enviada");
+  const estado: EstadoLeccion = a.cerradas.has(l.id)
+    ? "cerrada"
+    : a.completadas.has(l.id)
+      ? "hecha"
+      : a.visitadas.has(l.id) || m.abiertos > 0 || enviadas.length > 0
+        ? "en-curso"
+        : "sin-empezar";
+  return { estado, material: m, actividades: { a: obl.filter((x) => hechaPor(x, a)).length, b: obl.length }, pendiente };
+}
+
+/** Lecciones completadas sobre las que ya tiene abiertas. */
+export function avanceDe(s: Seguimiento, a: AlumnoSeg) {
+  const abiertas = s.lecciones.filter((l) => !a.cerradas.has(l.id));
+  const hechas = abiertas.filter((l) => a.completadas.has(l.id)).length;
+  return { hechas, total: abiertas.length, pct: abiertas.length ? Math.round((hechas / abiertas.length) * 100) : 0 };
+}
+
+/** «Hora 1 · Del sitio…» → «H1»; «Antes de la clase…» → «Previo». */
+export function etiquetaCorta(title: string, i: number, previo: string) {
+  const h = title.match(/^(?:hora|hour)\s*(\d+)/i);
+  if (h) return `H${h[1]}`;
+  if (/^(antes|before)/i.test(title)) return previo;
+  return `L${i + 1}`;
 }
 
 /** Lo de la ficha que no hace falta en las listas: profesores, asistente e historial. */
