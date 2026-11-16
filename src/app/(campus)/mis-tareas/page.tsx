@@ -65,7 +65,8 @@ export default async function MisTareasPage() {
           : st === "borrador" || st === "devuelta" || (x.fila && x.actividad.tipo === "test")
             ? "en_curso"
             : "pendiente";
-    const etiqueta = st === "devuelta" ? ac.status.devuelta : x.hecha ? ac.status[st === "revisada" ? "revisada" : "enviada"] : copy.tStatus[estado];
+    const nota = x.fila?.grade !== null && x.fila?.grade !== undefined ? ` · ${String(x.fila.grade).replace(".", ",")}/10` : "";
+    const etiqueta = (st === "devuelta" ? ac.status.devuelta : x.hecha ? ac.status[st === "revisada" ? "revisada" : "enviada"] : copy.tStatus[estado]) + nota;
     return {
       id: `act-${x.actividad.key}`,
       module_title: x.moduleTitle,

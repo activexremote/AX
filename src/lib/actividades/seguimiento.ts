@@ -5,6 +5,7 @@ import { actividadesDelModulo, modulosConActividades } from "@/lib/actividades/c
 import { cuentaComoHecha, type Actividad, type FilaRespuesta } from "@/lib/actividades/tipos";
 import { CON_PLAZA } from "@/lib/dry-run/tipos";
 import { PASOS } from "@/lib/dry-run/preparacion";
+import { alumnosVisibles } from "@/lib/actividades/acceso";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // ══════════════════════════════════════════════════════════
@@ -16,7 +17,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 //  salen: ni siquiera si alguien la ha contestado.
 // ══════════════════════════════════════════════════════════
 
-const COLUMNAS = "id, user_id, lesson_id, activity_key, answers, result, status, attempts, submitted_at, rubric, feedback, reviewed_at, updated_at";
+const COLUMNAS = "id, user_id, lesson_id, activity_key, answers, result, status, attempts, submitted_at, rubric, feedback, reviewed_at, updated_at, grade, notified_at";
 
 export type LeccionSeg = { id: string; moduleId: string; orden: number; title: string; recursos: { url: string; label: string }[]; fila: { content_blocks: unknown; content_blocks_en: unknown } };
 export type AlumnoSeg = {
@@ -46,10 +47,11 @@ export async function seguimiento() {
     fila: { content_blocks: l.content_blocks, content_blocks_en: l.content_blocks_en },
   }));
   const lessonIds = lecciones.map((l) => l.id);
+  if (!lessonIds.length) lessonIds.push("00000000-0000-0000-0000-000000000000");
   const actividades = (modulos ?? []).flatMap((m) => actividadesDelModulo(m.slug as string)).filter((a) => !a.anonima);
 
   const { data: runs } = await admin.from("dry_runs").select("id").in("module_id", ids);
-  const [{ data: guests }, { data: progreso }, { data: aperturas }, { data: resp }] = await Promise.all([
+  const [{ data: guests }, { data: progreso }, { data: aperturas }, { data: resp }, { data: matriculas }, visibles] = await Promise.all([
     runs?.length
       ? admin
           .from("dry_run_guests")
@@ -70,14 +72,22 @@ export async function seguimiento() {
         "activity_key",
         actividades.map((a) => a.key),
       ),
+    admin.from("enrollments").select("user_id").eq("active", true),
+    alumnosVisibles(),
   ]);
 
-  // Quién sale: los invitados con plaza y cualquiera que haya hecho algo.
-  const userIds = new Set<string>([
-    ...(guests ?? []).map((g) => g.user_id as string),
-    ...(aperturas ?? []).map((r) => r.user_id as string),
-    ...((resp ?? []) as FilaRespuesta[]).map((r) => r.user_id),
-  ]);
+  // Quién sale: los invitados con plaza, los matriculados, los asignados y
+  // cualquiera que haya hecho algo; y de ellos, sólo los que puede ver quien
+  // mira (un profesor, los suyos).
+  const userIds = new Set<string>(
+    [
+      ...(guests ?? []).map((g) => g.user_id as string),
+      ...(matriculas ?? []).map((m) => m.user_id as string),
+      ...visibles.ids,
+      ...(aperturas ?? []).map((r) => r.user_id as string),
+      ...((resp ?? []) as FilaRespuesta[]).map((r) => r.user_id),
+    ].filter((id) => visibles.todos || visibles.ids.has(id)),
+  );
   const { data: perfiles } = userIds.size ? await admin.from("profiles").select("id, full_name, email, role").in("id", [...userIds]) : { data: [] };
   const perfil = new Map((perfiles ?? []).map((p) => [p.id as string, p]));
 
@@ -118,3 +128,61 @@ export function materialDe(l: LeccionSeg, a: AlumnoSeg) {
 }
 
 export const hechaPor = (act: Actividad, a: AlumnoSeg) => cuentaComoHecha(act, a.respuestas.get(act.key));
+
+export type Evento = { at: string; tipo: string; texto: string; href?: string; extra?: string };
+
+/** Todo lo de un alumno para su ficha: lo del seguimiento y lo demás (visitas, asistente, tests, entregas, tutores). */
+export async function fichaAlumno(id: string) {
+  const base = await seguimiento();
+  const alumno = base.alumnos.find((a) => a.id === id);
+  if (!alumno) return null;
+  const admin = createAdminClient();
+  const [{ data: perfil }, { data: tutores }, { data: equipo }, { data: visitas }, { data: preguntas }, { data: log }, { data: intentos }, { data: entregas }, { data: matriculas }] =
+    await Promise.all([
+      admin.from("profiles").select("id, full_name, email, phone, created_at").eq("id", id).maybeSingle(),
+      admin.from("student_teachers").select("teacher_id, created_at").eq("student_id", id),
+      admin.from("profiles").select("id, full_name, email, role").in("role", ["profesor", "administrador"]).order("full_name"),
+      admin.from("user_lesson_progress").select("lesson_id, status, time_spent_s, last_visit, completed_at").eq("user_id", id),
+      admin.from("assistant_questions").select("id, question, answer, answered, created_at").eq("user_id", id).order("created_at", { ascending: false }).limit(200),
+      admin.from("activity_log").select("id, kind, lesson_id, payload, created_at").eq("user_id", id).order("created_at", { ascending: false }).limit(400),
+      admin.from("quiz_attempts").select("id, quiz_id, score, passed, created_at").eq("user_id", id).order("created_at", { ascending: false }),
+      admin.from("submissions").select("id, lesson_id, evidence_url, explanation, status, score, feedback, created_at").eq("user_id", id).order("created_at", { ascending: false }),
+      admin.from("enrollments").select("course, granted_at, active").eq("user_id", id),
+    ]);
+
+  // Los títulos de cualquier lección que salga (visitas, registro, entregas), no sólo las del seguimiento.
+  const { data: quizzes } = (intentos ?? []).length
+    ? await admin
+        .from("quizzes")
+        .select("id, lesson_id")
+        .in(
+          "id",
+          (intentos ?? []).map((q) => q.quiz_id as string),
+        )
+    : { data: [] };
+  const leccionDeQuiz = new Map((quizzes ?? []).map((q) => [q.id as string, q.lesson_id as string]));
+  const idsLecciones = new Set<string>([
+    ...(visitas ?? []).map((v) => v.lesson_id as string),
+    ...(log ?? []).map((l) => l.lesson_id as string).filter(Boolean),
+    ...(entregas ?? []).map((e) => e.lesson_id as string),
+    ...leccionDeQuiz.values(),
+  ]);
+  const { data: titulos } = idsLecciones.size ? await admin.from("lessons").select("id, title").in("id", [...idsLecciones]) : { data: [] };
+  const tituloDe = new Map((titulos ?? []).map((l) => [l.id as string, l.title as string]));
+  const nombreDe = new Map((equipo ?? []).map((p) => [p.id as string, (p.full_name as string) || (p.email as string)]));
+
+  return {
+    ...base,
+    alumno,
+    perfil,
+    tutores: (tutores ?? []).map((t) => ({ id: t.teacher_id as string, nombre: nombreDe.get(t.teacher_id as string) ?? "—", desde: t.created_at as string })),
+    equipo: (equipo ?? []).map((p) => ({ id: p.id as string, nombre: ((p.full_name as string) || (p.email as string)) ?? "—", rol: p.role as string })),
+    visitas: visitas ?? [],
+    preguntas: preguntas ?? [],
+    log: log ?? [],
+    intentos: (intentos ?? []).map((q) => ({ ...q, lesson_id: leccionDeQuiz.get(q.quiz_id as string) ?? null })),
+    entregas: entregas ?? [],
+    matriculas: matriculas ?? [],
+    tituloDe,
+  };
+}

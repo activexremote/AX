@@ -134,13 +134,18 @@ export function ActividadForm({ act, lessonId, fila, locale, copy, plazo, bloque
           ) : null}
 
           {/* El comentario del profesor, siempre arriba si lo hay. */}
-          {fila?.feedback && (estado === "revisada" || estado === "devuelta") ? (
+          {(fila?.feedback || (fila?.grade !== null && fila?.grade !== undefined)) && (estado === "revisada" || estado === "devuelta") ? (
             <div className={`axr-c-note ${estado === "devuelta" ? "axr-c-note--bad" : "axr-c-note--ok"}`}>
               <Icono n={estado === "devuelta" ? "aviso" : "chat"} />
               <div>
                 <strong>{copy.teacherFeedback}</strong>
                 {estado === "devuelta" ? <p>{copy.returned}</p> : null}
-                <p className="axr-act__feedback">{fila.feedback}</p>
+                {fila?.grade !== null && fila?.grade !== undefined ? (
+                  <p className="axr-act__grade">
+                    {copy.gradeLabel}: <strong>{String(fila.grade).replace(".", ",")}/10</strong>
+                  </p>
+                ) : null}
+                {fila?.feedback ? <p className="axr-act__feedback">{fila.feedback}</p> : null}
                 {fila.rubric && act.rubrica ? (
                   <ul className="axr-act__rubric">
                     {act.rubrica.map((c) => (

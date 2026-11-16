@@ -15,7 +15,7 @@ import { createClient } from "@/lib/supabase/server";
 //  Actividades: lo que se lee de la base
 // ══════════════════════════════════════════════════════════
 
-const COLUMNAS = "id, user_id, lesson_id, activity_key, answers, result, status, attempts, submitted_at, rubric, feedback, reviewed_at, updated_at";
+const COLUMNAS = "id, user_id, lesson_id, activity_key, answers, result, status, attempts, submitted_at, rubric, feedback, reviewed_at, updated_at, grade, notified_at";
 
 export { cuentaComoHecha };
 

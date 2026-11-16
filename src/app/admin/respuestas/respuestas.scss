@@ -111,3 +111,48 @@
 @media (max-width: 640px) {
   .axr-resp__checks li { grid-template-columns: auto minmax(0, 1fr); small { grid-column: 2; } }
 }
+
+.axr-resp__grade { font: inherit; font-weight: 400; width: 7rem; padding: 0.5rem 0.6rem; border: 1px solid var(--adm-line-strong); border-radius: 8px; }
+.axr-resp__fb small { font-weight: 400; color: var(--adm-muted); }
+.axr-resp__notify { display: flex; gap: 0.5rem; align-items: flex-start; font-size: 0.8125rem; line-height: 1.4; cursor: pointer; input { margin-top: 0.15rem; } }
+
+// La ficha del alumno.
+.axr-ficha {
+  &__h { margin: 0 0 0.6rem; font-size: 1.05rem; }
+  &__act {
+    margin: 0.5rem 0;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--adm-line);
+    border-radius: 8px;
+    &.is-ok { border-color: var(--adm-ok-bg); }
+    details { margin-top: 0.5rem; font-size: 0.8125rem; }
+    summary { cursor: pointer; color: var(--adm-accent); font-weight: 600; }
+  }
+  &__act-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.8125rem;
+    small { color: var(--adm-muted); }
+  }
+  &__fb { margin-top: 0.5rem; white-space: pre-line; }
+  &__assign { display: flex; gap: 0.5rem; margin-top: 0.6rem; select { flex: 1; min-width: 0; font: inherit; padding: 0.4rem; border: 1px solid var(--adm-line-strong); border-radius: 8px; } }
+  &__qa {
+    list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem;
+    summary { cursor: pointer; font-size: 0.8125rem; small { color: var(--adm-muted); font-weight: 400; } }
+    p { white-space: pre-line; font-size: 0.8125rem; color: var(--adm-muted); }
+  }
+  &__timeline {
+    list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem;
+    li { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 0.6rem; font-size: 0.8125rem; line-height: 1.4; }
+    time { color: var(--adm-muted); white-space: nowrap; }
+    small { color: var(--adm-muted); }
+    li[data-tipo="reviewed"], li[data-tipo="activity_submit"] { font-weight: 600; }
+  }
+  .axr-resp__tile strong { font-size: 1.15rem; }
+}
+@media (max-width: 640px) {
+  .axr-ficha__act-head { grid-template-columns: auto minmax(0, 1fr); }
+  .axr-ficha__timeline li { grid-template-columns: 1fr; gap: 0; }
+}
