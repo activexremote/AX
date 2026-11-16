@@ -49,7 +49,7 @@ export default async function RespuestasPage({ searchParams }: { searchParams: P
       const { data: guests } = runs?.length
         ? await admin
             .from("dry_run_guests")
-            .select("user_id, name, email")
+            .select("user_id, full_name, email")
             .in(
               "dry_run_id",
               runs.map((r) => r.id),
@@ -60,7 +60,7 @@ export default async function RespuestasPage({ searchParams }: { searchParams: P
       const conRespuesta = new Set(filas.filter((x) => x.activity_key === act.key).map((x) => x.user_id));
       sinEmpezar = (guests ?? [])
         .filter((g) => !conRespuesta.has(g.user_id as string))
-        .map((g) => ({ id: g.user_id as string, nombre: (g.name as string) || (g.email as string) || "—" }));
+        .map((g) => ({ id: g.user_id as string, nombre: (g.full_name as string) || (g.email as string) || "—" }));
     }
   }
 
@@ -76,6 +76,12 @@ export default async function RespuestasPage({ searchParams }: { searchParams: P
       </div>
 
       <div className="axr-resp__grid">
+        <Link href="/admin/respuestas/alumnos" className="axr-resp__tile">
+          <strong>
+            <Icono n="usuarios" size={14} /> {c.aByStudent}
+          </strong>
+          <span>{c.aByStudentTile}</span>
+        </Link>
         <Link href="/admin/respuestas" className={`axr-resp__tile${!act ? " is-on" : ""}`}>
           <strong>{c.aAll}</strong>
           <span>
