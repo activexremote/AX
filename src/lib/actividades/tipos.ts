@@ -112,3 +112,10 @@ export const tx = (t: Texto | undefined, locale: Locale) => (t ? t[locale] || t.
 
 /** Si la actividad cuenta como hecha (para cerrar la lección y para Mis tareas). */
 export const hecha = (status: EstadoRespuesta | undefined) => status === "enviada" || status === "revisada";
+
+/** Cuenta como hecha: enviada o revisada, y un test sólo si está aprobado. */
+export function cuentaComoHecha(a: Actividad, fila: Pick<FilaRespuesta, "status" | "result"> | undefined) {
+  if (!fila || !hecha(fila.status)) return false;
+  if (a.tipo === "test" && fila.result?.aprobado === false) return false;
+  return true;
+}

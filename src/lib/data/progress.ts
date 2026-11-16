@@ -1,3 +1,4 @@
+import { leccionesCerradas } from "@/lib/actividades/avance";
 import { usuarioActual } from "@/lib/data/usuario";
 import { createClient } from "@/lib/supabase/server";
 import { localize } from "@/lib/data/localize";
@@ -55,13 +56,14 @@ export async function getAggregatedProgress() {
   };
   if (!user) return vacio;
 
-  const [{ data: modulesRaw }, { data: lessonsRaw }, { data: progress }, { data: attempts }, { data: activity }, { data: quizzesRaw }] = await Promise.all([
+  const [{ data: modulesRaw }, { data: lessonsRaw }, { data: progress }, { data: attempts }, { data: activity }, { data: quizzesRaw }, cerradas] = await Promise.all([
     supabase.from("modules").select("id, slug, title, title_en, icon, course").order("order_index"),
     supabase.from("lessons").select("id, module_id, title, title_en, order_index").order("order_index"),
     supabase.from("user_lesson_progress").select("*").eq("user_id", user.id),
     supabase.from("quiz_attempts").select("score, passed, quiz_id, created_at").eq("user_id", user.id),
     supabase.from("activity_log").select("id, kind, created_at, lesson_id, payload").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
     supabase.from("quizzes").select("id, lesson_id"),
+    leccionesCerradas(),
   ]);
 
   const modules = (modulesRaw ?? []).map((m) => localize(m, locale));
@@ -71,16 +73,18 @@ export async function getAggregatedProgress() {
   const lessonOfQuiz = new Map((quizzesRaw ?? []).map((q) => [q.id as string, q.lesson_id as string]));
   const rows = progress ?? [];
 
-  const totalLessons = lessons.length;
+  // Lo que aún no se ha abierto (las horas de clase del dry run, antes de
+  // la clase) no cuenta en el total: no es algo que tenga pendiente.
+  const totalLessons = lessons.filter((l) => !cerradas.ids.has(l.id as string)).length;
   // Sólo lecciones que existen y se pueden ver: una fila de progreso de una
   // lección borrada no cuenta.
-  const completed = rows.filter((p) => p.status === "completada" && lessonById.has(p.lesson_id)).length;
+  const completed = rows.filter((p) => p.status === "completada" && lessonById.has(p.lesson_id) && !cerradas.ids.has(p.lesson_id)).length;
   const timeSpentS = rows.reduce((acc, p) => acc + (p.time_spent_s ?? 0), 0);
   const avgQuizScore = attempts?.length ? attempts.reduce((acc, a) => acc + Number(a.score), 0) / attempts.length : null;
 
   const perModule: ModuloProgreso[] = modules
     .map((m) => {
-      const ml = lessons.filter((l) => l.module_id === m.id);
+      const ml = lessons.filter((l) => l.module_id === m.id && !cerradas.ids.has(l.id as string));
       const mine = rows.filter((p) => ml.some((l) => l.id === p.lesson_id));
       return {
         id: m.id as string,
@@ -129,7 +133,7 @@ export async function getAggregatedProgress() {
     })
     .sort((a, b) => (b.last_visit ?? "").localeCompare(a.last_visit ?? ""));
 
-  const abierta = details.find((d) => d.status !== "completada");
+  const abierta = details.find((d) => d.status !== "completada" && !cerradas.ids.has(d.lesson_id));
 
   return {
     totalLessons,

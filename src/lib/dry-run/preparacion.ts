@@ -3,9 +3,13 @@
 //
 //  Lo que tiene que hacer un invitado entre que se apunta y el sábado. La ve
 //  en /preparacion y la va marcando; el panel enseña cuánto lleva cada uno.
-//  Dos se marcan solas: la cuenta (si está viendo la página, la tiene) y el
-//  material previo (si ha abierto la lección).
+//  Varias se marcan solas: la cuenta (si está viendo la página, la tiene),
+//  el material previo y el estudio (cuando ha abierto sus enlaces), la
+//  ficha, el test, la prueba de equipo y la pregunta al asistente.
 // ══════════════════════════════════════════════════════════
+
+/** El estudio de la penalización del remoto (PLOS ONE), la lectura obligatoria del material previo. */
+export const ESTUDIO = "https://doi.org/10.1371/journal.pone.0303307";
 
 export type PasoPreparacion = {
   key: string;
@@ -42,10 +46,10 @@ export const PASOS: readonly PasoPreparacion[] = [
   },
   {
     key: "material",
-    titulo: "Abre la lección «Antes de la clase»",
-    detalle: "Es el material previo del Módulo 1, con el tiempo orientativo de cada pieza.",
-    titulo_en: "Open the “Before class” lesson",
-    detalle_en: "It's the Module 1 pre-class material, with a time estimate for each piece.",
+    titulo: "Mira todo el material previo",
+    detalle: "Las lecturas, el pódcast y el documento de la lección «Antes de la clase». Se marca solo cuando has abierto cada enlace.",
+    titulo_en: "Go through all the pre-class material",
+    detalle_en: "The readings, the podcast and the document in the “Before class” lesson. It ticks itself once you've opened every link.",
     automatico: true,
   },
   {
@@ -67,9 +71,10 @@ export const PASOS: readonly PasoPreparacion[] = [
   {
     key: "estudio",
     titulo: "Lee el estudio sobre la penalización del remoto",
-    detalle: "20 minutos. Si solo lees una parte, que sea el apartado Results.",
+    detalle: "20 minutos. Si solo lees una parte, que sea el apartado Results. Se marca solo al abrirlo desde el campus.",
     titulo_en: "Read the study on the remote-work penalty",
-    detalle_en: "20 minutes. If you only read one part, make it the Results section.",
+    detalle_en: "20 minutes. If you only read one part, make it the Results section. It ticks itself when you open it from the campus.",
+    automatico: true,
   },
   {
     key: "equipo",

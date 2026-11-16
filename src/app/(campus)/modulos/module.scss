@@ -144,3 +144,13 @@
   &__time { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: var(--cmp-muted); margin-right: 0.15rem; }
   &__go { color: #b9b9c1; transition: color 0.12s, transform 0.12s; }
 }
+
+// Las lecciones que se abren el día de la clase (dry run).
+.axr-mod__locked {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.25rem 0 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--cmp-muted, #6f6f6f);
+}

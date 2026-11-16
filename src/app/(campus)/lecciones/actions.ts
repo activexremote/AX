@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { onLessonCompleted, onQuizResult } from "@/lib/slack/lesson-hooks";
 import { grantUnlocksIfComplete, saveReview, saveSubmission } from "@/lib/data/relampago";
 import { reviewSubmission } from "@/lib/relampago/review";
+import { leccionesCerradas, materialCompleto } from "@/lib/actividades/avance";
 
 export async function recordLessonVisit(lessonId: string) {
   const supabase = await createClient();
@@ -52,6 +53,21 @@ export async function recordLessonVisit(lessonId: string) {
 }
 
 export async function markLessonComplete(lessonId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "no-auth" };
+
+  // No se da por terminada una lección que aún no se ha abierto, ni una con
+  // material sin mirar: cada enlace se apunta al abrirlo (/recurso).
+  if ((await leccionesCerradas()).ids.has(lessonId)) return { error: "cerrada" };
+  if (!(await materialCompleto(user.id, lessonId))) return { error: "material" };
+  return completarLeccion(lessonId);
+}
+
+/** La marca, sin comprobaciones: la usan el botón (ya comprobado) y la misión de un relámpago. */
+async function completarLeccion(lessonId: string) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -222,7 +238,7 @@ export async function submitMission(input: {
 
   // Entregar la misión es el último paso de la lección: darla por completada
   // aquí evita el paso administrativo de pulsar además "marcar como hecha".
-  await markLessonComplete(lesson.id);
+  await completarLeccion(lesson.id);
 
   // ¿Se acaba de cerrar el curso entero? Entonces se abren los desbloqueos.
   const { data: mod } = await supabase
