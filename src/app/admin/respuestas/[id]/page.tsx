@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { Avatar, coma, fechaHora, TONO } from "@/app/admin/respuestas/ui";
 import { RespuestasVista, ResultadoVista } from "@/components/actividades/vista";
 import { FormRevision } from "@/components/actividades/form-revision";
 import { alumnosVisibles, puedeVer } from "@/lib/actividades/acceso";
@@ -21,8 +22,6 @@ import "@/app/admin/respuestas/respuestas.scss";
 //  el aviso por correo.
 // ══════════════════════════════════════════════════════════
 
-const TONO: Record<FilaRespuesta["status"], string> = { borrador: "warn", enviada: "info", revisada: "ok", devuelta: "bad" };
-
 export default async function RespuestaPage({ params }: { params: Promise<{ id: string }> }) {
   const [{ id }, { locale }] = await Promise.all([params, getI18n()]);
   const c = actividadesCopy[locale];
@@ -40,7 +39,7 @@ export default async function RespuestaPage({ params }: { params: Promise<{ id: 
   ]);
   const nombre = (perfil?.full_name as string) || (perfil?.email as string) || "—";
   const resultado = fila.result ?? (fila.status !== "borrador" ? calcular(act, fila.answers) : null);
-  const fecha = (iso: string) => new Date(iso).toLocaleString(locale === "en" ? "en-GB" : "es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" });
+  const fecha = (iso: string) => fechaHora(iso, locale);
   const conRevision = Boolean(act.revisa && fila.status !== "borrador");
   const meta = [
     fila.submitted_at ? k.submittedOn.replace("{d}", fecha(fila.submitted_at)) : null,
@@ -51,36 +50,48 @@ export default async function RespuestaPage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="axr-admin-page axr-resp">
-      <p className="axr-resp__back">
-        <Link href={`/admin/respuestas/alumnos/${fila.user_id}`}>{k.backToStudent.replace("{n}", nombre)}</Link>
-      </p>
-      <div className="axr-admin-page__header">
-        <div>
-          <h1>{tx(act.titulo, locale)}</h1>
-          <p>
-            <strong>{nombre}</strong> · {leccion?.title}
-          </p>
-        </div>
-      </div>
-      <p className="axr-resp__status">
-        <span className={`axr-adm-pill axr-adm-pill--${TONO[fila.status]}`}>{c.status[fila.status]}</span>
-        {fila.grade !== null && fila.grade !== undefined ? (
-          <span className="axr-adm-pill axr-adm-pill--accent">
-            {k.grade}: {String(fila.grade).replace(".", ",")}/10
-          </span>
-        ) : null}
-        {meta.length ? <span className="axr-resp__muted">{meta.join(" · ")}</span> : null}
+      <p className="axr-resp-back">
+        <Link href="/admin/respuestas">{k.title}</Link>
+        {" / "}
+        <Link href={`/admin/respuestas/alumnos/${fila.user_id}`}>{nombre}</Link>
       </p>
 
-      <div className={`axr-resp__split${conRevision ? "" : " is-single"}`}>
-        <section className="axr-admin-card axr-resp__answers">
-          <h2>{k.answers}</h2>
+      <section className="axr-resp-card axr-resp-hero is-slim">
+        <Avatar nombre={nombre} id={fila.user_id} size="md" />
+        <div className="axr-resp-hero__who">
+          <span className="axr-resp-kicker">
+            {k.tipos[act.tipo]} · {leccion?.title}
+          </span>
+          <h1>{tx(act.titulo, locale)}</h1>
+          <p>
+            <Link href={`/admin/respuestas/alumnos/${fila.user_id}`}>{nombre}</Link>
+            {meta.length ? ` · ${meta.join(" · ")}` : ""}
+          </p>
+        </div>
+        <div className="axr-resp-hero__badges">
+          <span className={`axr-adm-pill axr-adm-pill--${TONO[fila.status]}`}>{c.status[fila.status]}</span>
+          {fila.grade !== null && fila.grade !== undefined ? (
+            <span className="axr-resp-grade">
+              {coma(Number(fila.grade))}
+              <em>/10</em>
+            </span>
+          ) : null}
+        </div>
+      </section>
+
+      <div className={`axr-resp-split${conRevision ? "" : " is-single"}`}>
+        <section className="axr-resp-card axr-resp-answers">
+          <header className="axr-resp-card__head">
+            <h2>{k.answers}</h2>
+          </header>
           <ResultadoVista act={act} result={resultado} answers={fila.answers} locale={locale} copy={c} />
           {act.tipo === "formulario" || act.tipo === "encuesta" ? <RespuestasVista act={act} answers={fila.answers} locale={locale} copy={c} /> : null}
         </section>
         {conRevision ? (
-          <aside className="axr-admin-card">
-            <h2>{k.review}</h2>
+          <aside className="axr-resp-card axr-resp-sticky">
+            <header className="axr-resp-card__head">
+              <h2>{k.review}</h2>
+            </header>
             <FormRevision
               id={fila.id}
               rubrica={(act.rubrica ?? []).map((r) => ({ k: r.k, titulo: tx(r.titulo, locale), niveles: r.niveles.map((n) => tx(n, locale)) }))}
