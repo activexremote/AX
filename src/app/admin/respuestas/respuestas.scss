@@ -1,67 +1,238 @@
-// Respuestas de los alumnos (panel). Las piezas del campus que reutiliza
-// (pills y barras del resultado) se definen aquí con los colores del panel.
+// ══════════════════════════════════════════════════════════
+//  Respuestas (panel): pestañas, listas, ficha del alumno y corrección
+//
+//  Todo con clases propias: nada de reglas para «cualquier li» de una
+//  tarjeta, que se colaban en el resultado de los tests y en las listas.
+// ══════════════════════════════════════════════════════════
 
 .axr-resp {
+  // Lo que se reutiliza del campus (resultado de un test, sus barras), con
+  // los colores del panel.
   .axr-c-pill {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
     padding: 0.15rem 0.55rem;
     border-radius: 999px;
     background: #ececf0;
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     font-weight: 600;
     &--ok { background: var(--adm-ok-bg); color: var(--adm-ok); }
     &--bad { background: var(--adm-bad-bg); color: var(--adm-bad); }
   }
   .axr-c-progress {
-    height: 8px;
+    height: 6px;
     border-radius: 999px;
     background: #ececf0;
     overflow: hidden;
     span { display: block; height: 100%; background: var(--adm-accent); }
   }
 
-  &__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 0.6rem;
-    margin-bottom: 1.25rem;
+  &__back { margin: 0 0 0.75rem; font-size: 0.8125rem; a { color: var(--adm-muted); } }
+  &__muted { color: var(--adm-muted); }
+  &__nowrap { white-space: nowrap; }
+  &__end { text-align: right !important; white-space: nowrap; }
+
+  // ── Pestañas ──
+  &__tabs {
+    display: flex;
+    gap: 0.25rem;
+    margin: 0 0 1.25rem;
+    border-bottom: 1px solid var(--adm-line);
+    overflow-x: auto;
+    a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.65rem 0.9rem;
+      margin-bottom: -1px;
+      border-bottom: 2px solid transparent;
+      color: var(--adm-muted);
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+      &:hover { color: var(--adm-ink); }
+      &.is-on { color: var(--adm-ink); border-bottom-color: var(--adm-accent); }
+      span {
+        min-width: 1.4rem;
+        padding: 0.05rem 0.4rem;
+        border-radius: 999px;
+        background: #ececf0;
+        color: #3d3d44;
+        font-size: 0.6875rem;
+        text-align: center;
+        &.is-alert { background: var(--adm-warn-bg); color: var(--adm-warn); }
+      }
+    }
   }
-  &__tile {
+
+  // Nombre y correo en una celda.
+  &__who {
     display: grid;
-    gap: 0.3rem;
-    padding: 0.8rem 0.9rem;
-    border: 1px solid var(--adm-line);
-    border-radius: var(--adm-radius);
-    background: #fff;
-    color: var(--adm-ink);
+    gap: 0.1rem;
+    color: inherit;
     text-decoration: none;
+    strong { color: var(--adm-ink); }
+    small { color: var(--adm-muted); font-size: 0.75rem; }
+    &:hover strong { text-decoration: underline; }
+  }
+
+  // Barra pequeña «a/b».
+  &__bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    > span { display: block; width: 72px; height: 6px; border-radius: 999px; background: #ececf0; overflow: hidden; }
+    > span > span { display: block; height: 100%; background: var(--adm-accent); }
+    &.is-done > span > span { background: var(--adm-ok); }
+    small { color: var(--adm-muted); font-variant-numeric: tabular-nums; }
+  }
+
+  &__names {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.9rem;
+    margin: 0;
+    font-size: 0.875rem;
+  }
+
+  // ── Ficha: profesor asignado ──
+  &__teacher {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: -0.75rem 0 1.25rem;
     font-size: 0.8125rem;
-    strong { font-size: 0.875rem; line-height: 1.3; }
-    span { color: var(--adm-muted); }
-    em { font-style: normal; }
-    &.is-on { border-color: var(--adm-accent); background: var(--adm-accent-bg); }
+    .axr-adm-pill { font-size: 0.75rem; gap: 0.35rem; }
+    .axr-adm-pill form { display: inline; }
+    .axr-adm-pill button {
+      border: 0;
+      background: none;
+      padding: 0 0.1rem;
+      color: var(--adm-muted);
+      font-size: 0.9rem;
+      line-height: 1;
+      cursor: pointer;
+      &:hover { color: var(--adm-bad); }
+    }
   }
-  &__table { overflow-x: auto; background: #fff; border: 1px solid var(--adm-line); border-radius: var(--adm-radius); }
-  &__avg, &__missing, &__card {
-    margin-bottom: 1rem;
-    padding: 1rem 1.1rem;
-    border: 1px solid var(--adm-line);
-    border-radius: var(--adm-radius);
-    background: #fff;
-    h2 { margin: 0 0 0.6rem; font-size: 1rem; }
-    p { margin: 0.3rem 0; font-size: 0.875rem; line-height: 1.5; }
-    ul { list-style: none; margin: 0.4rem 0 0.8rem; padding: 0; display: grid; gap: 0.45rem; }
-    li { display: grid; grid-template-columns: minmax(0, 1.2fr) 2fr auto; gap: 0.6rem; align-items: center; font-size: 0.8125rem; }
+  &__assign {
+    display: inline-flex;
+    gap: 0.4rem;
+    select { font: inherit; font-size: 0.8125rem; padding: 0.3rem 0.5rem; border: 1px solid var(--adm-line-strong); border-radius: 8px; background: #fff; max-width: 14rem; }
   }
-  &__bar { height: 8px; border-radius: 999px; background: #ececf0; overflow: hidden; span { display: block; height: 100%; background: var(--adm-accent); } }
-  &__detail { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
-  &__review {
+
+  // ── Ficha: por corregir ──
+  &__pending { border-color: var(--adm-warn-bg); }
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.6rem 0;
+    border-top: 1px solid var(--adm-line);
+    font-size: 0.875rem;
+    &:first-of-type { border-top: 0; padding-top: 0; }
+    small { color: var(--adm-muted); }
+  }
+
+  // ── Ficha: lecciones ──
+  &__card-title { margin: 0 !important; padding: 1rem 1.35rem; border-bottom: 1px solid var(--adm-line) !important; }
+  &__lesson {
+    border-top: 1px solid var(--adm-line);
+    &:first-of-type { border-top: 0; }
+    summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.85rem 1.35rem;
+      cursor: pointer;
+      list-style: none;
+      &::-webkit-details-marker { display: none; }
+      &::before { content: "▸"; color: var(--adm-muted); font-size: 0.75rem; transition: transform 0.15s; }
+      &:hover { background: #fafafb; }
+    }
+    &[open] summary::before { transform: rotate(90deg); }
+  }
+  &__lesson-title { flex: 1; min-width: 0; font-size: 0.875rem; font-weight: 600; }
+  &__lesson-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.75rem; font-size: 0.75rem; }
+  &__lesson-body {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+    padding: 0.25rem 1.35rem 1.1rem 2.4rem;
+    h3 { margin: 0 0 0.5rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--adm-muted); }
+  }
+
+  // Lista con marca, texto y dato a la derecha.
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+    li {
+      display: grid;
+      grid-template-columns: 16px minmax(0, 1fr);
+      column-gap: 0.5rem;
+      align-items: start;
+      font-size: 0.8125rem;
+      line-height: 1.4;
+      > svg { margin-top: 0.15rem; color: #b9b9c1; }
+      &.is-ok > svg { color: var(--adm-ok); }
+      > small { grid-column: 2; color: var(--adm-muted); font-size: 0.75rem; }
+      a { color: var(--adm-ink); }
+    }
+  }
+
+  // ── Ficha: plegables ──
+  &__fold {
+    summary { cursor: pointer; font-size: 1rem; font-weight: 650; }
+    &[open] summary { margin-bottom: 0.9rem; }
+  }
+  &__qa {
+    list-style: none;
+    margin: 0;
+    padding: 0;
     display: grid;
     gap: 0.9rem;
+    li { padding-top: 0.9rem; border-top: 1px solid var(--adm-line); &:first-child { padding-top: 0; border-top: 0; } }
+    p { margin: 0 0 0.3rem; font-size: 0.8125rem; line-height: 1.5; white-space: pre-line; }
+    small { color: var(--adm-muted); font-weight: 400; }
+  }
+  &__history {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.4rem;
+    li { display: grid; grid-template-columns: 8rem minmax(0, 1fr); gap: 0.75rem; font-size: 0.8125rem; line-height: 1.4; }
+    time { color: var(--adm-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+    a { color: var(--adm-ink); }
+  }
+
+  // ── Corrección ──
+  &__status { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: -0.75rem 0 1.25rem; font-size: 0.8125rem; }
+  &__split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+    &.is-single { grid-template-columns: minmax(0, 860px); }
+    > aside { position: sticky; top: 1rem; }
+  }
+  &__answers {
+    .axr-act-res { background: #f6f6f8; }
+    .axr-act-res__qs { padding-left: 1.2rem; }
+    .axr-act-ans dd { font-size: 0.875rem; }
+  }
+  &__review {
+    display: grid;
+    gap: 1rem;
     fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
-    legend { font-weight: 700; font-size: 0.875rem; margin-bottom: 0.3rem; }
+    legend { font-weight: 650; font-size: 0.8125rem; margin-bottom: 0.35rem; }
     fieldset label {
       display: flex;
       gap: 0.5rem;
@@ -79,80 +250,23 @@
   &__fb {
     display: grid;
     gap: 0.35rem;
-    font-weight: 700;
-    font-size: 0.875rem;
-    textarea { font: inherit; font-weight: 400; padding: 0.6rem; border: 1px solid var(--adm-line-strong); border-radius: 8px; resize: vertical; }
+    font-size: 0.8125rem;
+    > span { font-weight: 650; }
+    small { color: var(--adm-muted); }
+    textarea { font: inherit; padding: 0.6rem; border: 1px solid var(--adm-line-strong); border-radius: 8px; resize: vertical; }
   }
+  &__grade { font: inherit; width: 6rem; padding: 0.45rem 0.6rem; border: 1px solid var(--adm-line-strong); border-radius: 8px; }
+  &__notify { display: flex; gap: 0.5rem; align-items: flex-start; font-size: 0.8125rem; line-height: 1.4; cursor: pointer; input { margin-top: 0.15rem; } }
   &__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; }
 }
 
-@media (max-width: 860px) {
-  .axr-resp__detail { grid-template-columns: 1fr; }
-}
-
-// Seguimiento por alumno: listas de «hecho / pendiente» con fecha.
-.axr-resp__checks {
-  list-style: none;
-  margin: 0.4rem 0 0.9rem;
-  padding: 0;
-  display: grid;
-  gap: 0.35rem;
-  li {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    gap: 0.5rem;
-    align-items: center;
-    font-size: 0.8125rem;
-    color: var(--adm-muted);
-    span, a { color: var(--adm-ink); }
-    &.is-ok > svg { color: var(--adm-ok); }
-  }
+@media (max-width: 900px) {
+  .axr-resp__split { grid-template-columns: 1fr; > aside { position: static; } }
 }
 @media (max-width: 640px) {
-  .axr-resp__checks li { grid-template-columns: auto minmax(0, 1fr); small { grid-column: 2; } }
-}
-
-.axr-resp__grade { font: inherit; font-weight: 400; width: 7rem; padding: 0.5rem 0.6rem; border: 1px solid var(--adm-line-strong); border-radius: 8px; }
-.axr-resp__fb small { font-weight: 400; color: var(--adm-muted); }
-.axr-resp__notify { display: flex; gap: 0.5rem; align-items: flex-start; font-size: 0.8125rem; line-height: 1.4; cursor: pointer; input { margin-top: 0.15rem; } }
-
-// La ficha del alumno.
-.axr-ficha {
-  &__h { margin: 0 0 0.6rem; font-size: 1.05rem; }
-  &__act {
-    margin: 0.5rem 0;
-    padding: 0.6rem 0.75rem;
-    border: 1px solid var(--adm-line);
-    border-radius: 8px;
-    &.is-ok { border-color: var(--adm-ok-bg); }
-    details { margin-top: 0.5rem; font-size: 0.8125rem; }
-    summary { cursor: pointer; color: var(--adm-accent); font-weight: 600; }
-  }
-  &__act-head {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
-    gap: 0.5rem;
-    align-items: center;
-    font-size: 0.8125rem;
-    small { color: var(--adm-muted); }
-  }
-  &__fb { margin-top: 0.5rem; white-space: pre-line; }
-  &__assign { display: flex; gap: 0.5rem; margin-top: 0.6rem; select { flex: 1; min-width: 0; font: inherit; padding: 0.4rem; border: 1px solid var(--adm-line-strong); border-radius: 8px; } }
-  &__qa {
-    list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem;
-    summary { cursor: pointer; font-size: 0.8125rem; small { color: var(--adm-muted); font-weight: 400; } }
-    p { white-space: pre-line; font-size: 0.8125rem; color: var(--adm-muted); }
-  }
-  &__timeline {
-    list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem;
-    li { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 0.6rem; font-size: 0.8125rem; line-height: 1.4; }
-    time { color: var(--adm-muted); white-space: nowrap; }
-    small { color: var(--adm-muted); }
-    li[data-tipo="reviewed"], li[data-tipo="activity_submit"] { font-weight: 600; }
-  }
-  .axr-resp__tile strong { font-size: 1.15rem; }
-}
-@media (max-width: 640px) {
-  .axr-ficha__act-head { grid-template-columns: auto minmax(0, 1fr); }
-  .axr-ficha__timeline li { grid-template-columns: 1fr; gap: 0; }
+  .axr-resp__lesson summary { flex-wrap: wrap; }
+  .axr-resp__lesson-meta { justify-content: flex-start; width: 100%; padding-left: 1.1rem; }
+  .axr-resp__lesson-body { padding-left: 1.35rem; }
+  .axr-resp__history li { grid-template-columns: 1fr; gap: 0; }
+  .axr-resp__teacher { margin-top: -0.5rem; }
 }
