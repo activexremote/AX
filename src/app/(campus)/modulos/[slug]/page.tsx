@@ -6,6 +6,7 @@ import { ModuleIcon } from "@/components/module-icon";
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import { getModuleBySlug } from "@/lib/data/modules";
 import { getProgressForCurrentUser } from "@/lib/data/progress";
+import { leccionesCerradas } from "@/lib/actividades/avance";
 import { campusACopy } from "@/lib/i18n/campus-v2-a";
 import { fmt } from "@/lib/i18n/dictionaries";
 import { getI18n } from "@/lib/i18n/server";
@@ -25,18 +26,22 @@ export default async function ModulePage({ params }: { params: Promise<{ slug: s
   const data = await getModuleBySlug(slug);
   if (!data) notFound();
   const { module, lessons } = data;
-  const [progress, { locale }] = await Promise.all([getProgressForCurrentUser(), getI18n()]);
+  const [progress, { locale }, cerradas] = await Promise.all([getProgressForCurrentUser(), getI18n(), leccionesCerradas()]);
   const c = campusACopy[locale];
 
   const estadoDe = new Map(progress.map((p) => [p.lesson_id, p.status]));
-  const completed = lessons.filter((l) => estadoDe.get(l.id) === "completada").length;
+  // Las horas de clase del dry run, antes de la clase, no cuentan: el
+  // progreso es sobre lo que ya se puede hacer.
+  const abiertas = lessons.filter((l) => !cerradas.ids.has(l.id));
+  const completed = abiertas.filter((l) => estadoDe.get(l.id) === "completada").length;
   const totalMinutes = module.estimated_minutes ?? lessons.reduce((acc, l) => acc + (l.duration_min ?? 0), 0);
-  const pct = lessons.length ? Math.round((completed / lessons.length) * 100) : 0;
+  const pct = abiertas.length ? Math.round((completed / abiertas.length) * 100) : 0;
 
   // El botón de arriba: la primera lección sin acabar, en orden.
-  const pendienteIdx = lessons.findIndex((l) => estadoDe.get(l.id) !== "completada");
+  const pendienteIdx = lessons.findIndex((l) => !cerradas.ids.has(l.id) && estadoDe.get(l.id) !== "completada");
   const empezado = lessons.some((l) => estadoDe.has(l.id));
-  const todoHecho = lessons.length > 0 && pendienteIdx === -1;
+  const enCierre = lessons.length - abiertas.length;
+  const todoHecho = abiertas.length > 0 && pendienteIdx === -1 && !enCierre;
   const destino = todoHecho ? lessons[0] : lessons[pendienteIdx];
 
   return (
@@ -83,7 +88,7 @@ export default async function ModulePage({ params }: { params: Promise<{ slug: s
                 <Icono n="reloj" /> {fmt(c.minutesShort, { n: totalMinutes })}
               </li>
               <li>
-                <Icono n="ok" /> {fmt(c.lessonsDone, { a: completed, b: lessons.length })}
+                <Icono n="ok" /> {fmt(c.lessonsDone, { a: completed, b: abiertas.length })}
               </li>
             </ul>
 
@@ -93,6 +98,12 @@ export default async function ModulePage({ params }: { params: Promise<{ slug: s
               </span>
               <strong>{pct}%</strong>
             </div>
+
+            {enCierre ? (
+              <p className="axr-mod__locked">
+                <Icono n="calendario" size={14} /> {fmt(c.overallLocked, { n: enCierre })}
+              </p>
+            ) : null}
 
             {destino ? (
               <Link href={`/lecciones/${destino.id}`} className={`axr-btn${todoHecho ? " axr-btn--ghost" : ""} axr-mod__cta`}>
@@ -138,7 +149,9 @@ export default async function ModulePage({ params }: { params: Promise<{ slug: s
                         ) : null}
                         {l.audio_url ? <span className="axr-c-pill axr-c-pill--info">{c.lessonAudio}</span> : null}
                         {l.has_quiz ? <span className="axr-c-pill axr-c-pill--accent">{c.lessonQuiz}</span> : null}
-                        {hecha ? (
+                        {cerradas.ids.has(l.id) ? (
+                          <span className="axr-c-pill">{c.lessonOpensInClass}</span>
+                        ) : hecha ? (
                           <span className="axr-c-pill axr-c-pill--ok">{c.lessonDone}</span>
                         ) : st === "en_curso" ? (
                           <span className="axr-c-pill axr-c-pill--warn">{c.lessonDoing}</span>

@@ -300,6 +300,9 @@
     .is-active & { background: var(--cmp-accent, #5b4bf5); border-color: var(--cmp-accent, #5b4bf5); color: #ffffff; }
   }
   &__title { padding-top: 0.1rem; }
+  // Las horas de clase que aún no se han abierto (dry run).
+  &__soon { display: block; margin-top: 0.1rem; font-size: 0.6875rem; font-weight: 500; color: var(--cmp-muted, #6f6f76); }
+  &__item.is-locked { opacity: 0.75; }
   &__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 }
 

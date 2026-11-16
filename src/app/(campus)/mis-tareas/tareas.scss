@@ -75,6 +75,8 @@
     &--vencida::before { background: var(--cmp-bad); }
     &--pronto::before { background: #f1c21b; }
     &--completada { background: #fbfbfc; }
+    // Lo que se abre el día de la clase: se ve, pero en segundo plano.
+    &--programada { background: #fbfbfc; opacity: 0.8; }
   }
 
   &__top {

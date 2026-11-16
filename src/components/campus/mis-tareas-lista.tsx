@@ -26,7 +26,8 @@ export type MiTarea = {
   /** Días hasta la fecha límite (negativo: vencida), o null sin fecha. */
   dias: number | null;
   note: string | null;
-  estado: "pendiente" | "en_curso" | "pronto" | "vencida" | "completada";
+  /** «programada»: aún no se puede hacer (las horas de clase del dry run, antes de la clase). */
+  estado: "pendiente" | "en_curso" | "pronto" | "vencida" | "completada" | "programada";
   /** Una actividad del campus (ficha, tarea, test) en vez de un módulo asignado. */
   actividad?: {
     titulo: string;
@@ -39,10 +40,12 @@ export type MiTarea = {
     cta: string;
     nivel: string;
     resumen: string;
+    /** Si aún no se puede hacer: cuándo se abre, ya escrito. */
+    abre?: string | null;
   };
 };
 
-type Filtro = "abiertas" | "pronto" | "vencida" | "completada" | "todas";
+type Filtro = "abiertas" | "pronto" | "vencida" | "completada" | "programada" | "todas";
 
 const TONO: Record<MiTarea["estado"], string> = {
   pendiente: "",
@@ -50,12 +53,13 @@ const TONO: Record<MiTarea["estado"], string> = {
   pronto: "axr-c-pill--warn",
   vencida: "axr-c-pill--bad",
   completada: "axr-c-pill--ok",
+  programada: "",
 };
 
-const encaja = (f: Filtro, e: MiTarea["estado"]) => (f === "todas" ? true : f === "abiertas" ? e !== "completada" : f === e);
+const encaja = (f: Filtro, e: MiTarea["estado"]) => (f === "todas" ? true : f === "abiertas" ? e !== "completada" && e !== "programada" : f === e);
 
 export function ListaMisTareas({ tareas, copy, locale }: { tareas: MiTarea[]; copy: CampusV2CCopy; locale: string }) {
-  const abiertas = tareas.filter((x) => x.estado !== "completada").length;
+  const abiertas = tareas.filter((x) => encaja("abiertas", x.estado)).length;
   // Sin nada abierto, se enseña lo hecho: una lista vacía con tareas detrás confunde.
   const [filtro, setFiltro] = useState<Filtro>(abiertas ? "abiertas" : "todas");
 
@@ -77,6 +81,7 @@ export function ListaMisTareas({ tareas, copy, locale }: { tareas: MiTarea[]; co
   const fecha = (iso: string) => new Date(iso.length === 10 ? `${iso}T12:00:00` : iso).toLocaleDateString(locale, { day: "numeric", month: "long" });
   const plazo = (x: MiTarea) => {
     if (x.estado === "completada") return x.completed_at ? copy.tDoneOn.replace("{n}", fecha(x.completed_at)) : copy.tStatus.completada;
+    if (x.estado === "programada") return copy.tStatus.programada;
     if (x.dias === null) return copy.tNoDue;
     if (x.dias === 0) return copy.tDueToday;
     if (x.dias === 1) return copy.tDueTomorrow;
@@ -90,6 +95,7 @@ export function ListaMisTareas({ tareas, copy, locale }: { tareas: MiTarea[]; co
     { k: "pronto", label: copy.tSoon },
     { k: "vencida", label: copy.tOverdue },
     { k: "completada", label: copy.tDone },
+    { k: "programada", label: copy.tScheduled },
     { k: "todas", label: copy.tFilterAll },
   ];
   const visibles = tareas.filter((x) => encaja(filtro, x.estado));
@@ -99,6 +105,8 @@ export function ListaMisTareas({ tareas, copy, locale }: { tareas: MiTarea[]; co
       <div className="axr-mt__filters" role="tablist">
         {opciones.map((o) => {
           const n = tareas.filter((x) => encaja(o.k, x.estado)).length;
+          // Sin nada que se abra en clase, ese filtro sobra.
+          if (o.k === "programada" && !n) return null;
           return (
             <button key={o.k} type="button" role="tab" aria-selected={filtro === o.k} onClick={() => setFiltro(o.k)}>
               {o.label}
@@ -124,7 +132,12 @@ export function ListaMisTareas({ tareas, copy, locale }: { tareas: MiTarea[]; co
                   <h2 className="axr-mt__title">{a.titulo}</h2>
                   <p className="axr-mt__note">
                     {a.donde} · {a.nivel}
-                    {a.vence ? (
+                    {a.abre ? (
+                      <>
+                        <br />
+                        <strong>{a.abre}</strong>
+                      </>
+                    ) : a.vence ? (
                       <>
                         <br />
                         <strong>{copy.tDueOn.replace("{n}", a.vence)}</strong>
@@ -138,7 +151,7 @@ export function ListaMisTareas({ tareas, copy, locale }: { tareas: MiTarea[]; co
                   ) : null}
                   <div className="axr-mt__foot">
                     <small className="axr-mt__summary">{a.resumen}</small>
-                    <Link href={a.href} className={`axr-btn axr-btn--small${x.estado === "completada" ? " axr-btn--ghost" : ""}`}>
+                    <Link href={a.href} className={`axr-btn axr-btn--small${x.estado === "completada" || x.estado === "programada" ? " axr-btn--ghost" : ""}`}>
                       {a.cta} <Icono n="flecha" size={14} />
                     </Link>
                   </div>

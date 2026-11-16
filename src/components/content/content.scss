@@ -643,6 +643,20 @@
     }
 
     &-go { font-size: 1rem; color: var(--axr-text-secondary); }
+
+    // En la lección del alumno: la marca de lo que ya ha abierto.
+    a[data-recurso] { grid-template-columns: 3rem 1fr auto auto; }
+    &-seen {
+      display: none;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      background: var(--cmp-ok-bg, #e6f6ee);
+      color: var(--cmp-ok, #127a4a);
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    a.is-seen &-seen { display: inline-block; }
   }
 
   &__timeline {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ModuleIcon } from "@/components/module-icon";
 import { getLearningPath, listModulesWithCounts } from "@/lib/data/modules";
 import { getProgressForCurrentUser } from "@/lib/data/progress";
+import { leccionesCerradas } from "@/lib/actividades/avance";
 import { firstName, getCurrentProfile } from "@/lib/data/profile";
 import { CampusHeader } from "@/components/campus-header";
 import { FlashPanel } from "@/components/campus/flash-panel";
@@ -80,11 +81,12 @@ export default async function CampusHome() {
   const profile = await getCurrentProfile();
   if (!profile) return null;
 
-  const [modules, path, progress, { t, locale }] = await Promise.all([
+  const [modules, path, progress, { t, locale }, cerradas] = await Promise.all([
     listModulesWithCounts(),
     getLearningPath(),
     getProgressForCurrentUser(),
     getI18n(),
+    leccionesCerradas(),
   ]);
   const c = campusACopy[locale];
 
@@ -93,11 +95,17 @@ export default async function CampusHome() {
   const programa = modules.filter((m) => !RELAMPAGO.has(m.course));
 
   const totalLessons = modules.reduce((acc, m) => acc + (m.lessons_count ?? 0), 0);
-  const completedLessons = modules.reduce((acc, m) => acc + m.ordered_lessons.filter((l) => hechas.has(l.id)).length, 0);
-  const completedPct = totalLessons ? Math.round((completedLessons / totalLessons) * 100) : 0;
+  // Lo que aún no se ha abierto (las horas de clase del dry run) no cuenta
+  // como pendiente: el porcentaje es sobre lo que ya se puede hacer.
+  const enCierre = modules.reduce((acc, m) => acc + m.ordered_lessons.filter((l) => cerradas.ids.has(l.id)).length, 0);
+  const abiertas = Math.max(0, totalLessons - enCierre);
+  const completedLessons = modules.reduce((acc, m) => acc + m.ordered_lessons.filter((l) => hechas.has(l.id) && !cerradas.ids.has(l.id)).length, 0);
+  const completedPct = abiertas ? Math.round((completedLessons / abiertas) * 100) : 0;
+  const sinCerradas = (lista: ModuloHome[]) =>
+    cerradas.ids.size ? lista.map((m) => ({ ...m, ordered_lessons: m.ordered_lessons.filter((l) => !cerradas.ids.has(l.id)) })) : lista;
   const totalMinutes = modules.reduce((acc, m) => acc + (m.estimated_minutes ?? 0), 0);
 
-  const siguiente = siguienteLeccion(programa.length ? programa : modules, progress);
+  const siguiente = siguienteLeccion(sinCerradas(programa.length ? programa : modules), progress);
   const grupos = CAMINOS.map((curso) => ({ curso, modulos: programa.filter((m) => m.course === curso) })).filter((g) => g.modulos.length);
 
   /** El estado de un módulo, tal como lo ve el alumno. */
@@ -129,6 +137,11 @@ export default async function CampusHome() {
               <li>
                 <Icono n="reloj" /> <strong>{Math.round(totalMinutes / 60)}</strong> {c.statMinutes.toLowerCase()}
               </li>
+              {enCierre ? (
+                <li>
+                  <Icono n="calendario" /> {fmt(c.overallLocked, { n: enCierre })}
+                </li>
+              ) : null}
             </ul>
           </div>
           <div className="axr-home__ring" role="img" aria-label={`${c.overall}: ${completedPct}%`}>
@@ -141,7 +154,7 @@ export default async function CampusHome() {
             <div>
               <strong>{completedPct}%</strong>
               <span>{c.overall}</span>
-              <small>{fmt(c.overallOf, { a: completedLessons, b: totalLessons })}</small>
+              <small>{fmt(c.overallOf, { a: completedLessons, b: abiertas })}</small>
             </div>
           </div>
         </section>

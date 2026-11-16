@@ -2,11 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 
-import { actividad, actividadesDe, calcular, errores, limpiar } from "@/lib/actividades/catalogo";
-import { cuentaComoHecha } from "@/lib/actividades/datos";
+import { cerrarLeccionSiToca } from "@/lib/actividades/avance";
+import { actividad, calcular, errores, limpiar } from "@/lib/actividades/catalogo";
 import type { FilaRespuesta, Respuestas, Resultado } from "@/lib/actividades/tipos";
 import { marcarPaso } from "@/lib/dry-run/datos";
-import { onLessonCompleted } from "@/lib/slack/lesson-hooks";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -74,7 +73,7 @@ export async function guardarActividad(input: { key: string; lessonId: string; a
   if (input.enviar) {
     if (act.pasoDryRun) await marcarPaso(user.id, act.pasoDryRun);
     await admin.from("activity_log").insert({ user_id: user.id, kind: "activity_submit", lesson_id: leccion.id, payload: { activity: act.key, pct: result?.pct ?? null } });
-    leccionTerminada = await cerrarLeccionSiToca(user.id, leccion.id as string, slug, act.leccion);
+    leccionTerminada = await cerrarLeccionSiToca(user.id, leccion.id as string);
   }
 
   revalidatePath(`/lecciones/${leccion.id}`);
@@ -83,28 +82,4 @@ export async function guardarActividad(input: { key: string; lessonId: string; a
   revalidatePath("/preparacion");
   revalidatePath("/");
   return { ok: true, status, result, leccionTerminada };
-}
-
-/** Si ya están todas las obligatorias de la lección, la marca como terminada. */
-async function cerrarLeccionSiToca(userId: string, lessonId: string, slug: string, orden: number): Promise<boolean> {
-  const obligatorias = actividadesDe(slug, orden).filter((a) => a.obligatoria);
-  const admin = createAdminClient();
-  const { data: filas } = await admin
-    .from("activity_responses")
-    .select("activity_key, status, result")
-    .eq("user_id", userId)
-    .in(
-      "activity_key",
-      obligatorias.map((a) => a.key),
-    );
-  const por = new Map((filas ?? []).map((f) => [f.activity_key as string, f as Pick<FilaRespuesta, "status" | "result">]));
-  if (!obligatorias.every((a) => cuentaComoHecha(a, por.get(a.key)))) return false;
-
-  const { data: progreso } = await admin.from("user_lesson_progress").select("status").eq("user_id", userId).eq("lesson_id", lessonId).maybeSingle();
-  if (progreso?.status === "completada") return true;
-  const ahora = new Date().toISOString();
-  await admin.from("user_lesson_progress").upsert({ user_id: userId, lesson_id: lessonId, status: "completada", last_visit: ahora, completed_at: ahora });
-  await admin.from("activity_log").insert({ user_id: userId, kind: "lesson_complete", lesson_id: lessonId });
-  await onLessonCompleted(userId, lessonId);
-  return true;
 }

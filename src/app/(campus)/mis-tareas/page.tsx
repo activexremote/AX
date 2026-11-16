@@ -4,7 +4,7 @@ import { Icono } from "@/components/admin/publicaciones/iconos";
 import { getMyAssignments } from "@/lib/data/assignments";
 import { getI18n } from "@/lib/i18n/server";
 import { campusV2CCopy } from "@/lib/i18n/campus-v2-c";
-import { misTareasDeActividades } from "@/lib/actividades/datos";
+import { misTareasDeActividades, misTareasDeMaterial } from "@/lib/actividades/datos";
 import { tx } from "@/lib/actividades/tipos";
 import { actividadesCopy } from "@/lib/i18n/actividades";
 import { ZONA } from "@/lib/dry-run/tiempo";
@@ -26,11 +26,11 @@ const hoyMadrid = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Mad
 const DIA = 86_400_000;
 const diasEntre = (desde: string, hasta: string) => Math.round((Date.parse(`${hasta}T00:00:00Z`) - Date.parse(`${desde}T00:00:00Z`)) / DIA);
 
-const ORDEN: Record<MiTarea["estado"], number> = { vencida: 0, pronto: 1, en_curso: 2, pendiente: 3, completada: 4 };
+const ORDEN: Record<MiTarea["estado"], number> = { vencida: 0, pronto: 1, en_curso: 2, pendiente: 3, programada: 4, completada: 5 };
 
 export default async function MisTareasPage() {
   const { t, locale } = await getI18n();
-  const [assignments, actividades] = await Promise.all([getMyAssignments(), misTareasDeActividades(locale)]);
+  const [assignments, actividades, material] = await Promise.all([getMyAssignments(), misTareasDeActividades(locale), misTareasDeMaterial(locale)]);
   const copy = campusV2CCopy[locale];
   const ac = actividadesCopy[locale];
   const hoy = hoyMadrid();
@@ -45,14 +45,20 @@ export default async function MisTareasPage() {
     hourCycle: "h23",
   });
 
+  const abreEl = (iso: string | null) => (iso ? ac.mtOpensOn.replace("{d}", venceEn.format(new Date(iso))) : null);
+
   // Cada actividad del campus es una tarea con su plazo y su enlace directo.
+  // Las de las horas de clase, antes de la clase, salen como «se abre en
+  // clase»: se ven, pero no cuentan como pendientes.
   const deActividades: MiTarea[] = actividades.map((x) => {
     const dias = x.plazo ? diasEntre(hoy, diaMadrid(x.plazo)) : null;
     const vencida = x.plazo ? Date.now() > new Date(x.plazo).getTime() : false;
     const st = x.fila?.status;
     const estado: MiTarea["estado"] = x.hecha
       ? "completada"
-      : vencida
+      : x.abre
+        ? "programada"
+        : vencida
         ? "vencida"
         : dias !== null && dias <= 3
           ? "pronto"
@@ -80,12 +86,55 @@ export default async function MisTareasPage() {
         cta: x.hecha ? ac.mtSee : st === "devuelta" ? ac.mtRedo : ac.mtDo,
         nivel: x.actividad.obligatoria ? ac.required : x.actividad.tipo === "juego" ? ac.optional : ac.recommended,
         resumen: `${ac.minutes.replace("{n}", String(x.actividad.minutos))} · ${x.actividad.plazo === "antes-clase" ? ac.mtBeforeClass : ac.mtWeek}`,
+        abre: abreEl(x.abre),
+      },
+    };
+  });
+
+  // El material de cada lección (lecturas, vídeos, descargas): una tarea
+  // por lección, hecha cuando se ha abierto cada enlace.
+  const deMaterial: MiTarea[] = material.map((x) => {
+    const hecha = x.abiertos >= x.total;
+    const dias = x.plazo ? diasEntre(hoy, diaMadrid(x.plazo)) : null;
+    const vencida = x.plazo ? Date.now() > new Date(x.plazo).getTime() : false;
+    const estado: MiTarea["estado"] = hecha
+      ? "completada"
+      : x.abre
+        ? "programada"
+        : vencida
+          ? "vencida"
+          : dias !== null && dias <= 3
+            ? "pronto"
+            : x.abiertos > 0
+              ? "en_curso"
+              : "pendiente";
+    return {
+      id: `mat-${x.lessonId}`,
+      module_title: x.moduleTitle,
+      module_slug: "",
+      total: x.total,
+      done: x.abiertos,
+      due_date: x.plazo ? diaMadrid(x.plazo) : null,
+      completed_at: null,
+      dias,
+      note: null,
+      estado,
+      actividad: {
+        titulo: ac.mtMaterial.replace("{l}", x.lessonTitle),
+        donde: x.moduleTitle,
+        href: `/lecciones/${x.lessonId}`,
+        vence: x.plazo ? venceEn.format(new Date(x.plazo)) : null,
+        etiqueta: copy.tStatus[estado],
+        cta: ac.mtOpenLesson,
+        nivel: ac.required,
+        resumen: ac.mtMaterialSummary.replace("{a}", String(x.abiertos)).replace("{b}", String(x.total)),
+        abre: abreEl(x.abre),
       },
     };
   });
 
   const tareas: MiTarea[] = assignments
-    .map((a) => {
+    .map((a): MiTarea => {
       const dias = a.due_date ? diasEntre(hoy, a.due_date) : null;
       const terminada = a.status === "completada" || (a.module_lessons > 0 && a.lessons_done >= a.module_lessons);
       const estado: MiTarea["estado"] = terminada
@@ -110,7 +159,7 @@ export default async function MisTareasPage() {
         estado,
       };
     })
-    .concat(deActividades)
+    .concat(deMaterial, deActividades)
     .sort((x, y) => ORDEN[x.estado] - ORDEN[y.estado] || (x.dias ?? 9999) - (y.dias ?? 9999));
 
   const n = (e: MiTarea["estado"][]) => tareas.filter((x) => e.includes(x.estado)).length;

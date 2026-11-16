@@ -23,7 +23,6 @@ import { CampusLessonEditor } from "@/components/content/campus-lesson-editor";
 import { parseBlocks } from "@/lib/content/blocks";
 import { EditLangSwitch, readEditLang } from "@/components/content/edit-lang-switch";
 import { getCurrentProfile } from "@/lib/data/profile";
-import { getMiDryRun } from "@/lib/dry-run/datos";
 import { ZONA } from "@/lib/dry-run/tiempo";
 import { editorCopy } from "@/lib/i18n/editor";
 import "@/components/content/content.scss";
@@ -38,6 +37,10 @@ import { actividadesDe } from "@/lib/actividades/catalogo";
 import { cuentaComoHecha, misRespuestas, plazoDe, plazosDelModulo } from "@/lib/actividades/datos";
 import { tx } from "@/lib/actividades/tipos";
 import { actividadesCopy } from "@/lib/i18n/actividades";
+import { campusACopy } from "@/lib/i18n/campus-v2-a";
+import { leccionesCerradas, misRecursosAbiertos } from "@/lib/actividades/avance";
+import { recursosDe } from "@/lib/content/recursos";
+import { RecursosVivos } from "@/components/lesson/recursos-vivos";
 
 // ══════════════════════════════════════════════════════════
 //  Una lección (campus v2)
@@ -56,11 +59,16 @@ function Indice({
   siblings,
   activeId,
   completed,
+  cerradas,
+  etiquetaCerrada,
   c,
 }: {
   siblings: Hermana[];
   activeId: string;
   completed: Set<string>;
+  /** Las que aún no se han abierto (las horas de clase del dry run). */
+  cerradas: Set<string>;
+  etiquetaCerrada: string;
   c: CampusLessonCopy;
 }) {
   return (
@@ -68,17 +76,21 @@ function Indice({
       {siblings.map((s, i) => {
         const activa = s.id === activeId;
         const hecha = completed.has(s.id);
+        const cerrada = cerradas.has(s.id);
         return (
           <li key={s.id}>
             <Link
               href={`/lecciones/${s.id}`}
-              className={`axr-lsn-index__item${activa ? " is-active" : ""}${hecha ? " is-done" : ""}`}
+              className={`axr-lsn-index__item${activa ? " is-active" : ""}${hecha ? " is-done" : ""}${cerrada ? " is-locked" : ""}`}
               aria-current={activa ? "page" : undefined}
             >
               <span className="axr-lsn-index__num" aria-hidden>
                 {hecha ? <Icono n="ok" size={13} /> : i + 1}
               </span>
-              <span className="axr-lsn-index__title">{s.title}</span>
+              <span className="axr-lsn-index__title">
+                {s.title}
+                {cerrada ? <small className="axr-lsn-index__soon">{etiquetaCerrada}</small> : null}
+              </span>
               {hecha ? <span className="axr-lsn-index__sr">{c.done}</span> : null}
             </Link>
           </li>
@@ -98,7 +110,7 @@ export default async function LessonPage({
   const { id } = await params;
   const { editar } = await searchParams;
   // La lección y quién la mira, a la vez.
-  const [data, perfil, dryRun] = await Promise.all([getLessonForView(id), getCurrentProfile(), getMiDryRun()]);
+  const [data, perfil] = await Promise.all([getLessonForView(id), getCurrentProfile()]);
   if (!data) notFound();
   const { lesson, module, siblings, quiz, questions, raw } = data;
   // Una lección relámpago se distingue por tener misión: el resto de la
@@ -110,10 +122,12 @@ export default async function LessonPage({
   // El profesorado edita la lección aquí mismo, sin pasar por el panel. Para
   // un alumno esto no existe: ni el componente ni su JavaScript se le mandan.
   const esEquipo = perfil?.role === "profesor" || perfil?.role === "administrador";
-  const [progress, { t, locale }, submission] = await Promise.all([
+  const [progress, { t, locale }, submission, cerradas, abiertosPorLeccion] = await Promise.all([
     getProgressForCurrentUser(),
     getI18n(),
     esRelampago ? getSubmission(lesson.id) : Promise.resolve(null),
+    leccionesCerradas(),
+    misRecursosAbiertos(),
   ]);
   const c = campusLessonCopy[locale];
   // Lo que edita el profesorado: siempre la versión sin traducir que elija en
@@ -124,15 +138,16 @@ export default async function LessonPage({
 
   const completedSet = new Set(progress.filter((p) => p.status === "completada").map((p) => p.lesson_id));
   const moduleHref = `/modulos/${module.slug}`;
-  const total = siblings.length;
-  const hechas = siblings.filter((s) => completedSet.has(s.id)).length;
+  // Las horas que aún no se han abierto no cuentan en el progreso del módulo.
+  const total = siblings.filter((s) => !cerradas.ids.has(s.id)).length;
+  const hechas = siblings.filter((s) => completedSet.has(s.id) && !cerradas.ids.has(s.id)).length;
   const pct = total ? Math.round((hechas / total) * 100) : 0;
   const alreadyDone = completedSet.has(lesson.id);
 
   // Anterior y siguiente, en el orden del módulo.
   const pos = siblings.findIndex((s) => s.id === lesson.id);
   const anterior = pos > 0 ? siblings[pos - 1] : null;
-  const siguiente = pos >= 0 && pos < total - 1 ? siblings[pos + 1] : null;
+  const siguiente = pos >= 0 && pos < siblings.length - 1 ? siblings[pos + 1] : null;
   const siguienteHref = siguiente ? `/lecciones/${siguiente.id}` : moduleHref;
   const siguienteLabel = siguiente ? c.nextLesson : c.backToModule;
   const numero = pos >= 0 ? pos + 1 : lesson.order_index;
@@ -160,10 +175,10 @@ export default async function LessonPage({
   // la clase: antes, el invitado ve qué material hay y una cuenta atrás. La
   // primera lección del módulo es el material previo y ésa queda abierta.
   // El equipo lo ve todo siempre.
-  const inicioClase = dryRun?.run.module_id === module.id ? dryRun.run.starts_at : null;
+  const inicioClase = cerradas.ids.has(lesson.id) ? cerradas.abre : null;
   const ahora = Date.now();
   const bloqueo =
-    !esEquipo && inicioClase && pos > 0 && ahora < new Date(inicioClase).getTime()
+    !esEquipo && inicioClase
       ? {
           desde: inicioClase,
           servidor: ahora,
@@ -184,6 +199,17 @@ export default async function LessonPage({
       : undefined;
 
   const bloqueoActividades = bloqueo ? fmt(ac.locked, { when: formatoPlazo.format(new Date(bloqueo.desde)) }) : null;
+
+  // El material de la lección: cada enlace hay que abrirlo para terminarla.
+  const recursos = recursosDe(bloques);
+  const abiertos = abiertosPorLeccion.get(lesson.id) ?? new Set<string>();
+  const faltanMat = recursos.filter((r) => !abiertos.has(r.url));
+  const seguimiento = !esEquipo && !bloqueo && recursos.length ? { lessonId: lesson.id, abiertos: [...abiertos], etiqueta: ac.seen } : undefined;
+  const pendientes = [
+    ...faltan.map((a) => tx(a.titulo, locale)),
+    ...(faltanMat.length ? [fmt(ac.materialPending, { a: recursos.length - faltanMat.length, b: recursos.length })] : []),
+  ];
+  const etiquetaCerrada = campusACopy[locale].lessonOpensInClass;
 
   return (
     <>
@@ -214,7 +240,7 @@ export default async function LessonPage({
                 <small>{fmt(t.lesson.sidebarProgress, { done: hechas, total })}</small>
               </div>
             </div>
-            <Indice siblings={siblings} activeId={lesson.id} completed={completedSet} c={c} />
+            <Indice siblings={siblings} activeId={lesson.id} completed={completedSet} cerradas={cerradas.ids} etiquetaCerrada={etiquetaCerrada} c={c} />
           </aside>
 
           <main className="axr-lsn__main">
@@ -231,7 +257,7 @@ export default async function LessonPage({
                 <div className="axr-c-progress">
                   <span style={{ width: `${pct}%` }} />
                 </div>
-                <Indice siblings={siblings} activeId={lesson.id} completed={completedSet} c={c} />
+                <Indice siblings={siblings} activeId={lesson.id} completed={completedSet} cerradas={cerradas.ids} etiquetaCerrada={etiquetaCerrada} c={c} />
               </div>
             </details>
 
@@ -350,7 +376,10 @@ export default async function LessonPage({
                     {bloques.length === 0 ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.content_md}</ReactMarkdown> : null}
                   </>
                 ) : bloques.length ? (
-                  <BlockList blocks={bloques} storageKey={lesson.id} bloqueo={bloqueo} locale={locale} />
+                  <>
+                    <BlockList blocks={bloques} storageKey={lesson.id} bloqueo={bloqueo} seguimiento={seguimiento} locale={locale} />
+                    {seguimiento ? <RecursosVivos /> : null}
+                  </>
                 ) : (
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.content_md}</ReactMarkdown>
                 )}
@@ -416,13 +445,21 @@ export default async function LessonPage({
                 })}
                 <div className={`axr-lsn__card axr-lsn__finish${alreadyDone ? " is-done" : ""}`}>
                   <span className="axr-lsn__card-icon" aria-hidden>
-                    <Icono n={alreadyDone || !faltan.length ? "ok" : "tareas"} size={20} />
+                    <Icono n={alreadyDone || !pendientes.length ? "ok" : "tareas"} size={20} />
                   </span>
                   <div className="axr-lsn__finish-text">
-                    <h2>{alreadyDone ? ac.lessonDone : faltan.length ? c.finishTitle : ac.lessonAllDone}</h2>
-                    <p>{faltan.length ? fmt(ac.lessonPending, { list: faltan.map((a) => tx(a.titulo, locale)).join(" · ") }) : ac.lessonAllDone}</p>
+                    <h2>{alreadyDone ? ac.lessonDone : pendientes.length ? c.finishTitle : recursos.length ? ac.lessonAllDoneMat : ac.lessonAllDone}</h2>
+                    <p>
+                      {pendientes.length ? fmt(ac.lessonPending, { list: pendientes.join(" · ") }) : recursos.length ? ac.lessonAllDoneMat : ac.lessonAllDone}
+                      {faltanMat.length && !bloqueo ? (
+                        <>
+                          <br />
+                          <small>{ac.materialHint}</small>
+                        </>
+                      ) : null}
+                    </p>
                   </div>
-                  {alreadyDone || !faltan.length ? (
+                  {alreadyDone || !pendientes.length ? (
                     <Link href={siguienteHref} className="axr-btn">
                       {siguienteLabel} →
                     </Link>
@@ -438,9 +475,23 @@ export default async function LessonPage({
                 </span>
                 <div className="axr-lsn__finish-text">
                   <h2>{alreadyDone ? c.done : c.finishTitle}</h2>
-                  <p>{alreadyDone ? c.finishDone : c.finishBody}</p>
+                  <p>
+                    {alreadyDone
+                      ? c.finishDone
+                      : bloqueoActividades
+                        ? bloqueoActividades
+                        : faltanMat.length
+                          ? `${fmt(ac.markNeedsMaterial, { n: faltanMat.length })} ${ac.materialHint}`
+                          : c.finishBody}
+                  </p>
                 </div>
-                <MarkCompleteButton lessonId={lesson.id} alreadyDone={alreadyDone} nextHref={siguienteHref} nextLabel={siguienteLabel} />
+                <MarkCompleteButton
+                  lessonId={lesson.id}
+                  alreadyDone={alreadyDone}
+                  disabled={Boolean(bloqueoActividades) || faltanMat.length > 0}
+                  nextHref={siguienteHref}
+                  nextLabel={siguienteLabel}
+                />
               </section>
             ) : null}
 

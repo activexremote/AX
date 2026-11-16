@@ -10,7 +10,9 @@ import { Icono } from "@/components/admin/publicaciones/iconos";
 import { enlaceGoogleCalendar, enlaceIcs } from "@/lib/dry-run/correos";
 import { getMiDryRun, marcarPaso } from "@/lib/dry-run/datos";
 import { docenteDe } from "@/lib/dry-run/docente";
-import { PASOS } from "@/lib/dry-run/preparacion";
+import { ESTUDIO, PASOS } from "@/lib/dry-run/preparacion";
+import { materialCompleto } from "@/lib/actividades/avance";
+import { enlaceRecurso } from "@/lib/content/recursos";
 import { cuandoEs, diaLargo, horaMadrid, partesMadrid } from "@/lib/dry-run/tiempo";
 import { leerAgenda } from "@/lib/dry-run/tipos";
 import { misRespuestas } from "@/lib/actividades/datos";
@@ -26,9 +28,6 @@ export async function generateMetadata(): Promise<Metadata> {
   const { locale } = await getI18n();
   return { title: preparacionCopy[locale].metaTitle };
 }
-
-/** El estudio de la penalización del remoto (PLOS ONE), el obligatorio del material previo. */
-const ESTUDIO = "https://doi.org/10.1371/journal.pone.0303307";
 
 // ══════════════════════════════════════════════════════════
 //  La preparación del dry run (el onboarding del invitado)
@@ -59,15 +58,23 @@ export default async function PreparacionPage({ searchParams }: { searchParams: 
   // Los pasos que se marcan solos: se comprueban aquí y se guardan, para que
   // el panel los vea sin tener que recalcularlos.
   if (guest.user_id) {
-    const [{ count: visitas }, { count: preguntas }] = await Promise.all([
+    const [material, { count: estudio }, { count: preguntas }] = await Promise.all([
+      primera ? materialCompleto(guest.user_id, primera.id) : Promise.resolve(false),
       primera
-        ? admin.from("user_lesson_progress").select("lesson_id", { count: "exact", head: true }).eq("user_id", guest.user_id).eq("lesson_id", primera.id)
+        ? admin.from("resource_opens").select("url", { count: "exact", head: true }).eq("user_id", guest.user_id).eq("lesson_id", primera.id).eq("url", ESTUDIO)
         : Promise.resolve({ count: 0 }),
       admin.from("assistant_questions").select("id", { count: "exact", head: true }).eq("user_id", guest.user_id),
     ]);
     const nuevos: string[] = [];
     if (!guest.onboarding.cuenta) nuevos.push("cuenta");
-    if ((visitas ?? 0) > 0 && !guest.onboarding.material) nuevos.push("material");
+    // El material cuenta cuando se ha abierto cada enlace, no por entrar en
+    // la lección: quien lo tenía marcado sólo por entrar, lo vuelve a tener pendiente.
+    if (material && !guest.onboarding.material) nuevos.push("material");
+    if (!material && guest.onboarding.material) {
+      await marcarPaso(guest.user_id, "material", false);
+      delete guest.onboarding.material;
+    }
+    if ((estudio ?? 0) > 0 && !guest.onboarding.estudio) nuevos.push("estudio");
     if ((preguntas ?? 0) > 0 && !guest.onboarding.asistente) nuevos.push("asistente");
     // La ficha y el test se hacen en el campus: cuentan cuando están enviados.
     if (hecha(respuestas.get("m01-ficha")?.status) && !guest.onboarding.ficha) nuevos.push("ficha");
@@ -110,7 +117,7 @@ export default async function PreparacionPage({ searchParams }: { searchParams: 
     material: leccion ? [{ texto: c.openLesson, href: leccion }] : undefined,
     ficha: leccion ? [{ texto: fichaHecha ? c.seeFicha : c.doFicha, href: `${leccion}#act-m01-ficha` }] : undefined,
     test: leccion ? [{ texto: testHecho ? c.seeTest : c.doTest, href: `${leccion}#act-m01-punto-partida` }] : undefined,
-    estudio: [{ texto: c.openStudy, href: ESTUDIO, externo: true }],
+    estudio: [{ texto: c.openStudy, href: primera ? enlaceRecurso(primera.id, ESTUDIO) : ESTUDIO, externo: true }],
     equipo: [{ texto: c.testDevices, href: "/preparacion/equipo" }],
     asistente: [{ texto: c.askAssistant, href: "#asistente", asistente: true }],
   };

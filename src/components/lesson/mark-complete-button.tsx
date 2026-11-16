@@ -11,11 +11,14 @@ import { useI18n } from "@/lib/i18n/provider";
 export function MarkCompleteButton({
   lessonId,
   alreadyDone,
+  disabled = false,
   nextHref,
   nextLabel,
 }: {
   lessonId: string;
   alreadyDone: boolean;
+  /** Aún no se puede: falta abrir material o la lección no se ha abierto. El motivo va en el texto de al lado. */
+  disabled?: boolean;
   nextHref?: string;
   nextLabel?: string;
 }) {
@@ -43,11 +46,11 @@ export function MarkCompleteButton({
       <button
         type="button"
         className="axr-btn axr-btn--primary"
-        disabled={pending}
+        disabled={pending || disabled}
         onClick={() => {
           startTransition(async () => {
             const r = await markLessonComplete(lessonId);
-            if (r?.ok) setDone(true);
+            if (r && "ok" in r && r.ok) setDone(true);
           });
         }}
       >

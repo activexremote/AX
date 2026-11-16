@@ -2,8 +2,9 @@ import "server-only";
 
 import { cache } from "react";
 
+import { leccionesCerradas, faltanRecursos, misRecursosAbiertos, recursosDeLeccion } from "@/lib/actividades/avance";
 import { actividadesDelModulo, modulosConActividades } from "@/lib/actividades/catalogo";
-import { hecha, type Actividad, type FilaRespuesta } from "@/lib/actividades/tipos";
+import { cuentaComoHecha, type Actividad, type FilaRespuesta } from "@/lib/actividades/tipos";
 import { usuarioActual } from "@/lib/data/usuario";
 import { getMiDryRun } from "@/lib/dry-run/datos";
 import { enMadrid, partesMadrid } from "@/lib/dry-run/tiempo";
@@ -16,12 +17,7 @@ import { createClient } from "@/lib/supabase/server";
 
 const COLUMNAS = "id, user_id, lesson_id, activity_key, answers, result, status, attempts, submitted_at, rubric, feedback, reviewed_at, updated_at";
 
-/** Cuenta como hecha: enviada o revisada, y un test sólo si está aprobado. */
-export function cuentaComoHecha(a: Actividad, fila: Pick<FilaRespuesta, "status" | "result"> | undefined) {
-  if (!fila || !hecha(fila.status)) return false;
-  if (a.tipo === "test" && fila.result?.aprobado === false) return false;
-  return true;
-}
+export { cuentaComoHecha };
 
 /** Las respuestas de quien está dentro, por clave de actividad. */
 export const misRespuestas = cache(async (): Promise<Map<string, FilaRespuesta>> => {
@@ -82,23 +78,44 @@ export type TareaActividad = {
   plazo: string | null;
   fila: FilaRespuesta | undefined;
   hecha: boolean;
+  /** La lección aún no está abierta (las horas de clase del dry run, antes de la clase): cuándo se abre. */
+  abre: string | null;
 };
+
+export type TareaMaterial = {
+  moduleTitle: string;
+  lessonId: string;
+  lessonTitle: string;
+  plazo: string | null;
+  total: number;
+  abiertos: number;
+  abre: string | null;
+};
+
+/** Los módulos con actividades a los que tiene acceso quien está dentro, con sus lecciones. */
+const modulosYLecciones = cache(async () => {
+  const supabase = await createClient();
+  // La política de modules ya filtra por acceso: sólo vuelve lo que puede ver.
+  const { data: modulos } = await supabase.from("modules").select("id, slug, title, title_en").in("slug", modulosConActividades());
+  if (!modulos?.length) return { modulos: [], lecciones: [] };
+  const { data: lecciones } = await supabase
+    .from("lessons")
+    .select("id, module_id, order_index, title, title_en, content_blocks, content_blocks_en")
+    .in(
+      "module_id",
+      modulos.map((m) => m.id),
+    )
+    .order("order_index");
+  return { modulos, lecciones: lecciones ?? [] };
+});
 
 /** Todas las actividades de los módulos a los que tiene acceso quien está dentro, con su plazo y su estado. */
 export async function misTareasDeActividades(locale: "es" | "en"): Promise<TareaActividad[]> {
   const user = await usuarioActual();
   if (!user) return [];
-  const supabase = await createClient();
-  // La política de modules ya filtra por acceso: sólo vuelve lo que puede ver.
-  const { data: modulos } = await supabase.from("modules").select("id, slug, title, title_en").in("slug", modulosConActividades());
-  if (!modulos?.length) return [];
-  const { data: lecciones } = await supabase
-    .from("lessons")
-    .select("id, module_id, order_index, title, title_en")
-    .in(
-      "module_id",
-      modulos.map((m) => m.id),
-    );
+  const { modulos, lecciones } = await modulosYLecciones();
+  if (!modulos.length) return [];
+  const cerradas = await leccionesCerradas();
   const respuestas = await misRespuestas();
   const out: TareaActividad[] = [];
   for (const m of modulos) {
@@ -116,16 +133,54 @@ export async function misTareasDeActividades(locale: "es" | "en"): Promise<Tarea
         plazo: plazoDe(a, plazos),
         fila,
         hecha: cuentaComoHecha(a, fila),
+        abre: cerradas.ids.has(l.id as string) ? cerradas.abre : null,
       });
     }
   }
   return out;
 }
 
-/** Cuántas actividades obligatorias le quedan por hacer (el aviso de la cabecera). */
+/**
+ * El material de cada lección de esos módulos: cuántos enlaces tiene y
+ * cuántos ha abierto. Vence con la lección: lo de antes de la clase, al
+ * empezar la clase; lo de las horas, con las tareas de la semana.
+ */
+export async function misTareasDeMaterial(locale: "es" | "en"): Promise<TareaMaterial[]> {
+  const user = await usuarioActual();
+  if (!user) return [];
+  const { modulos, lecciones } = await modulosYLecciones();
+  if (!modulos.length) return [];
+  const [abiertos, cerradas] = await Promise.all([misRecursosAbiertos(), leccionesCerradas()]);
+  const out: TareaMaterial[] = [];
+  for (const m of modulos) {
+    const plazos = await plazosDelModulo(m.id as string);
+    const delModulo = lecciones.filter((l) => l.module_id === m.id);
+    delModulo.forEach((l, i) => {
+      const r = recursosDeLeccion(l);
+      const total = (locale === "en" ? r.en : r.es).length;
+      if (!total) return;
+      const faltan = faltanRecursos(l, abiertos.get(l.id as string)).length;
+      out.push({
+        moduleTitle: ((locale === "en" && (m.title_en as string)) || (m.title as string)) ?? "",
+        lessonId: l.id as string,
+        lessonTitle: ((locale === "en" && (l.title_en as string)) || (l.title as string)) ?? "",
+        plazo: i === 0 ? plazos.antesClase : plazos.semana,
+        total,
+        abiertos: Math.max(0, total - faltan),
+        abre: cerradas.ids.has(l.id as string) ? cerradas.abre : null,
+      });
+    });
+  }
+  return out;
+}
+
+/** Cuánto le queda por hacer de verdad (el aviso de la cabecera): sin contar lo que aún no se ha abierto. */
 export const contarActividadesAbiertas = cache(async (): Promise<number> => {
-  const tareas = await misTareasDeActividades("es");
-  return tareas.filter((x) => x.actividad.obligatoria && !x.hecha).length;
+  const [tareas, material] = await Promise.all([misTareasDeActividades("es"), misTareasDeMaterial("es")]);
+  return (
+    tareas.filter((x) => x.actividad.obligatoria && !x.hecha && !x.abre).length +
+    material.filter((x) => !x.abre && x.abiertos < x.total).length
+  );
 });
 
 /** Para el panel del profesorado: todas las respuestas, con quién las ha dado. */

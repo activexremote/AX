@@ -2,6 +2,14 @@ import type { Block, ChartKind } from "@/lib/content/blocks";
 import { ChecklistBlock } from "@/components/content/checklist-block";
 import { CuentaDescargas, type BloqueoDescargas } from "@/components/content/cuenta-descargas";
 import type { Locale } from "@/lib/i18n/config";
+import { enlaceRecurso } from "@/lib/content/recursos";
+
+/**
+ * En la lección del alumno, cada recurso enlaza a /recurso, que apunta que
+ * lo ha abierto; los que ya ha abierto llevan su marca. En la vista previa
+ * del panel no se pasa y los enlaces van directos.
+ */
+export type SeguimientoRecursos = { lessonId: string; abiertos: string[]; etiqueta: string };
 
 // ══════════════════════════════════════════════════════════
 //  Cómo se pinta cada bloque
@@ -157,11 +165,13 @@ export function BlockView({
   block,
   storageKey,
   bloqueo,
+  seguimiento,
   locale = "es",
 }: {
   block: Block;
   storageKey?: string;
   bloqueo?: BloqueoDescargas;
+  seguimiento?: SeguimientoRecursos;
   /** El idioma de las cifras de los gráficos. */
   locale?: Locale;
 }) {
@@ -385,11 +395,14 @@ export function BlockView({
             {block.items.map((r, i) => {
               const external = /^https?:\/\//i.test(r.url);
               const ext = resourceKind(r.url);
+              const visto = seguimiento?.abiertos.includes(r.url);
               return (
                 <li key={i}>
                   <a
-                    href={r.url}
-                    {...(external ? { target: "_blank", rel: "noopener noreferrer" } : { download: "" })}
+                    href={seguimiento ? enlaceRecurso(seguimiento.lessonId, r.url) : r.url}
+                    className={visto ? "is-seen" : undefined}
+                    data-recurso={seguimiento ? "" : undefined}
+                    {...(seguimiento || external ? { target: "_blank", rel: "noopener noreferrer" } : { download: "" })}
                   >
                     <span className="axr-blk__resources-kind" data-kind={ext.kind}>
                       {ext.label}
@@ -398,6 +411,7 @@ export function BlockView({
                       <span>{r.label}</span>
                       {r.note ? <em>{r.note}</em> : null}
                     </span>
+                    {seguimiento ? <span className="axr-blk__resources-seen">✓ {seguimiento.etiqueta}</span> : null}
                     <span className="axr-blk__resources-go" aria-hidden>
                       {external && ext.kind === "link" ? "↗" : "↓"}
                     </span>
@@ -442,17 +456,19 @@ export function BlockList({
   blocks,
   storageKey,
   bloqueo,
+  seguimiento,
   locale,
 }: {
   blocks: Block[];
   storageKey?: string;
   bloqueo?: BloqueoDescargas;
+  seguimiento?: SeguimientoRecursos;
   locale?: Locale;
 }) {
   return (
     <div className="axr-blk">
       {blocks.map((b, i) => (
-        <BlockView key={i} block={b} storageKey={storageKey ? `${storageKey}:${i}` : undefined} bloqueo={bloqueo} locale={locale} />
+        <BlockView key={i} block={b} storageKey={storageKey ? `${storageKey}:${i}` : undefined} bloqueo={bloqueo} seguimiento={seguimiento} locale={locale} />
       ))}
     </div>
   );
