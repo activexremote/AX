@@ -349,3 +349,9 @@
   .axr-assistant-widget__label { display: none; }
   .axr-assistant-widget__launcher { padding: 0.8rem !important; border-radius: 999px !important; }
 }
+
+// En el panel no hay barra de navegación abajo: el botón va a ras del borde.
+.axr-assistant-widget--panel {
+  @media (max-width: 760px) { bottom: calc(1rem + env(safe-area-inset-bottom)); }
+  @media (max-width: 480px) { bottom: calc(0.75rem + env(safe-area-inset-bottom)); }
+}

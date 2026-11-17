@@ -2,7 +2,9 @@ import { headers } from "next/headers";
 import { actividadesCopy } from "@/lib/i18n/actividades";
 import { notFound, redirect } from "next/navigation";
 
+import { AyudaPanel } from "@/components/admin/ayuda/ayuda-panel";
 import { MenuAdmin, type GrupoMenu } from "@/components/admin/menu-admin";
+import { ayudaPanelCopy } from "@/lib/i18n/ayuda-panel";
 import { getCurrentProfile, userInitials } from "@/lib/data/profile";
 import { getI18n } from "@/lib/i18n/server";
 import { pubCopy } from "@/lib/i18n/publicaciones";
@@ -125,6 +127,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         textos={{ open: a.navOpenMenu, close: a.navCloseMenu, viewCampus: a.navViewCampus, panel: a.panel }}
       />
       <main className="axr-admin__main">{children}</main>
+      {/* La ayuda del panel: cómo funciona cada sección y dónde está cada cosa. */}
+      <AyudaPanel textos={ayudaPanelCopy[locale][profile.role as "administrador" | "profesor" | "comercial"]} />
     </div>
   );
 }

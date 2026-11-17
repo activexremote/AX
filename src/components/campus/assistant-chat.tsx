@@ -20,8 +20,30 @@ type Message =
  * qué hora?». Vive sólo en el navegador —al recargar se empieza de cero—; lo
  * que se pregunta sí queda en el servidor para el equipo.
  */
-export function AssistantChat({ onClose, enfocar = true }: { onClose?: () => void; /** Al abrirse, el cursor al campo. No en el panel, donde el chat está dentro de la página: allí la hacía saltar hasta él. */ enfocar?: boolean }) {
-  const { t } = useI18n();
+export type TextosChat = ReturnType<typeof useI18n>["t"]["assistant"];
+
+export type OpcionesChat = {
+  /** Adónde se preguntan las cosas. Por defecto, el asistente del campus. */
+  endpoint?: string;
+  /** Textos propios (el chat de ayuda del panel); si no, los del campus. */
+  textos?: TextosChat;
+  /** Lo que se manda además de la pregunta y el historial (p. ej. la página en la que se está). */
+  extra?: () => Record<string, unknown>;
+};
+
+export function AssistantChat({
+  onClose,
+  enfocar = true,
+  endpoint = "/api/asistente",
+  textos,
+  extra,
+}: {
+  onClose?: () => void;
+  /** Al abrirse, el cursor al campo. No en el panel, donde el chat está dentro de la página: allí la hacía saltar hasta él. */
+  enfocar?: boolean;
+} & OpcionesChat) {
+  const i18n = useI18n();
+  const t = { ...i18n.t, assistant: textos ?? i18n.t.assistant };
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -48,10 +70,11 @@ export function AssistantChat({ onClose, enfocar = true }: { onClose?: () => voi
     setBusy(true);
 
     try {
-      const res = await fetch("/api/asistente", {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
+          ...extra?.(),
           question,
           history: messages.slice(-6).map((m) =>
             m.role === "user" ? m : { role: "assistant", content: m.reply.answer?.content ?? "" },
@@ -122,7 +145,11 @@ export function AssistantChat({ onClose, enfocar = true }: { onClose?: () => voi
                     ) : null}
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
-                      components={{ a: (props) => <a {...props} target="_blank" rel="noreferrer" /> }}
+                      components={{
+                        // Las rutas propias se abren aquí mismo; las de fuera, en otra pestaña.
+                        a: ({ href, ...props }) =>
+                          href?.startsWith("/") ? <a href={href} {...props} /> : <a href={href} {...props} target="_blank" rel="noreferrer" />,
+                      }}
                     >
                       {m.reply.answer.content}
                     </ReactMarkdown>
@@ -190,8 +217,9 @@ export function AssistantChat({ onClose, enfocar = true }: { onClose?: () => voi
 }
 
 /** Botón flotante del campus que abre el chat. */
-export function AssistantWidget() {
-  const { t } = useI18n();
+export function AssistantWidget({ className, ...opciones }: { className?: string } & OpcionesChat = {}) {
+  const i18n = useI18n();
+  const t = { ...i18n.t, assistant: opciones.textos ?? i18n.t.assistant };
   const [open, setOpen] = useState(false);
   // Una vez abierto se queda montado: cerrar el panel no puede borrar la
   // conversación, ni cortar una respuesta que todavía está llegando.
@@ -215,10 +243,10 @@ export function AssistantWidget() {
   }, [open]);
 
   return (
-    <div className="axr-assistant-widget">
+    <div className={`axr-assistant-widget${className ? ` ${className}` : ""}`}>
       {started ? (
         <div className="axr-assistant-widget__panel" hidden={!open}>
-          <AssistantChat onClose={() => setOpen(false)} />
+          <AssistantChat onClose={() => setOpen(false)} {...opciones} />
         </div>
       ) : null}
       {!open ? (
