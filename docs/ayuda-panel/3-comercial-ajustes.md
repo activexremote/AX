@@ -253,7 +253,7 @@ Lista de avisos sacados de los datos (con su contador), ordenados: rojo, ámbar,
 ## Inteligencia artificial (`/admin/ia`)
 
 ### Ruta, acceso y propósito
-- Menú: **Ajustes → Inteligencia artificial**. Título de la página: **IA**. Subtítulo: «La clave de OpenAI que usa el panel para estructurar contenidos.»
+- Menú: **Ajustes → Inteligencia artificial**. Título de la página: **IA**. Subtítulo: «La clave de OpenAI del panel: lecciones, banners e imágenes de las publicaciones.»
 - **Solo Administrador**. Un profesor que abra la ruta vuelve a `/admin` (los profesores usan la IA, pero no ven ni tocan la clave).
 - **Para qué sirve**: configurar la **clave de OpenAI** de la escuela, el modelo de texto y activar o desactivar la IA de OpenAI del panel.
 
@@ -271,7 +271,7 @@ Lista de avisos sacados de los datos (con su contador), ordenados: rojo, ámbar,
    - Casilla **Borrar la clave guardada** (solo si hay una guardada en el panel).
    - **Modelo** (texto libre con sugerencias: gpt-4o, gpt-4o-mini, gpt-4.1, gpt-4.1-mini). «gpt-4o va bien para maquetar. Los modelos mini son más baratos y más bastos.»
    - Botones **Probar conexión** («Probando…») y **Guardar** («Guardando…» → «Guardado»).
-3. **Dónde se usa** (lista que muestra la página) y la nota de coste: «Cada propuesta es una llamada a OpenAI y se factura en tu cuenta. El campus no llama a la IA por su cuenta: sólo cuando alguien pulsa el botón.»
+3. **Dónde se usa** (lista que muestra la página: Editor de lecciones, Banners para Meta, Publicaciones —sólo las imágenes—, Cursos relámpago —con la clave del servidor— y Narración de lecciones —también clave del servidor—), la nota de coste «Cada propuesta es una llamada a OpenAI y se factura en tu cuenta. En el panel, la IA sólo trabaja cuando alguien pulsa el botón; la corrección de los cursos relámpago es la excepción: corre sola en cada entrega.» y la nota «No usan esta clave: los textos de las publicaciones, el asistente del campus (el chat de los alumnos) y la ayuda del panel contestan con DeepSeek, cuya clave está en Publicaciones → Ajustes.» con el enlace «Ir a Publicaciones → Ajustes».
 
 ### Cómo se hace
 - **Poner o cambiar la clave**: pega la clave en el campo y pulsa **Guardar**. Una clave nueva borra el resultado de la última prueba (el estado pasa a **Sin probar**). Después pulsa **Probar conexión**.
@@ -297,11 +297,10 @@ Orden: primero la clave guardada en este panel; si no hay, la variable `OPENAI_A
 | **Fotos de los banners** y **imágenes de las publicaciones** | OpenAI, modelo de imagen: `OPENAI_IMAGE_MODEL` del servidor o, si no, el mejor que acepte la clave (gpt-image-2 → gpt-image-1.5 → gpt-image-1) | Sí (la clave de esta página). Sin ella: «Falta la clave de OpenAI: configúrala en el panel → IA.» | Sí |
 | **Textos de las publicaciones** (X, LinkedIn, blog) | **DeepSeek** (por defecto `deepseek-flash`) | **No**: la clave de DeepSeek se configura en **Marketing → Publicaciones → Ajustes** | Sí (saldo DeepSeek) |
 | **Asistente del campus** (chat de alumnos) | **DeepSeek**; si no está o falla, contesta el buscador | No (clave de DeepSeek en Publicaciones → Ajustes) | Sí, poco |
-| **Ayuda del panel** (este chat de ayuda) | **DeepSeek** | No (clave de DeepSeek en Publicaciones → Ajustes). Su mensaje de error dice «Se configura en IA», pero la clave de DeepSeek está en Publicaciones → Ajustes | Sí, poco |
+| **Ayuda del panel** (este chat de ayuda) | **DeepSeek** | No (clave de DeepSeek en Publicaciones → Ajustes). | Sí, poco |
 | **Cursos relámpago**: corrección automática de misiones | OpenAI, modelo `OPENAI_REVIEW_MODEL` o gpt-4o | **No**: usa solo `OPENAI_API_KEY` del servidor; ni la clave del panel ni el interruptor le afectan | Sí, **cada entrega de un alumno** (no hace falta pulsar nada en el panel) |
 | **Narración de lecciones** (voz) | Fish Audio o, si no, OpenAI TTS (`gpt-4o-mini-tts`) | **No**: claves del servidor (`FISH_API_KEY` / `OPENAI_API_KEY`) | Sí |
 
-- La lista «Dónde se usa» de la página también menciona «Asistente del campus: Indexa las FAQs y los documentos». **En el código no se ha encontrado ninguna llamada a OpenAI para indexar**; el asistente responde con DeepSeek. Trátalo como un texto que puede estar desactualizado.
 - **Tarifas que usa el panel para estimar** el gasto de banners (USD por millón de tokens, entrada/salida): gpt-4o 2,5/10; gpt-4o-mini 0,15/0,6; gpt-4.1 2/8; gpt-4.1-mini 0,4/1,6; imagen gpt-image-* 5/40. Un modelo desconocido se estima al precio más caro. El gasto real lo factura OpenAI en la cuenta de la escuela; el panel no enseña el saldo de OpenAI.
 - **El conector de Claude** (Conexiones con Claude) gasta esta misma clave cuando Claude crea o reescribe banners.
 

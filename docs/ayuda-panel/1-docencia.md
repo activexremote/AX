@@ -115,7 +115,7 @@ Cada aviso es un atajo: Asistente (bandeja), Tareas, Módulos, y (admin) Publica
 ### Avisos: puntos del manual que no coinciden exactamente con el código
 - El manual dice «Si no existe [tu módulo] todavía, pide al equipo que lo cree». En realidad **un profesor sí puede crear módulos** (el botón «+ Nuevo módulo» y la acción lo permiten a profesor y administrador). La recomendación es organizativa, no una restricción técnica.
 - El manual (cap. 7) dice que «cada viernes por la tarde» llega al canal de profesores un resumen semanal. Según los crons: el **resumen de progreso de alumnos** (canal de profesores) sale los **lunes a las 07:00 UTC**; lo que sale los **viernes a las 15:00 UTC** es el «Seguimiento de cumplimiento de profesores», que va al **canal de administración**.
-- El manual y el Resumen dicen que un módulo oculto «no lo ve ningún alumno». En el código, un módulo con «Disponible» desmarcado **sigue apareciendo** en la portada del campus de los alumnos con acceso a ese curso, como tarjeta con la píldora «Próximamente», y su página se puede abrir. Ver sección 3.
+- Un módulo oculto («Disponible» desmarcado) **no lo ve ningún alumno**: ni en la portada del campus, ni su página, ni sus lecciones, ni puede entregar en ellas. Lo siguen viendo el equipo (profesorado y administración; en el campus les sale con la píldora «Próximamente») y quien tenga acceso propio a ese módulo, es decir, una plaza de dry run de ese módulo. Ver sección 3.
 - El manual dice que el test se aprueba con el 80 %: correcto (valor por defecto del quiz, no editable desde el panel).
 
 ### Dónde encuentro…
@@ -198,13 +198,13 @@ Cambia los campos y pulsa «Guardar módulo». No hay guardado automático. Guar
 #### Ocultar / mostrar un módulo
 Desmarca o marca «Disponible» y pulsa «Guardar módulo». Qué hace exactamente según el código:
 - En el panel: píldora «Oculto» y aviso «{n} módulos ocultos» en el Resumen.
-- En el campus: el módulo **sigue apareciendo** a los alumnos que tienen acceso a su curso, como tarjeta con la píldora «Próximamente» (y en su página), y el enlace sigue funcionando. Lo que sí cambia: el campus no lo propone como «siguiente lección» mientras haya otros disponibles. No se ha encontrado en el código ningún bloqueo de las lecciones de un módulo oculto. Por tanto, «Oculto» funciona como «Próximamente», no como invisible. Si necesitas que un alumno no lo vea en absoluto, lo que decide la visibilidad real es el curso del módulo y las matrículas del alumno.
+- En el campus: **ningún alumno lo ve** (ni la tarjeta, ni su página, ni sus lecciones; tampoco el asistente del campus lo menciona), aunque tenga matrícula en su curso. Excepciones: el equipo lo sigue viendo (con la píldora «Próximamente») y quien tenga una plaza de dry run de ese módulo también, porque ese acceso se le dio a esa persona a propósito. Para publicarlo, marca «Disponible» y guarda.
 
 #### Eliminar un módulo
 1. «Eliminar módulo» → «Sí, eliminar» (o «Cancelar»).
 2. Se vuelve a la lista de módulos.
 - Borra en cascada todas sus lecciones, tests, progreso de los alumnos en ellas, tareas asignadas de ese módulo, recursos de la Guía docente asociados y accesos sueltos a ese módulo. No se puede deshacer.
-- **Problema conocido**: si el módulo está usado por una sesión de dry run, la base de datos impide borrarlo; el botón no enseña el error y te devuelve a la lista igualmente, pero el módulo **sigue ahí**. Si tras eliminar sigue apareciendo en la lista, es por esto: hay que quitar antes el dry run que lo usa (sección Dry run, sólo admin).
+- **Si el módulo lo usa una sesión de dry run, no se puede eliminar.** Al pulsar «Eliminar módulo» y confirmar, sale un aviso en rojo debajo del botón: «No se puede eliminar: lo usa la sesión de dry run «…». Cámbiale antes el módulo en Dry run, o márcalo como oculto en vez de borrarlo.» El módulo no se toca. Para borrarlo, cambia antes el módulo de esa sesión en Dry run (sólo admin).
 
 ### 3.3 Crear una lección
 
@@ -384,8 +384,8 @@ Sigue al selector de idioma: trabaja con el audio español o el inglés.
 - **El slug ya existe** → error de la base al guardar: cambia el slug (los de módulo son únicos en todo el campus; los de lección, dentro del módulo).
 - **He guardado y han desaparecido bloques** → estaban incompletos; mira el aviso «Se han descartado…» y la tabla de arriba.
 - **El alumno ve la lección en blanco** → no tiene bloques ni Markdown (píldora «Vacía»).
-- **El alumno no ve un módulo** → comprueba el curso del módulo y que el alumno tenga ese curso abierto (Usuarios, admin). Un módulo «Oculto» sí aparece, como «Próximamente».
-- **Eliminé un módulo y sigue en la lista** → lo usa un dry run (ver 3.2).
+- **El alumno no ve un módulo** → mira si está «Oculto» (los ocultos no los ve ningún alumno) y, si no, comprueba el curso del módulo y que el alumno tenga ese curso abierto (Usuarios, admin).
+- **«No se puede eliminar: lo usa la sesión de dry run…»** → cambia antes el módulo de esa sesión en Dry run, o déjalo oculto (ver 3.2).
 - **La narración no se genera** → falta la clave de voz en el servidor, la lección no tiene texto narrable, o el proveedor falló (mensaje de error en rojo).
 - **El audio subido no aparece en el campus en inglés** → se subió con «Español» seleccionado (o al revés).
 
@@ -559,7 +559,7 @@ Papelera → «¿Seguro?». Desaparece también de «Mis tareas» del alumno. No
 ### Cómo responde el chat a los alumnos (por detrás)
 - **Con DeepSeek configurado** (clave de DeepSeek en los ajustes de Publicaciones, `/admin/publicaciones/ajustes`, sólo admin, o `DEEPSEEK_API_KEY` en el servidor): el chat usa IA (DeepSeek) que **sólo** puede contestar con: las FAQs activas que ve el alumno (todas las generales + las de sus cursos, hasta ~60.000 caracteres), los fragmentos de documentos que encuentra el buscador, el temario y el texto de los módulos/lecciones a los que tiene acceso, las herramientas y el claustro de la web pública, y los datos de su dry run. Entiende el contexto de los últimos 6 turnos. Si la respuesta no está ahí, debe decirlo y la pregunta cuenta como «sin respuesta». **Cada pregunta es una llamada de pago a DeepSeek** (barata; parte del contexto va en caché).
 - **Sin DeepSeek**: contesta un buscador de texto en Postgres (sin IA, sin coste), devolviendo la FAQ o el fragmento que mejor encaja tal cual; si no cubre al menos la mitad de las palabras de la pregunta, cuenta como «sin respuesta» y ofrece hasta 3 FAQs relacionadas. Si DeepSeek falla, el alumno ve «Perdona, ahora mismo no he podido pensar bien la respuesta…» con sugerencias, y la pregunta cuenta como sin respuesta.
-- La indexación de FAQs y documentos **no usa IA ni cuesta nada** (troceado + índice de texto en español sin tildes). Nota: la página «Inteligencia artificial» lista «Asistente del campus: Indexa las FAQs y los documentos…» como uso de OpenAI, pero en el código actual la indexación no llama a OpenAI.
+- La indexación de FAQs y documentos **no usa IA ni cuesta nada** (troceado + índice de texto en español sin tildes). Las respuestas del chat de los alumnos sí usan IA: DeepSeek, con la clave de Publicaciones → Ajustes.
 - **Registro**: cada pregunta (de alumnos y del equipo, incluida la caja «Probar el asistente») se guarda con la respuesta mostrada y si se respondió. Las no respondidas alimentan la bandeja y el aviso del Resumen.
 - **Límite**: un alumno puede hacer 40 preguntas por hora («Has hecho muchas preguntas seguidas. Prueba de nuevo dentro de un rato.»). El equipo no tiene límite.
 - **Visibilidad del chat en el campus**: el botón del asistente sólo aparece en el campus si existe **al menos una FAQ o documento activo**. Si desactivas todo, el chat desaparece para los alumnos.
