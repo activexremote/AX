@@ -205,7 +205,13 @@ export async function procesarCola(opciones: { limite?: number; guestIds?: strin
     );
 
     if (envio.ok) {
-      await terminar({ status: "enviado", subject: correo.asunto, sent_at: new Date().toISOString(), error: null });
+      const enviadoA = new Date().toISOString();
+      await terminar({ status: "enviado", subject: correo.asunto, sent_at: enviadoA, error: null });
+      // La tabla de invitados cuenta la invitación como enviada cuando
+      // `shared_at` tiene fecha; si salió por correo desde aquí, la ponemos.
+      if (fila.kind === "invitacion" || fila.kind === "invitacion_recordatorio") {
+        await admin.from("dry_run_guests").update({ shared_at: enviadoA, shared_via: "email" }).eq("id", guest.id).is("shared_at", null);
+      }
       resultado.enviados++;
     } else {
       const otraVez = fila.attempts + 1 < INTENTOS;
