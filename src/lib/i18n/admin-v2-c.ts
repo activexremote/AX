@@ -68,9 +68,12 @@ const es = {
       ["Editor de lecciones", "Convierte el borrador del profesor (PDF, Word, notas) en bloques visuales."],
       ["Banners para Meta", "Escribe las variantes, las traduce, clona referencias y pinta las fotos (modelo de imagen)."],
       ["Publicaciones", "Pinta las imágenes con IA de los posts. Los textos los escribe DeepSeek."],
-      ["Cursos relámpago", "Corrige las misiones que entregan los alumnos."],
-      ["Asistente del campus", "Indexa las FAQs y los documentos para que el chat los encuentre."],
+      ["Cursos relámpago", "Corrige sola cada misión que entrega un alumno. Ojo: usa la clave del servidor (OPENAI_API_KEY), no la de esta página, y el interruptor no la apaga."],
+      ["Narración de lecciones", "La voz de las lecciones: Fish Audio o, si no hay, OpenAI con la clave del servidor. Tampoco depende de esta página."],
     ] as [string, string][],
+    deepseek:
+      "No usan esta clave: los textos de las publicaciones, el asistente del campus (el chat de los alumnos) y la ayuda del panel contestan con DeepSeek, cuya clave está en Publicaciones → Ajustes.",
+    deepseekLink: "Ir a Publicaciones → Ajustes",
   },
   slack: {
     statusTitle: "Estado",
@@ -158,9 +161,12 @@ const en: AdminCCopy = {
       ["Lesson editor", "Turns the teacher's draft (PDF, Word, notes) into visual blocks."],
       ["Meta banners", "Writes the variants, translates them, clones references and paints the photos (image model)."],
       ["Posts", "Paints the AI images for posts. The copy is written by DeepSeek."],
-      ["Flash courses", "Grades the missions students hand in."],
-      ["Campus assistant", "Indexes FAQs and documents so the chat can find them."],
-    ],
+      ["Flash courses", "Automatically grades every mission a student hands in. Note: it uses the server key (OPENAI_API_KEY), not the one on this page, and the switch doesn't turn it off."],
+      ["Lesson narration", "The lessons' voice: Fish Audio or, failing that, OpenAI with the server key. It doesn't depend on this page either."],
+    ] as [string, string][],
+    deepseek:
+      "These don't use this key: post copy, the campus assistant (the students' chat) and the panel help answer with DeepSeek, whose key is in Posts → Settings.",
+    deepseekLink: "Go to Posts → Settings",
   },
   slack: {
     statusTitle: "Status",

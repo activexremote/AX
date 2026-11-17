@@ -85,7 +85,9 @@ export default async function AdminModuleDetail({ params }: { params: Promise<{ 
 
 async function deleteModuleAction(id: string) {
   "use server";
-  await deleteModule(id);
+  const r = await deleteModule(id);
+  // Si no se ha podido (lo usa un dry run), el botón enseña el motivo.
+  if (r.error) return r;
   // Sin esto, el botón refrescaba la página de un módulo que ya no existe y
   // se quedaba en un 404.
   redirect("/admin/modulos");

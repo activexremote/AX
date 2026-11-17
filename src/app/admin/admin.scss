@@ -803,3 +803,21 @@ code {
     color: var(--axr-text-helper);
   }
 }
+
+// El motivo cuando un botón de eliminar no ha podido (p. ej. un módulo que usa un dry run).
+.axr-delete-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+.axr-delete-error {
+  max-width: 340px;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  background: var(--adm-bad-bg, #fdecec);
+  color: var(--adm-bad, #b42318);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  text-align: left;
+}

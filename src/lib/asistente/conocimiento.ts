@@ -29,7 +29,7 @@ const PROGRAMAS: Record<string, string> = {
 const PRESUPUESTO_MODULOS = 50_000;
 const VIDA = 10 * 60_000;
 
-type Modulo = { id: string; course: string; order_index: number; title: string; description: string | null; slug: string };
+type Modulo = { id: string; course: string; order_index: number; title: string; description: string | null; slug: string; available: boolean };
 type Leccion = { id: string; module_id: string; order_index: number; title: string; subtitle: string | null; duration_min: number | null };
 
 let temarioCache: { en: number; texto: string; modulos: Modulo[] } | null = null;
@@ -38,7 +38,7 @@ async function temario() {
   if (temarioCache && Date.now() - temarioCache.en < VIDA) return temarioCache;
   const admin = createAdminClient();
   const [{ data: modulos }, { data: lecciones }] = await Promise.all([
-    admin.from("modules").select("id, course, order_index, title, description, slug").order("course").order("order_index"),
+    admin.from("modules").select("id, course, order_index, title, description, slug, available").order("course").order("order_index"),
     admin.from("lessons").select("id, module_id, order_index, title, subtitle, duration_min").order("order_index"),
   ]);
   const ms = (modulos ?? []) as Modulo[];
@@ -46,7 +46,8 @@ async function temario() {
 
   const lineas: string[] = [];
   for (const [curso, nombre] of Object.entries(PROGRAMAS)) {
-    const suyos = ms.filter((m) => m.course === curso);
+    // Un módulo oculto no sale en el temario: no lo ve ningún alumno.
+    const suyos = ms.filter((m) => m.course === curso && m.available);
     if (!suyos.length) continue;
     lineas.push(`## ${nombre}`);
     suyos.forEach((m, i) => {
@@ -112,7 +113,8 @@ async function modulosVisibles(userId: string, cursos: CourseKey[], esEquipo: bo
     const m1 = todos.find((m) => m.course === "core" && m.order_index === 1);
     if (m1) primero.add(m1.id);
   }
-  const porCurso = esEquipo ? [] : todos.filter((m) => cursos.includes(m.course as CourseKey) && !primero.has(m.id));
+  // Por curso, sólo los visibles; uno oculto sólo llega por acceso propio (su plaza de dry run).
+  const porCurso = esEquipo ? [] : todos.filter((m) => m.available && cursos.includes(m.course as CourseKey) && !primero.has(m.id));
   return [...todos.filter((m) => primero.has(m.id)), ...porCurso];
 }
 

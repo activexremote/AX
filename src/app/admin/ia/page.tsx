@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { AiConfig } from "@/components/admin/ai-config";
@@ -101,6 +102,9 @@ export default async function AdminAiPage() {
             ))}
           </ul>
           <p className="axr-ia-cost">{copy.sCost}</p>
+          <p className="axr-ia-cost">
+            {c.deepseek} <Link href="/admin/publicaciones/ajustes">{c.deepseekLink}</Link>
+          </p>
         </section>
       </div>
     </div>

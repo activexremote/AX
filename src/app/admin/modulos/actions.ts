@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { notify } from "@/lib/slack/notify";
 import { lessonNarrationText, narrateText, ttsConfigured, voiceFor } from "@/lib/tts/fish";
@@ -95,8 +96,17 @@ export async function updateModule(id: string, formData: FormData) {
 
 export async function deleteModule(id: string) {
   const supabase = await assertStaff();
+  // Un dry run apunta a su módulo y la base no deja borrarlo: se dice cuál y
+  // qué hacer, en vez del error de la base (o nada).
+  const { data: sesiones } = await createAdminClient().from("dry_runs").select("title").eq("module_id", id);
+  if (sesiones?.length) {
+    const nombres = sesiones.map((s) => `«${s.title}»`).join(", ");
+    return {
+      error: `No se puede eliminar: lo usa ${sesiones.length === 1 ? "la sesión de dry run" : "las sesiones de dry run"} ${nombres}. Cámbiale antes el módulo en Dry run, o márcalo como oculto en vez de borrarlo.`,
+    };
+  }
   const { error } = await supabase.from("modules").delete().eq("id", id);
-  if (error) return { error: error.message };
+  if (error) return { error: `No se ha podido eliminar: ${error.message}` };
   revalidatePath("/admin/modulos");
   revalidatePath("/");
   return { ok: true };
