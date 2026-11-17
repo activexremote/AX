@@ -8,7 +8,7 @@ Todo lo que sigue sale del código del campus. Cuando algo no se puede saber des
 
 ### Ruta y quién entra
 - El panel vive en `/admin`. Entran solo los roles **Administrador**, **Profesor** y **Comercial**. Si no hay sesión, se manda a `/login`. Un **Alumno** que intente entrar vuelve a `/` (el campus): los alumnos nunca ven el panel.
-- **Comercial**: solo puede estar en `/admin/comercial` y sus subpáginas. Si abre cualquier otra ruta del panel (por ejemplo `/admin` o `/admin/usuarios`), se le redirige a `/admin/comercial`, que a su vez lleva a **Material de apoyo**. Si entra al campus (`/`), también se le manda a `/admin/comercial`: no tiene clases que ver.
+- **Comercial**: solo puede estar en `/admin/comercial` y sus subpáginas. Si abre cualquier otra ruta del panel (por ejemplo `/admin` o `/admin/usuarios`), se le redirige a `/admin/comercial`, que a su vez lleva a **Perfilado de leads**. Si entra al campus (`/`), también se le manda a `/admin/comercial`: no tiene clases que ver.
 
 ### El menú lateral, por rol (etiquetas exactas en español)
 
@@ -26,6 +26,8 @@ Todo lo que sigue sale del código del campus. Cuando algo no se puede saber des
 | Alumnos y ventas | Matrículas y pagos | `/admin/matriculas` |
 | Alumnos y ventas | Usuarios | `/admin/usuarios` |
 | Alumnos y ventas | Dry run | `/admin/dry-run` |
+| Comercial | Perfilado de leads | `/admin/comercial/leads` |
+| Comercial | Análisis de leads | `/admin/comercial/analisis` |
 | Comercial | Material de apoyo | `/admin/comercial/material` |
 | Comercial | Calculadora | `/admin/comercial/calculadora` |
 | Comercial | Playbook | `/admin/comercial/playbook` |
@@ -47,10 +49,10 @@ Todo lo que sigue sale del código del campus. Cuando algo no se puede saber des
 
 **Profesor** ve solo: **Resumen** y el grupo **Formación** (Manual del profesor, Módulos y lecciones, Tareas, Respuestas, Guía docente, Asistente). No ve Alumnos y ventas, Comercial, Marketing ni Ajustes. Si escribe a mano la ruta de una página del grupo Comercial, se le devuelve a `/admin`; las páginas de IA, Conexiones y Slack también le devuelven a `/admin`.
 
-**Comercial** ve solo el grupo **Comercial** con tres elementos: Material de apoyo, Calculadora y Playbook. **KPIs de ventas no aparece** para este rol y, si escribe la ruta, se le devuelve a `/admin/comercial`.
+**Comercial** ve solo el grupo **Comercial** con cinco elementos: Perfilado de leads, Análisis de leads, Material de apoyo, Calculadora y Playbook. **KPIs de ventas no aparece** para este rol y, si escribe la ruta, se le devuelve a `/admin/comercial`.
 
 ### Cabecera del menú
-- Logotipo ΔX con el texto **ActiveXRemote** (enlace a `/admin`; para el rol comercial acaba en Material de apoyo) y la etiqueta **Panel**.
+- Logotipo ΔX con el texto **ActiveXRemote** (enlace a `/admin`; para el rol comercial acaba en Perfilado de leads) y la etiqueta **Panel**.
 
 ### Caja de usuario (pie del menú)
 - Un círculo con tus iniciales, tu nombre (o tu email si no tienes nombre) y debajo tu rol: **Administrador**, **Profesor** o **Comercial**.
@@ -71,11 +73,49 @@ Todo lo que sigue sale del código del campus. Cuando algo no se puede saber des
 ## Gestor comercial (`/admin/comercial`)
 
 ### Qué es y quién lo usa
-- **Para qué sirve**: lo que el equipo comercial necesita además de Zoho: los dosieres para mandar a los leads, la calculadora de plazos, el playbook comercial y, solo para administración, los KPIs de ventas.
-- **Los leads no se gestionan en el panel**: se llevan en **Zoho CRM**. En el panel no hay fichas de leads, ni lista de leads, ni pipeline editable.
+- **Para qué sirve**: lo que el equipo comercial necesita además de Zoho: perfilar cada lead después de llamarle y analizar esos perfiles para orientar los anuncios, los dosieres para mandar a los leads, la calculadora de plazos, el playbook comercial y, solo para administración, los KPIs de ventas.
+- **Los leads se gestionan en Zoho CRM** (estado, llamadas, datos de contacto). El panel los lee de Zoho para el perfilado, pero no los cambia: el estado se sigue cambiando en Zoho.
 - **Quién entra**: **Comercial** y **Administrador** (material, calculadora y playbook). **KPIs de ventas**: solo **Administrador**. El **Profesor** no entra (se le devuelve a `/admin`).
-- `/admin/comercial` a secas no tiene contenido: redirige a **Material de apoyo**.
+- `/admin/comercial` a secas no tiene contenido: redirige a **Perfilado de leads**.
 - Desde el menú: grupo **Comercial**.
+
+### Perfilado de leads (`/admin/comercial/leads`)
+- Menú: **Comercial → Perfilado de leads**. Lo ven **Comercial** y **Administrador**.
+- **Para qué sirve**: después de hablar con cada lead de Zoho, apuntar qué tipo de persona es, qué buscaba, qué le pareció el precio y cuánto interés real tenía. Esas respuestas alimentan el **Análisis de leads**.
+- **De dónde salen los leads**: se leen de **Zoho CRM** cada vez que se abre la página (todos los del módulo Leads, los más nuevos arriba). Nombre, teléfono, correo, ciudad, fecha de entrada y **estado de Zoho** vienen de allí y no se editan aquí. Si Zoho no contesta, sale un aviso arriba («Zoho no ha contestado…») y las fichas ya guardadas siguen contando en el análisis.
+- **Arriba a la derecha**: «{n}/{total} perfilados» con una barra de progreso.
+- **Columna izquierda (la lista)**: pestañas **Todos**, **Por perfilar** y **Perfilados**, con su número. Cada lead lleva sus iniciales (gris = sin perfilar, ámbar = a medias, verde = perfilado), nombre, fecha de entrada y ciudad, la píldora de su ficha («Sin perfilar», «A medias · n/14» o «Perfilado») y la píldora con su **estado en Zoho** (p. ej. «No contesta», «Seguimiento», «Rechazado»).
+- **Perfilado** = tiene contestado al menos **«¿Qué tipo de perfil es?»** y **«¿Cuánto interés real tenía?»**. Con menos respuestas queda «A medias».
+- **Columna derecha (la ficha)**: al pulsar un lead se abre su ficha: nombre, teléfono (pulsable para llamar), correo, ciudad, «Entró el …», su estado de Zoho y, si ya se había guardado, «Última edición». Debajo, las preguntas en cinco bloques, que se contestan pulsando botones (un clic marca, otro clic desmarca):
+  - **Quién es**: «¿Qué tipo de perfil es?» (Busca trabajo / Tiene trabajo y quiere pasarse a remoto / Freelance o autónomo que quiere más clientes fuera / Tiene empresa y quiere llevarla a remoto / Quiere montar un negocio remoto desde cero / Estudiante o recién titulado / Otro), «Edad aproximada», «Nivel de inglés que aparenta».
+  - **Qué buscaba**: «¿Qué esperaba encontrar cuando dejó sus datos?» (ofertas de trabajo, algo gratis, información del curso, asesoría para su negocio, no recordaba haber dejado sus datos, otra cosa), «¿Por qué le interesó? (su intención)» (varias a la vez), «¿Con qué urgencia lo necesita?».
+  - **Precio**: «¿Qué le pareció el precio?» (Barato / Razonable / Caro, pero ve que lo vale / Demasiado caro para su bolsillo / No llegamos a hablar del precio), «¿El precio es un motivo para no seguir?» (Sí, el principal / Sí, pero hay otros / No / No aplica), «¿Qué otros frenos tenía?» (varios).
+  - **Cómo fue la llamada**: «¿Cuánto interés real tenía?» (escala 1–5: 1 = sólo por educación, me dejaba explicar; 5 = muchísimo, preguntaba), «¿Encaja con el curso?» (1–5), «¿Cómo quedó?» (se matricula, hay que hacer seguimiento, pidió información por escrito, no le interesa, no contesta, dato no válido).
+  - **El anuncio**: «¿Por dónde nos conoció?» y «¿Recordaba qué decía el anuncio?» (Sí, y era lo que buscaba / Sí, pero esperaba otra cosa / Vagamente / No).
+  - **Notas**: texto libre (frases suyas, objeciones, qué anuncio mencionó…). También lo lee el análisis con IA.
+- **Guardar**: la barra de abajo dice «n/14 respondidas» y «Cambios sin guardar» si hay cambios. **Guardar** guarda y se queda; **Guardar y siguiente sin perfilar →** guarda y abre el siguiente lead pendiente. Se puede guardar a medias y volver luego; se puede cambiar una ficha cuando se quiera (se sobrescribe).
+- **Qué no hace**: no cambia nada en Zoho (el estado del lead se sigue cambiando en Zoho) y no llama ni manda nada al lead.
+- **Sin lead elegido**: «Elige un lead de la lista» con cuántos quedan por perfilar y el botón **Perfilar el siguiente →**.
+- **En el móvil**: se ve la lista o la ficha, no las dos; en la ficha, «← Leads» vuelve a la lista.
+
+### Análisis de leads (`/admin/comercial/analisis`)
+- Menú: **Comercial → Análisis de leads**. Lo ven **Comercial** y **Administrador**.
+- **Para qué sirve**: comparar las tipologías de lead a partir de lo apuntado en el perfilado, ver a quién deberían apuntar las campañas y por qué los anuncios actuales no terminan de funcionar.
+- Arriba: «{n} de {total} leads de Zoho perfilados». Con menos de 10, avisa de que es orientativo. Sin ninguno perfilado, sale «Aún no hay ningún lead perfilado» y el botón **Empezar a perfilar →**. El botón **Perfilar leads** (arriba a la derecha) lleva a los pendientes.
+- **Los seis medidores** (media luna; debajo, una etiqueta «Bien», «Regular» o «Mal»):
+  - **Interés real** (media de 1 a 5; bien desde 3,5, regular desde 2,5).
+  - **Encaje con el curso** (media de 1 a 5; mismos umbrales).
+  - **Acaban bien**: % que acaba en matrícula, seguimiento o pidiendo información (bien desde 40 %, regular desde 20 %).
+  - **El precio les frena**: % con «Sí, el principal» o «Sí, pero hay otros» (bien hasta 20 %, regular hasta 35 %).
+  - **Esperaban otra cosa**: % que esperaba ofertas de trabajo o algo gratis, no recordaba haber dejado sus datos, o recordaba el anuncio pero esperaba otra cosa (bien hasta 15 %, regular hasta 30 %).
+  - **Sólo por educación**: % con interés real 1 o 2 (bien hasta 20 %, regular hasta 40 %).
+  - Al pasar el ratón por un medidor se ve cómo se calcula.
+- **A quién apuntar**: la tipología con mejor **puntuación** (0–100 = interés real 35 % + encaje 35 % + parte que acaba bien 30 %), con un mínimo de 3 casos si alguna los tiene. Avisa si hay pocos casos.
+- **Qué puede estar fallando en los anuncios**: señales automáticas (sin IA) a partir de 5 leads perfilados, cuando algo pasa de un umbral: ≥30 % esperaba otra cosa, ≥25 % creía que le íbamos a dar trabajo, ≥20 % buscaba algo gratis, ≥20 % no recordaba haber dejado sus datos, ≥40 % sólo escuchaba por educación, ≥30 % frenado por el precio; y una señal verde si el interés medio es ≥3,5 y ≥40 % acaba bien. Cada señal explica qué puede estar fallando.
+- **Comparativa por tipología**: tabla con cada tipo de perfil (ordenados de mejor a peor puntuación): casos, puntuación, interés, encaje, acaban bien, precio frena y esperaban otra cosa, cada uno con su barra. La fila del target va marcada con «Target».
+- **Lectura con IA — Insights para las campañas**: el botón **Analizar con IA** (o **Volver a analizar con IA**) manda a DeepSeek las fichas **sin nombres ni correos**, las cuentas de esta página, los textos de los banners aprobados y de las campañas recientes de Banners y, si Meta está conectado en el servidor, el gasto, clics y leads por campaña de los últimos 30 días. Tarda unos 20 segundos y **cuesta céntimos** (saldo de DeepSeek, clave en Publicaciones → Ajustes). Hacen falta al menos 3 leads perfilados. Devuelve: un resumen con su **confianza** (baja con menos de 10 fichas, media hasta 30, alta con más), **A quién apuntar** y **A quién no**, **Por qué los anuncios no terminan de funcionar** (cada motivo con sus datos), **Qué cambiar**, **Mensajes para probar** (textos de anuncio listos) y **Para confirmarlo** (pruebas a hacer). Se guarda: al volver a la página se ve el último análisis con su fecha, con cuántos leads se hizo y cuántos nuevos hay desde entonces.
+- **Cómo se reparte cada respuesta**: una tarjeta por pregunta con barras (número y %) de cada opción. En las de varias respuestas los % no suman 100.
+- **Problemas**: «Zoho no ha contestado» → el total de leads sale como «—», pero el análisis usa las fichas guardadas. «Hacen falta 3 leads perfilados» → perfila más. Si la IA falla, vuelve a pulsar; si dice que falta la clave de DeepSeek, es cosa de administración (Publicaciones → Ajustes).
 
 ### Material de apoyo (`/admin/comercial/material`)
 - Menú: **Comercial → Material de apoyo**.
@@ -246,7 +286,10 @@ Lista de avisos sacados de los datos (con su contador), ordenados: rojo, ámbar,
 - El mensaje de WhatsApp de primer contacto: Comercial → Playbook → 10 Mensajes listos para usar.
 - Cuántos leads han entrado este mes y cuántos están sin llamar: Comercial → KPIs de ventas (solo admin).
 - El coste por alumno o el ROAS: KPIs de ventas → Anuncios.
-- La lista de leads y su ficha: en Zoho CRM, no en el panel.
+- La lista de leads con su estado y datos de contacto: en Zoho CRM (y, para perfilarlos, en Comercial → Perfilado de leads).
+- Qué leads me quedan por perfilar: Comercial → Perfilado de leads → pestaña «Por perfilar».
+- A qué tipo de persona deberían apuntar los anuncios y por qué no funcionan: Comercial → Análisis de leads (comparativa, señales y lectura con IA).
+- Cuánto frena el precio o cuánto interés real tienen los leads: Comercial → Análisis de leads → medidores.
 
 ---
 

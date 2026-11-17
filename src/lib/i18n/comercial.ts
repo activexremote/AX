@@ -11,6 +11,8 @@ import type { Locale } from "@/lib/i18n/config";
 
 const es = {
   navGroup: "Comercial",
+  navLeads: "Perfilado de leads",
+  navAnalisis: "Análisis de leads",
   navMaterial: "Material de apoyo",
   navCalc: "Calculadora",
   navPlaybook: "Playbook",
@@ -67,6 +69,8 @@ export type ComercialCopy = typeof es;
 
 const en: ComercialCopy = {
   navGroup: "Sales",
+  navLeads: "Lead profiling",
+  navAnalisis: "Lead analysis",
   navMaterial: "Sales material",
   navCalc: "Calculator",
   navPlaybook: "Playbook",
