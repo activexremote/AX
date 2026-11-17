@@ -20,16 +20,26 @@ export function DeleteButton({
   const { t } = useI18n();
   const router = useRouter();
   const [armed, setArmed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const deleteLabel = label ?? t.admin.delete;
   const confirm = confirmLabel ?? t.admin.confirmDelete;
   const tam = small ? " axr-btn--small" : "";
 
+  const aviso = error ? (
+    <span role="alert" className="axr-delete-error">
+      {error}
+    </span>
+  ) : null;
+
   if (!armed) {
     return (
-      <button type="button" className={`axr-btn axr-btn--ghost axr-btn--delete${tam}`} onClick={() => setArmed(true)}>
-        {deleteLabel}
-      </button>
+      <span className="axr-delete-wrap">
+        <button type="button" className={`axr-btn axr-btn--ghost axr-btn--delete${tam}`} onClick={() => { setError(null); setArmed(true); }}>
+          {deleteLabel}
+        </button>
+        {aviso}
+      </span>
     );
   }
 
@@ -41,7 +51,9 @@ export function DeleteButton({
         disabled={pending}
         onClick={() =>
           startTransition(async () => {
-            await action();
+            const r = await action();
+            // Si la acción dice por qué no ha podido, se enseña aquí.
+            if (r && "error" in r && r.error) setError(r.error);
             router.refresh();
             setArmed(false);
           })

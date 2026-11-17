@@ -106,7 +106,7 @@ const es = {
 
   // ── Página de ajustes de IA ──
   sTitle: "IA",
-  sSubtitle: "La clave de OpenAI que usa el panel para estructurar contenidos.",
+  sSubtitle: "La clave de OpenAI del panel: lecciones, banners e imágenes de las publicaciones.",
   sKey: "Clave de la API de OpenAI",
   sKeyHint: "Empieza por sk-. Se guarda en el servidor y no se vuelve a enseñar entera.",
   sKeySaved: "Clave guardada",
@@ -159,7 +159,7 @@ const es = {
   dropNothing: "No has aceptado ningún bloque.",
   dropAiOff: "Para leer archivos con IA hace falta la clave de OpenAI (Panel → IA). Mientras tanto, puedes crear la lección a mano.",
   dropFile: "Archivo",
-  sCost: "Cada propuesta es una llamada a OpenAI y se factura en tu cuenta. El campus no llama a la IA por su cuenta: sólo cuando alguien pulsa el botón.",
+  sCost: "Cada propuesta es una llamada a OpenAI y se factura en tu cuenta. En el panel, la IA sólo trabaja cuando alguien pulsa el botón; la corrección de los cursos relámpago es la excepción: corre sola en cada entrega.",
 };
 
 type EditorCopy = typeof es;
@@ -252,7 +252,7 @@ const en: EditorCopy = {
   aiReplaceWarn: "This replaces every current block. Continue?",
 
   sTitle: "AI",
-  sSubtitle: "The OpenAI key the panel uses to structure content.",
+  sSubtitle: "The panel's OpenAI key: lessons, banners and post images.",
   sKey: "OpenAI API key",
   sKeyHint: "Starts with sk-. It is stored on the server and never shown in full again.",
   sKeySaved: "Key saved",
@@ -303,7 +303,7 @@ const en: EditorCopy = {
   dropNothing: "You haven't accepted any block.",
   dropAiOff: "Reading files with AI needs the OpenAI key (Panel → AI). In the meantime you can create the lesson by hand.",
   dropFile: "File",
-  sCost: "Every proposal is one OpenAI call, billed to your account. The campus never calls the AI on its own: only when someone presses the button.",
+  sCost: "Every proposal is one OpenAI call, billed to your account. In the panel the AI only runs when someone presses the button; flash-course grading is the exception: it runs on its own with every submission.",
 };
 
 export const editorCopy: Record<Locale, EditorCopy> = { es, en };
