@@ -41,6 +41,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const grupoComercial: GrupoMenu = {
     label: cc.navGroup,
     items: [
+      { href: `${RUTA_COMERCIAL}/leads`, label: cc.navLeads, icon: "telefono" },
+      { href: `${RUTA_COMERCIAL}/analisis`, label: cc.navAnalisis, icon: "grafica" },
       { href: `${RUTA_COMERCIAL}/material`, label: cc.navMaterial, icon: "maletin" },
       { href: `${RUTA_COMERCIAL}/calculadora`, label: cc.navCalc, icon: "euro" },
       { href: `${RUTA_COMERCIAL}/playbook`, label: cc.navPlaybook, icon: "manual" },

@@ -43,12 +43,12 @@ export const ayudaPanelCopy: Record<"es" | "en", Record<"administrador" | "profe
     es: {
       administrador: ["¿Qué es esta página y cómo se usa?", "¿Cómo invito a alguien al dry run?", "¿Dónde corrijo las tareas de los alumnos?"],
       profesor: ["¿Qué es esta página y cómo se usa?", "¿Dónde corrijo las tareas de mis alumnos?", "¿Cómo veo el progreso de un alumno?"],
-      comercial: ["¿Qué es esta página y cómo se usa?", "¿Cómo calculo un presupuesto?", "¿Dónde está el material para enviar a un cliente?"],
+      comercial: ["¿Qué es esta página y cómo se usa?", "¿Cómo calculo un presupuesto?", "¿Cómo perfilo un lead después de llamarle?"],
     },
     en: {
       administrador: ["What is this page and how do I use it?", "How do I invite someone to the dry run?", "Where do I grade students' tasks?"],
       profesor: ["What is this page and how do I use it?", "Where do I grade my students' tasks?", "How do I see a student's progress?"],
-      comercial: ["What is this page and how do I use it?", "How do I calculate a quote?", "Where is the material to send a client?"],
+      comercial: ["What is this page and how do I use it?", "How do I calculate a quote?", "How do I profile a lead after the call?"],
     },
   };
   const con = (base: typeof es, l: "es" | "en") =>
