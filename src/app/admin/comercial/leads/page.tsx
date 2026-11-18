@@ -11,8 +11,8 @@ import "./leads.scss";
 // ══════════════════════════════════════════════════════════
 //  Perfilado de leads
 //
-//  A la izquierda, los leads de Zoho (los más nuevos arriba) con cómo va su
-//  ficha; a la derecha, la ficha del que se ha elegido. Lo que se apunta
+//  La lista de leads de Zoho (los más nuevos arriba) con cómo va su ficha.
+//  Al elegir uno se abre su formulario en una ventana encima (?lead=). Lo que se apunta
 //  aquí alimenta el análisis (/admin/comercial/analisis).
 // ══════════════════════════════════════════════════════════
 
@@ -91,108 +91,75 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
         </section>
       ) : null}
 
-      <div className={`axr-lp-layout${actual ? " has-lead" : ""}`}>
-        <section className="axr-admin-card axr-lp-list" aria-label="Leads de Zoho">
-          <nav className="axr-lp-tabs" aria-label="Filtrar">
-            {(
-              [
-                ["todos", "Todos", leads.length],
-                ["pendientes", "Por perfilar", pendientes.length],
-                ["perfilados", "Perfilados", hechos],
-              ] as const
-            ).map(([k, t, n]) => (
-              <Link key={k} href={href({ ver: k === "todos" ? undefined : k })} className={filtro === k ? "is-on" : ""} aria-current={filtro === k ? "page" : undefined}>
-                {t} <span>{n}</span>
-              </Link>
-            ))}
-          </nav>
-          {visibles.length ? (
-            <ul>
-              {visibles.map((l) => {
-                const e = estadoFicha(porId.get(l.id));
-                return (
-                  <li key={l.id}>
-                    <Link href={href({ lead: l.id })} className={l.id === elegido ? "is-on" : ""} aria-current={l.id === elegido ? "true" : undefined}>
-                      <span className={`axr-lp-av is-${e.k}`} aria-hidden>
-                        {iniciales(l.nombre)}
-                      </span>
-                      <span className="axr-lp-who">
-                        <strong>{l.nombre}</strong>
-                        <small>
-                          {fecha(l.creado)}
-                          {l.ciudad ? ` · ${l.ciudad}` : ""}
-                        </small>
-                      </span>
-                      <span className="axr-lp-tags">
-                        <span className={`axr-adm-pill${e.tono ? ` axr-adm-pill--${e.tono}` : ""}`}>{e.t}</span>
-                        {l.estado ? <span className={`axr-adm-pill axr-adm-pill--${TONO_ZOHO[l.estado] ?? "info"} is-zoho`}>{l.estado}</span> : null}
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <p className="axr-adm-empty">{filtro === "pendientes" ? "No queda ninguno por perfilar." : "No hay leads en Zoho."}</p>
-          )}
-        </section>
+      {pendientes[0] ? (
+        <div className="axr-lp-cta">
+          <span>
+            Te quedan <strong>{pendientes.length}</strong> por perfilar.
+          </span>
+          <Link className="axr-btn axr-btn--primary" href={href({ lead: pendientes[0].id })} scroll={false}>
+            Perfilar el siguiente →
+          </Link>
+        </div>
+      ) : null}
 
-        <section className="axr-admin-card axr-lp-ficha" aria-label="Ficha del lead">
-          {actual ? (
-            <>
-              <header className="axr-lp-head">
-                <Link href={href({ lead: undefined })} className="axr-lp-back">
-                  ← Leads
-                </Link>
-                <span className={`axr-lp-av axr-lp-av--lg is-${estadoFicha(fichaActual).k}`} aria-hidden>
-                  {iniciales(actual.nombre)}
-                </span>
-                <div>
-                  <h2>{actual.nombre}</h2>
-                  <p>
-                    {actual.telefono ? <a href={`tel:${actual.telefono.replace(/\s+/g, "")}`}>{actual.telefono}</a> : null}
-                    {actual.email ? <a href={`mailto:${actual.email}`}>{actual.email}</a> : null}
-                    {actual.ciudad ? <span>{actual.ciudad}</span> : null}
-                    <span>Entró el {fecha(actual.creado)}</span>
-                  </p>
-                </div>
-                {actual.estado ? <span className={`axr-adm-pill axr-adm-pill--${TONO_ZOHO[actual.estado] ?? "info"}`}>Zoho: {actual.estado}</span> : null}
-              </header>
-              {fichaActual ? (
-                <p className="axr-lp-meta">
-                  Última edición: {new Date(fichaActual.updated_at).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" })}
-                </p>
-              ) : null}
-              <FormPerfil
-                key={actual.id}
-                lead={actual}
-                inicial={fichaActual?.answers ?? {}}
-                notasIniciales={fichaActual?.notes ?? ""}
-                siguiente={siguiente}
-              />
-            </>
-          ) : (
-            <div className="axr-adm-empty axr-lp-vacio">
-              <Icono n="usuarios" size={28} />
-              <strong>Elige un lead de la lista</strong>
-              <span>
-                {pendientes.length
-                  ? `Te quedan ${pendientes.length} por perfilar. Empieza por el más reciente.`
-                  : "Están todos perfilados. Mira el análisis para ver qué dicen."}
-              </span>
-              {pendientes[0] ? (
-                <Link className="axr-btn" href={href({ lead: pendientes[0].id })}>
-                  Perfilar el siguiente →
-                </Link>
-              ) : (
-                <Link className="axr-btn" href="/admin/comercial/analisis">
-                  Ver el análisis →
-                </Link>
-              )}
-            </div>
-          )}
-        </section>
-      </div>
+      <section className="axr-admin-card axr-lp-list" aria-label="Leads de Zoho">
+        <nav className="axr-lp-tabs" aria-label="Filtrar">
+          {(
+            [
+              ["todos", "Todos", leads.length],
+              ["pendientes", "Por perfilar", pendientes.length],
+              ["perfilados", "Perfilados", hechos],
+            ] as const
+          ).map(([k, t, n]) => (
+            <Link key={k} href={href({ ver: k === "todos" ? undefined : k, lead: undefined })} className={filtro === k ? "is-on" : ""} aria-current={filtro === k ? "page" : undefined}>
+              {t} <span>{n}</span>
+            </Link>
+          ))}
+        </nav>
+        {visibles.length ? (
+          <ul>
+            {visibles.map((l) => {
+              const e = estadoFicha(porId.get(l.id));
+              return (
+                <li key={l.id}>
+                  <Link href={href({ lead: l.id })} scroll={false}>
+                    <span className={`axr-lp-av is-${e.k}`} aria-hidden>
+                      {iniciales(l.nombre)}
+                    </span>
+                    <span className="axr-lp-who">
+                      <strong>{l.nombre}</strong>
+                      <small>
+                        {fecha(l.creado)}
+                        {l.ciudad ? ` · ${l.ciudad}` : ""}
+                        {l.telefono ? ` · ${l.telefono}` : ""}
+                      </small>
+                    </span>
+                    <span className="axr-lp-tags">
+                      <span className={`axr-adm-pill${e.tono ? ` axr-adm-pill--${e.tono}` : ""}`}>{e.t}</span>
+                      {l.estado ? <span className={`axr-adm-pill axr-adm-pill--${TONO_ZOHO[l.estado] ?? "info"} is-zoho`}>{l.estado}</span> : null}
+                    </span>
+                    <span className="axr-lp-go">{e.k === "pendiente" ? "Perfilar" : "Editar"} →</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="axr-adm-empty">{filtro === "pendientes" ? "No queda ninguno por perfilar." : "No hay leads en Zoho."}</p>
+        )}
+      </section>
+
+      {actual ? (
+        <FormPerfil
+          key={actual.id}
+          lead={actual}
+          inicial={fichaActual?.answers ?? {}}
+          notasIniciales={fichaActual?.notes ?? ""}
+          cerrarHref={href({ lead: undefined })}
+          siguienteHref={siguiente ? href({ lead: siguiente }) : null}
+          pendientes={pendientes.filter((l) => l.id !== actual.id).length}
+        />
+      ) : null}
     </div>
   );
 }
