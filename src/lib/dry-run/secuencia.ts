@@ -48,6 +48,15 @@ export const SECUENCIA: readonly PasoSecuencia[] = [
     hora: (run) => diaRelativo(new Date(run.starts_at), -4, 10),
   },
   {
+    // No sale sola: se encola a mano para los que ya tienen plaza cuando
+    // se publica el enlace de la videollamada.
+    kind: "enlace_clase",
+    para: "plaza",
+    nombre: "Enlace de la clase",
+    cuando: "A mano, al publicar el enlace de Meet",
+    hora: () => null,
+  },
+  {
     kind: "bienvenida",
     para: "plaza",
     nombre: "Bienvenida y primeros pasos",
@@ -132,7 +141,7 @@ export function motivoParaNoEnviar(kind: TipoCorreo, run: DryRun, guest: DryRunG
   const t = Date.now();
   const empieza = new Date(run.starts_at).getTime();
   // Los avisos de antes de la clase no tienen sentido una vez empezada.
-  if (["invitacion_recordatorio", "tour", "preparacion", "checklist", "manana", "una_hora"].includes(kind) && t > empieza) {
+  if (["invitacion_recordatorio", "enlace_clase", "tour", "preparacion", "checklist", "manana", "una_hora"].includes(kind) && t > empieza) {
     return "la clase ya ha empezado";
   }
   // Uno que llega con más de medio día de retraso (la cola estuvo parada)

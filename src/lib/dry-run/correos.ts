@@ -19,6 +19,7 @@ import { LINK_URL } from "@/lib/seo";
 export type TipoCorreo =
   | "invitacion"
   | "invitacion_recordatorio"
+  | "enlace_clase"
   | "bienvenida"
   | "tour"
   | "preparacion"
@@ -261,7 +262,8 @@ function datosSesion(ctx: Contexto): Bloque {
     t: "datos",
     filas: [
       ["Cuándo", cuandoEs(run.starts_at, run.ends_at)],
-      ["Dónde", "En directo, online. La clase se organiza en Google Classroom"],
+      ["Dónde", run.meet_url ? "En directo, online, por Google Meet" : "En directo, online. La clase se organiza en Google Classroom"],
+      ...(run.meet_url ? ([["Enlace", run.meet_url]] as [string, string][]) : []),
       ["Docente", run.teacher_name],
       ["Módulo", modulo.title],
       ["Precio", "Gratis"],
@@ -279,6 +281,11 @@ function botonClase(ctx: Contexto, kind: TipoCorreo): Bloque {
   if (ctx.run.meet_url) return { t: "boton", texto: "Entrar a la clase", url: ctx.run.meet_url };
   if (ctx.run.classroom_url) return { t: "boton", texto: "Abrir Google Classroom", url: ctx.run.classroom_url };
   return { t: "boton", texto: "Ver mi preparación", url: conUtm("/preparacion", ctx.run, kind) };
+}
+
+/** El enlace de la videollamada en una línea, para los correos que no llevan el botón. */
+function meetNota(ctx: Contexto): Bloque[] {
+  return ctx.run.meet_url ? [{ t: "nota", texto: `El enlace de la clase (Google Meet) es **${ctx.run.meet_url}**. Guárdalo: lo tienes también en tu página de preparación.` }] : [];
 }
 
 function classroomLinea(ctx: Contexto): string {
@@ -329,6 +336,23 @@ export function componer(kind: TipoCorreo, ctx: Contexto): Correo {
         { t: "nota", texto: "Si no te interesa, no pasa nada: con el enlace del final dejamos de escribirte sobre este dry run." },
       ]);
 
+    case "enlace_clase":
+      return pintar(ctx, `El enlace de la clase del ${diaCorto}`, `${dia}, a las ${empieza} (hora de Madrid), por Google Meet.`, saludo(guest, "aquí tienes el enlace de la clase"), [
+        { t: "p", texto: `Te recordamos que el **${dia}, a las ${empieza}** (hora de Madrid), damos el dry run del Módulo ${modulo.numero} con ${run.teacher_name}. La clase es en directo por **Google Meet**.` },
+        {
+          t: "datos",
+          filas: [
+            ["Cuándo", cuandoEs(run.starts_at, run.ends_at)],
+            ["Enlace", run.meet_url ?? "Se publica en Google Classroom"],
+            ["Docente", run.teacher_name],
+          ],
+        },
+        botonClase(ctx, kind),
+        { t: "enlaces", items: [{ texto: "Añadir a Google Calendar", url: enlaceGoogleCalendar(run) }, { texto: "Descargar evento (.ics)", url: enlaceIcs(run) }] },
+        { t: "p", texto: "Conéctate diez minutos antes para probar cámara y micrófono con calma. Te lo volvemos a mandar la víspera y una hora antes de empezar, y lo tienes siempre en tu página de preparación del campus." },
+        { t: "boton", texto: "Ver mi preparación", url: conUtm("/preparacion", run, kind) },
+      ]);
+
     case "bienvenida":
       return pintar(ctx, "Tu plaza está confirmada: ya puedes entrar al campus", `Nos vemos el ${dia} a las ${empieza}. Estos son tus primeros pasos.`, saludo(guest, "ya tienes plaza"), [
         { t: "p", texto: `Tu plaza para el dry run está confirmada y ya tienes acceso al campus con el módulo **${modulo.title}** completo.` },
@@ -362,6 +386,7 @@ export function componer(kind: TipoCorreo, ctx: Contexto): Correo {
             "**Google Classroom.** Allí se entregan las tareas y están las plantillas del módulo.",
           ],
         },
+        ...meetNota(ctx),
         { t: "boton", texto: "Entrar al módulo", url: conUtm(`/modulos/${modulo.slug}`, run, kind) },
       ]);
 
@@ -378,6 +403,7 @@ export function componer(kind: TipoCorreo, ctx: Contexto): Correo {
           ],
         },
         { t: "p", texto: "Si te sobra tiempo: el pódcast con Nick Bloom (30 min), los diez modelos de trabajo remoto (15 min) y el informe State of Global Hiring (15 min). Todo está enlazado en la lección." },
+        ...meetNota(ctx),
         { t: "boton", texto: "Abrir el material previo", url: conUtm(leccion, run, kind) },
       ]);
 
@@ -393,6 +419,7 @@ export function componer(kind: TipoCorreo, ctx: Contexto): Correo {
             "Has descargado la plantilla de la hora 1 (está en la lección «Hora 1»).",
             "Cámara y micrófono funcionan: en la hora 3 hablas delante de tu grupo.",
             "Conexión estable, Chrome o Edge actualizado y un sitio tranquilo.",
+            ...(run.meet_url ? [`Tienes guardado el enlace de la clase: **${run.meet_url}**`] : []),
           ],
         },
         ...agenda(ctx),
@@ -405,7 +432,7 @@ export function componer(kind: TipoCorreo, ctx: Contexto): Correo {
         {
           t: "datos",
           filas: [
-            ["Clase", run.meet_url ? run.meet_url : "El enlace se publica en Google Classroom"],
+            ["Enlace", run.meet_url ? run.meet_url : "El enlace se publica en Google Classroom"],
             ...(run.classroom_url ? ([["Classroom", run.classroom_url]] as [string, string][]) : []),
           ],
         },
@@ -418,6 +445,7 @@ export function componer(kind: TipoCorreo, ctx: Contexto): Correo {
       return pintar(ctx, "Empezamos en una hora", `A las ${empieza} abrimos la sesión con ${run.teacher_name}.`, "En una hora empezamos", [
         { t: "p", texto: `A las **${empieza}** abrimos la sesión con ${run.teacher_name}. Ten a mano cámara, micrófono y la plantilla de la hora 1.` },
         botonClase(ctx, kind),
+        ...meetNota(ctx),
         { t: "nota", texto: "¿Algún problema para entrar? Responde a este correo y te ayudamos." },
       ]);
 
