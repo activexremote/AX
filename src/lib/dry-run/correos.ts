@@ -20,6 +20,7 @@ export type TipoCorreo =
   | "invitacion"
   | "invitacion_recordatorio"
   | "enlace_clase"
+  | "enlace_clase_invitados"
   | "bienvenida"
   | "tour"
   | "preparacion"
@@ -351,6 +352,24 @@ export function componer(kind: TipoCorreo, ctx: Contexto): Correo {
         { t: "enlaces", items: [{ texto: "Añadir a Google Calendar", url: enlaceGoogleCalendar(run) }, { texto: "Descargar evento (.ics)", url: enlaceIcs(run) }] },
         { t: "p", texto: "Conéctate diez minutos antes para probar cámara y micrófono con calma. Te lo volvemos a mandar la víspera y una hora antes de empezar, y lo tienes siempre en tu página de preparación del campus." },
         { t: "boton", texto: "Ver mi preparación", url: conUtm("/preparacion", run, kind) },
+      ]);
+
+    case "enlace_clase_invitados":
+      return pintar(ctx, `Este ${diaCorto}: el enlace de la clase de prueba`, `${dia}, a las ${empieza} (hora de Madrid), por Google Meet. Aún puedes reservar tu plaza.`, saludo(guest, "te pasamos el enlace de la clase"), [
+        { t: "p", texto: `El **${dia}, a las ${empieza}** (hora de Madrid), damos el dry run del Módulo ${modulo.numero} con ${run.teacher_name}, en directo por **Google Meet**. Todavía no te has apuntado y nos encantaría que vinieras.` },
+        {
+          t: "datos",
+          filas: [
+            ["Cuándo", cuandoEs(run.starts_at, run.ends_at)],
+            ["Enlace", run.meet_url ?? "Se publica en Google Classroom"],
+            ["Docente", run.teacher_name],
+            ["Precio", "Gratis"],
+          ],
+        },
+        { t: "p", texto: "Reserva tu plaza con un clic (con tu cuenta de Google): así tienes acceso al campus con el material previo y te mandamos los avisos de la víspera y de una hora antes." },
+        { t: "boton", texto: "Reservar mi plaza", url: enlaceLanding(ctx) },
+        { t: "enlaces", items: [{ texto: "Añadir a Google Calendar", url: enlaceGoogleCalendar(run) }, { texto: "Descargar evento (.ics)", url: enlaceIcs(run) }] },
+        { t: "nota", texto: "Si no puedes venir, no pasa nada: con el enlace del final dejamos de escribirte sobre este dry run." },
       ]);
 
     case "bienvenida":

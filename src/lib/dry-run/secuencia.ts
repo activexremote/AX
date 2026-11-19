@@ -57,6 +57,13 @@ export const SECUENCIA: readonly PasoSecuencia[] = [
     hora: () => null,
   },
   {
+    kind: "enlace_clase_invitados",
+    para: "invitados",
+    nombre: "Enlace de la clase (invitados)",
+    cuando: "A mano, al publicar el enlace de Meet, si no se ha apuntado",
+    hora: () => null,
+  },
+  {
     kind: "bienvenida",
     para: "plaza",
     nombre: "Bienvenida y primeros pasos",
@@ -141,7 +148,7 @@ export function motivoParaNoEnviar(kind: TipoCorreo, run: DryRun, guest: DryRunG
   const t = Date.now();
   const empieza = new Date(run.starts_at).getTime();
   // Los avisos de antes de la clase no tienen sentido una vez empezada.
-  if (["invitacion_recordatorio", "enlace_clase", "tour", "preparacion", "checklist", "manana", "una_hora"].includes(kind) && t > empieza) {
+  if (["invitacion_recordatorio", "enlace_clase", "enlace_clase_invitados", "tour", "preparacion", "checklist", "manana", "una_hora"].includes(kind) && t > empieza) {
     return "la clase ya ha empezado";
   }
   // Uno que llega con más de medio día de retraso (la cola estuvo parada)

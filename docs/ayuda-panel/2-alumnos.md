@@ -449,6 +449,7 @@ Los 10 correos y cuándo salen (hora de Madrid):
 | «Invitación» | invitados | «Al invitar desde el panel» (en el momento) | «Te invitamos al dry run del Módulo {n} · {día}» |
 | «Recordatorio de invitación» | invitados | «4 días antes, 10:00, si no se ha apuntado» | «Quedan pocos días para el dry run del {día}» |
 | «Enlace de la clase» | con plaza | «A mano, al publicar el enlace de Meet» (no sale sola; se mandó el 19 nov. 2026 a todos los que tenían plaza) | «El enlace de la clase del {día}» |
+| «Enlace de la clase (invitados)» | invitados | «A mano, al publicar el enlace de Meet, si no se ha apuntado» (se mandó el 19 nov. 2026 a los invitados sin plaza) | «Este {día}: el enlace de la clase de prueba» (fecha, enlace de Meet y botón «Reservar mi plaza») |
 | «Bienvenida y primeros pasos» | con plaza | «Al confirmar la plaza» (en el momento) | «Tu plaza está confirmada: ya puedes entrar al campus» |
 | «Vuelta por el campus» | con plaza | «Al día siguiente, 10:00 (si quedan más de 3 días)» | «Cómo sacarle partido al campus en diez minutos» |
 | «Material previo» | con plaza | «7 días antes, 10:00» | «Falta una semana: empieza por el material previo» |
