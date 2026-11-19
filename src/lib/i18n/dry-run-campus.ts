@@ -16,6 +16,7 @@ const es = {
   bannerFeedbackCta: "Dejar mi feedback",
   bannerPrep: "Preparación: {a} de {b}",
   bannerPrepCta: "Ir a mi preparación",
+  bannerJoin: "Entrar a la clase (Meet)",
 
   // ── Formulario de feedback ──
   fbNps: "¿Con qué probabilidad recomendarías este curso a alguien como tú? (0 = nada, 10 = seguro)",
@@ -53,6 +54,7 @@ const en: DryRunCampusCopy = {
   bannerFeedbackCta: "Leave my feedback",
   bannerPrep: "Preparation: {a} of {b}",
   bannerPrepCta: "Go to my preparation",
+  bannerJoin: "Join the class (Meet)",
 
   fbNps: "How likely are you to recommend this course to someone like you? (0 = not at all, 10 = definitely)",
   fbRates: "Rate from 1 (poor) to 5 (very good)",

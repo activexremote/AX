@@ -25,6 +25,30 @@ export async function AvisoDryRun() {
 
   const hechos = PASOS.filter((p) => guest.onboarding[p.key]).length;
   const titulo = locale === "en" && run.title_en?.trim() ? run.title_en : run.title;
+  const meet = !terminado ? run.meet_url : null;
+  if (meet) {
+    // Con la videollamada publicada, dos botones: entrar a la clase y la preparación.
+    return (
+      <div className="axr-dr-aviso">
+        <Icono n="calendario" size={22} />
+        <span className="axr-dr-aviso__text">
+          <strong>{titulo}</strong>
+          <span>
+            {cuandoEs(run.starts_at, run.ends_at, locale)} · {fmt(c.bannerPrep, { a: hechos, b: PASOS.length })}
+          </span>
+        </span>
+        <span className="axr-dr-aviso__btns">
+          <a href={meet} className="axr-btn" target="_blank" rel="noreferrer">
+            <Icono n="play" /> {c.bannerJoin}
+          </a>
+          <Link href="/preparacion" className="axr-btn axr-btn--ghost">
+            {c.bannerPrepCta} <Icono n="flecha" />
+          </Link>
+        </span>
+      </div>
+    );
+  }
+
   return (
     <Link href={terminado ? "/preparacion#feedback" : "/preparacion"} className="axr-dr-aviso">
       <Icono n="calendario" size={22} />

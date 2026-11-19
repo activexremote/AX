@@ -239,6 +239,7 @@
     span { font-size: 0.875rem; }
   }
   &:hover { text-decoration: none; border-color: var(--cmp-accent); color: var(--cmp-accent-ink); }
+  &__btns { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 
 }
 
