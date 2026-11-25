@@ -11,7 +11,8 @@ import { PASOS } from "@/lib/dry-run/preparacion";
 import { SECUENCIA } from "@/lib/dry-run/secuencia";
 import { docenteDe } from "@/lib/dry-run/docente";
 import { cuandoEs, diaLargo, fechaYHora, horaMadrid } from "@/lib/dry-run/tiempo";
-import { CON_PLAZA, idInvitado, type DryRun, type DryRunEmail, type DryRunGuest, type DryRunLink, type Feedback } from "@/lib/dry-run/tipos";
+import { media as mediaDe, nps as npsDe, type Respuestas } from "@/lib/dry-run/encuesta";
+import { CON_PLAZA, type DryRun, type DryRunEmail, type DryRunGuest, type DryRunLink } from "@/lib/dry-run/tipos";
 import { getCurrentProfile } from "@/lib/data/profile";
 import { drCopy, rellenar } from "@/lib/i18n/dry-run";
 import { getI18n } from "@/lib/i18n/server";
@@ -39,12 +40,13 @@ export default async function DryRunPage({ params }: { params: Promise<{ id: str
   if (!runRow) notFound();
   const run = runRow as DryRun;
 
-  const [{ locale }, { data: modulos }, { data: linksRows }, { data: guestsRows }, ajustes] = await Promise.all([
+  const [{ locale }, { data: modulos }, { data: linksRows }, { data: guestsRows }, ajustes, { data: encuestas }] = await Promise.all([
     getI18n(),
     admin.from("modules").select("id, title, course, order_index").order("course").order("order_index"),
     admin.from("dry_run_links").select("*").eq("dry_run_id", id).order("created_at"),
     admin.from("dry_run_guests").select("*").eq("dry_run_id", id).order("created_at", { ascending: false }),
     getMailSettings(),
+    admin.from("dry_run_surveys").select("guest_id, answers, source").eq("dry_run_id", id),
   ]);
   const copy = drCopy[locale];
   const links = (linksRows ?? []) as DryRunLink[];
@@ -57,10 +59,13 @@ export default async function DryRunPage({ params }: { params: Promise<{ id: str
   const conPlaza = guests.filter((g) => CON_PLAZA.includes(g.status));
   const invitadosPendientes = guests.filter((g) => g.status === "invitado").length;
   const prepMedia = media(conPlaza.map((g) => PASOS.filter((p) => g.onboarding?.[p.key]).length / PASOS.length));
-  const feedbacks = guests.filter((g) => g.feedback_at && g.feedback).map((g) => ({ g, f: g.feedback as Feedback }));
-  const nps = feedbacks.length
-    ? Math.round(((feedbacks.filter((x) => x.f.nps >= 9).length - feedbacks.filter((x) => x.f.nps <= 6).length) / feedbacks.length) * 100)
-    : null;
+  // La opinión de cada invitado sale de la encuesta (/admin/dry-run/<id>/encuesta).
+  const respuestasEnc = (encuestas ?? []) as { guest_id: string | null; answers: Respuestas; source: string }[];
+  const rsEnc = respuestasEnc.map((r) => r.answers);
+  const npsEnc = npsDe(rsEnc);
+  const nps = npsEnc.valor;
+  const npsDeInvitado = new Map(respuestasEnc.filter((r) => r.guest_id && typeof r.answers.nps === "number").map((r) => [r.guest_id as string, r.answers.nps as number]));
+  const conOpinion = guests.filter((g) => g.feedback_at).length;
 
   const modulo = (modulos ?? []).find((m) => m.id === run.module_id);
   const filas: FilaInvitado[] = [...guests]
@@ -68,7 +73,7 @@ export default async function DryRunPage({ params }: { params: Promise<{ id: str
     .map((g) => ({
       ...g,
       prep: CON_PLAZA.includes(g.status) ? PASOS.filter((p) => g.onboarding?.[p.key]).length : null,
-      nps: g.feedback ? (g.feedback as Feedback).nps : null,
+      nps: npsDeInvitado.get(g.id) ?? null,
     }));
   const datosMensaje = {
     slug: run.slug,
@@ -89,7 +94,7 @@ export default async function DryRunPage({ params }: { params: Promise<{ id: str
     { label: copy.t.steps.opened, v: n(abierta), de: n(enviada) },
     { label: copy.t.steps.seat, v: n(tienePlaza), de: n(abierta) },
     { label: copy.t.steps.prep, v: n((g) => tienePlaza(g) && PASOS.every((p) => g.onboarding?.[p.key])), de: n(tienePlaza) },
-    { label: copy.t.steps.feedback, v: feedbacks.length, de: n(tienePlaza) },
+    { label: copy.t.steps.feedback, v: conOpinion, de: n(tienePlaza) },
   ];
   const yo = profile.full_name?.trim().split(/\s+/)[0] ?? "";
   const porInvitador = [...new Set(guests.map((g) => g.inviter?.trim() || ""))]
@@ -349,60 +354,19 @@ export default async function DryRunPage({ params }: { params: Promise<{ id: str
 
       {/* ── Feedback ── */}
       <section className="axr-admin-card">
-        <h2>{copy.fbTitle}</h2>
-        {feedbacks.length ? (
-          <>
-            <div className="axr-dra-fb-avg">
-              {(["clase", "ritmo", "contenido", "docente", "campus"] as const).map((k) => {
-                const m = media(feedbacks.map((x) => x.f[k]).filter((v): v is number => typeof v === "number"));
-                return (
-                  <div key={k}>
-                    <span>{copy.fbAspects[k]}</span>
-                    <strong>{m === null ? "—" : m.toFixed(1)}</strong>
-                    <small>/ 5</small>
-                  </div>
-                );
-              })}
-              <div>
-                <span>{copy.fbWould}</span>
-                <strong>
-                  {feedbacks.filter((x) => x.f.pagaria === "si").length}/{feedbacks.filter((x) => x.f.pagaria === "quiza").length}/
-                  {feedbacks.filter((x) => x.f.pagaria === "no").length}
-                </strong>
-                <small>
-                  {copy.fbYes}/{copy.fbMaybe}/{copy.fbNo}
-                </small>
-              </div>
-            </div>
-            <div className="axr-dra-fb-list">
-              {feedbacks.map(({ g, f }) => (
-                <article key={g.id}>
-                  <header>
-                    <strong>{g.full_name || g.email || idInvitado(g.seq)}</strong>
-                    <span className="axr-adm-pill axr-adm-pill--accent">{f.nps}/10</span>
-                  </header>
-                  {f.gusto ? (
-                    <p>
-                      <b>{copy.fbLiked}:</b> {f.gusto}
-                    </p>
-                  ) : null}
-                  {f.cambiaria ? (
-                    <p>
-                      <b>{copy.fbChange}:</b> {f.cambiaria}
-                    </p>
-                  ) : null}
-                  {f.comentario ? (
-                    <p>
-                      <b>{copy.fbOther}:</b> {f.comentario}
-                    </p>
-                  ) : null}
-                </article>
-              ))}
-            </div>
-          </>
-        ) : (
-          <p className="axr-dra-lead">{copy.fbNone}</p>
-        )}
+        <div className="axr-dra-head">
+          <div>
+            <h2>{copy.fbTitle}</h2>
+            <p className="axr-dra-lead">
+              {rsEnc.length
+                ? `${rsEnc.length} ${rsEnc.length === 1 ? "respuesta" : "respuestas"} · NPS ${nps ?? "—"} · nota media ${mediaDe(rsEnc, "global")?.toFixed(1).replace(".", ",") ?? "—"}/5 · ${rsEnc.filter((r) => r.pagaria === "si").length} pagarían hoy`
+                : copy.fbNone}
+            </p>
+          </div>
+          <Link href={`/admin/dry-run/${run.id}/encuesta`} className="axr-btn">
+            <Icono n="grafica" /> Ver la encuesta y el análisis
+          </Link>
+        </div>
       </section>
 
       {/* ── Configuración ── */}

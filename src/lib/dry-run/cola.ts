@@ -110,7 +110,7 @@ export async function reprogramar(runId: string) {
     .in("guest_id", [...porId.keys()]);
 
   for (const e of pendientes ?? []) {
-    if (!esTipoCorreo(e.kind) || e.kind === "invitacion" || e.kind === "bienvenida" || e.kind === "enlace_clase" || e.kind === "enlace_clase_invitados") continue;
+    if (!esTipoCorreo(e.kind) || e.kind === "invitacion" || e.kind === "bienvenida" || e.kind === "enlace_clase" || e.kind === "enlace_clase_invitados" || e.kind === "encuesta") continue;
     const at = PASO[e.kind].hora(sesion.run, porId.get(e.guest_id)!);
     await admin
       .from("dry_run_emails")

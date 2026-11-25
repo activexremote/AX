@@ -90,6 +90,8 @@ export type DryRunGuest = {
   onboarding: Record<string, string>;
   feedback: Feedback | null;
   feedback_at: string | null;
+  /** Migración 0043: cuándo respondió la encuesta de después de la clase. */
+  survey_at?: string | null;
   unsubscribed_at: string | null;
   created_at: string;
 };
