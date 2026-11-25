@@ -1,0 +1,342 @@
+// ══════════════════════════════════════════════════════════
+//  La encuesta del dry run
+//
+//  Sobre el mesh de las páginas sencillas del dry run (dry-run.scss), con el
+//  formulario en tarjetas blancas: tinta #161326 y el acento morado. Los
+//  botones de las escalas son grandes para el pulgar (44 px) y en un móvil
+//  la escala de 0 a 10 baja a dos filas.
+// ══════════════════════════════════════════════════════════
+
+$accent: #5b4bf5;
+$accent-strong: #4632e6;
+$ink: #161326;
+$body: #514d69;
+$muted: #8a86a0;
+$soft: #f4f3fb;
+$border: #e7e4f5;
+$bad: #e11d48;
+$warn: #f59e0b;
+$ok: #10b981;
+
+.axr-enc {
+  padding-bottom: 4rem;
+
+  &__bar-right { display: inline-flex; align-items: center; gap: 0.6rem; }
+
+  &__hero {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 1.75rem;
+    h1 {
+      margin: 0.4rem 0 0.75rem;
+      font-size: clamp(1.9rem, 5vw, 2.8rem);
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+    }
+    p { max-width: 60ch; margin: 0; line-height: 1.55; color: rgba(255, 255, 255, 0.86); }
+  }
+  &__eyebrow {
+    font-size: 0.75rem !important;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.75) !important;
+  }
+
+  &__body {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  &__card,
+  &__block,
+  &__done {
+    background: #ffffff;
+    color: $ink;
+    border-radius: 18px;
+    padding: clamp(1.25rem, 3vw, 1.75rem);
+    box-shadow: 0 24px 60px -24px rgba(20, 8, 60, 0.55);
+    h2 { margin: 0 0 0.5rem; font-size: 1.3rem; letter-spacing: -0.02em; color: $ink; }
+    p { margin: 0 0 1rem; line-height: 1.55; color: $body; }
+  }
+
+  &__login .axr-dr__cta { margin-top: 0.25rem; }
+
+  &__who {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: #ffffff;
+    font-size: 0.92rem;
+    small { color: rgba(255, 255, 255, 0.75); }
+    button {
+      border: 0;
+      background: none;
+      padding: 0;
+      color: #ffffff;
+      font: inherit;
+      font-size: 0.85rem;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+
+  &__note {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    background: #ffffff;
+    color: $body;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    border-left: 4px solid $accent;
+  }
+
+  &__error {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    background: #fff1f3;
+    color: #9f1239;
+    font-weight: 600;
+    border-left: 4px solid $bad;
+  }
+
+  &__form { display: grid; gap: 1rem; }
+
+  &__progress {
+    position: sticky;
+    top: 0.5rem;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 999px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px -12px rgba(20, 8, 60, 0.5);
+    .axr-enc__track {
+      flex: 1;
+      height: 6px;
+      border-radius: 999px;
+      background: $soft;
+      overflow: hidden;
+      > span {
+        display: block;
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(140deg, #6d5cff, #a855f7);
+        transition: width 0.25s ease;
+      }
+    }
+    small { color: $muted; font-size: 0.78rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  }
+
+  &__block {
+    > header {
+      display: flex;
+      gap: 0.85rem;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+      h2 { margin: 0.1rem 0 0.25rem; }
+      p { margin: 0; font-size: 0.92rem; }
+    }
+  }
+  &__num {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 10px;
+    background: linear-gradient(140deg, #6d5cff, #a855f7);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  &__q {
+    margin: 0;
+    padding: 1.1rem 0 0.2rem;
+    border: 0;
+    border-top: 1px solid $border;
+    min-width: 0;
+    &:first-of-type { border-top: 0; }
+    &.is-missing {
+      legend { color: $bad; }
+      .axr-enc__nps span,
+      .axr-enc__scale span,
+      .axr-enc__pills span { border-color: rgba($bad, 0.55); }
+    }
+    legend {
+      float: left;
+      width: 100%;
+      padding: 0;
+      margin-bottom: 0.7rem;
+      font-weight: 650;
+      font-size: 1rem;
+      line-height: 1.4;
+      color: $ink;
+      label { cursor: pointer; }
+      small { display: block; margin-top: 0.2rem; font-weight: 400; font-size: 0.85rem; color: $muted; }
+    }
+    > :not(legend) { clear: both; }
+  }
+  &__req { color: $accent; }
+
+  // Las opciones: el input se oculta y se pinta el span de al lado.
+  &__nps,
+  &__scale,
+  &__pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    label { position: relative; cursor: pointer; }
+    input {
+      position: absolute;
+      opacity: 0;
+      inset: 0;
+      margin: 0;
+      cursor: pointer;
+    }
+    span {
+      display: grid;
+      place-items: center;
+      min-height: 44px;
+      border: 1.5px solid $border;
+      border-radius: 12px;
+      background: #ffffff;
+      color: $ink;
+      font-weight: 600;
+      transition: border-color 0.12s, background 0.12s, color 0.12s;
+    }
+    label:hover span { border-color: rgba($accent, 0.5); }
+    input:focus-visible + span { outline: 2px solid $accent; outline-offset: 2px; }
+    input:checked + span { border-color: $accent; background: $accent; color: #ffffff; }
+  }
+
+  &__nps {
+    display: grid;
+    grid-template-columns: repeat(11, minmax(0, 1fr));
+    span { min-width: 0; }
+    label.is-low input:checked + span { background: $bad; border-color: $bad; }
+    label.is-mid input:checked + span { background: $warn; border-color: $warn; }
+    label.is-high input:checked + span { background: $ok; border-color: $ok; }
+    @media (max-width: 520px) {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+  }
+  &__scale {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    max-width: 420px;
+  }
+  &__ends {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.4rem;
+    font-size: 0.78rem;
+    color: $muted;
+  }
+  &__scale + &__ends { max-width: 420px; }
+
+  &__pills {
+    span {
+      padding: 0.55rem 1rem;
+      border-radius: 999px;
+      font-weight: 500;
+      text-align: center;
+      line-height: 1.3;
+    }
+  }
+  &__pills--multi input:checked + span::before { content: "✓ "; }
+
+  &__number {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    input {
+      width: 10rem;
+      max-width: 100%;
+      min-height: 44px;
+      padding: 0.5rem 0.85rem;
+      border: 1.5px solid $border;
+      border-radius: 12px;
+      font: inherit;
+      font-size: 1.05rem;
+      color: $ink;
+      &:focus { outline: 2px solid $accent; outline-offset: 1px; border-color: $accent; }
+    }
+    span { font-weight: 600; color: $body; }
+  }
+
+  textarea {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 5.5rem;
+    padding: 0.75rem 0.9rem;
+    border: 1.5px solid $border;
+    border-radius: 12px;
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: $ink;
+    resize: vertical;
+    &::placeholder { color: #b3afc7; }
+    &:focus { outline: 2px solid $accent; outline-offset: 1px; border-color: $accent; }
+  }
+
+  &__submit {
+    display: grid;
+    justify-items: start;
+    gap: 0.6rem;
+    padding: 0.5rem 0.25rem;
+    small { color: rgba(255, 255, 255, 0.8); }
+    .axr-dr__cta[disabled] { opacity: 0.7; cursor: progress; }
+  }
+
+  &__done {
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    p { max-width: 48ch; margin: 0 auto 1.25rem; }
+  }
+  &__done-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    margin-bottom: 0.75rem;
+    border-radius: 999px;
+    background: $ok;
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  &__ghost {
+    border: 1.5px solid $border;
+    background: #ffffff;
+    color: $ink;
+    border-radius: 999px;
+    padding: 0.6rem 1.2rem;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    &:hover { border-color: $accent; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before { transition: none !important; }
+  }
+}

@@ -122,6 +122,14 @@ export const SECUENCIA: readonly PasoSecuencia[] = [
     cuando: "2 días después, 10:00, si no lo ha dejado",
     hora: (run) => diaRelativo(new Date(run.ends_at), 2, 10),
   },
+  {
+    // No sale sola: se manda a mano desde la encuesta del panel.
+    kind: "encuesta",
+    para: "plaza",
+    nombre: "Encuesta de la clase",
+    cuando: "A mano, desde la encuesta del panel",
+    hora: () => null,
+  },
 ];
 
 export const PASO = Object.fromEntries(SECUENCIA.map((p) => [p.kind, p])) as Record<TipoCorreo, PasoSecuencia>;
@@ -156,7 +164,8 @@ export function motivoParaNoEnviar(kind: TipoCorreo, run: DryRun, guest: DryRunG
   if (["tour", "preparacion", "checklist", "manana"].includes(kind) && t - enviarA.getTime() > 12 * 3600_000) {
     return "llegó tarde";
   }
-  if ((kind === "gracias" || kind === "feedback") && guest.status === "no_asistio") return "no vino a la clase";
+  if ((kind === "gracias" || kind === "feedback" || kind === "encuesta") && guest.status === "no_asistio") return "no vino a la clase";
   if (kind === "feedback" && guest.feedback_at) return "ya dejó su opinión";
+  if (kind === "encuesta" && guest.survey_at) return "ya ha respondido la encuesta";
   return null;
 }

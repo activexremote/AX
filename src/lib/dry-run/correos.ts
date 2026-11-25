@@ -28,7 +28,8 @@ export type TipoCorreo =
   | "manana"
   | "una_hora"
   | "gracias"
-  | "feedback";
+  | "feedback"
+  | "encuesta";
 
 type Bloque =
   | { t: "p"; texto: string }
@@ -96,6 +97,8 @@ export function enlaceGoogleCalendar(run: DryRun) {
   return u.toString();
 }
 
+/** La encuesta de después de la clase: un solo enlace para todos (se entra con Google). */
+export const enlaceEncuesta = (run: Pick<DryRun, "slug">) => `${LINK_URL}/dry-run/${run.slug}/encuesta`;
 export const enlaceIcs = (run: DryRun) => `${LINK_URL}/dry-run/${run.slug}/evento.ics`;
 export const enlaceBaja = (token: string) => `${LINK_URL}/dry-run/baja?t=${token}`;
 
@@ -469,10 +472,10 @@ export function componer(kind: TipoCorreo, ctx: Contexto): Correo {
       ]);
 
     case "gracias":
-      return pintar(ctx, "Gracias por venir. ¿Nos cuentas qué te ha parecido?", "Tres minutos de feedback que cambian la versión final del curso.", saludo(guest, "gracias por participar"), [
+      return pintar(ctx, "Gracias por venir. ¿Nos cuentas qué te ha parecido?", "Cinco minutos de encuesta que cambian la versión final del curso.", saludo(guest, "gracias por participar"), [
         { t: "p", texto: "Hoy has hecho algo que nos ayuda mucho: probar la clase antes que nadie. Ahora nos falta la otra mitad, **tu opinión sincera**." },
-        { t: "p", texto: "Son tres minutos: una nota, cinco valoraciones rápidas y, si quieres, lo que cambiarías. Lo leemos todo, y lo que nos digas cambia la versión final del curso." },
-        { t: "boton", texto: "Dejar mi feedback", url: conUtm("/preparacion#feedback", run, kind) },
+        { t: "p", texto: "Son unos cinco minutos: casi todo se contesta con un clic y, si quieres, nos cuentas qué cambiarías. Lo leemos todo, y lo que nos digas cambia la versión final del curso." },
+        { t: "boton", texto: "Dejar mi feedback", url: conUtm(`/dry-run/${run.slug}/encuesta`, run, kind) },
         {
           t: "p",
           texto: `Sigues teniendo acceso al módulo en el campus${run.access_until ? ` hasta el **${diaLargo(run.access_until)}**` : ""}. Las tareas de la semana se entregan en Google Classroom.`,
@@ -480,10 +483,18 @@ export function componer(kind: TipoCorreo, ctx: Contexto): Correo {
       ]);
 
     case "feedback":
-      return pintar(ctx, "¿Nos regalas tres minutos? Tu opinión del dry run", "Nos falta tu feedback de la clase de prueba.", "Nos falta tu opinión", [
+      return pintar(ctx, "¿Nos regalas cinco minutos? Tu opinión del dry run", "Nos falta tu feedback de la clase de prueba.", "Nos falta tu opinión", [
         { t: "p", texto: "Todavía no nos has contado qué te pareció la clase. Nos ayuda tanto lo bueno como lo malo: qué te sobró, qué echaste en falta, si el ritmo era el adecuado." },
-        { t: "boton", texto: "Dejar mi feedback", url: conUtm("/preparacion#feedback", run, kind) },
+        { t: "boton", texto: "Dejar mi feedback", url: conUtm(`/dry-run/${run.slug}/encuesta`, run, kind) },
         { t: "nota", texto: "Es el último correo que te mandamos sobre esto. Gracias por haber venido." },
+      ]);
+
+    case "encuesta":
+      return pintar(ctx, "¿Qué te pareció la clase? Cinco minutos de encuesta", "Tu opinión sincera del dry run, en cinco minutos.", saludo(guest, "gracias otra vez por venir"), [
+        { t: "p", texto: `Hemos preparado una encuesta corta sobre el dry run del **Módulo ${modulo.numero}**: el contenido, el ritmo, el campus y, sobre todo, **qué cambiarías**.` },
+        { t: "p", texto: "Casi todo se contesta con un clic y hay unas pocas preguntas abiertas para lo que quieras contarnos. Lo leemos todo, y lo que nos digas cambia la versión final del curso." },
+        { t: "boton", texto: "Responder la encuesta", url: conUtm(`/dry-run/${run.slug}/encuesta`, run, kind) },
+        { t: "nota", texto: "Entra con la misma cuenta de Google con la que reservaste tu plaza: así sabemos que la respuesta es tuya y no te lo volvemos a pedir." },
       ]);
   }
 }

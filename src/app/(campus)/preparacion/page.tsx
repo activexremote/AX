@@ -4,7 +4,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { CampusHeader } from "@/components/campus-header";
-import { FormularioFeedback } from "@/components/campus/dry-run/formulario-feedback";
 import { ListaPreparacion, type PasoVista } from "@/components/campus/dry-run/lista-preparacion";
 import { Icono } from "@/components/admin/publicaciones/iconos";
 import { enlaceGoogleCalendar, enlaceIcs } from "@/lib/dry-run/correos";
@@ -36,7 +35,7 @@ export async function generateMetadata(): Promise<Metadata> {
 //  correos. Arriba, cuándo es y los botones del día (clase, Classroom,
 //  calendario); después la lista de lo que hay que hacer antes, la agenda,
 //  dónde está cada cosa en el campus y, desde que empieza la clase, el
-//  formulario de feedback.
+//  enlace a la encuesta (/dry-run/<slug>/encuesta).
 // ══════════════════════════════════════════════════════════
 
 const DIA = 24 * 3600_000;
@@ -292,8 +291,12 @@ export default async function PreparacionPage({ searchParams }: { searchParams: 
           <h2 className="axr-c-card__title">{c.feedbackTitle}</h2>
           {feedbackAbierto ? (
             <>
-              <p className="axr-prep__text">{c.feedbackBody}</p>
-              <FormularioFeedback guestId={guest.id} previo={guest.feedback} />
+              <p className="axr-prep__text">{guest.survey_at ? c.feedbackDone : c.feedbackBody}</p>
+              <div>
+                <Link href={`/dry-run/${run.slug}/encuesta`} className={guest.survey_at ? "axr-btn axr-btn--ghost" : "axr-btn"} prefetch={false}>
+                  {guest.survey_at ? c.feedbackEdit : c.feedbackCta} →
+                </Link>
+              </div>
             </>
           ) : (
             <p className="axr-prep__text">{c.feedbackClosed}</p>
