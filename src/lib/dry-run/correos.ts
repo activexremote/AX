@@ -1,4 +1,4 @@
-import { leerAgenda, type DryRun, type DryRunGuest } from "@/lib/dry-run/tipos";
+import { leerAgenda, leerGrabaciones, type DryRun, type DryRunGuest } from "@/lib/dry-run/tipos";
 import { cuandoEs, diaLargo, horaMadrid, sello } from "@/lib/dry-run/tiempo";
 import { LINK_URL } from "@/lib/seo";
 
@@ -29,7 +29,8 @@ export type TipoCorreo =
   | "una_hora"
   | "gracias"
   | "feedback"
-  | "encuesta";
+  | "encuesta"
+  | "grabaciones";
 
 type Bloque =
   | { t: "p"; texto: string }
@@ -41,6 +42,7 @@ type Bloque =
   | { t: "agenda"; filas: { hora: string; que: string }[] }
   | { t: "boton"; texto: string; url: string }
   | { t: "enlaces"; items: { texto: string; url: string }[] }
+  | { t: "videos"; items: { titulo: string; url: string }[] }
   | { t: "nota"; texto: string };
 
 export type Contexto = {
@@ -156,6 +158,17 @@ function bloqueHtml(b: Bloque): string {
     case "boton":
       // Tabla, no <a> con padding, para que Outlook lo pinte entero.
       return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0 20px 0;"><tr><td bgcolor="${VERDE}" style="background-color:${VERDE};"><a href="${esc(b.url)}" style="display:block;padding:16px 20px;font-family:${FUENTE};font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;">${esc(b.texto)} &nbsp;&rarr;</a></td></tr></table>`;
+    case "videos": {
+      // Una fila por vídeo, con borde de tinta como los datos de la sesión:
+      // que se vean de un vistazo y no se confundan con un enlace más.
+      const filas = b.items
+        .map(
+          (v, i, todas) =>
+            `<tr><td style="padding:14px 16px;${i < todas.length - 1 ? "border-bottom:1px solid #e0e0e0;" : ""}"><a href="${esc(v.url)}" style="text-decoration:none;color:${TINTA};"><span style="display:inline-block;width:26px;height:26px;line-height:26px;text-align:center;background-color:${TINTA};color:#ffffff;font-size:11px;margin-right:12px;vertical-align:middle;">&#9654;</span><span style="font-size:15px;font-weight:700;vertical-align:middle;">${esc(v.titulo)}</span></a></td><td align="right" style="padding:14px 16px;${i < todas.length - 1 ? "border-bottom:1px solid #e0e0e0;" : ""}white-space:nowrap;"><a href="${esc(v.url)}" style="font-size:13px;font-weight:600;color:${VERDE};text-decoration:none;">Ver el vídeo &rarr;</a></td></tr>`,
+        )
+        .join("");
+      return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px 0;border:1px solid ${TINTA};">${filas}</table>`;
+    }
     case "enlaces":
       return `<p style="margin:0 0 16px 0;font-size:14px;line-height:1.7;color:${GRIS};">${b.items
         .map((l) => `<a href="${esc(l.url)}" style="color:${TINTA};text-decoration:underline;">${esc(l.texto)}</a>`)
@@ -184,6 +197,8 @@ function bloqueTexto(b: Bloque): string {
       return `${b.texto}: ${b.url}`;
     case "enlaces":
       return b.items.map((l) => `${l.texto}: ${l.url}`).join("\n");
+    case "videos":
+      return b.items.map((v) => `▶ ${v.titulo}: ${v.url}`).join("\n");
   }
 }
 
@@ -496,5 +511,17 @@ export function componer(kind: TipoCorreo, ctx: Contexto): Correo {
         { t: "boton", texto: "Responder la encuesta", url: conUtm(`/dry-run/${run.slug}/encuesta`, run, kind) },
         { t: "nota", texto: "Entra con la misma cuenta de Google con la que reservaste tu plaza: así sabemos que la respuesta es tuya y no te lo volvemos a pedir." },
       ]);
+
+    case "grabaciones": {
+      const videos = leerGrabaciones(run.recordings);
+      return pintar(ctx, `Las grabaciones del dry run del Módulo ${modulo.numero}`, "La clase completa, para verla o repasarla cuando te venga bien.", saludo(guest, "aquí tienes la clase grabada"), [
+        { t: "p", texto: `Ya puedes ver las grabaciones del dry run del **Módulo ${modulo.numero}** de ActiveXRemote. Si no pudiste venir, míralas cuando te venga bien; si estuviste, te sirven para repasar.` },
+        videos.length ? { t: "videos", items: videos } : { t: "nota", texto: "Las grabaciones estarán disponibles muy pronto." },
+        { t: "h", texto: "¿Nos cuentas qué te ha parecido?" },
+        { t: "p", texto: "Hayas venido a la clase o la veas ahora, **nos encantaría conocer tu opinión**: qué te ha gustado, qué cambiarías y cualquier sugerencia que se te ocurra. Son unos cinco minutos y nos ayuda muchísimo a mejorar ActiveXRemote." },
+        { t: "boton", texto: "Dar mi opinión", url: conUtm(`/dry-run/${run.slug}/encuesta`, run, kind) },
+        { t: "nota", texto: "Para responder se entra con una cuenta de Google. Si ya respondiste la encuesta, ¡gracias! Puedes volver a entrar y cambiar lo que quieras." },
+      ]);
+    }
   }
 }

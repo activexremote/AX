@@ -62,6 +62,7 @@ export default async function DryRunsPage() {
     classroom_code: "",
     meet_url: "",
     agenda: AGENDA_M1,
+    recordings: "",
     capacity: "",
     access_until: "",
     registration_open: true,

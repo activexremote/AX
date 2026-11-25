@@ -459,6 +459,7 @@ Los 10 correos y cuándo salen (hora de Madrid):
 | «Gracias y feedback» | con plaza | «30 minutos después de terminar» | «Gracias por venir. ¿Nos cuentas qué te ha parecido?» |
 | «Recordatorio de feedback» | con plaza | «2 días después, 10:00, si no lo ha dejado» | «¿Nos regalas cinco minutos? Tu opinión del dry run» |
 | «Encuesta de la clase» | con plaza | «A mano, desde la encuesta del panel» | «¿Qué te pareció la clase? Cinco minutos de encuesta» |
+| «Grabaciones de la clase» | todos los invitados | «A mano, desde el panel, cuando estén las grabaciones» | «Las grabaciones del dry run del Módulo N» |
 
 Contenido resumido: la invitación y su recordatorio llevan los datos de la sesión (cuándo, online en Google Classroom, docente, módulo, «Gratis») y el botón «Reservar mi plaza» con su enlace personal. La bienvenida: primeros pasos (preparación, unirse a Classroom con código, guardar la fecha, empezar por «Antes de la clase»), botón «Ir a mi preparación» y enlaces «Añadir a Google Calendar» y «Descargar evento (.ics)». La vuelta por el campus: dónde está cada cosa y botón «Entrar al módulo». Material previo: qué hacer si solo tienes una hora y botón «Abrir el material previo». Checklist: lista de comprobación, agenda y «Ver mi preparación». Víspera y una hora antes: enlace de la clase y botón «Entrar a la clase» (videollamada) o, si no hay, «Abrir Google Classroom», o «Ver mi preparación». Gracias y recordatorio de feedback: botón «Dejar mi feedback» (la encuesta, `/dry-run/<dirección>/encuesta`). La encuesta: botón «Responder la encuesta». Con el campo «Enlace de Google Meet» de la sesión relleno, **todos los correos de antes de la clase llevan el enlace de Meet** (en los datos de la sesión, en una nota o en el checklist), el campus enseña el botón «Entrar a la clase (Meet)» en el aviso de la portada y en `/preparacion`, y el calendario (.ics y Google Calendar) lo lleva como ubicación. El correo «Enlace de la clase»: fecha, enlace, botón «Entrar a la clase», enlaces de calendario y «Ver mi preparación». Todos llevan enlace de baja (y cabecera List-Unsubscribe) y UTM (`utm_source=email`, `utm_medium=dry-run`, `utm_content=<tipo>`).
 
@@ -479,6 +480,12 @@ Cómo funciona la cola (lo que pasa por detrás):
 - Si la cuenta de envío no está configurada, nada sale: todo se queda «en cola» hasta configurarla (y lo que entonces llegue con más de 12 h de retraso se omitirá por «llegó tarde»).
 - Cuando sale con éxito una invitación o su recordatorio, la fila de la tabla queda marcada como «Enviada por correo» si aún no lo estaba.
 - El panel muestra solo los recuentos por tipo; no hay vista por persona de sus correos ni de los motivos (el motivo se guarda en la base de datos; aparece en el CSV solo indirectamente).
+
+#### «Grabaciones de la clase»
+- Las grabaciones se escriben en «La sesión» → «Grabaciones de la clase», una por línea: «Primera parte | https://drive.google.com/…» (cada línea necesita su enlace al final; si no, no deja guardar). Comprueba en Drive que estén compartidas con «Cualquier persona con el enlace».
+- El bloque enseña los vídeos, «Ver» (cómo queda el correo), a cuántos se ha enviado y si hay un envío programado.
+- «Cuándo sale (hora de Madrid)» + «Programar para N invitados» → «Sí, programar para N». Va a **todos los invitados con correo que no se han dado de baja**, tengan plaza o no y hayan venido o no. Si la hora ya pasó o está vacía, sale al momento. «Cambiar la hora» reprograma los que no han salido; «Cancelar el envío (N)» los cancela. A quien ya lo recibió no se le reenvía.
+- El correo lleva los vídeos, la petición de opinión y el botón «Dar mi opinión» (la encuesta).
 
 #### «Feedback»
 - Una línea de resumen sacada de la encuesta: «N respuestas · NPS {n} · nota media {x}/5 · N pagarían hoy» (o «Todavía no ha llegado ninguno.»), y el botón «Ver la encuesta y el análisis» → `/admin/dry-run/<id>/encuesta`.

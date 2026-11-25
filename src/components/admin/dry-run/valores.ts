@@ -16,6 +16,7 @@ export function valoresDe(r: DryRun): ValoresSesion {
     classroom_code: r.classroom_code ?? "",
     meet_url: r.meet_url ?? "",
     agenda: r.agenda,
+    recordings: r.recordings ?? "",
     capacity: r.capacity ? String(r.capacity) : "",
     access_until: aCampoLocal(r.access_until),
     registration_open: r.registration_open,
