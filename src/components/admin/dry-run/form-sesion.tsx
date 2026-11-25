@@ -17,6 +17,7 @@ export type ValoresSesion = {
   classroom_code: string;
   meet_url: string;
   agenda: string;
+  recordings: string;
   capacity: string;
   access_until: string;
   registration_open: boolean;
@@ -114,6 +115,12 @@ export function FormSesion({
         <label htmlFor="dr-agenda">{copy.fAgenda}</label>
         <textarea id="dr-agenda" name="agenda" defaultValue={valores.agenda} rows={7} />
         <small>{copy.fAgendaHint}</small>
+      </div>
+
+      <div className="axr-form__row">
+        <label htmlFor="dr-rec">{copy.fRecordings}</label>
+        <textarea id="dr-rec" name="recordings" defaultValue={valores.recordings} rows={3} placeholder="Primera parte | https://drive.google.com/…" />
+        <small>{copy.fRecordingsHint}</small>
       </div>
 
       <div className="axr-form__cols">

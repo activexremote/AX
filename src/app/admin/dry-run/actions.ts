@@ -7,7 +7,7 @@ import { encolar, procesarCola, reprogramar, vistaPrevia } from "@/lib/dry-run/c
 import { esTipoCorreo } from "@/lib/dry-run/secuencia";
 import { deCampoLocal } from "@/lib/dry-run/tiempo";
 import { urlDeEnlace } from "@/components/admin/dry-run/valores";
-import { CON_PLAZA, SEGUIMIENTOS, type DryRun, type DryRunGuest, type DryRunLink, type EstadoInvitado, type Seguimiento } from "@/lib/dry-run/tipos";
+import { CON_PLAZA, leerGrabaciones, SEGUIMIENTOS, type DryRun, type DryRunGuest, type DryRunLink, type EstadoInvitado, type Seguimiento } from "@/lib/dry-run/tipos";
 import { enviarCorreo, getMailSettings } from "@/lib/correo/envio";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -61,6 +61,9 @@ export async function guardarSesion(id: string | null, formData: FormData): Prom
   if (accesoTxt && !acceso) return { error: "Revisa la fecha de fin del acceso." };
   if (plazas !== null && (!Number.isInteger(plazas) || plazas < 1)) return { error: "Las plazas tienen que ser un número entero." };
   if (classroom_url === undefined || meet_url === undefined) return { error: "Los enlaces tienen que empezar por https://" };
+  const grabaciones = txt(formData, "recordings", 3000);
+  const malas = grabaciones.split("\n").map((l) => l.trim()).filter(Boolean).filter((l) => !/https?:\/\/\S+$/.test(l));
+  if (malas.length) return { error: `Cada grabación necesita su enlace al final («Primera parte | https://…»). Revisa: «${malas[0].slice(0, 60)}»` };
 
   const fila = {
     slug,
@@ -73,6 +76,7 @@ export async function guardarSesion(id: string | null, formData: FormData): Prom
     classroom_code: txt(formData, "classroom_code", 40) || null,
     meet_url,
     agenda: txt(formData, "agenda", 3000),
+    recordings: grabaciones,
     capacity: plazas,
     access_until: acceso ? acceso.toISOString() : null,
     registration_open: formData.get("registration_open") === "on",
@@ -476,4 +480,78 @@ export async function probarCorreo(): Promise<Resultado<{ a: string }>> {
     ajustes,
   );
   return r.ok ? { ok: true, a: yo.email } : { error: r.error };
+}
+
+/** A quién va el correo de las grabaciones: todo invitado con correo que no se haya dado de baja. */
+function paraGrabaciones(guests: DryRunGuest[]) {
+  return guests.filter((g) => g.email && g.status !== "baja" && !g.unsubscribed_at);
+}
+
+/**
+ * Programa el correo «Grabaciones de la clase» para todos los invitados, a
+ * la hora que se elija (en hora de Madrid; vacío o pasada, sale ya). Volver a
+ * programarlo cambia la hora de los que aún no han salido y no reenvía a
+ * quien ya lo recibió.
+ */
+export async function programarGrabaciones(runId: string, cuando: string): Promise<Resultado<{ n: number; at: string }>> {
+  try {
+    await assertAdmin();
+  } catch {
+    return { error: "No tienes permiso para esto." };
+  }
+  const admin = createAdminClient();
+  const { data: run } = await admin.from("dry_runs").select("*").eq("id", runId).maybeSingle();
+  if (!run) return { error: "La sesión ya no existe." };
+  if (!leerGrabaciones((run as DryRun).recordings).length) return { error: "Añade antes las grabaciones en «La sesión» (abajo) y guarda." };
+
+  let at = cuando ? deCampoLocal(cuando) : new Date();
+  if (cuando && !at) return { error: "Revisa la fecha y la hora." };
+  if (!at || at.getTime() < Date.now()) at = new Date();
+
+  const { data } = await admin.from("dry_run_guests").select("*").eq("dry_run_id", runId);
+  const para = paraGrabaciones((data ?? []) as DryRunGuest[]);
+  if (!para.length) return { error: "No hay invitados con correo." };
+
+  const { data: ya } = await admin.from("dry_run_emails").select("guest_id").eq("kind", "grabaciones").eq("status", "enviado").in("guest_id", para.map((g) => g.id));
+  const enviados = new Set((ya ?? []).map((e) => e.guest_id as string));
+  const pendientes = para.filter((g) => !enviados.has(g.id));
+  if (!pendientes.length) return { error: "Ya les ha llegado a todos." };
+
+  const { error } = await admin
+    .from("dry_run_emails")
+    .upsert(
+      pendientes.map((g) => ({ guest_id: g.id, kind: "grabaciones", send_at: at.toISOString(), status: "pendiente", attempts: 0, error: null, sent_at: null, claimed_at: null })),
+      { onConflict: "guest_id,kind" },
+    );
+  if (error) return { error: error.message };
+
+  if (at.getTime() <= Date.now() + 60_000) {
+    const ids = pendientes.map((g) => g.id);
+    after(async () => {
+      for (let i = 0; i < ids.length; i += 40) await procesarCola({ guestIds: ids.slice(i, i + 40) });
+    });
+  }
+  revalidatePath(`/admin/dry-run/${runId}`);
+  return { ok: true, n: pendientes.length, at: at.toISOString() };
+}
+
+/** Cancela los correos de las grabaciones que aún no han salido. */
+export async function cancelarGrabaciones(runId: string): Promise<Resultado<{ n: number }>> {
+  try {
+    await assertAdmin();
+  } catch {
+    return { error: "No tienes permiso para esto." };
+  }
+  const admin = createAdminClient();
+  const { data: guests } = await admin.from("dry_run_guests").select("id").eq("dry_run_id", runId);
+  const { data, error } = await admin
+    .from("dry_run_emails")
+    .update({ status: "cancelado", error: "cancelado desde el panel" })
+    .eq("kind", "grabaciones")
+    .eq("status", "pendiente")
+    .in("guest_id", (guests ?? []).map((g) => g.id))
+    .select("id");
+  if (error) return { error: error.message };
+  revalidatePath(`/admin/dry-run/${runId}`);
+  return { ok: true, n: data?.length ?? 0 };
 }

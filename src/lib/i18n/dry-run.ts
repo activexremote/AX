@@ -45,6 +45,8 @@ const es = {
   fMeetHint: "Meet, Zoom… Sale en los correos de la víspera y de una hora antes, y en la preparación.",
   fAgenda: "Agenda",
   fAgendaHint: "Una línea por tramo: «09:30 | Bienvenida y hora 1».",
+  fRecordings: "Grabaciones de la clase",
+  fRecordingsHint: "Una por línea: «Primera parte | https://drive.google.com/…». Comprueba que el enlace se pueda abrir sin permiso. Las usa el correo «Grabaciones de la clase».",
   fCapacity: "Plazas",
   fCapacityHint: "Vacío: sin límite.",
   fAccessUntil: "Acceso al módulo hasta",
@@ -123,6 +125,7 @@ const es = {
   eNoMail: "El envío de correo no está configurado: los correos se quedan en cola hasta que lo esté. Configúralo en la página de Dry run.",
   eForInvited: "invitados",
   eForRegistered: "con plaza",
+  eForAll: "todos los invitados",
 
   // Feedback
   fbTitle: "Feedback",
@@ -249,6 +252,8 @@ const en: DryRunCopy = {
   fMeetHint: "Meet, Zoom… Shown in the day-before and one-hour-before emails and on the preparation page.",
   fAgenda: "Agenda",
   fAgendaHint: "One line per slot: “09:30 | Welcome and hour 1”.",
+  fRecordings: "Class recordings",
+  fRecordingsHint: "One per line: “Part one | https://drive.google.com/…”. Check the link opens without asking for access. Used by the “Class recordings” email.",
   fCapacity: "Seats",
   fCapacityHint: "Empty: no limit.",
   fAccessUntil: "Module access until",
@@ -323,6 +328,7 @@ const en: DryRunCopy = {
   eNoMail: "Email sending isn't set up: emails stay queued until it is. Set it up on the Dry run page.",
   eForInvited: "invited",
   eForRegistered: "registered",
+  eForAll: "all guests",
 
   fbTitle: "Feedback",
   fbNone: "None yet.",

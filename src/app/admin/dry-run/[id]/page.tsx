@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { FormSesion } from "@/components/admin/dry-run/form-sesion";
+import { ProgramarGrabaciones } from "@/components/admin/dry-run/grabaciones";
 import { BotonEnlace, BotonPrueba, BotonProcesar, Copiar, FormEnlace, FormInvitar } from "@/components/admin/dry-run/piezas";
 import { EditorMensaje, TablaInvitados, type FilaInvitado } from "@/components/admin/dry-run/tabla-invitados";
 import { urlDeEnlace, valoresDe } from "@/components/admin/dry-run/valores";
@@ -10,9 +11,9 @@ import { correoListo, getMailSettings } from "@/lib/correo/envio";
 import { PASOS } from "@/lib/dry-run/preparacion";
 import { SECUENCIA } from "@/lib/dry-run/secuencia";
 import { docenteDe } from "@/lib/dry-run/docente";
-import { cuandoEs, diaLargo, fechaYHora, horaMadrid } from "@/lib/dry-run/tiempo";
+import { aCampoLocal, cuandoEs, diaLargo, fechaYHora, horaMadrid } from "@/lib/dry-run/tiempo";
 import { media as mediaDe, nps as npsDe, type Respuestas } from "@/lib/dry-run/encuesta";
-import { CON_PLAZA, type DryRun, type DryRunEmail, type DryRunGuest, type DryRunLink } from "@/lib/dry-run/tipos";
+import { CON_PLAZA, leerGrabaciones, type DryRun, type DryRunEmail, type DryRunGuest, type DryRunLink } from "@/lib/dry-run/tipos";
 import { getCurrentProfile } from "@/lib/data/profile";
 import { drCopy, rellenar } from "@/lib/i18n/dry-run";
 import { getI18n } from "@/lib/i18n/server";
@@ -329,7 +330,7 @@ export default async function DryRunPage({ params }: { params: Promise<{ id: str
                   <tr key={p.kind}>
                     <td>
                       <strong>{p.nombre}</strong>
-                      <small className="axr-dra-sub">{p.para === "invitados" ? copy.eForInvited : copy.eForRegistered}</small>
+                      <small className="axr-dra-sub">{p.para === "invitados" ? copy.eForInvited : p.para === "todos" ? copy.eForAll : copy.eForRegistered}</small>
                     </td>
                     <td>{p.cuando}</td>
                     <td>{fija ? fechaYHora(fija) : "—"}</td>
@@ -351,6 +352,55 @@ export default async function DryRunPage({ params }: { params: Promise<{ id: str
           </table>
         </div>
       </section>
+
+      {/* ── Grabaciones ── */}
+      {(() => {
+        const videos = leerGrabaciones(run.recordings);
+        const suyos = emails.filter((e) => e.kind === "grabaciones");
+        const pendientesRec = suyos.filter((e) => e.status === "pendiente" || e.status === "enviando");
+        const enviadosRec = suyos.filter((e) => e.status === "enviado").length;
+        const destinatarios = guests.filter((g) => g.email && g.status !== "baja" && !g.unsubscribed_at).length;
+        const proxima = pendientesRec.map((e) => e.send_at).sort()[0];
+        return (
+          <section className="axr-admin-card">
+            <div className="axr-dra-head">
+              <div>
+                <h2>Grabaciones de la clase</h2>
+                <p className="axr-dra-lead">
+                  Un correo para todos los invitados con correo ({destinatarios}), hayan venido o no: los enlaces de la clase grabada y la petición de que
+                  respondan la encuesta.
+                  {enviadosRec ? ` Enviado a ${enviadosRec}.` : ""}
+                  {proxima ? ` Programado para ${pendientesRec.length}: ${fechaYHora(proxima)}.` : ""}
+                </p>
+              </div>
+              <a href={`/admin/dry-run/${run.id}/correo/grabaciones`} target="_blank" rel="noreferrer" className="axr-btn axr-btn--ghost">
+                {copy.ePreview}
+              </a>
+            </div>
+            {videos.length ? (
+              <ul className="axr-dra-rec-list">
+                {videos.map((v) => (
+                  <li key={v.url}>
+                    <strong>{v.titulo}</strong>{" "}
+                    <a href={v.url} target="_blank" rel="noreferrer">
+                      {v.url.replace(/^https?:\/\//, "").slice(0, 60)}…
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="axr-adm-note axr-adm-note--warn">Añade las grabaciones en «La sesión» (abajo), una por línea: «Primera parte | https://…».</p>
+            )}
+            <ProgramarGrabaciones
+              runId={run.id}
+              total={destinatarios - enviadosRec}
+              porDefecto={aCampoLocal(proxima ?? new Date(Date.now() + 15 * 60000).toISOString())}
+              pendientes={pendientesRec.length}
+              hayGrabaciones={videos.length > 0}
+            />
+          </section>
+        );
+      })()}
 
       {/* ── Feedback ── */}
       <section className="axr-admin-card">

@@ -17,6 +17,8 @@ export type DryRun = {
   agenda: string;
   /** Migración 0036: la agenda en inglés. Vacía, se usa `agenda`. */
   agenda_en?: string | null;
+  /** Migración 0044: las grabaciones, una por línea («Primera parte | https://…»). */
+  recordings?: string;
   capacity: number | null;
   access_until: string | null;
   registration_open: boolean;
@@ -115,6 +117,21 @@ export const CON_PLAZA: readonly EstadoInvitado[] = ["registrado", "asistio", "n
 
 /** «ALU-007». */
 export const idInvitado = (seq: number) => `ALU-${String(seq).padStart(3, "0")}`;
+
+/** Las grabaciones de la sesión: «Primera parte | https://…». Sólo las que tienen enlace. */
+export function leerGrabaciones(texto: string | null | undefined): { titulo: string; url: string }[] {
+  return (texto ?? "")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((l, i) => {
+      const corte = l.lastIndexOf("|");
+      const titulo = corte >= 0 ? l.slice(0, corte).trim() : "";
+      const url = (corte >= 0 ? l.slice(corte + 1) : l).trim();
+      return { titulo: titulo || `Parte ${i + 1}`, url };
+    })
+    .filter((g) => /^https?:\/\//.test(g.url));
+}
 
 /** Una línea de la agenda: «09:30 | Bienvenida y hora 1». */
 export function leerAgenda(texto: string): { hora: string; que: string }[] {

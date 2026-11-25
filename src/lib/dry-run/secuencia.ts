@@ -1,6 +1,6 @@
 import type { TipoCorreo } from "@/lib/dry-run/correos";
 import { diaRelativo } from "@/lib/dry-run/tiempo";
-import { CON_PLAZA, type DryRun, type DryRunGuest } from "@/lib/dry-run/tipos";
+import { CON_PLAZA, leerGrabaciones, type DryRun, type DryRunGuest } from "@/lib/dry-run/tipos";
 
 // ══════════════════════════════════════════════════════════
 //  Cuándo sale cada correo
@@ -21,7 +21,8 @@ import { CON_PLAZA, type DryRun, type DryRunGuest } from "@/lib/dry-run/tipos";
 
 export type PasoSecuencia = {
   kind: TipoCorreo;
-  para: "invitados" | "plaza";
+  /** «todos»: cualquier invitado con correo que no se haya dado de baja, tenga plaza o no. */
+  para: "invitados" | "plaza" | "todos";
   /** Para el panel. */
   nombre: string;
   cuando: string;
@@ -130,6 +131,15 @@ export const SECUENCIA: readonly PasoSecuencia[] = [
     cuando: "A mano, desde la encuesta del panel",
     hora: () => null,
   },
+  {
+    // No sale sola: se programa a mano desde el panel cuando están las
+    // grabaciones. Va a todos: quien vino repasa, quien no vino la ve.
+    kind: "grabaciones",
+    para: "todos",
+    nombre: "Grabaciones de la clase",
+    cuando: "A mano, desde el panel, cuando estén las grabaciones",
+    hora: () => null,
+  },
 ];
 
 export const PASO = Object.fromEntries(SECUENCIA.map((p) => [p.kind, p])) as Record<TipoCorreo, PasoSecuencia>;
@@ -152,6 +162,7 @@ export function motivoParaNoEnviar(kind: TipoCorreo, run: DryRun, guest: DryRunG
   const paso = PASO[kind];
   if (paso.para === "invitados" && guest.status !== "invitado") return "ya tiene plaza";
   if (paso.para === "plaza" && !CON_PLAZA.includes(guest.status)) return "no tiene plaza";
+  if (kind === "grabaciones" && !leerGrabaciones(run.recordings).length) return "la sesión no tiene grabaciones";
 
   const t = Date.now();
   const empieza = new Date(run.starts_at).getTime();
