@@ -60,6 +60,53 @@ export function deelArea(camino: Camino, n: string, locale: Locale): string | nu
   return ACREDITADOS[c][n]?.[locale] ?? null;
 }
 
+// ── Formato 2.0 de las landings de curso ──────────────────
+// Professional (8 semanas) y Founder (13) ya no comparten módulos. Cada área
+// acreditada va a la semana donde ha ido a parar su contenido; el núcleo
+// común (02, 03, 07) se reparte entre las dos.
+// ⚠︎ Pendiente de que Deel confirme el nuevo reparto.
+type Curso = Exclude<Camino, "core">;
+
+const SEMANAS_DEEL: Record<Curso, Record<number, { es: string; en: string }>> = {
+  "remote-professional": {
+    4: { es: "Nómina y compensación global", en: "Global payroll and compensation" },
+    5: { es: "Residencia fiscal · contractor o empleado", en: "Tax residency · contractor vs. employee" },
+    6: { es: "Onboarding y RR. HH. en equipos distribuidos", en: "Onboarding and HR for distributed teams" },
+    7: { es: "Inmigración y visados", en: "Immigration and visas" },
+  },
+  "remote-founder": {
+    11: { es: "Contratar tus primeros contractors internacionales", en: "Hiring your first international contractors" },
+    12: { es: "Employer of Record o entidad propia", en: "Employer of Record vs. own entity" },
+  },
+};
+
+/** El área de Deel de una semana del formato 2.0, o null. */
+export function deelWeek(curso: Curso, n: number, locale: Locale): string | null {
+  return SEMANAS_DEEL[curso][n]?.[locale] ?? null;
+}
+
+/** Las semanas acreditadas de un curso, en orden. */
+export function deelWeeks(curso: Curso): number[] {
+  return Object.keys(SEMANAS_DEEL[curso]).map(Number).sort((a, b) => a - b);
+}
+
+export const deelCourseCopy: Record<Locale, { seal: (n: number) => string; title: string; lead: string; weekLabel: string; listTitle: string }> = {
+  es: {
+    seal: (n) => `${n} semanas con contenidos acreditados`,
+    title: "Contenidos acreditados por Deel.",
+    lead: "Deel, la plataforma con la que miles de empresas contratan, pagan y gestionan equipos en todo el mundo, ha revisado y acreditado lo que aprendes sobre contratos, fiscalidad, compensación y contratación internacional.",
+    weekLabel: "Semana",
+    listTitle: "Dónde lo trabajas",
+  },
+  en: {
+    seal: (n) => `${n} weeks of accredited content`,
+    title: "Content accredited by Deel.",
+    lead: "Deel, the platform thousands of companies use to hire, pay and manage teams worldwide, has reviewed and accredited what you learn about contracts, tax, compensation and international hiring.",
+    weekLabel: "Week",
+    listTitle: "Where you cover it",
+  },
+};
+
 // ── Copy ──────────────────────────────────────────────────
 
 export type DeelCopy = {
