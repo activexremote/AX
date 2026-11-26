@@ -49,37 +49,37 @@ export const funnelCopy: Record<Locale, FunnelCopy> = {
         value: 1000,
         label: "Personas ven la oferta",
         desc: "Una vacante remota internacional no compite con tu ciudad: compite con todos los husos horarios que encajan en su requisito de solapamiento.",
-        fix: "Módulo 08 · Dónde están las vacantes que no se publican",
+        fix: "Semana 3 · Alertas con IA que encuentran las vacantes por ti",
       },
       {
         value: 240,
         label: "Llegan a enviar la candidatura",
         desc: "La mayoría se autodescarta al leer requisitos que no entiende: solapamiento horario, tipo de contrato, país elegible.",
-        fix: "Módulo 08 · Leer una oferta internacional sin autoexcluirte",
+        fix: "Semana 2 · Apuntar a los puestos que encajan contigo",
       },
       {
         value: 62,
         label: "Pasan el filtro del ATS",
         desc: "El sistema lee mal las plantillas creativas, las columnas y los PDF con tablas. No te rechaza por malo: te rechaza por ilegible.",
-        fix: "Módulo 09 · Currículum legible por ATS y por humanos",
+        fix: "Semana 2 · Un CV remoto legible por ATS y por personas",
       },
       {
         value: 14,
         label: "Reciben una respuesta humana",
         desc: "Aquí decide el portfolio y la marca personal. Quien contrata desde otro continente no puede llamar a tu antiguo jefe.",
-        fix: "Módulo 10 · Portfolio y marca personal internacional",
+        fix: "Semana 2 · Un LinkedIn que atrae a los reclutadores",
       },
       {
         value: 3,
         label: "Llegan a la entrevista final",
         desc: "La entrevista remota se gana en vídeo y en asíncrono, dos formatos que casi nadie ha practicado nunca.",
-        fix: "Módulo 11 · Entrevista en vídeo y prueba asíncrona",
+        fix: "Semana 4 · Entrevistas en vídeo y evaluadas con IA",
       },
       {
         value: 1,
         label: "Recibe y negocia la oferta",
         desc: "Y quien no sabe qué es la compensación global ni el salario ajustado por ubicación, firma la primera cifra que le dicen.",
-        fix: "Módulo 12 · Negociación y compensación global",
+        fix: "Semanas 4 y 5 · Negociar la oferta y entender el contrato",
       },
     ],
   },
@@ -96,37 +96,37 @@ export const funnelCopy: Record<Locale, FunnelCopy> = {
         value: 1000,
         label: "People see the opening",
         desc: "An international remote opening does not compete with your city: it competes with every time zone that fits its overlap requirement.",
-        fix: "Module 08 · Where the unpublished openings are",
+        fix: "Week 3 · AI alerts that find the openings for you",
       },
       {
         value: 240,
         label: "Actually apply",
         desc: "Most rule themselves out on requirements they do not understand: time zone overlap, contract type, eligible countries.",
-        fix: "Module 08 · Reading an international posting without self-rejecting",
+        fix: "Week 2 · Targeting the roles that fit you",
       },
       {
         value: 62,
         label: "Get through the ATS",
         desc: "The system misreads creative templates, columns and PDFs with tables. It does not reject you for being weak: it rejects you for being unreadable.",
-        fix: "Module 09 · A CV readable by ATS and by humans",
+        fix: "Week 2 · A remote CV readable by ATS and by people",
       },
       {
         value: 14,
         label: "Get a human reply",
         desc: "Portfolio and personal brand decide here. Someone hiring from another continent cannot call your old manager.",
-        fix: "Module 10 · International portfolio and personal brand",
+        fix: "Week 2 · A LinkedIn that attracts recruiters",
       },
       {
         value: 3,
         label: "Reach the final interview",
         desc: "Remote interviews are won on video and async, two formats almost nobody has ever practised.",
-        fix: "Module 11 · Video interview and async assignment",
+        fix: "Week 4 · Video and AI-scored interviews",
       },
       {
         value: 1,
         label: "Receive and negotiate the offer",
         desc: "And whoever does not know what total compensation or location-based pay means signs the first figure they are given.",
-        fix: "Module 12 · Negotiation and global compensation",
+        fix: "Weeks 4 and 5 · Negotiating the offer and understanding the contract",
       },
     ],
   },
@@ -161,7 +161,7 @@ export const modelCopy: Record<Locale, ModelCopy> = {
   es: {
     eyebrow: "El cambio de modelo",
     title: "Mientras cobres por horas, tu negocio tiene un techo con fecha.",
-    lead: "No es una cuestión de tarifas. Es una cuestión de qué vendes: si vendes tiempo, cada euro más exige una hora más. Este es el salto que se construye durante la especialización.",
+    lead: "No es una cuestión de tarifas. Es una cuestión de qué vendes: si vendes tiempo, cada euro más exige una hora más. Este es el salto que se construye durante el curso.",
     rowLabels: [
       "Qué vendes",
       "Cómo se fija el precio",
@@ -172,7 +172,7 @@ export const modelCopy: Record<Locale, ModelCopy> = {
     leverageLabel: "Ingreso que no depende de tus horas",
     ceilingLabel: "El techo",
     close:
-      "Los siete módulos de Remote Founder son el recorrido de la columna izquierda a la derecha, en este orden: oferta, clientes, entrega, sistema, automatización y estructura.",
+      "Las 13 semanas de Remote Founder son el recorrido de la columna izquierda a la derecha: oferta (semanas 1–5), clientes (6–9), entrega, automatización y estructura (10–12) y escala (13).",
     before: {
       tag: "Punto de partida",
       title: "Vendes horas",
@@ -205,7 +205,7 @@ export const modelCopy: Record<Locale, ModelCopy> = {
   en: {
     eyebrow: "The model shift",
     title: "As long as you bill by the hour, your business has a ceiling with a date on it.",
-    lead: "It is not a question of rates. It is a question of what you sell: if you sell time, every extra euro demands an extra hour. This is the jump built during the specialisation.",
+    lead: "It is not a question of rates. It is a question of what you sell: if you sell time, every extra euro demands an extra hour. This is the jump built during the course.",
     rowLabels: [
       "What you sell",
       "How price is set",
@@ -216,7 +216,7 @@ export const modelCopy: Record<Locale, ModelCopy> = {
     leverageLabel: "Income that does not depend on your hours",
     ceilingLabel: "The ceiling",
     close:
-      "The seven Remote Founder modules are the journey from the left column to the right one, in this order: offer, clients, delivery, system, automation and structure.",
+      "The 13 Remote Founder weeks are the journey from the left column to the right one: offer (weeks 1–5), clients (6–9), delivery, automation and structure (10–12) and scale (13).",
     before: {
       tag: "Starting point",
       title: "You sell hours",

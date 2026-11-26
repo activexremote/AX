@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { DEEL_BADGES, DEEL_URL, deelArea, deelCopy } from "@/app/bienvenida/deel";
+import { DEEL_BADGES, DEEL_URL, deelArea, deelCopy, deelCourseCopy } from "@/app/bienvenida/deel";
 import { getLocale } from "@/lib/i18n/server";
 import "@/components/landing/deel.scss";
 
@@ -25,14 +25,14 @@ function Badge({ index, size }: { index: number; size: number }) {
 }
 
 /** El sello del héroe. Lleva a la sección de la misma página. */
-export async function DeelSeal({ tone = "dark", href = "#deel" }: { tone?: "dark" | "light"; href?: string }) {
+export async function DeelSeal({ tone = "dark", href = "#deel", sub }: { tone?: "dark" | "light"; href?: string; sub?: string }) {
   const c = deelCopy[await getLocale()];
   return (
     <a href={href} className="axr-deel-seal" data-tone={tone}>
       <Badge index={0} size={56} />
       <span>
         <strong>{c.seal.title}</strong>
-        <span>{c.seal.sub}</span>
+        <span>{sub ?? c.seal.sub}</span>
       </span>
       <span className="axr-deel-seal__arrow" aria-hidden>→</span>
     </a>
@@ -123,6 +123,65 @@ export async function DeelSection() {
         </div>
 
         <p className="axr-deel__note">{c.note}</p>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * La sección de Deel de una landing de curso (formato 2.0): los badges, el
+ * boilerplate de Deel y las semanas de ESE curso que tocan contenido
+ * acreditado. La de la home (DeelSection) habla del programa antiguo.
+ */
+export async function DeelCourse({ weeks }: { weeks: { n: number; title: string; area: string }[] }) {
+  const locale = await getLocale();
+  const c = deelCopy[locale];
+  const k = deelCourseCopy[locale];
+
+  return (
+    <section id="deel" className="axr-deel">
+      <div className="axr-deel__inner">
+        <header className="axr-deel__head">
+          <span className="axr-deel__eyebrow">{c.eyebrow}</span>
+          <h2>{k.title}</h2>
+          <p>{k.lead}</p>
+        </header>
+
+        <div className="axr-deel__grid">
+          <div className="axr-deel__brand">
+            <div className="axr-deel__badges">
+              <Badge index={0} size={132} />
+              <Badge index={1} size={132} />
+            </div>
+            <p className="axr-deel__caption">{c.badgesCaption}</p>
+            <div className="axr-deel__who">
+              <h3>{c.whoTitle}</h3>
+              <p>{c.who}</p>
+              <a href={DEEL_URL} target="_blank" rel="noopener noreferrer" className="axr-deel__who-cta">
+                {c.whoCta} <span aria-hidden>↗</span>
+              </a>
+            </div>
+          </div>
+
+          <div className="axr-deel__modules">
+            <h3>{k.listTitle}</h3>
+            <div className="axr-deel__group">
+              <ol>
+                {weeks.map((w) => (
+                  <li key={w.n}>
+                    <span className="axr-deel__n">{String(w.n).padStart(2, "0")}</span>
+                    <span className="axr-deel__m">
+                      <strong>
+                        {k.weekLabel} {w.n} · {w.title}
+                      </strong>
+                      <span className="axr-deel__area">{w.area}</span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

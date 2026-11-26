@@ -44,9 +44,9 @@ export function courseMetadata(locale: Locale, slug: CourseSlug): Metadata {
  * disponible siempre: sin `courseMode` y `courseWorkload` Google descarta el
  * resultado enriquecido de formación.
  *
- * ⚠︎ No se declara `offers` a propósito: el precio todavía no es público. En
- * cuanto lo sea hay que añadirlo aquí, porque es el campo que más peso tiene
- * en este tipo de resultado.
+ * ⚠︎ No se declara `offers` a propósito: el precio no se publica en la web.
+ * Si algún día se publica hay que añadirlo aquí, porque es el campo que más
+ * peso tiene en este tipo de resultado.
  */
 export function CourseSchema({ locale, slug }: { locale: Locale; slug: CourseSlug }) {
   const c = courseCopy[locale][slug];
@@ -60,9 +60,7 @@ export function CourseSchema({ locale, slug }: { locale: Locale; slug: CourseSlu
     description: c.meta.description,
     url: absolute(locale, path),
     inLanguage: locale,
-    teaches: c.program.phases.flatMap((phase) =>
-      phase.modules.map((m) => m.title),
-    ),
+    teaches: c.roadmap.weeks.map((w) => w.title),
     provider: {
       "@type": "EducationalOrganization",
       "@id": `${SITE_URL}#organization`,
@@ -73,8 +71,8 @@ export function CourseSchema({ locale, slug }: { locale: Locale; slug: CourseSlu
     hasCourseInstance: {
       "@type": "CourseInstance",
       courseMode: "online",
-      // Las 56 h lectivas, repartidas en siete fines de semana.
-      courseWorkload: "PT56H",
+      // Horas en directo: 2 h por semana (8 semanas Professional, 13 Founder).
+      courseWorkload: slug === "remote-professional" ? "PT16H" : "PT26H",
       inLanguage: locale,
       name: l.hero.tagline,
     },
