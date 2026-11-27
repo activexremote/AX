@@ -25,7 +25,7 @@ export default async function Privado({ params }: { params: Promise<Params> }) {
     <main className="axr-priv">
       <header className="axr-priv__head">
         <p className="axr-priv__eyebrow">ActiveXRemote · solo para el equipo</p>
-        <h1>Los dos cursos, en vídeo</h1>
+        <h1>Los cursos, en vídeo</h1>
         <p>Esta página no está enlazada desde ningún sitio ni la indexan los buscadores. Compártela solo con quien deba verla.</p>
       </header>
       <div className="axr-priv__grid">
@@ -40,6 +40,12 @@ export default async function Privado({ params }: { params: Promise<Params> }) {
           <strong>La clase del temario</strong>
           <span>Las 21 semanas de los dos cursos explicadas una a una: qué trabajas, qué te llevas y el hito de cada semana.</span>
           <span className="axr-priv__go">Empezar la clase →</span>
+        </a>
+        <a className="axr-priv__card axr-priv__card--master" href={`${base}/masterclass.html`}>
+          <span className="axr-priv__tag">Masterclass piloto · unos 10 min · voz en off</span>
+          <strong>Dónde montar tu empresa</strong>
+          <span>Semana 12 de Remote Founder: LLC en EE. UU., Estonia, Emiratos o una SL en España, con cifras de 2026, gráficos y proveedores.</span>
+          <span className="axr-priv__go">Ver la masterclass →</span>
         </a>
       </div>
     </main>

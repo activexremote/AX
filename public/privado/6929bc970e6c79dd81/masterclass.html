@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Masterclass: dónde montar tu empresa · ActiveXRemote</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Major+Mono+Display&display=swap">
+<style>
+/* Masterclass en SVG: escenario 16:9 que avanza frase a frase con la voz; subtítulos e índice debajo. */
+:root{
+  --bg:#0B0A14; --ink2:#17152A; --ink3:#221F3D; --fg:#F2F1FA; --mut:#A7A3C0; --dim:#635F80;
+  --pur:#5B4BF5; --pur-l:#9488FF; --red:#E4462F; --red-l:#FF7C66; --gold:#F5B841; --green:#3DDC97;
+  --line:rgba(242,241,250,.13);
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Major Mono Display","Courier New",monospace;
+  --ease:cubic-bezier(.2,.75,.2,1);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg)}
+body{font-family:var(--sans);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:max(20px,env(safe-area-inset-top,0px)) 40px}
+.wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.top h1{margin:0;font-size:clamp(20px,2.4vw,28px);letter-spacing:-.02em;text-wrap:balance}
+.top a{color:var(--mut);font-size:14px}
+.player{position:relative;border-radius:18px;overflow:hidden;background:var(--ink2);border:1px solid var(--line);box-shadow:0 30px 90px -30px rgba(91,75,245,.5)}
+.stage{position:relative;aspect-ratio:16/9;width:100%;background:var(--bg);overflow:hidden}
+.stage>svg{display:block;width:100%;height:100%}
+.player:fullscreen{display:flex;flex-direction:column;justify-content:center;border-radius:0}
+.player:fullscreen .stage{width:auto;height:calc(100vh - 150px);margin:0 auto}
+svg text{fill:var(--fg);font-family:var(--sans)}
+.disp{font-weight:800;letter-spacing:-.025em} .blk{font-weight:900;letter-spacing:-.035em}
+.semi{font-weight:600} .mono{font-family:var(--mono)}
+.mut{fill:var(--mut)} .dimt{fill:var(--dim)} .pl{fill:var(--pur-l)} .rl{fill:var(--red-l)} .gl{fill:var(--gold)} .gr{fill:var(--green)} .ink{fill:var(--bg)}
+.eyebrow{font-weight:700;letter-spacing:.18em}
+.scene{opacity:0;visibility:hidden;transition:opacity .6s ease,visibility 0s linear .6s}
+.scene.on{opacity:1;visibility:visible;transition:opacity .6s ease}
+.scene.on .a-up{animation:up .9s var(--ease) var(--d,0s) both}
+.scene.on .a-fade{animation:fade 1s ease var(--d,0s) both}
+.scene.on .a-draw{stroke-dasharray:1;animation:draw var(--t,1.4s) cubic-bezier(.6,0,.2,1) var(--d,0s) both}
+.rv:not(.in){opacity:0}
+.rv.in{animation:up .7s var(--ease) var(--d,0s) both}
+.rv.pop.in{animation-name:pop;animation-timing-function:cubic-bezier(.2,1.5,.4,1)}
+.rv.fade.in{animation-name:fade}
+.rv.drop.in{animation-name:drop;animation-timing-function:cubic-bezier(.3,1.6,.5,1);animation-duration:.8s}
+.rv.gx.in{animation-name:gx;animation-duration:1.1s}
+.rv.gy.in{animation-name:gy;animation-duration:1s}
+.rv.stamp.in{animation-name:stamp;animation-duration:.6s;animation-timing-function:cubic-bezier(.2,1.6,.4,1)}
+.rv.flip.in{animation-name:flip;animation-duration:1s}
+.rv.draw{stroke-dasharray:1;stroke-dashoffset:1;opacity:1}
+.rv.draw.in{stroke-dashoffset:0;animation:draw var(--t,1.1s) cubic-bezier(.6,0,.2,1) var(--d,0s) both}
+.mv.in{animation:mv var(--t,1.6s) cubic-bezier(.7,0,.25,1) var(--d,0s) forwards}
+.shake.in{animation:shake .5s ease var(--d,0s) 2}
+.out{opacity:0!important;transition:opacity .45s ease}
+.dimmed{opacity:.28!important;transition:opacity .45s ease}
+.pop,.gx,.gy,.stamp,.flip,.drop,.shake{transform-box:fill-box}
+.pop,.stamp,.shake{transform-origin:center} .gx{transform-origin:0 50%} .gy{transform-origin:50% 100%} .flip{transform-origin:50% 0} .drop{transform-origin:50% 100%}
+@keyframes up{from{opacity:0;transform:translateY(26px)}}
+@keyframes fade{from{opacity:0}}
+@keyframes draw{from{stroke-dashoffset:1}}
+@keyframes pop{from{opacity:0;transform:scale(.2)}}
+@keyframes drop{from{opacity:0;transform:translateY(-140px) scale(.8)}}
+@keyframes gx{from{transform:scaleX(0)}}
+@keyframes gy{from{transform:scaleY(0)}}
+@keyframes flip{from{opacity:0;transform:scaleY(0)}}
+@keyframes stamp{from{opacity:0;transform:scale(2.6) rotate(-16deg)}}
+@keyframes mv{to{transform:translate(var(--tx,0px),var(--ty,0px))}}
+@keyframes shake{25%{transform:translateX(-10px) rotate(-2deg)}75%{transform:translateX(10px) rotate(2deg)}}
+.paused .scene,.paused .scene *{animation-play-state:paused!important}
+.hl .card,.card.hl{stroke:var(--gold);stroke-width:3}
+.blob{transition:opacity 1.6s ease}
+.start{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at center,rgba(11,10,20,.5),rgba(11,10,20,.9));z-index:5}
+.start[hidden]{display:none}
+.start-in{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:16px}
+.start button{display:flex;align-items:center;gap:14px;padding:18px 30px 18px 22px;border-radius:999px;border:0;background:var(--pur);color:#fff;font:800 clamp(16px,2vw,22px)/1 var(--sans);cursor:pointer;box-shadow:0 18px 50px -10px rgba(91,75,245,.8)}
+.start button:hover{background:#4632E6}
+.start button svg{width:28px;height:28px;fill:#fff}
+.start p{margin:0;color:var(--mut);font-size:clamp(12px,1.4vw,15px)}
+.start small{color:var(--dim);font-size:12px;max-width:520px}
+.cc{min-height:64px;display:flex;align-items:center;justify-content:center;padding:10px 18px;background:#08070F;border-top:1px solid var(--line);font-size:clamp(15px,1.7vw,19px);line-height:1.4;text-align:center;text-wrap:balance}
+.cc[hidden]{display:none}
+.bar{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--ink2);border-top:1px solid var(--line)}
+.bar>button{flex:none;height:38px;min-width:38px;padding:0 9px;border-radius:10px;border:0;background:transparent;color:var(--fg);display:grid;place-items:center;cursor:pointer;font:700 12px var(--sans)}
+.bar>button:hover{background:rgba(255,255,255,.08)}
+.bar>button[aria-pressed="false"]{color:var(--dim)}
+.bar>button svg{width:20px;height:20px;fill:currentColor}
+.chapters{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.segs{display:flex;gap:2px;height:6px}
+.seg{position:relative;height:100%;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;cursor:pointer;border:0;padding:0;min-width:0}
+.seg i{position:absolute;inset:0;width:0;background:var(--gold)}
+.seg:hover{background:rgba(255,255,255,.28)}
+.meta{display:flex;justify-content:space-between;gap:12px;font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden}
+.meta b{color:var(--fg);font-weight:600;overflow:hidden;text-overflow:ellipsis}
+button:focus-visible{outline:2px solid var(--pur-l);outline-offset:2px}
+.index{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.index button{display:flex;gap:10px;align-items:baseline;text-align:left;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--ink2);color:var(--fg);font:500 14px/1.35 var(--sans);cursor:pointer;min-width:0}
+.index button:hover{border-color:var(--gold)}
+.index button[aria-current="true"]{background:var(--ink3);border-color:var(--fg)}
+.index button span{flex:none;font:700 11px var(--sans);letter-spacing:.08em;color:var(--gold);min-width:22px}
+.note{margin:0;color:var(--dim);font-size:12px;text-align:center;text-wrap:balance}
+@media (max-width:760px){.bar{gap:2px;padding:8px}.bar>button{min-width:32px;height:34px;padding:0 6px}#fs{display:none}}
+@media (prefers-reduced-motion:reduce){.scene *{animation-duration:.01s!important;animation-delay:0s!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><h1>Masterclass: dónde montar tu empresa</h1><a href="./">← Volver a los vídeos</a></div>
+  <div class="player" id="player">
+    <div class="stage" id="stage">
+      <svg id="svg" viewBox="0 0 1600 900" role="img" aria-label="Masterclass animada sobre dónde montar tu empresa">
+        <defs>
+          <radialGradient id="gP"><stop offset="0" stop-color="#5B4BF5" stop-opacity=".5"/><stop offset="1" stop-color="#5B4BF5" stop-opacity="0"/></radialGradient>
+          <radialGradient id="gR"><stop offset="0" stop-color="#E4462F" stop-opacity=".4"/><stop offset="1" stop-color="#E4462F" stop-opacity="0"/></radialGradient>
+          <linearGradient id="skyDubai" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A1B4A"/><stop offset=".55" stop-color="#C2456A"/><stop offset="1" stop-color="#F5A35C"/></linearGradient>
+          <linearGradient id="skyTallinn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#101B3A"/><stop offset="1" stop-color="#3D5C99"/></linearGradient>
+          <linearGradient id="skyWyo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14254A"/><stop offset="1" stop-color="#E6926A"/></linearGradient>
+          <linearGradient id="skySpain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B2D5C"/><stop offset="1" stop-color="#F2B45A"/></linearGradient>
+          <pattern id="dots" width="40" height="40" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1.3" fill="rgba(242,241,250,.07)"/></pattern>
+          <clipPath id="panel"><rect x="0" y="0" width="560" height="380" rx="26"/></clipPath>
+        </defs>
+        <rect width="1600" height="900" fill="#0B0A14"/>
+        <circle class="blob" id="blobP" cx="260" cy="180" r="640" fill="url(#gP)"><animate attributeName="cx" values="260;520;260" dur="24s" repeatCount="indefinite"/></circle>
+        <circle class="blob" id="blobR" cx="1340" cy="740" r="620" fill="url(#gR)"><animate attributeName="cx" values="1340;1080;1340" dur="21s" repeatCount="indefinite"/></circle>
+        <rect width="1600" height="900" fill="url(#dots)"/>
+        <g id="scenes"></g>
+      </svg>
+      <div class="start" id="start">
+        <div class="start-in">
+          <button id="go" type="button"><svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>Empezar la masterclass</button>
+          <p id="startInfo"></p>
+          <small>Formación, no asesoramiento fiscal ni legal. Cifras de 2026 con su fuente. Antes de decidir, confírmalo con un asesor de tu país.</small>
+        </div>
+      </div>
+    </div>
+    <div class="cc" id="cc" aria-live="polite"></div>
+    <div class="bar">
+      <button id="prev" type="button" aria-label="Escena anterior"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+      <button id="play" type="button" aria-label="Reproducir"><svg viewBox="0 0 24 24" id="playIco"><path d="M7 4v16l13-8z"/></svg></button>
+      <button id="next" type="button" aria-label="Escena siguiente"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+      <div class="chapters"><div class="segs" id="segs"></div><div class="meta"><b id="chap"></b><span id="time"></span></div></div>
+      <button id="voice" type="button" aria-pressed="true" aria-label="Voz en off" title="Voz en off (V)"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg></button>
+      <button id="music" type="button" aria-pressed="true" aria-label="Música" title="Música (M)"><svg viewBox="0 0 24 24"><path d="M9 3v11.6A3.5 3.5 0 1 0 11 18V8h6V3z"/></svg></button>
+      <button id="ccb" type="button" aria-pressed="true" aria-label="Subtítulos" title="Subtítulos (C)">CC</button>
+      <button id="fs" type="button" aria-label="Pantalla completa" title="Pantalla completa (F)"><svg viewBox="0 0 24 24"><path d="M4 4h6v2H6v4H4zm10 0h6v6h-2V6h-4zM4 14h2v4h4v2H4zm14 0h2v6h-6v-2h4z"/></svg></button>
+    </div>
+  </div>
+  <p class="note" id="voicenote"></p>
+  <nav class="index" id="index" aria-label="Índice de la masterclass"></nav>
+  <p class="note">Ejemplos simplificados para una persona residente en España (territorio común, tipos de 2026). Fuentes y revisión en el documento de la clase.</p>
+</div>
+
+<script>
+const DATA = {"scenes":[{"id":"gancho","name":"Los tres «0 %»","segs":[{"t":"Wyoming, cero. Estonia, cero. Dubái, cero.","r":"pins"},{"t":"Lo has visto en mil vídeos. Y aun así, mucha gente que montó su empresa ahí acaba pagando lo mismo, o más, y con más papeles.","r":"casa"},{"t":"¿Por qué? Porque eligió el país de la empresa antes de mirar el suyo.","r":"rompe"},{"t":"En trece minutos te llevas la regla que lo decide todo, cuatro estructuras con números de 2026 y los proveedores que de verdad se usan.","r":"titulo"},{"t":"Vamos.","r":"vamos"}]},{"id":"lugares","name":"La regla de los cuatro lugares","segs":[{"t":"Antes de abrir un solo mapa, contesta a cuatro preguntas.","r":"a"},{"t":"Dónde vives.","r":"l0"},{"t":"Desde dónde tomas las decisiones.","r":"l1"},{"t":"Dónde están tus clientes.","r":"l2"},{"t":"Y dónde cae el dinero.","r":"l3"},{"t":"En España eres residente fiscal si pasas aquí más de 183 días al año, si aquí está el núcleo de tus negocios, o si aquí viven tu pareja y tus hijos menores, aunque tú viajes.","r":"res"},{"t":"Y si eres residente, Hacienda mira todo lo que ganas en el mundo.","r":"mundo"},{"t":"Ten clara una cosa: tu residencia pesa muchas veces más que el país de la empresa.","r":"balanza"}]},{"id":"direccion","name":"Trampa: la dirección efectiva","segs":[{"t":"Primera trampa, y es la que más duele.","r":"a"},{"t":"Una sociedad tributa donde se dirige, no donde está registrada.","r":"b"},{"t":"Si tu empresa estonia la diriges tú, sola, desde tu salón en Valencia, la ley española puede tratarla como una empresa española.","r":"c"},{"t":"Constituir donde no tienes ni clientes, ni residencia, ni actividad, solo para pagar menos, es la forma más rápida de pasar de un problema a dos.","r":"d"}]},{"id":"formula","name":"Tu número, no el del anuncio","segs":[{"t":"El anuncio te enseña un tipo.","r":"a"},{"t":"Tú necesitas otra cifra: lo que te queda en el bolsillo.","r":"b"},{"t":"Facturas, la empresa paga su impuesto, tú pagas el tuyo cuando sacas el dinero, y la estructura tiene su factura anual.","r":"c"},{"t":"Esa es la fórmula. Vamos a pasarle cuatro países.","r":"d"}]},{"id":"llc","name":"Estados Unidos: la LLC","c":"us","segs":[{"t":"La estrella de internet: una LLC de un solo socio.","r":"a"},{"t":"Montarla es barato. En Wyoming, cien dólares de alta y sesenta al año.","r":"wy"},{"t":"En Nuevo México, cincuenta de alta, y ni siquiera hay informe anual.","r":"nm"},{"t":"Delaware, en cambio, sube a cuatrocientos al año desde 2026.","r":"de"},{"t":"Necesitas un agente registrado, un EIN y un banco.","r":"kit"},{"t":"Ahora, lo que no sale en el anuncio.","r":"ad"},{"t":"Para Estados Unidos, tu LLC es transparente: si no tienes actividad allí, no paga impuesto federal.","r":"fed"},{"t":"Pero cada año, aunque no factures nada, tienes que presentar el formulario 5472 con una 1120 pro forma.","r":"form"},{"t":"Por correo o por fax, porque no se puede presentar por internet.","r":"fax"},{"t":"Si se te olvida, la multa es de veinticinco mil dólares.","r":"multa"},{"t":"¿Y en España? Hacienda suele tratarla como una entidad en atribución de rentas: el beneficio es tuyo y va a tu IRPF, en la escala general.","r":"es"},{"t":"Una buena noticia: desde marzo de 2025, las empresas creadas en Estados Unidos ya no tienen que presentar el informe de beneficiarios a FinCEN.","r":"boi"}]},{"id":"estonia","name":"Estonia: la e-Residency","c":"ee","segs":[{"t":"Estonia es el país más digital de Europa.","r":"a"},{"t":"Con la e-Residency, que cuesta ciento cincuenta euros este año y ciento sesenta y cinco desde enero, firmas y gestionas una sociedad estonia desde cualquier sitio.","r":"card"},{"t":"Registrarla cuesta doscientos sesenta y cinco euros, y basta con un céntimo de capital.","r":"reg"},{"t":"Su gran idea: el beneficio que dejas dentro no paga nada.","r":"dentro"},{"t":"Pero cuando lo repartes, pagas el veintidós por ciento sobre el bruto.","r":"fuera"},{"t":"Con sesenta mil euros de beneficio, son trece mil doscientos.","r":"num"},{"t":"Y ojo: la e-Residency no te da ni residencia ni derecho a vivir en Estonia. Es una identidad digital, nada más.","r":"no"},{"t":"Y necesitas contabilidad mensual, una dirección legal y una persona de contacto en Estonia.","r":"nec"},{"t":"Para eso están proveedores como Xolo, Unicount o Companio.","r":"prov"}]},{"id":"emiratos","name":"Emiratos: la zona franca","c":"ae","segs":[{"t":"Emiratos.","r":"a"},{"t":"Aquí el impuesto de sociedades es del nueve por ciento, pero solo sobre lo que pasa de trescientos setenta y cinco mil dirhams.","r":"ct"},{"t":"Con quinientos mil de beneficio pagas once mil doscientos cincuenta: un dos y cuarto por ciento efectivo.","r":"ej"},{"t":"En zona franca, si cumples los requisitos de persona cualificada, el ingreso cualificado tributa al cero.","r":"qfzp"},{"t":"Las licencias van de unos cinco mil quinientos dirhams en Ras al Khaimah o Sharjah a unos doce mil quinientos en Dubái, y el visado va aparte.","r":"lic"},{"t":"El truco que no te cuentan: para ti, el cero por ciento personal solo existe si de verdad vives allí.","r":"truco"},{"t":"Ciento ochenta y tres días, o noventa si tienes casa o trabajo en el país, y romper tus lazos con España.","r":"dias"},{"t":"Y ahora, el dato que casi nadie sabe: el convenio entre España y Emiratos solo considera residente emiratí a quien, además de vivir allí, tiene la nacionalidad emiratí.","r":"conv"},{"t":"Así que, si eres de aquí, el convenio no te sirve para desempatar: tienes que dejar de ser residente según las reglas españolas por sí solas.","r":"conv2"},{"t":"Si tu pareja y tus hijos se quedan en España, Hacienda presume que tú también.","r":"fam"},{"t":"Para empresas pequeñas hay un alivio extra: hasta 2029, si facturas menos de tres millones de dirhams, puedes acogerte a la desgravación para pequeñas empresas.","r":"sbr"}]},{"id":"sl","name":"Tu país: la SL española","c":"es","segs":[{"t":"Y la opción que nadie vende porque no da clics: una sociedad limitada en tu país.","r":"a"},{"t":"En 2026, una microempresa, con menos de un millón de facturación, paga un diecinueve por ciento hasta los primeros cincuenta mil euros, y un veintiuno sobre el resto.","r":"tipos"},{"t":"Abres cuenta en cualquier banco, tus clientes la entienden y no hay ninguna duda sobre dónde reside la empresa.","r":"pros"},{"t":"A veces, la estructura más rentable es la aburrida.","r":"aburrida"}]},{"id":"grafico","name":"El gráfico que lo cambia todo","segs":[{"t":"Mira esto con calma.","r":"a"},{"t":"El mismo beneficio, sesenta mil euros, y una persona que vive en España.","r":"b"},{"t":"Si lo sacas todo, la SL española paga en total unos veintiún mil seiscientos euros entre empresa y dividendo, y la estonia unos veintidós mil novecientos.","r":"rep"},{"t":"Casi lo mismo.","r":"casi"},{"t":"La diferencia aparece solo si dejas el dinero dentro para reinvertir: la estonia, cero, y la española, once mil seiscientos.","r":"den"},{"t":"Conclusión: Estonia gana cuando reinviertes, no cuando cobras.","r":"conc"}]},{"id":"coste","name":"Ponle precio al año","segs":[{"t":"Una estructura no es un alta: es una factura anual.","r":"a"},{"t":"La LLC tiene la entrada más barata, pero súmale el agente y alguien que te prepare el 5472 cada año.","r":"llc"},{"t":"Estonia te pide contabilidad todos los meses.","r":"ee"},{"t":"Emiratos te cobra la licencia y el visado cada año.","r":"ae"},{"t":"Compara siempre a tres años, nunca el precio de la portada.","r":"tres"}]},{"id":"banco","name":"El banco decide","segs":[{"t":"La empresa sin banco no existe.","r":"a"},{"t":"Y el banco no mira tu país de registro: mira dónde vives tú, qué vendes y a quién.","r":"docs"},{"t":"Mercury filtra por el país donde vive el fundador, y en 2024 cerró cuentas de startups en varios países de golpe.","r":"merc"},{"t":"Por eso, regla de oro: abre siempre dos cuentas en entidades distintas.","r":"dos"},{"t":"Por ejemplo, Mercury o Relay para dólares, y Wise Business o Revolut para euros.","r":"ej"},{"t":"Si te cierran una, sigues cobrando.","r":"cierra"}]},{"id":"activos","name":"Pagado no es tuyo","segs":[{"t":"Un logo, un dominio o un código que pagaste pueden seguir siendo de otra persona.","r":"a"},{"t":"Lo que cuenta es la cesión por escrito y el titular registrado.","r":"firma"},{"t":"Revisa que tu marca esté a nombre de tu empresa en la OEPM o en la EUIPO, que el dominio sea tuyo y que tus freelances te hayan cedido el código y el diseño.","r":"check"}]},{"id":"calendario","name":"El calendario","segs":[{"t":"Cada estructura tiene sus fechas.","r":"a"},{"t":"El 720, si tienes más de cincuenta mil euros en el extranjero, antes del 31 de marzo.","r":"m720"},{"t":"El 5472, el 15 de abril. Y si no llegas, pide la prórroga con el formulario 7004 antes de esa fecha.","r":"m5472"},{"t":"El informe anual estonio, antes del 30 de junio.","r":"mee"},{"t":"Y además: Delaware, el 1 de junio; la renta, de abril a junio; y sociedades, en julio.","r":"mas"},{"t":"Pon cada aviso un mes antes, en el calendario que de verdad miras.","r":"aviso"}]},{"id":"trucos","name":"Diez trucos","segs":[{"t":"Diez trucos en un minuto. Uno: escribe tus cuatro lugares antes de mirar países.","r":"t0"},{"t":"Dos: compara a tres años. El alta es solo la portada.","r":"t1"},{"t":"Tres: si no llegas al 15 de abril, pide la prórroga del 5472 con el 7004. Te ahorra veinticinco mil dólares.","r":"t2"},{"t":"Cuatro: el 5472 va por fax o por correo. Guarda el justificante.","r":"t3"},{"t":"Cinco: dos cuentas, en dos entidades distintas.","r":"t4"},{"t":"Seis: Estonia gana cuando reinviertes, no cuando cobras.","r":"t5"},{"t":"Siete: lo que decides desde tu salón cuenta como dirección efectiva.","r":"t6"},{"t":"Ocho: el cero por ciento de Emiratos exige mudarte, y el convenio no te protege si no eres emiratí.","r":"t7"},{"t":"Nueve: dominio, marca y código, a nombre de la empresa y con cesión firmada.","r":"t8"},{"t":"Diez: cada aviso, un mes antes. Y «ninguna estructura todavía», bien argumentada, también vale.","r":"t9"}]},{"id":"matrix","name":"Tu Corporate Entity Matrix","segs":[{"t":"Tu tarea de esta semana es la Corporate Entity Matrix: tus cuatro lugares, dos opciones con sus cifras a tres años y su calendario.","r":"a"},{"t":"Y si llegas a la conclusión de que todavía no te toca montar nada, y lo argumentas, también es una respuesta completa.","r":"nada"},{"t":"Antes de firmar, llévala a un asesor de tu país.","r":"asesor"},{"t":"Nos vemos en clase.","r":"bye"}]}],"audio":false};
+(() => {
+/* ───────── utilidades ───────── */
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function wrap(t,max){const o=[];let c="";for(const w of String(t).split(" ")){if((c+" "+w).trim().length>max&&c){o.push(c);c=w}else c=(c+" "+w).trim()}if(c)o.push(c);return o}
+// Texto: rv = frase que lo revela; anim = pop|fade|stamp…; out = frase que lo apaga.
+function T(x,y,txt,o={}){
+  const {s=28,cls="",a="start",d=0,lh=1.22,max=0,rv="",anim="",out="",fill=""}=o;
+  const ls=max?wrap(txt,max):[txt];
+  const k=(rv?"rv ":"")+(anim?anim+" ":"");
+  return `<text x="${x}" y="${y}" font-size="${s}" text-anchor="${a}" class="${k}${cls}" ${rv?`data-r="${rv}"`:""} ${out?`data-out="${out}"`:""} style="--d:${d}s;${fill?`fill:${fill}`:""}">${ls.map((l,i)=>`<tspan x="${x}" dy="${i?s*lh:0}">${esc(l)}</tspan>`).join("")}</text>`;
+}
+const G=(rv,anim,inner,o={})=>`<g class="${rv?"rv ":""}${anim||""}" ${rv?`data-r="${rv}"`:""} ${o.out?`data-out="${o.out}"`:""} ${o.dim?`data-dim="${o.dim}"`:""} style="--d:${o.d||0}s;${o.style||""}">${inner}</g>`;
+const polar=(cx,cy,r,deg)=>{const a=deg*Math.PI/180;return [cx+r*Math.sin(a),cy-r*Math.cos(a)]};
+const arcPath=(cx,cy,r,a0,a1)=>{const [x0,y0]=polar(cx,cy,r,a0),[x1,y1]=polar(cx,cy,r,a1);return `M${x0.toFixed(1)} ${y0.toFixed(1)} A${r} ${r} 0 ${a1-a0>180?1:0} 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`};
+const num=n=>String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,".");
+// Número que cuenta desde 0 al revelarse
+const CNT=(x,y,v,o={})=>`<text x="${x}" y="${y}" font-size="${o.s||60}" text-anchor="${o.a||"start"}" class="rv ${o.anim||"pop"} ${o.cls||"blk"}" data-r="${o.rv}" data-count="${v}" data-pre="${o.pre||""}" data-suf="${o.suf||""}" style="--d:${o.d||0}s;${o.fill?`fill:${o.fill}`:""}">${o.pre||""}${num(v)}${o.suf||""}</text>`;
+
+/* ───────── banderas e ilustraciones ───────── */
+function flag(c,x,y,w){
+  const h=w*2/3;let s="";
+  if(c==="us"){for(let i=0;i<13;i++)s+=`<rect x="${x}" y="${y+i*h/13}" width="${w}" height="${h/13+.5}" fill="${i%2?"#fff":"#C8313E"}"/>`;s+=`<rect x="${x}" y="${y}" width="${w*.42}" height="${h*7/13}" fill="#2B3A75"/>`;for(let r=0;r<4;r++)for(let k=0;k<5;k++)s+=`<circle cx="${x+w*.05+k*w*.08}" cy="${y+h*.07+r*h*.11}" r="${w*.012}" fill="#fff"/>`}
+  if(c==="ee")s=`<rect x="${x}" y="${y}" width="${w}" height="${h/3}" fill="#0072CE"/><rect x="${x}" y="${y+h/3}" width="${w}" height="${h/3}" fill="#000"/><rect x="${x}" y="${y+2*h/3}" width="${w}" height="${h/3}" fill="#fff"/>`;
+  if(c==="ae")s=`<rect x="${x}" y="${y}" width="${w}" height="${h/3}" fill="#00843D"/><rect x="${x}" y="${y+h/3}" width="${w}" height="${h/3}" fill="#fff"/><rect x="${x}" y="${y+2*h/3}" width="${w}" height="${h/3}" fill="#000"/><rect x="${x}" y="${y}" width="${w/4}" height="${h}" fill="#EF3340"/>`;
+  if(c==="es")s=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#C60B1E"/><rect x="${x}" y="${y+h/4}" width="${w}" height="${h/2}" fill="#FFC400"/>`;
+  return `<g><clipPath id="fl${c}${x|0}${y|0}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${w*.06}"/></clipPath><g clip-path="url(#fl${c}${x|0}${y|0})">${s}</g><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${w*.06}" fill="none" stroke="rgba(255,255,255,.25)"/></g>`;
+}
+// Panel ilustrado de 560×380 con el paisaje de cada país
+function scape(c){
+  let s="";
+  if(c==="us"){s=`<rect width="560" height="380" fill="url(#skyWyo)"/><circle cx="420" cy="120" r="46" fill="#FFD9A0" opacity=".9"/>
+    <path d="M0 300 L90 170 L140 230 L230 80 L300 200 L350 150 L440 260 L560 180 L560 380 L0 380Z" fill="#2E3557"/>
+    <path d="M230 80 L262 135 L246 128 L230 150 L214 126 L200 132Z M350 150 L370 182 L350 176 L336 186Z M90 170 L112 202 L94 196 L80 206Z" fill="#F2F1FA" opacity=".9"/>
+    <path d="M0 330 L120 280 L260 320 L400 290 L560 320 L560 380 L0 380Z" fill="#1C2340"/>
+    ${[30,70,110,470,510,540].map((x,i)=>`<path d="M${x} ${360} l14 -${40+i%3*10} l14 ${40+i%3*10}Z" fill="#14304A"/>`).join("")}`}
+  if(c==="ee"){s=`<rect width="560" height="380" fill="url(#skyTallinn)"/>${Array.from({length:40},(_,i)=>`<circle cx="${(i*137)%560}" cy="${(i*71)%160}" r="${i%3?1.2:2}" fill="#fff" opacity=".7"/>`).join("")}<circle cx="470" cy="70" r="26" fill="#F2F1FA" opacity=".85"/>
+    <path d="M0 300 H560 V380 H0Z" fill="#0E1730"/>
+    <path d="M40 300 V230 H90 V300 M60 230 L65 150 L70 230" fill="#24365E"/>
+    <path d="M150 300 V200 h24 v-20 l12 -110 l12 110 v20 h24 V300Z" fill="#2B3F6B"/>
+    <path d="M250 300 V240 l25 -30 l25 30 V300Z M320 300 V220 h40 V300Z M335 220 l5 -60 l5 60" fill="#24365E"/>
+    <path d="M390 300 V250 h30 v-30 l15 -40 l15 40 v30 h30 V300Z" fill="#2B3F6B"/>
+    ${[160,170,180,330,340,400,410].map((x,i)=>`<rect x="${x}" y="${250+i%2*12}" width="6" height="9" fill="#F5B841" opacity=".85"><animate attributeName="opacity" values=".85;.3;.85" dur="${2+i%3}s" repeatCount="indefinite"/></rect>`).join("")}
+    <path d="M0 330 H560" stroke="#3D5C99" stroke-width="2"/>`}
+  if(c==="ae"){s=`<rect width="560" height="380" fill="url(#skyDubai)"/><circle cx="280" cy="250" r="70" fill="#FFD27A" opacity=".85"/>
+    <path d="M0 300 H560 V380 H0Z" fill="#1B1230"/>
+    <path d="M272 300 L276 120 L279 60 L281 120 L285 300Z M262 300 L268 180 L276 180 L278 300Z M282 300 L284 190 L292 190 L296 300Z" fill="#20142E"/>
+    <path d="M80 300 Q 90 170 140 150 L140 300Z M140 150 V300" fill="#2A1A3C" stroke="#2A1A3C"/>
+    ${[[180,210,30],[215,240,26],[330,200,34],[370,230,30],[410,180,28],[450,240,36],[30,250,34],[500,220,30]].map(([x,y,w])=>`<rect x="${x}" y="${y}" width="${w}" height="${300-y}" fill="#2A1A3C"/>`).join("")}
+    <path d="M0 330 Q 140 318 280 330 T 560 330 V380 H0Z" fill="#2E2050" opacity=".9"/>`}
+  if(c==="es"){s=`<rect width="560" height="380" fill="url(#skySpain)"/><circle cx="110" cy="110" r="40" fill="#FFE2A3" opacity=".9"/>
+    <path d="M0 300 H560 V380 H0Z" fill="#2A2140"/>
+    <path d="M300 300 Q 380 200 460 300Z" fill="none" stroke="#F2F1FA" stroke-width="6" opacity=".85"/><ellipse cx="380" cy="282" rx="38" ry="14" fill="#F2F1FA" opacity=".25"/>
+    <path d="M60 300 V200 h30 v-14 h10 v14 h10 v-14 h10 v14 h30 V300 h-36 v-46 a14 14 0 0 0 -28 0 V300Z" fill="#3B2C52"/>
+    ${[[200,230,34],[240,250,28],[480,220,36],[520,250,30]].map(([x,y,w])=>`<rect x="${x}" y="${y}" width="${w}" height="${300-y}" fill="#3B2C52"/>`).join("")}
+    <path d="M0 330 H560" stroke="#4F3D70" stroke-width="2"/>`}
+  return `<g clip-path="url(#panel)">${s}</g><rect width="560" height="380" rx="26" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/>`;
+}
+const PANEL=(c,x,y,sc,rv,o={})=>`<g transform="translate(${x} ${y}) scale(${sc})">${G(rv,o.anim||"pop",scape(c),o)}</g>`;
+// Iconos pequeños (caja −40…40)
+const IC={
+  casa:(c)=>`<path d="M-34 4 L0 -28 L34 4 V34 H-34Z" fill="${c}"/><rect x="-9" y="12" width="18" height="22" fill="#0B0A14"/>`,
+  maleta:(c)=>`<rect x="-34" y="-18" width="68" height="48" rx="8" fill="${c}"/><path d="M-12 -18 v-10 h24 v10" stroke="${c}" stroke-width="6" fill="none"/><path d="M-34 0 H34" stroke="#0B0A14" stroke-width="4"/>`,
+  familia:(c)=>`<circle cx="-18" cy="-18" r="10" fill="${c}"/><path d="M-34 30 a16 18 0 0 1 32 0Z" fill="${c}"/><circle cx="16" cy="-12" r="8" fill="${c}"/><path d="M4 30 a12 14 0 0 1 24 0Z" fill="${c}"/><circle cx="32" cy="2" r="6" fill="${c}" opacity=".8"/>`,
+  cal:(c)=>`<rect x="-32" y="-26" width="64" height="58" rx="8" fill="${c}"/><rect x="-32" y="-26" width="64" height="16" rx="6" fill="#0B0A14" opacity=".35"/>`,
+  banco:(c)=>`<path d="M-36 -6 L0 -30 L36 -6Z" fill="${c}"/>${[-26,-9,9,26].map(x=>`<rect x="${x-4}" y="-2" width="8" height="26" fill="${c}"/>`).join("")}<rect x="-38" y="26" width="76" height="8" fill="${c}"/>`,
+  doc:(c)=>`<path d="M-26 -34 H14 L28 -20 V34 H-26Z" fill="${c}"/><path d="M-16 -14 H18 M-16 0 H18 M-16 14 H8" stroke="#0B0A14" stroke-width="4"/>`,
+  globo:(c)=>`<circle r="32" fill="none" stroke="${c}" stroke-width="5"/><ellipse rx="13" ry="32" fill="none" stroke="${c}" stroke-width="4"/><path d="M-32 0 H32 M-27 -16 H27 M-27 16 H27" stroke="${c}" stroke-width="3"/>`,
+  dinero:(c)=>`<rect x="-36" y="-22" width="72" height="44" rx="8" fill="${c}"/><circle r="12" fill="#0B0A14" opacity=".4"/>`,
+  check:(c)=>`<circle r="30" fill="${c}"/><path d="M-13 0 l9 10 l18 -20" stroke="#0B0A14" stroke-width="7" fill="none" stroke-linecap="round"/>`,
+  cruz:(c)=>`<circle r="30" fill="${c}"/><path d="M-11 -11 L11 11 M11 -11 L-11 11" stroke="#0B0A14" stroke-width="7" stroke-linecap="round"/>`,
+  portatil:(c)=>`<rect x="-34" y="-28" width="68" height="44" rx="5" fill="${c}"/><rect x="-28" y="-22" width="56" height="32" fill="#0B0A14" opacity=".5"/><path d="M-44 22 H44 L38 30 H-38Z" fill="${c}"/>`,
+};
+const ICON=(n,x,y,c,sc=1,rv="",anim="pop",o={})=>`<g transform="translate(${x} ${y}) scale(${sc})">${G(rv,anim,IC[n](c),o)}</g>`;
+// Mapa del mundo de puntos (6° × 5°, de 75° N a 55° S)
+const WROWS=[[[10,16],[20,26],[40,53]],[[3,6],[8,18],[21,26],[33,59]],[[2,19],[22,24],[26,27],[31,59]],[[3,19],[22,22],[30,58]],[[8,20],[29,30],[31,56]],[[9,20],[29,53]],[[9,19],[30,52],[53,54]],[[9,17],[28,30],[32,50],[51,53]],[[10,17],[29,31],[35,50],[52,53]],[[10,16],[28,50]],[[11,13],[16,16],[27,35],[36,39],[41,45],[46,50]],[[12,15],[16,16],[27,36],[37,39],[42,44],[45,48],[50,50]],[[14,15],[27,37],[42,43],[46,48],[50,50]],[[16,16],[17,20],[27,38],[42,42],[46,47],[50,50]],[[17,21],[28,38],[46,50]],[[16,21],[31,37],[46,52]],[[16,24],[32,36],[47,55]],[[17,23],[32,36],[51,55]],[[17,23],[32,36],[37,37],[50,54]],[[18,23],[32,35],[37,37],[49,55]],[[18,22],[32,35],[49,55]],[[18,21],[32,35],[49,55]],[[18,20],[52,55],[59,59]],[[17,19],[54,54],[58,59]],[[17,18],[57,57]],[[17,18]],[[18,18]]];
+const MX=lon=>60+((lon+180)/6)*24.7, MY=lat=>150+((75-lat)/5)*24;
+function worldDots(fill){let s="";WROWS.forEach((row,r)=>row.forEach(([a,b])=>{for(let c=a;c<=b;c++)s+=`<circle cx="${(60+c*24.7).toFixed(1)}" cy="${150+r*24}" r="6" fill="${fill}"/>`}));return s}
+
+/* ───────── escenas ───────── */
+const B={};
+B.gancho=()=>{
+  const pins=[["us",-107.5,43,"Wyoming","0 %"],["ee",24.7,59.4,"Tallin","0 %"],["ae",55.3,25.2,"Dubái","0 %"]];
+  const vx=MX(-0.4),vy=MY(39.5);
+  let p="",arr="",cr="";
+  pins.forEach(([c,lon,lat,name,pct],i)=>{const x=MX(lon),y=MY(lat);
+    p+=G("pins","drop",`<path d="M${x} ${y} l-20 -46 a28 28 0 1 1 40 0Z" fill="#F5B841"/><circle cx="${x}" cy="${y-66}" r="12" fill="#0B0A14"/>
+      <rect x="${x-62}" y="${y-160}" width="124" height="66" rx="14" fill="#17152A" stroke="#F5B841" stroke-width="2"/>
+      <text x="${x}" y="${y-133}" font-size="18" text-anchor="middle" class="semi mut">${name}</text><text x="${x}" y="${y-104}" font-size="30" text-anchor="middle" class="blk gl">${pct}</text>`,{d:i*.35});
+    arr+=`<path class="rv draw" data-r="casa" style="--d:${(.6+i*.3).toFixed(1)}s" pathLength="1" d="M${vx} ${vy} Q ${(vx+x)/2} ${Math.min(vy,y)-160} ${x} ${y-40}" stroke="#FF7C66" stroke-width="4" fill="none" stroke-dasharray="1"/>`;
+    cr+=`<path class="rv draw" data-r="rompe" style="--d:${(i*.25).toFixed(2)}s;--t:.4s" pathLength="1" d="M${x-58} ${y-150} L${x+58} ${y-100}" stroke="#E4462F" stroke-width="8" stroke-linecap="round"/>`;
+  });
+  return `<g class="a-fade">${worldDots("rgba(242,241,250,.16)")}</g>
+  ${p}
+  ${ICON("casa",vx,vy,"#9488FF",1.2,"casa")}
+  ${T(vx,vy+64,"Tu casa, en Valencia",{s:20,a:"middle",cls:"semi pl",rv:"casa",anim:"fade"})}
+  ${arr}${cr}
+  ${G("titulo","fade",`<rect x="0" y="0" width="1600" height="900" fill="#0B0A14" opacity=".82"/>`)}
+  ${T(800,360,"MASTERCLASS · REMOTE FOUNDER · SEMANA 12",{s:22,a:"middle",cls:"eyebrow gl",rv:"titulo",anim:"fade",d:.2})}
+  ${T(800,470,"Dónde montar tu empresa",{s:104,a:"middle",cls:"blk",rv:"titulo",d:.35})}
+  ${T(800,550,"La regla que lo decide · 4 estructuras · números de 2026",{s:32,a:"middle",cls:"semi mut",rv:"titulo",d:.6})}
+  ${T(800,790,"Formación, no asesoramiento fiscal ni legal",{s:18,a:"middle",cls:"dimt",rv:"titulo",anim:"fade",d:1})}
+  ${["us","ee","ae","es"].map((c,i)=>`<g transform="translate(${800-200+i*104} 620)">${G("vamos","pop",flag(c,0,0,84),{d:i*.12})}</g>`).join("")}`;
+};
+B.lugares=()=>{
+  const L=[["casa","Dónde vives"],["portatil","Desde dónde decides"],["globo","Dónde están tus clientes"],["dinero","Dónde cae el dinero"]];
+  let circ="";L.forEach(([ic,t],i)=>{const x=260+i*360;circ+=G("l"+i,"pop",`<circle cx="${x}" cy="300" r="92" fill="#17152A" stroke="#9488FF" stroke-width="4"/><g transform="translate(${x} 296) scale(1.3)">${IC[ic]("#9488FF")}</g>${T(x,440,t,{s:26,a:"middle",cls:"disp"})}<text x="${x-70}" y="232" font-size="22" class="mono gl">${i+1}</text>`,{dim:"res"})});
+  const crit=G("res","up",`
+    <g transform="translate(330 640)"><circle r="78" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="16"/><path class="rv draw" data-r="res" style="--d:.3s;--t:1.4s" pathLength="1" d="${arcPath(0,0,78,0,360*183/365)}" stroke="#F5B841" stroke-width="16" fill="none" stroke-linecap="round"/><text y="14" font-size="44" text-anchor="middle" class="blk">183</text><text y="44" font-size="16" text-anchor="middle" class="mut">días al año</text></g>
+    <g transform="translate(800 630) scale(1.6)">${IC.maleta("#F5B841")}</g>${T(800,740,"Núcleo de tus negocios",{s:22,a:"middle",cls:"semi"})}
+    <g transform="translate(1270 630) scale(1.6)">${IC.familia("#F5B841")}</g>${T(1270,740,"Pareja e hijos menores aquí",{s:22,a:"middle",cls:"semi"})}
+    ${T(800,812,"Basta con uno de los tres para ser residente en España",{s:22,a:"middle",cls:"mut",rv:"res",d:1.6})}`,{out:"mundo"});
+  const mundo=G("mundo","pop",`<g transform="translate(800 650) scale(2.6)">${IC.globo("#FF7C66")}</g>${T(800,800,"Tributas por todo lo que ganas en el mundo",{s:30,a:"middle",cls:"disp"})}`,{out:"balanza"});
+  const bal=G("balanza","fade",`<g transform="translate(800 600)"><path d="M0 -60 V150 M-80 150 H80" stroke="#F2F1FA" stroke-width="8" stroke-linecap="round"/><circle cy="-60" r="12" fill="#F2F1FA"/>
+    <g><animateTransform attributeName="transform" type="rotate" values="0;-14;-12" keyTimes="0;.7;1" dur="1.4s" fill="freeze" begin="indefinite" id="balRot"/><path d="M-330 -60 H330" stroke="#F2F1FA" stroke-width="8"/>
+    <path d="M-330 -60 L-400 40 H-260Z" fill="none" stroke="#F5B841" stroke-width="4"/><rect x="-440" y="20" width="220" height="64" rx="14" fill="#F5B841"/><text x="-330" y="62" font-size="28" text-anchor="middle" class="blk ink">Tu residencia</text>
+    <path d="M330 -60 L260 40 H400Z" fill="none" stroke="#9488FF" stroke-width="4"/><rect x="240" y="24" width="180" height="44" rx="12" fill="#9488FF"/><text x="330" y="53" font-size="19" text-anchor="middle" class="semi">País de la empresa</text></g></g>`);
+  return `${T(140,140,"LA REGLA DE LOS CUATRO LUGARES",{s:20,cls:"eyebrow gl",rv:"a",anim:"fade"})}${T(140,200,"Antes de mirar países, contesta cuatro preguntas.",{s:44,cls:"disp",rv:"a",d:.1})}${circ}${crit}${mundo}${bal}`;
+};
+B.direccion=()=>`
+  ${T(140,140,"TRAMPA 1",{s:20,cls:"eyebrow rl",rv:"a",anim:"fade"})}${T(140,205,"La dirección efectiva",{s:60,cls:"blk",rv:"a",d:.1})}
+  <g class="mv" data-r="c" style="--tx:820px;--ty:40px;--d:1.4s;--t:1.8s">${G("b","pop",`${flag("ee",150,300,120)}<path d="M150 760 V420 h60 v-40 h80 v40 h60 V760Z" fill="#2B3F6B" stroke="#0072CE" stroke-width="3"/>${[0,1,2,3,4,5].map(i=>`<rect x="${175+(i%3)*55}" y="${460+Math.floor(i/3)*80}" width="30" height="44" fill="#F5B841" opacity=".8"/>`).join("")}<text x="250" y="680" font-size="44" text-anchor="middle" class="blk">OÜ</text>`)}</g>
+  ${T(250,810,"Registrada en Tallin",{s:22,a:"middle",cls:"semi mut",rv:"b",out:"c"})}
+  ${G("b","pop",`<g transform="translate(1250 560) scale(2.4)">${IC.portatil("#9488FF")}</g>${flag("es",1180,700,140)}${T(1250,830,"Tú decides desde Valencia",{s:22,a:"middle",cls:"semi pl"})}`,{d:.3})}
+  <path class="rv draw" data-r="b" style="--d:.8s" pathLength="1" d="M360 520 Q 800 360 1160 530" stroke="#F5B841" stroke-width="4" stroke-dasharray="1" fill="none"/>
+  ${G("c","pop",`<circle cx="800" cy="420" r="70" fill="none" stroke="#F2F1FA" stroke-width="8"/><path d="M850 470 L910 530" stroke="#F2F1FA" stroke-width="14" stroke-linecap="round"/><text x="800" y="432" font-size="22" text-anchor="middle" class="disp">art. 8</text>`)}
+  ${T(800,560,"Ley del Impuesto sobre Sociedades: sede de dirección efectiva",{s:22,a:"middle",cls:"semi",rv:"c",d:.3})}
+  ${G("c","stamp",`<rect x="840" y="610" width="340" height="80" rx="14" fill="rgba(228,70,47,.15)" stroke="#E4462F" stroke-width="5" transform="rotate(-6 1010 650)"/><text x="1010" y="664" font-size="32" text-anchor="middle" class="blk rl" transform="rotate(-6 1010 650)">Residente en España</text>`,{d:3.3})}
+  ${G("d","fade",`<rect width="1600" height="900" fill="#0B0A14" opacity=".97"/>`)}
+  ${CNT(620,520,1,{rv:"d",s:220,a:"middle",fill:"#F2F1FA",d:.2})}${T(800,500,"→",{s:120,a:"middle",cls:"blk gl",rv:"d",d:.5})}${CNT(980,520,2,{rv:"d",s:220,a:"middle",fill:"#FF7C66",d:.8})}
+  ${T(800,640,"problemas, si constituyes donde no tienes ni clientes, ni residencia, ni actividad",{s:28,a:"middle",cls:"semi mut",rv:"d",d:1.1,max:60})}`;
+B.formula=()=>{
+  const steps=[["Facturación",100,0,"#9488FF"],["Impuesto de la empresa",-22,100,"#E4462F"],["Tu impuesto al sacarlo",-16,78,"#E4462F"],["Coste de la estructura",-6,62,"#E4462F"],["Lo que te queda",56,0,"#3DDC97"]];
+  const H=3.8,base=790;let w="";
+  steps.forEach(([lab,v,start,col],i)=>{const x=200+i*250,h=Math.abs(v)*H,top=v>0?base-(start+v)*H:base-start*H;
+    w+=G("c","gy",`<rect x="${x}" y="${top}" width="150" height="${h}" rx="10" fill="${col}" opacity="${v<0?.85:1}"/>`,{d:i*.7});
+    w+=T(x+75,base+40,lab,{s:20,a:"middle",cls:"semi",max:14,rv:"c",anim:"fade",d:i*.7});
+    if(i<4)w+=`<path class="rv draw" data-r="c" style="--d:${(i*.7+.5).toFixed(1)}s;--t:.4s" pathLength="1" d="M${x+150} ${v>0?top:top+h} H${x+250}" stroke="rgba(255,255,255,.35)" stroke-dasharray="1" stroke-width="2"/>`;});
+  return `${G("a","stamp",`<rect x="1000" y="120" width="420" height="200" rx="24" fill="#F5B841"/><text x="1210" y="250" font-size="120" text-anchor="middle" class="blk ink">0 %</text>`,{out:"c"})}
+  <path class="rv draw" data-r="b" style="--t:.4s" pathLength="1" d="M990 330 L1430 110" stroke="#E4462F" stroke-width="14" stroke-linecap="round" data-out="c"/>
+  ${T(140,160,"TU NÚMERO, NO EL DEL ANUNCIO",{s:20,cls:"eyebrow gl",rv:"a",anim:"fade"})}
+  ${T(140,240,"Lo que te queda en el bolsillo.",{s:56,cls:"blk",rv:"b"})}
+  ${w}
+  ${G("d","up",`<rect x="140" y="286" width="1320" height="84" rx="20" fill="#17152A" stroke="#F5B841" stroke-width="2"/>${T(800,338,"Facturación − impuesto empresa − tu impuesto − coste estructura = lo que te queda",{s:28,a:"middle",cls:"disp"})}`)}
+  ${["us","ee","ae","es"].map((c,i)=>`<g transform="translate(${1500-i*0} ${140+i*0})"></g>`).join("")}`;
+};
+B.llc=()=>{
+  const card=(r,x,name,big,sub,d)=>G(r,"pop",`<rect class="card" x="${x}" y="330" width="300" height="230" rx="22" fill="#17152A" stroke="rgba(255,255,255,.18)" stroke-width="2"/>${T(x+24,374,name.toUpperCase(),{s:16,cls:"eyebrow gl"})}${T(x+24,450,big,{s:58,cls:"blk"})}${T(x+24,500,sub,{s:20,cls:"mut",max:24})}`,{out:"ad",d});
+  return `${PANEL("us",1000,110,1,"a")}${flag("us",140,110,110).replace("<g>",`<g class="rv pop" data-r="a">`)}
+  ${T(140,290,"Estados Unidos: la LLC",{s:60,cls:"blk",rv:"a",d:.2})}
+  ${card("wy",140,"Wyoming","100 $","de alta · 60 $ al año")}
+  ${card("nm",470,"Nuevo México","50 $","de alta · sin informe anual")}
+  ${G("de","pop",`<rect class="card" x="800" y="530" width="300" height="230" rx="22" fill="#17152A" stroke="rgba(255,255,255,.18)" stroke-width="2"/>${T(824,574,"DELAWARE",{s:16,cls:"eyebrow gl"})}<text x="824" y="650" font-size="40" class="blk dimt" text-decoration="line-through">300 $</text>${T(980,650,"400 $",{s:58,cls:"blk rl"})}${T(824,700,"al año desde 2026",{s:20,cls:"mut"})}`,{out:"ad"})}
+  ${["Agente registrado","EIN","Banco"].map((t,i)=>G("kit","pop",`<rect x="${140+i*220}" y="620" width="200" height="64" rx="32" fill="#5B4BF5"/>${T(240+i*220,661,t,{s:22,a:"middle",cls:"disp"})}`,{d:i*.25,out:"ad"})).join("")}
+  ${G("ad","fade",`<rect x="0" y="0" width="1600" height="900" fill="#0B0A14" opacity=".97"/>`)}
+  ${T(140,180,"LO QUE NO SALE EN EL ANUNCIO",{s:20,cls:"eyebrow rl",rv:"ad",anim:"fade"})}
+  ${G("fed","pop",`<rect x="140" y="250" width="250" height="140" rx="20" fill="#17152A" stroke="#9488FF" stroke-width="3"/>${T(265,315,"Tu LLC",{s:34,a:"middle",cls:"disp"})}${T(265,355,"transparente",{s:20,a:"middle",cls:"mut"})}`)}
+  <path class="rv draw" data-r="fed" style="--d:.5s" pathLength="1" d="M390 320 H560" stroke="#F2F1FA" stroke-width="4" stroke-dasharray="1"/>
+  ${G("fed","pop",`<rect x="570" y="250" width="250" height="140" rx="20" fill="#17152A" stroke="#3DDC97" stroke-width="3"/>${T(695,310,"IRS federal",{s:24,a:"middle",cls:"semi mut"})}${T(695,362,"0 $",{s:50,a:"middle",cls:"blk gr"})}`,{d:.8})}
+  ${G("form","drop",`<g transform="rotate(-4 1170 440)"><rect x="1010" y="200" width="320" height="430" rx="10" fill="#F2F1FA"/><text x="1035" y="250" font-size="30" class="blk ink">Form 5472</text><text x="1035" y="282" font-size="18" class="semi" style="fill:#615D7C">+ 1120 pro forma · cada año</text>${[0,1,2,3,4,5,6,7].map(i=>`<rect x="1035" y="${310+i*34}" width="${[280,240,260,200,280,220,250,180][i]}" height="12" rx="6" fill="#C9C6DC"/>`).join("")}</g>`)}
+  ${G("fax","pop",`<g transform="translate(1440 300) scale(1.2)">${IC.doc("#9488FF")}</g>${T(1440,380,"Fax o correo",{s:20,a:"middle",cls:"semi"})}${T(1440,408,"no por internet",{s:18,a:"middle",cls:"mut"})}`)}
+  ${G("multa","stamp",`<g transform="rotate(-10 1170 560)"><rect x="1020" y="510" width="300" height="100" rx="16" fill="rgba(228,70,47,.2)" stroke="#E4462F" stroke-width="6"/></g>`,{})}${CNT(1170,585,25000,{rv:"multa",s:62,a:"middle",suf:" $",fill:"#FF7C66",anim:"stamp"})}
+  <path class="rv draw" data-r="es" pathLength="1" d="M265 390 V560 H560" stroke="#F5B841" stroke-width="4" stroke-dasharray="1" fill="none"/>
+  ${G("es","pop",`${flag("es",570,500,120)}<rect x="710" y="500" width="250" height="80" rx="16" fill="#F5B841"/>${T(835,552,"Tu IRPF",{s:36,a:"middle",cls:"blk ink"})}${T(570,630,"Atribución de rentas: el beneficio es tuyo, en la escala general",{s:22,cls:"semi",max:40})}`,{d:.6})}
+  ${G("boi","up",`<rect x="140" y="740" width="820" height="80" rx="40" fill="rgba(61,220,151,.14)" stroke="#3DDC97" stroke-width="2"/><g transform="translate(184 780) scale(.7)">${IC.check("#3DDC97")}</g>${T(230,790,"Desde marzo de 2025: sin informe BOI a FinCEN",{s:26,cls:"disp gr"})}`)}`;
+};
+B.estonia=()=>`
+  ${PANEL("ee",1000,90,1,"a")}<g class="rv pop" data-r="a">${flag("ee",140,110,110)}</g>
+  ${T(140,290,"Estonia: la e-Residency",{s:60,cls:"blk",rv:"a",d:.2})}
+  ${G("card","flip",`<rect x="140" y="340" width="380" height="230" rx="22" fill="#0072CE"/><rect x="140" y="340" width="380" height="230" rx="22" fill="url(#gP)" opacity=".5"/><text x="168" y="388" font-size="20" class="eyebrow">E-RESIDENCY</text><rect x="168" y="420" width="60" height="44" rx="8" fill="#F5B841"/><text x="168" y="540" font-size="22" class="mono">digital id</text>`,{out:"dentro"})}
+  ${G("card","pop",`<rect x="560" y="350" width="190" height="96" rx="18" fill="#17152A" stroke="#F5B841" stroke-width="2"/>${T(655,396,"150 €",{s:40,a:"middle",cls:"blk"})}${T(655,428,"en 2026",{s:18,a:"middle",cls:"mut"})}<rect x="560" y="462" width="190" height="96" rx="18" fill="#17152A" stroke="rgba(255,255,255,.2)"/>${T(655,508,"165 €",{s:40,a:"middle",cls:"blk"})}${T(655,540,"desde 2027",{s:18,a:"middle",cls:"mut"})}`,{d:.6,out:"dentro"})}
+  ${G("reg","pop",`<rect x="790" y="350" width="190" height="96" rx="18" fill="#17152A" stroke="#9488FF" stroke-width="2"/>${T(885,396,"265 €",{s:40,a:"middle",cls:"blk"})}${T(885,428,"registro OÜ",{s:18,a:"middle",cls:"mut"})}<rect x="790" y="462" width="190" height="96" rx="18" fill="#17152A" stroke="#9488FF" stroke-width="2"/>${T(885,508,"0,01 €",{s:40,a:"middle",cls:"blk"})}${T(885,540,"de capital",{s:18,a:"middle",cls:"mut"})}`,{out:"dentro"})}
+  ${G("dentro","pop",`<g transform="translate(320 560)"><ellipse rx="150" ry="110" fill="#3DDC97"/><circle cx="120" cy="-40" r="22" fill="#3DDC97"/><rect x="-30" y="-120" width="60" height="16" rx="8" fill="#0B0A14"/><rect x="-100" y="90" width="30" height="40" fill="#3DDC97"/><rect x="70" y="90" width="30" height="40" fill="#3DDC97"/></g>${T(320,580,"0 €",{s:64,a:"middle",cls:"blk ink"})}${T(320,730,"Lo dejas dentro",{s:26,a:"middle",cls:"disp gr"})}`)}
+  ${G("fuera","pop",`<g transform="translate(800 560)"><ellipse rx="150" ry="110" fill="#E4462F"/><circle cx="120" cy="-40" r="22" fill="#E4462F"/><rect x="-30" y="-120" width="60" height="16" rx="8" fill="#0B0A14"/><rect x="-100" y="90" width="30" height="40" fill="#E4462F"/><rect x="70" y="90" width="30" height="40" fill="#E4462F"/></g>${T(800,580,"22 %",{s:64,a:"middle",cls:"blk"})}${T(800,730,"Lo repartes: sobre el bruto",{s:26,a:"middle",cls:"disp rl"})}`)}
+  ${G("num","fade",`<rect x="1000" y="500" width="460" height="56" rx="12" fill="#3DDC97" opacity=".25"/><rect class="rv gx" data-r="num" x="1000" y="500" width="358.8" height="56" rx="12" fill="#3DDC97"/><rect class="rv gx" data-r="num" style="--d:.8s" x="1358.8" y="500" width="101.2" height="56" rx="0" fill="#E4462F"/>${T(1000,480,"60.000 € de beneficio",{s:22,cls:"semi mut"})}${T(1180,537,"46.800 € neto",{s:20,a:"middle",cls:"disp ink"})}`)}
+  ${CNT(1460,640,13200,{rv:"num",s:64,a:"end",suf:" €",fill:"#FF7C66",d:.9})}${T(1460,680,"de impuesto en Estonia",{s:20,a:"end",cls:"mut",rv:"num",d:1})}
+  ${G("no","stamp",`<rect x="1000" y="720" width="460" height="90" rx="16" fill="rgba(245,184,65,.15)" stroke="#F5B841" stroke-width="5" transform="rotate(-4 1230 765)"/><text x="1230" y="778" font-size="34" text-anchor="middle" class="blk gl" transform="rotate(-4 1230 765)">e-Residency ≠ residencia</text>`,{out:"nec"})}
+  ${["Contabilidad mensual","Dirección legal","Persona de contacto"].map((t,i)=>G("nec","pop",`<rect x="${1000+0}" y="${712+i*0}" width="0" height="0"/><rect x="${1000}" y="${ 700 + i*62}" width="300" height="50" rx="25" fill="#17152A" stroke="#0072CE" stroke-width="2"/>${T(1150,733+i*62,t,{s:20,a:"middle",cls:"semi"})}`,{d:i*.25})).join("")}
+  ${["Xolo","Unicount","Companio"].map((t,i)=>G("prov","pop",`<rect x="1320" y="${700+i*62}" width="150" height="50" rx="25" fill="#0072CE"/>${T(1395,733+i*62,t,{s:20,a:"middle",cls:"disp"})}`,{d:i*.25})).join("")}`;
+B.emiratos=()=>{
+  const W=820,x0=140,y0=420,c375=375/500*W;
+  const zones=[["RAKEZ",6000],["SPC",5750],["Ajman",5555],["Meydan",12500],["IFZA",12900]];
+  const lx=v=>140+(v-5000)/(13500-5000)*800;
+  return `${PANEL("ae",1000,90,1,"a")}<g class="rv pop" data-r="a">${flag("ae",140,110,110)}</g>
+  ${T(140,290,"Emiratos: la zona franca",{s:60,cls:"blk",rv:"a",d:.2})}
+  ${G("ct","fade",`${T(x0,y0-20,"500.000 AED de beneficio",{s:22,cls:"semi mut"})}<rect class="rv gx" data-r="ct" x="${x0}" y="${y0}" width="${c375}" height="70" rx="12" fill="#635F80"/><rect class="rv gx" data-r="ct" style="--d:.9s" x="${x0+c375}" y="${y0}" width="${W-c375}" height="70" fill="#E4462F"/>${T(x0+c375/2,y0+46,"375.000 · 0 %",{s:26,a:"middle",cls:"disp"})}${T(x0+c375+(W-c375)/2,y0+46,"9 %",{s:26,a:"middle",cls:"disp",rv:"ct",d:1.2})}`,{out:"truco"})}
+  ${G("ej","fade",`${CNT(x0,y0+170,11250,{rv:"ej",s:70,suf:" AED",fill:"#FF7C66"})}${T(x0+500,y0+170,"= 2,25 % efectivo",{s:40,cls:"disp gl",rv:"ej",d:.8})}`,{out:"truco"})}
+  ${G("qfzp","stamp",`<rect x="${x0+680}" y="${y0+95}" width="260" height="96" rx="18" fill="rgba(61,220,151,.15)" stroke="#3DDC97" stroke-width="4"/>${T(x0+810,y0+138,"Zona franca cualificada",{s:18,a:"middle",cls:"semi gr"})}${T(x0+810,y0+176,"0 %",{s:34,a:"middle",cls:"blk gr"})}`,{out:"truco"})}
+  ${G("lic","fade",`<path d="M140 760 H940" stroke="rgba(255,255,255,.3)" stroke-width="6" stroke-linecap="round"/>${zones.map(([z,v],i)=>`<g class="rv pop" data-r="lic" style="--d:${(i*.3).toFixed(1)}s"><circle cx="${lx(v)}" cy="760" r="12" fill="${v>10000?"#FF7C66":"#F5B841"}"/>${T(lx(v),i%2?800:735,z,{s:18,a:"middle",cls:"semi"})}</g>`).join("")}${T(140,850,"≈ 5.500 AED",{s:20,cls:"semi gl",rv:"lic",d:.4})}${T(940,850,"≈ 12.900 AED al año · visado aparte",{s:20,a:"end",cls:"semi rl",rv:"lic",d:1.2})}`,{out:"truco"})}
+  ${G("truco","fade",`<rect x="0" y="330" width="1000" height="570" fill="#0B0A14" opacity=".92"/>`)}
+  ${T(140,400,"EL TRUCO QUE NO TE CUENTAN",{s:20,cls:"eyebrow gl",rv:"truco",anim:"fade"})}
+  ${T(140,460,"Para ti, el 0 % exige vivir allí.",{s:46,cls:"blk",rv:"truco",d:.2})}
+  ${G("dias","fade",`<g transform="translate(250 620)"><circle r="80" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="16"/><path class="rv draw" data-r="dias" style="--t:1.3s" pathLength="1" d="${arcPath(0,0,80,0,360*183/365)}" stroke="#F5B841" stroke-width="16" fill="none" stroke-linecap="round"/><text y="14" font-size="46" text-anchor="middle" class="blk">183</text><text y="42" font-size="16" text-anchor="middle" class="mut">días</text></g>
+    ${T(380,600,"o 90 días + casa o trabajo",{s:26,cls:"disp",rv:"dias",d:.6})}${T(380,640,"y romper tus lazos con España",{s:22,cls:"mut",rv:"dias",d:.9})}`,{out:"conv"})}
+  ${G("conv","pop",`<rect x="140" y="510" width="820" height="200" rx="16" fill="#F2F1FA"/>${T(170,555,"CONVENIO ESPAÑA–EAU · ART. 4.1.b",{s:16,cls:"eyebrow",fill:"#615D7C"})}<text x="170" y="615" font-size="28" class="semi" style="fill:#0B0A14">«personas físicas domiciliadas en los Emiratos</text><text x="170" y="655" font-size="28" class="semi" style="fill:#0B0A14">Árabes Unidos <tspan style="fill:#E4462F;font-weight:900">y que sean nacionales</tspan>…»</text>`,{out:"fam"})}
+  <path class="rv draw" data-r="conv" style="--d:1.4s" pathLength="1" d="M420 670 H700" stroke="#E4462F" stroke-width="5" data-out="fam"/>
+  ${G("conv2","stamp",`<rect x="560" y="730" width="400" height="80" rx="14" fill="rgba(228,70,47,.15)" stroke="#E4462F" stroke-width="5" transform="rotate(-3 760 770)"/><text x="760" y="782" font-size="28" text-anchor="middle" class="blk rl" transform="rotate(-3 760 770)">Sin desempate por convenio</text>`,{out:"fam"})}
+  ${G("fam","pop",`<g transform="translate(300 640) scale(2.4)">${IC.familia("#F5B841")}</g>${flag("es",460,560,150)}${T(460,720,"Si tu familia se queda,",{s:28,cls:"disp"})}${T(460,760,"Hacienda presume que tú también.",{s:28,cls:"disp rl"})}`)}
+  ${G("sbr","up",`<rect x="1000" y="520" width="460" height="290" rx="22" fill="#17152A" stroke="#3DDC97" stroke-width="3"/>${T(1030,570,"DESGRAVACIÓN PEQUEÑAS EMPRESAS",{s:15,cls:"eyebrow gr"})}${T(1030,650,"Hasta 2029",{s:56,cls:"blk"})}${T(1030,700,"si ingresas menos de 3 M AED",{s:24,cls:"semi"})}${T(1030,760,"Decisión Ministerial 131 de 2026",{s:18,cls:"mut"})}`)}`;
+};
+B.sl=()=>{
+  const bars=[["Microempresa",19,"primeros 50.000 €"],["Microempresa",21,"el resto"],["Reducida dimensión",23,"< 10 M €"],["General",25,""]];
+  let b="";bars.forEach(([n,v,sub],i)=>{const x=170+i*200,h=v*16;b+=G("tipos","gy",`<rect x="${x}" y="${780-h}" width="150" height="${h}" rx="12" fill="${i<2?"#F5B841":"#635F80"}"/>`,{d:i*.4})+T(x+75,770-h,v+" %",{s:44,a:"middle",cls:"blk",rv:"tipos",anim:"pop",d:i*.4+.3})+T(x+75,815,n,{s:18,a:"middle",cls:"semi",rv:"tipos",anim:"fade",d:i*.4})+(sub?T(x+75,840,sub,{s:16,a:"middle",cls:"mut",rv:"tipos",anim:"fade",d:i*.4}):"")});
+  return `${PANEL("es",1000,90,1,"a")}<g class="rv pop" data-r="a">${flag("es",140,110,110)}</g>
+  ${T(140,290,"Tu país: la SL española",{s:60,cls:"blk",rv:"a",d:.2})}
+  ${T(140,350,"La opción que no da clics",{s:28,cls:"mut",rv:"a",d:.5})}${b}
+  ${["Banco fácil","Clientes que la entienden","Cero dudas de residencia"].map((t,i)=>G("pros","pop",`<g transform="translate(1040 ${560+i*80}) scale(.7)">${IC.check("#3DDC97")}</g>${T(1080,570+i*80,t,{s:28,cls:"disp"})}`,{d:i*.35})).join("")}
+  ${G("aburrida","stamp",`<rect x="980" y="770" width="500" height="80" rx="16" fill="#F5B841" transform="rotate(-3 1230 810)"/><text x="1230" y="822" font-size="30" text-anchor="middle" class="blk ink" transform="rotate(-3 1230 810)">La rentable, a veces, es la aburrida</text>`)}`;
+};
+B.grafico=()=>{
+  const S=0.017,base=760;
+  const bar=(x,parts,r,d,label)=>{let y=base,o="";parts.forEach(([v,col,lab],k)=>{const h=v*S;y-=h;o+=`<rect class="rv gy" data-r="${r}" style="--d:${(d+k*.5).toFixed(1)}s" x="${x}" y="${y}" width="170" height="${Math.max(h,0)}" fill="${col}" ${k===parts.length-1?'rx="0"':""}/>`;if(h>40)o+=T(x+85,y+h/2+8,num(v)+" €",{s:20,a:"middle",cls:"disp ink",rv:r,anim:"fade",d:d+k*.5+.4})});
+    const tot=parts.reduce((a,p)=>a+p[0],0);return o+CNT(x+85,y-18,tot,{rv:r,s:34,a:"middle",suf:" €",d:d+parts.length*.5})+T(x+85,base+36,label,{s:22,a:"middle",cls:"disp",rv:r,anim:"fade",d})};
+  return `${T(140,140,"EL GRÁFICO QUE LO CAMBIA TODO",{s:20,cls:"eyebrow gl",rv:"a",anim:"fade"})}${T(140,205,"60.000 € de beneficio. Vives en España.",{s:52,cls:"blk",rv:"b"})}
+  <path d="M140 ${base} H1460" stroke="rgba(255,255,255,.3)" stroke-width="2"/>
+  ${T(420,300,"Lo repartes todo",{s:30,a:"middle",cls:"disp",rv:"rep",anim:"fade"})}
+  ${bar(220,[[11600,"#F5B841"],[10044,"#FF7C66"]],"rep",.3,"SL española")}
+  ${bar(450,[[13200,"#0072CE"],[9708,"#FF7C66"]],"rep",1.8,"OÜ estonia")}
+  ${G("casi","stamp",`<rect x="690" y="420" width="250" height="70" rx="35" fill="#17152A" stroke="#F5B841" stroke-width="3"/>${T(815,465,"Casi lo mismo",{s:26,a:"middle",cls:"disp gl"})}`)}
+  ${T(1180,300,"Lo dejas dentro",{s:30,a:"middle",cls:"disp",rv:"den",anim:"fade"})}
+  ${bar(980,[[11600,"#F5B841"]],"den",.3,"SL española")}
+  <g class="rv pop" data-r="den" style="--d:1.5s"><rect x="1210" y="${base-6}" width="170" height="6" fill="#0072CE"/>${T(1295,base-24,"0 €",{s:34,a:"middle",cls:"blk gr"})}${T(1295,base+36,"OÜ estonia",{s:22,a:"middle",cls:"disp"})}</g>
+  <g class="rv fade" data-r="rep" style="--d:.2s"><rect x="1080" y="128" width="18" height="18" fill="#F5B841"/>${T(1106,143,"Impuesto de la empresa",{s:18,cls:"mut"})}<rect x="1300" y="128" width="18" height="18" fill="#FF7C66"/>${T(1326,143,"IRPF del dividendo",{s:18,cls:"mut"})}</g>
+  ${G("conc","up",`<rect x="140" y="830" width="1320" height="56" rx="28" fill="#3DDC97"/>${T(800,867,"Estonia gana cuando reinviertes, no cuando cobras",{s:26,a:"middle",cls:"blk ink"})}`)}`;
+};
+B.coste=()=>{
+  const cols=[["us","LLC EE. UU.",["Tasa del estado","Agente registrado","5472 + 1120"],"llc"],["ee","OÜ Estonia",["Contabilidad × 12","Dirección y contacto","Informe anual"],"ee"],["ae","Zona franca EAU",["Licencia anual","Visado","Declaración anual"],"ae"],["es","SL España",["Gestoría × 12","Sociedades","Cuentas anuales"],"a"]];
+  let o="";cols.forEach(([c,n,layers,r],i)=>{const x=150+i*340;o+=G(i===3?"a":r,"pop",`${flag(c,x,250,70)}${T(x+86,292,n,{s:24,cls:"disp"})}`,{d:i===3?1:0});
+    layers.forEach((l,k)=>{o+=G(i===3?"a":r,"gy",`<rect x="${x}" y="${720-(k+1)*110}" width="280" height="100" rx="14" fill="${["#5B4BF5","#9488FF","#E4462F"][k]}" opacity=".9"/>${T(x+140,720-(k+1)*110+58,l,{s:22,a:"middle",cls:"disp"})}`,{d:(i===3?1:0)+.3+k*.25})})});
+  return `${T(140,140,"PONLE PRECIO AL AÑO, NO AL ANUNCIO",{s:20,cls:"eyebrow gl",rv:"a",anim:"fade"})}${T(140,205,"Una estructura es una factura anual.",{s:52,cls:"blk",rv:"a",d:.1})}
+  ${o}
+  ${["Año 1","Año 2","Año 3"].map((t,i)=>G("tres","pop",`<rect x="${150+i*450}" y="760" width="400" height="70" rx="35" fill="${i===2?"#F5B841":"#17152A"}" stroke="#F5B841" stroke-width="2"/>${T(350+i*450,806,t,{s:28,a:"middle",cls:"blk "+(i===2?"ink":"")})}`,{d:i*.4})).join("")}`;
+};
+B.banco=()=>{
+  const docs=["Pasaporte","Prueba de domicilio","Qué vendes","Web","Tus clientes","Origen de fondos"];
+  return `${T(140,140,"EL BANCO DECIDE MÁS QUE EL PAÍS",{s:20,cls:"eyebrow gl",rv:"a",anim:"fade"})}
+  ${G("a","pop",`<g transform="translate(330 470) scale(4.2)">${IC.banco("#9488FF")}</g>`,{out:"dos"})}
+  ${docs.map((t,i)=>G("docs","pop",`<rect x="${650+(i%3)*270}" y="${300+Math.floor(i/3)*150}" width="250" height="120" rx="16" fill="#17152A" stroke="rgba(255,255,255,.2)"/><g transform="translate(${700+(i%3)*270} ${360+Math.floor(i/3)*150}) scale(.7)">${IC.doc("#F5B841")}</g>${T(750+(i%3)*270,366+Math.floor(i/3)*150,t,{s:20,cls:"semi",max:12})}`,{d:i*.2,out:"dos"})).join("")}
+  ${G("merc","drop",`<rect x="650" y="630" width="790" height="140" rx="12" fill="#F2F1FA"/>${T(680,670,"TECHCRUNCH · JULIO DE 2024",{s:15,cls:"eyebrow",fill:"#615D7C"})}<text x="680" y="722" font-size="30" class="blk" style="fill:#0B0A14">Mercury cierra cuentas de startups en varios países</text>`,{out:"dos"})}
+  ${T(800,260,"Regla de oro: dos cuentas, dos entidades",{s:48,a:"middle",cls:"blk",rv:"dos"})}
+  ${[["$","Mercury · Relay","#5B4BF5"],["€","Wise Business · Revolut","#0072CE"]].map(([cur,n,col],i)=>G("dos","pop",`<rect x="${260+i*600}" y="340" width="480" height="280" rx="28" fill="${col}"/><text x="${300+i*600}" y="470" font-size="120" class="blk">${cur}</text>${T(300+i*600,580,n,{s:30,cls:"disp",rv:"ej",anim:"fade"})}`,{d:i*.3})).join("")}
+  ${G("cierra","stamp",`<g transform="translate(500 480) scale(2.4)">${IC.cruz("#E4462F")}</g>`)}
+  <path class="rv draw" data-r="cierra" style="--d:.6s" pathLength="1" d="M200 760 H1400" stroke="#3DDC97" stroke-width="10" stroke-linecap="round"/>
+  ${T(800,820,"Si te cierran una, sigues cobrando",{s:32,a:"middle",cls:"disp gr",rv:"cierra",d:1})}`;
+};
+B.activos=()=>{
+  const A=["Dominio","Marca","Código","Cuenta de Stripe","Lista de clientes"],bad=["el freelance que lo registró","nadie","el freelance","tu cuenta personal","una hoja sin dueño"];
+  return `${T(140,140,"PAGADO NO ES TUYO. FIRMADO, SÍ.",{s:20,cls:"eyebrow gl",rv:"a",anim:"fade"})}${T(140,205,"¿A nombre de quién está lo que has construido?",{s:46,cls:"blk",rv:"a",d:.1})}
+  ${A.map((t,i)=>{const x=140+i*270;return G("a","pop",`<rect x="${x}" y="300" width="250" height="300" rx="20" fill="#17152A" stroke="rgba(255,255,255,.18)" stroke-width="2"/>${T(x+125,370,t,{s:26,a:"middle",cls:"disp",max:12})}${T(x+125,470,"Titular:",{s:18,a:"middle",cls:"mut"})}`,{d:i*.15})
+    +T(x+125,515,bad[i],{s:20,a:"middle",cls:"semi rl",max:16,rv:"a",anim:"fade",out:"firma",d:.6+i*.15})
+    +T(x+125,520,"Tu empresa",{s:26,a:"middle",cls:"blk gr",rv:"firma",anim:"pop",d:.8+i*.25})}).join("")}
+  <path class="rv draw" data-r="firma" style="--t:1.2s" pathLength="1" d="M300 700 C 360 640 400 760 460 690 S 560 650 600 720 S 700 680 760 700" stroke="#F2F1FA" stroke-width="5" fill="none" stroke-linecap="round"/>
+  ${T(800,720,"Cesión por escrito + titular registrado",{s:28,cls:"disp",rv:"firma",d:.6})}
+  ${["Marca en la OEPM o la EUIPO","Dominio a tu nombre","Cesión del código y del diseño"].map((t,i)=>G("check","pop",`<g transform="translate(${180+i*460} 810) scale(.6)">${IC.check("#3DDC97")}</g>${T(212+i*460,818,t,{s:24,cls:"semi"})}`,{d:i*.4})).join("")}`;
+};
+B.calendario=()=>{
+  const cx=520,cy=500,r=250,M=["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
+  let ring="";M.forEach((m,i)=>{const [x,y]=polar(cx,cy,r+48,i*30+15);ring+=`<text x="${x.toFixed(0)}" y="${(y+7).toFixed(0)}" font-size="18" text-anchor="middle" class="semi mut">${m}</text>`;ring+=`<path d="${arcPath(cx,cy,r,i*30+1.5,i*30+28.5)}" stroke="rgba(255,255,255,.14)" stroke-width="22" fill="none"/>`});
+  const mk=(rv,day,txt,col,d=0)=>{const a=day/365*360;const [x,y]=polar(cx,cy,r,a);const [lx,ly]=polar(cx,cy,r-80,a);return G(rv,"pop",`<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="18" fill="${col}"/><circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="18" fill="none" stroke="${col}" stroke-width="3"><animate attributeName="r" values="18;38" dur="1.6s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="1.6s" repeatCount="indefinite"/></circle>`,{d})};
+  const card=(rv,i,date,title,sub,col)=>G(rv,"up",`<rect class="card" x="960" y="${200+i*118}" width="500" height="102" rx="18" fill="#17152A" stroke="${col}" stroke-width="2"/>${T(990,240+i*118,date,{s:18,cls:"eyebrow",fill:col})}${T(990,276+i*118,title,{s:24,cls:"disp"})}${sub?T(1440,276+i*118,sub,{s:16,a:"end",cls:"mut"}):""}`);
+  return `${T(140,140,"EL CALENDARIO QUE TE MANTIENE VIVO",{s:20,cls:"eyebrow gl",rv:"a",anim:"fade"})}
+  <g class="rv fade" data-r="a">${ring}<text x="${cx}" y="${cy-6}" font-size="56" text-anchor="middle" class="blk">2027</text><text x="${cx}" y="${cy+34}" font-size="20" text-anchor="middle" class="mut">un año de obligaciones</text></g>
+  ${mk("m720",89,"","#F5B841")}${card("m720",0,"31 DE MARZO","Modelo 720","si tienes > 50.000 € fuera","#F5B841")}
+  ${mk("m5472",104,"","#FF7C66")}${card("m5472",1,"15 DE ABRIL","Form 5472 + 1120","prórroga con el 7004","#FF7C66")}
+  ${mk("mee",180,"","#0072CE")}${card("mee",2,"30 DE JUNIO","Informe anual de la OÜ","","#4C9BFF")}
+  ${mk("mas",151,"","#9488FF")}${mk("mas",200,"","#9488FF",.3)}${card("mas",3,"1 DE JUNIO · ABR–JUN · JULIO","Delaware · Renta · Sociedades","","#9488FF")}
+  ${G("aviso","up",`<rect x="960" y="680" width="500" height="80" rx="40" fill="#F5B841"/>${T(1210,730,"Cada aviso, un mes antes",{s:28,a:"middle",cls:"blk ink"})}`)}`;
+};
+B.trucos=()=>{
+  const TT=[["1","Cuatro lugares antes que países"],["2","Compara a 3 años"],["3","Prórroga del 5472 con el 7004"],["4","5472 por fax o correo, con justificante"],["5","Dos cuentas, dos entidades"],["6","Estonia gana si reinviertes"],["7","Tu salón = dirección efectiva"],["8","EAU: mudarte; el convenio no te cubre"],["9","Activos a nombre de la empresa"],["10","Avisos un mes antes"]];
+  return `${T(140,120,"DIEZ TRUCOS EN UN MINUTO",{s:20,cls:"eyebrow gl",anim:"a-fade"})}
+  ${TT.map(([n,t],i)=>{const x=140+(i%5)*270,y=200+Math.floor(i/5)*320;return G("t"+i,"pop",`<rect class="card" x="${x}" y="${y}" width="250" height="290" rx="22" fill="#17152A" stroke="rgba(255,255,255,.18)" stroke-width="2"/><text x="${x+24}" y="${y+90}" font-size="72" class="mono gl">${n}</text>${T(x+24,y+160,t,{s:26,cls:"disp",max:14,lh:1.18})}`)}).join("")}`;
+};
+B.matrix=()=>{
+  const rows=["Tus cuatro lugares","Opción A · coste a 3 años","Opción B · coste a 3 años","Calendario de obligaciones"];
+  return `${T(140,140,"TU ENTREGABLE",{s:20,cls:"eyebrow gl",rv:"a",anim:"fade"})}${T(140,205,"Corporate Entity Matrix",{s:64,cls:"blk",rv:"a",d:.1})}
+  ${G("a","flip",`<rect x="140" y="260" width="820" height="440" rx="16" fill="#F2F1FA"/>${rows.map((t,i)=>`<rect x="140" y="${300+i*96}" width="820" height="2" fill="#C9C6DC"/><text x="170" y="${356+i*96}" font-size="26" class="semi" style="fill:#0B0A14">${t}</text><rect class="rv gx" data-r="a" style="--d:${(1+i*.6).toFixed(1)}s" x="560" y="${330+i*96}" width="${[340,300,280,360][i]}" height="34" rx="8" fill="${["#9488FF","#F5B841","#FF7C66","#3DDC97"][i]}"/>`).join("")}`)}
+  ${G("nada","pop",`<rect x="1020" y="320" width="440" height="130" rx="20" fill="#17152A" stroke="#3DDC97" stroke-width="3"/><g transform="translate(1076 385) scale(.8)">${IC.check("#3DDC97")}</g>${T(1120,378,"Ninguna todavía,",{s:28,cls:"disp"})}${T(1120,414,"argumentada",{s:28,cls:"disp gr"})}`)}
+  ${G("asesor","up",`<rect x="1020" y="490" width="440" height="130" rx="20" fill="#17152A" stroke="#F5B841" stroke-width="3"/>${T(1050,540,"ANTES DE FIRMAR",{s:16,cls:"eyebrow gl"})}${T(1050,588,"Asesor de tu país",{s:32,cls:"disp"})}`)}
+  ${T(800,800,"Nos vemos en clase.",{s:60,a:"middle",cls:"blk",rv:"bye"})}
+  <a href="clase.html" class="rv up" data-r="bye" style="--d:.4s"><rect x="560" y="830" width="230" height="56" rx="28" fill="transparent" stroke="rgba(242,241,250,.45)" stroke-width="2"/><text x="675" y="866" font-size="19" text-anchor="middle" class="semi">Clase del temario</text></a>
+  <g class="rv up" data-r="bye" style="--d:.55s" id="replay" role="button" tabindex="0"><rect x="810" y="830" width="230" height="56" rx="28" fill="#5B4BF5"/><text x="925" y="866" font-size="19" text-anchor="middle" class="disp">↺ Volver a ver</text></g>`;
+};
+
+/* ───────── montaje ───────── */
+const S=DATA.scenes;
+const est=t=>Math.max(1.2,t.length/15.5+.3);
+S.forEach(s=>{s.est=s.segs.reduce((a,g)=>a+(g.dur||est(g.t))+.2,0)+.6});
+document.getElementById("scenes").innerHTML=S.map((s,i)=>`<g class="scene" id="s${i}">${B[s.id]()}</g>`).join("");
+const total=S.reduce((a,s)=>a+s.est,0);
+const segsEl=document.getElementById("segs");
+segsEl.innerHTML=S.map((s,i)=>`<button class="seg" type="button" style="flex:${s.est.toFixed(1)}" title="${esc(s.name)}" aria-label="Ir a ${esc(s.name)}" data-i="${i}"><i></i></button>`).join("");
+const fills=[...segsEl.querySelectorAll("i")];
+const idx=document.getElementById("index");
+idx.innerHTML=S.map((s,i)=>`<button type="button" data-i="${i}"><span>${String(i+1).padStart(2,"0")}</span>${esc(s.name)}</button>`).join("");
+const fmt=x=>`${Math.floor(x/60)}:${String(Math.floor(x%60)).padStart(2,"0")}`;
+document.getElementById("startInfo").textContent=`Unos ${Math.round(total/60)} minutos · 4 países · cifras de 2026 · subtítulos`;
+
+/* ───────── voz ───────── */
+let voiceOn=true,musicOn=true,ccOn=true,esVoice=null;
+const hasTTS="speechSynthesis" in window;
+function pickVoice(){
+  if(!hasTTS)return;const vs=speechSynthesis.getVoices();if(!vs.length)return;
+  const es=vs.filter(v=>/^es[-_]ES/i.test(v.lang));
+  const pref=[/Google español$/i,/Microsoft (Alvaro|Elvira).*Online/i,/Mónica|Monica/i,/Jorge/i,/Marisol/i];
+  esVoice=null;for(const r of pref){esVoice=es.find(v=>r.test(v.name));if(esVoice)break}
+  if(!esVoice)esVoice=es.find(v=>!v.localService)||es[0]||vs.find(v=>/^es/i.test(v.lang))||null;
+  document.getElementById("voicenote").textContent=DATA.audio?"":esVoice?`Voz en off: ${esVoice.name} (la voz en español de tu navegador).`:"Este navegador no tiene voz en español: la masterclass sigue con subtítulos.";
+}
+if(hasTTS){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+let token=0,audioEl=new Audio(),safety=null;
+function speak(g,done){
+  const my=++token;let fired=false;const fin=()=>{if(fired||my!==token)return;fired=true;clearTimeout(safety);done()};
+  const ms=(g.dur||est(g.t))*1000;clearTimeout(safety);
+  if(voiceOn&&DATA.audio&&g.file){audioEl.src="audio/"+g.file;audioEl.onended=fin;audioEl.onerror=()=>setTimeout(fin,ms);audioEl.play().catch(()=>setTimeout(fin,ms));safety=setTimeout(fin,ms+4000);return}
+  if(voiceOn&&hasTTS&&esVoice){const u=new SpeechSynthesisUtterance(g.t);u.voice=esVoice;u.lang=esVoice.lang;u.rate=1.1;u.onend=fin;u.onerror=()=>setTimeout(fin,300);speechSynthesis.cancel();speechSynthesis.speak(u);safety=setTimeout(fin,ms*2.2+3000);return}
+  safety=setTimeout(fin,ms);
+}
+function hush(){token++;clearTimeout(safety);try{audioEl.pause()}catch(_){};if(hasTTS)speechSynthesis.cancel()}
+
+/* ───────── música ───────── */
+let ac=null,master=null,verb=null,pads=[];
+const CH=[[146.83,185,220,277.18],[123.47,146.83,185,220],[98,123.47,146.83,185],[110,138.59,164.81,220]];
+const PEN=[293.66,329.63,369.99,440,493.88,587.33,659.25,739.99,880,987.77];
+function initAudio(){if(ac)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;ac=new C();master=ac.createGain();master.gain.value=0;master.connect(ac.destination);const dl=ac.createDelay();dl.delayTime.value=.3;const fb=ac.createGain();fb.gain.value=.28;const wet=ac.createGain();wet.gain.value=.3;dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(master);verb=dl}
+function musicLevel(){if(!ac)return;master.gain.cancelScheduledValues(ac.currentTime);master.gain.linearRampToValueAtTime(musicOn&&playing?.28:0,ac.currentTime+.6)}
+function pad(ci){if(!ac)return;const now=ac.currentTime;pads.forEach(({o,g})=>{g.gain.cancelScheduledValues(now);g.gain.setValueAtTime(g.gain.value,now);g.gain.linearRampToValueAtTime(0,now+1.4);o.stop(now+1.5)});pads=[];
+  const lp=ac.createBiquadFilter();lp.type="lowpass";lp.frequency.value=720;lp.connect(master);
+  CH[ci%4].forEach((f,k)=>[-5,5].forEach(det=>{const o=ac.createOscillator();o.type=k%2?"triangle":"sawtooth";o.frequency.value=f;o.detune.value=det;const g=ac.createGain();g.gain.value=0;g.gain.linearRampToValueAtTime(.015,now+1.8);o.connect(g);g.connect(lp);o.start(now);pads.push({o,g})}))}
+function pluck(n){if(!ac||!musicOn)return;const now=ac.currentTime,f=PEN[n%PEN.length];const o=ac.createOscillator(),g=ac.createGain();o.type="sine";o.frequency.value=f;g.gain.setValueAtTime(0,now);g.gain.linearRampToValueAtTime(.1,now+.01);g.gain.exponentialRampToValueAtTime(.0008,now+.8);o.connect(g);g.connect(master);g.connect(verb);o.start(now);o.stop(now+.9)}
+function thud(){if(!ac||!musicOn)return;const now=ac.currentTime,o=ac.createOscillator(),g=ac.createGain();o.type="sine";o.frequency.setValueAtTime(140,now);o.frequency.exponentialRampToValueAtTime(45,now+.35);g.gain.setValueAtTime(.35,now);g.gain.exponentialRampToValueAtTime(.001,now+.4);o.connect(g);g.connect(master);o.start(now);o.stop(now+.45)}
+
+/* ───────── reproductor ───────── */
+const svg=document.getElementById("svg"),stage=document.getElementById("stage"),cc=document.getElementById("cc");
+let sc=0,sg=-1,playing=false,segStartAt=0,started=false;
+const blobP=document.getElementById("blobP"),blobR=document.getElementById("blobR");
+function count(el){const v=+el.dataset.count,pre=el.dataset.pre||"",suf=el.dataset.suf||"",d=parseFloat(getComputedStyle(el).getPropertyValue("--d"))||0,t0=performance.now()+d*1000;
+  el.textContent=pre+"0"+suf;const step=now=>{const p=Math.min(1,Math.max(0,(now-t0)/900));el.textContent=pre+num(v*(1-Math.pow(1-p,3)))+suf;if(p<1)requestAnimationFrame(step)};requestAnimationFrame(step)}
+function enter(i){
+  sc=Math.max(0,Math.min(S.length-1,i));sg=-1;
+  document.querySelectorAll(".scene").forEach(g=>g.classList.remove("on"));
+  const g=document.getElementById("s"+sc);g.querySelectorAll(".in,.out,.dimmed,.hl").forEach(e=>e.classList.remove("in","out","dimmed","hl"));
+  void g.getBoundingClientRect();g.classList.add("on");
+  const c=S[sc].c;blobP.style.opacity=c==="ae"||c==="es"?.3:1;blobR.style.opacity=c==="ee"?.3:1;
+  pad(sc);idx.querySelectorAll("button").forEach(b=>b.setAttribute("aria-current",String(+b.dataset.i===sc)));
+}
+function reveal(k){
+  const s=S[sc],r=s.segs[k].r,g=document.getElementById("s"+sc);
+  g.querySelectorAll(".hl").forEach(e=>e.classList.remove("hl"));
+  g.querySelectorAll(`[data-r="${r}"]`).forEach(e=>{e.classList.add("in");if(e.dataset.count)count(e)});
+  g.querySelectorAll(`[data-out="${r}"]`).forEach(e=>e.classList.add("out"));
+  g.querySelectorAll(`[data-dim="${r}"]`).forEach(e=>e.classList.add("dimmed"));
+  if(s.id==="trucos"){const c=g.querySelector(`[data-r="${r}"]`);c&&c.classList.add("hl")}
+  if(s.id==="lugares"&&r==="balanza"){const a=document.getElementById("balRot");a&&a.beginElement()}
+  if(/stamp|multa|rompe|casi|no$|conv2|cierra/.test(r))thud();else pluck(k+sc);
+  cc.textContent=s.segs[k].t;
+}
+function runSeg(k){sg=k;reveal(k);segStartAt=performance.now();
+  speak(S[sc].segs[k],()=>{if(!playing)return;setTimeout(()=>{if(!playing||sg!==k)return;
+    if(k+1<S[sc].segs.length)runSeg(k+1);
+    else setTimeout(()=>{if(!playing||sg!==k)return;if(sc+1<S.length){enter(sc+1);runSeg(0)}else{setPlaying(false);cc.textContent="Fin de la masterclass."}},550)},200)})}
+function setPlaying(p){playing=p;stage.classList.toggle("paused",!p);p?svg.unpauseAnimations():svg.pauseAnimations();
+  document.getElementById("playIco").innerHTML=p?'<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>':'<path d="M7 4v16l13-8z"/>';document.getElementById("play").setAttribute("aria-label",p?"Pausar":"Reproducir");musicLevel()}
+function begin(){started=true;document.getElementById("start").hidden=true;initAudio();ac?.resume?.();enter(sc);setPlaying(true);runSeg(0)}
+function play(){if(!started)return begin();initAudio();ac?.resume?.();setPlaying(true);runSeg(Math.max(0,sg))}
+function pause(){hush();setPlaying(false)}
+function jump(i){hush();if(!started){started=true;document.getElementById("start").hidden=true;initAudio();ac?.resume?.()}enter(i);setPlaying(true);runSeg(0)}
+function ui(){const s=S[sc];let t=0;for(let k=0;k<Math.max(0,sg);k++)t+=(s.segs[k].dur||est(s.segs[k].t))+.2;
+  if(sg>=0&&playing)t+=Math.min(s.segs[sg].dur||est(s.segs[sg].t),(performance.now()-segStartAt)/1000);
+  fills.forEach((f,i)=>f.style.width=i<sc?"100%":i>sc?"0%":(Math.min(1,t/s.est)*100).toFixed(1)+"%");
+  document.getElementById("time").textContent=`${fmt(S.slice(0,sc).reduce((a,x)=>a+x.est,0)+t)} / ${fmt(total)}`;
+  document.getElementById("chap").textContent=`${sc+1}/${S.length} · ${s.name}`;requestAnimationFrame(ui)}
+document.getElementById("go").onclick=begin;
+document.getElementById("play").onclick=()=>playing?pause():play();
+document.getElementById("prev").onclick=()=>jump(sg>1?sc:sc-1);
+document.getElementById("next").onclick=()=>jump(sc+1);
+segsEl.addEventListener("click",e=>{const b=e.target.closest(".seg");if(b)jump(+b.dataset.i)});
+idx.addEventListener("click",e=>{const b=e.target.closest("button");if(b){jump(+b.dataset.i);document.getElementById("player").scrollIntoView({behavior:"smooth",block:"start"})}});
+const tog=(id,get,set)=>{const b=document.getElementById(id);b.onclick=()=>{set(!get());b.setAttribute("aria-pressed",String(get()))}};
+tog("voice",()=>voiceOn,v=>{voiceOn=v;if(playing){hush();runSeg(sg)}});
+tog("music",()=>musicOn,v=>{musicOn=v;initAudio();musicLevel()});
+tog("ccb",()=>ccOn,v=>{ccOn=v;cc.hidden=!v});
+document.getElementById("fs").onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.getElementById("player").requestFullscreen?.().catch(()=>{})}catch(_){}};
+svg.addEventListener("click",e=>{if(e.target.closest("#replay")){jump(0);return}if(e.target.closest("a"))return;if(!started)return;playing?pause():play()});
+document.addEventListener("keydown",e=>{if(e.target.closest&&e.target.closest("button,a")&&(e.key===" "||e.key==="Enter"))return;const k=e.key.toLowerCase();
+  if(k===" "){e.preventDefault();started?(playing?pause():play()):begin()}else if(k==="arrowright")jump(sc+1);else if(k==="arrowleft")jump(sg>1?sc:sc-1);
+  else if(k==="v")document.getElementById("voice").click();else if(k==="m")document.getElementById("music").click();else if(k==="c")document.getElementById("ccb").click();else if(k==="f")document.getElementById("fs").click()});
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&playing)pause()});
+enter(0);
+// Portada completa antes de pulsar nada: los pines y el título a la vista.
+["pins","casa","titulo","vamos"].forEach(r=>document.querySelectorAll(`#s0 [data-r="${r}"]`).forEach(e=>e.classList.add("in")));
+cc.textContent="Pulsa «Empezar la masterclass». Desde el índice de abajo puedes saltar a cualquier país.";
+setPlaying(false);stage.classList.remove("paused");requestAnimationFrame(ui);
+window.__mc={S,jump,enter,reveal,pause};
+})();
+</script>
+</body>
+</html>
