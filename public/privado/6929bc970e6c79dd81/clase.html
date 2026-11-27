@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>La clase del temario · ActiveXRemote</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Major+Mono+Display&display=swap">
+<style>
+/* Una clase entera en SVG: escenario 16:9 que avanza frase a frase con la voz, subtítulos debajo e índice de la clase. */
+:root{
+  --bg:#0D0C16; --ink2:#17152A; --ink3:#211E3A; --fg:#F2F1FA; --mut:#A29EBB; --dim:#615D7C;
+  --pur:#5B4BF5; --pur-l:#9488FF; --red:#E4462F; --red-l:#FF7C66;
+  --line:rgba(242,241,250,.13);
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Major Mono Display","Courier New",monospace;
+  --ease:cubic-bezier(.2,.75,.2,1);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg)}
+body{font-family:var(--sans);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:max(20px,env(safe-area-inset-top,0px)) 40px}
+.wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.top h1{margin:0;font-size:clamp(20px,2.4vw,28px);letter-spacing:-.02em;text-wrap:balance}
+.top a{color:var(--mut);font-size:14px}
+.player{position:relative;border-radius:18px;overflow:hidden;background:var(--ink2);border:1px solid var(--line);box-shadow:0 30px 90px -30px rgba(91,75,245,.5)}
+.stage{position:relative;aspect-ratio:16/9;width:100%;background:var(--bg);overflow:hidden}
+.stage>svg{display:block;width:100%;height:100%}
+.player:fullscreen{display:flex;flex-direction:column;justify-content:center;border-radius:0}
+.player:fullscreen .stage{width:auto;height:calc(100vh - 150px);margin:0 auto}
+
+svg text{fill:var(--fg);font-family:var(--sans)}
+.disp{font-weight:800;letter-spacing:-.025em}
+.semi{font-weight:600}
+.mono{font-family:var(--mono)}
+.mut{fill:var(--mut)} .dimt{fill:var(--dim)} .pl{fill:var(--pur-l)} .rl{fill:var(--red-l)} .ink{fill:var(--bg)}
+.eyebrow{font-weight:700;letter-spacing:.18em}
+
+/* Escenas */
+.scene{opacity:0;visibility:hidden;transition:opacity .7s ease,visibility 0s linear .7s}
+.scene.on{opacity:1;visibility:visible;transition:opacity .7s ease}
+/* Al entrar en la escena */
+.scene.on .a-up{animation:up .9s var(--ease) var(--d,0s) both}
+.scene.on .a-fade{animation:fade 1s ease var(--d,0s) both}
+.scene.on .a-pop{animation:pop .7s cubic-bezier(.2,1.5,.4,1) var(--d,0s) both}
+.scene.on .a-draw{stroke-dasharray:1;animation:draw var(--t,1.4s) cubic-bezier(.6,0,.2,1) var(--d,0s) both}
+/* Al empezar la frase que les toca */
+.rv:not(.in){opacity:0}
+.rv.in{animation:up .8s var(--ease) var(--d,0s) both}
+.rv.pop.in{animation-name:pop;animation-timing-function:cubic-bezier(.2,1.5,.4,1)}
+.rv.fade.in{animation-name:fade}
+.rv.gx.in{animation-name:gx}
+.rv.gy.in{animation-name:gy;animation-timing-function:cubic-bezier(.2,1.25,.4,1)}
+.rv.flip.in{animation-name:flip;animation-duration:1.1s}
+.rv.stamp.in{animation-name:stamp;animation-duration:.7s;animation-timing-function:cubic-bezier(.2,1.6,.4,1)}
+.rv.draw{stroke-dasharray:1;stroke-dashoffset:1;opacity:1}
+.rv.draw.in{stroke-dashoffset:0;animation:draw var(--t,1.2s) cubic-bezier(.6,0,.2,1) var(--d,0s) both}
+.rv.gather.in{opacity:1;animation:gather 1.9s cubic-bezier(.75,0,.2,1) var(--d,0s) both}
+.pop,.gx,.gy,.flip,.stamp,.a-pop{transform-box:fill-box}
+.pop,.stamp,.a-pop{transform-origin:center} .gx{transform-origin:0 50%} .gy{transform-origin:50% 100%} .flip{transform-origin:50% 0}
+@keyframes up{from{opacity:0;transform:translateY(26px)}}
+@keyframes fade{from{opacity:0}}
+@keyframes draw{from{stroke-dashoffset:1}}
+@keyframes pop{from{opacity:0;transform:scale(.2)}}
+@keyframes gx{from{transform:scaleX(0)}}
+@keyframes gy{from{transform:scaleY(0)}}
+@keyframes flip{from{opacity:0;transform:scaleY(0)}}
+@keyframes stamp{from{opacity:0;transform:scale(2.4) rotate(-14deg)}}
+@keyframes gather{from{transform:translate(var(--x0),var(--y0))}}
+.paused .scene,.paused .scene *{animation-play-state:paused!important}
+.card{transition:stroke .35s,fill .35s}
+.cur .card,.card.cur{stroke:var(--hl,#9488FF);stroke-width:2.5;fill:rgba(255,255,255,.09)}
+.arc{opacity:.3;transition:opacity .4s,stroke-width .4s}
+.arc.hot{opacity:1;stroke-width:36}
+.blob{transition:opacity 1.6s ease}
+
+/* Portada para empezar */
+.start{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at center,rgba(13,12,22,.55),rgba(13,12,22,.88));z-index:5}
+.start[hidden]{display:none}
+.start-in{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:16px}
+.start button{display:flex;align-items:center;gap:14px;padding:18px 30px 18px 22px;border-radius:999px;border:0;background:var(--pur);color:#fff;font:800 clamp(16px,2vw,22px)/1 var(--sans);cursor:pointer;box-shadow:0 18px 50px -10px rgba(91,75,245,.8)}
+.start button:hover{background:#4632E6}
+.start button svg{width:28px;height:28px;fill:#fff}
+.start p{margin:0;color:var(--mut);font-size:clamp(12px,1.4vw,15px)}
+.start small{color:var(--dim);font-size:12px}
+
+/* Subtítulos */
+.cc{min-height:64px;display:flex;align-items:center;justify-content:center;padding:10px 18px;background:#0A0912;border-top:1px solid var(--line);font-size:clamp(15px,1.7vw,19px);line-height:1.4;text-align:center;text-wrap:balance;color:var(--fg)}
+.cc[hidden]{display:none}
+
+/* Barra */
+.bar{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--ink2);border-top:1px solid var(--line)}
+.bar>button{flex:none;height:38px;min-width:38px;padding:0 9px;border-radius:10px;border:0;background:transparent;color:var(--fg);display:grid;place-items:center;cursor:pointer;font:700 12px var(--sans)}
+.bar>button:hover{background:rgba(255,255,255,.08)}
+.bar>button[aria-pressed="false"]{color:var(--dim)}
+.bar>button svg{width:20px;height:20px;fill:currentColor}
+.chapters{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.segs{display:flex;gap:2px;height:6px}
+.seg{position:relative;height:100%;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;cursor:pointer;border:0;padding:0;min-width:0}
+.seg i{position:absolute;inset:0;width:0;background:var(--fg)}
+.seg.p i{background:var(--pur-l)} .seg.r i{background:var(--red-l)}
+.seg:hover{background:rgba(255,255,255,.28)}
+.meta{display:flex;justify-content:space-between;gap:12px;font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden}
+.meta b{color:var(--fg);font-weight:600;overflow:hidden;text-overflow:ellipsis}
+button:focus-visible{outline:2px solid var(--pur-l);outline-offset:2px}
+
+/* Índice */
+.index{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.index h2{grid-column:1/-1;margin:14px 0 2px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+.index button{display:flex;gap:10px;align-items:baseline;text-align:left;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--ink2);color:var(--fg);font:500 14px/1.35 var(--sans);cursor:pointer;min-width:0}
+.index button:hover{border-color:var(--pur-l)}
+.index button[aria-current="true"]{background:var(--ink3);border-color:var(--fg)}
+.index button span{flex:none;font:700 11px var(--sans);letter-spacing:.08em;color:var(--mut);min-width:28px}
+.index button.p span{color:var(--pur-l)} .index button.r span{color:var(--red-l)}
+.voicenote{margin:0;color:var(--dim);font-size:12px;text-align:center}
+@media (max-width:760px){
+  .bar{gap:2px;padding:8px}
+  .bar>button{min-width:32px;height:34px;padding:0 6px}
+  #fs{display:none}
+}
+@media (prefers-reduced-motion:reduce){.scene *{animation-duration:.01s!important;animation-delay:0s!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><h1>La clase del temario</h1><a href="./">← Volver a los vídeos</a></div>
+  <div class="player" id="player">
+    <div class="stage" id="stage">
+      <svg id="svg" viewBox="0 0 1600 900" role="img" aria-label="Clase animada del temario de Remote Professional y Remote Founder">
+        <defs>
+          <radialGradient id="gP"><stop offset="0" stop-color="#5B4BF5" stop-opacity=".5"/><stop offset="1" stop-color="#5B4BF5" stop-opacity="0"/></radialGradient>
+          <radialGradient id="gR"><stop offset="0" stop-color="#E4462F" stop-opacity=".42"/><stop offset="1" stop-color="#E4462F" stop-opacity="0"/></radialGradient>
+          <pattern id="dots" width="40" height="40" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1.3" fill="rgba(242,241,250,.08)"/></pattern>
+        </defs>
+        <rect width="1600" height="900" fill="#0D0C16"/>
+        <circle class="blob" id="blobP" cx="260" cy="180" r="640" fill="url(#gP)"><animate attributeName="cx" values="260;520;260" dur="24s" repeatCount="indefinite"/><animate attributeName="cy" values="180;380;180" dur="19s" repeatCount="indefinite"/></circle>
+        <circle class="blob" id="blobR" cx="1340" cy="740" r="620" fill="url(#gR)"><animate attributeName="cx" values="1340;1080;1340" dur="21s" repeatCount="indefinite"/><animate attributeName="cy" values="740;560;740" dur="25s" repeatCount="indefinite"/></circle>
+        <rect width="1600" height="900" fill="url(#dots)"/>
+        <g id="scenes"></g>
+      </svg>
+      <div class="start" id="start">
+        <div class="start-in">
+          <button id="go" type="button"><svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>Empezar la clase</button>
+          <p id="startInfo"></p>
+          <small>Sube el volumen: la clase va con voz en off.</small>
+        </div>
+      </div>
+    </div>
+    <div class="cc" id="cc" aria-live="polite"></div>
+    <div class="bar">
+      <button id="prev" type="button" aria-label="Escena anterior"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+      <button id="play" type="button" aria-label="Reproducir"><svg viewBox="0 0 24 24" id="playIco"><path d="M7 4v16l13-8z"/></svg></button>
+      <button id="next" type="button" aria-label="Escena siguiente"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+      <div class="chapters"><div class="segs" id="segs"></div><div class="meta"><b id="chap"></b><span id="time"></span></div></div>
+      <button id="voice" type="button" aria-pressed="true" aria-label="Voz en off" title="Voz en off (V)"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg></button>
+      <button id="music" type="button" aria-pressed="true" aria-label="Música" title="Música (M)"><svg viewBox="0 0 24 24"><path d="M9 3v11.6A3.5 3.5 0 1 0 11 18V8h6V3z"/></svg></button>
+      <button id="ccb" type="button" aria-pressed="true" aria-label="Subtítulos" title="Subtítulos (C)">CC</button>
+      <button id="fs" type="button" aria-label="Pantalla completa" title="Pantalla completa (F)"><svg viewBox="0 0 24 24"><path d="M4 4h6v2H6v4H4zm10 0h6v6h-2V6h-4zM4 14h2v4h4v2H4zm14 0h2v6h-6v-2h4z"/></svg></button>
+    </div>
+  </div>
+  <p class="voicenote" id="voicenote"></p>
+  <nav class="index" id="index" aria-label="Índice de la clase"></nav>
+</div>
+
+<script>
+const DATA = {"scenes":[{"kind":"portada","name":"Bienvenida","segs":[{"t":"Hola. Esta clase va del temario entero de ActiveXRemote, semana a semana.","r":"a"},{"t":"Hay dos cursos. Remote Professional: ocho semanas para conseguir un empleo remoto internacional. Y Remote Founder: trece semanas para construir un negocio que vende fuera.","r":"b"},{"t":"Te voy a contar qué trabajas cada semana, y qué te llevas al terminarla. Vamos allá.","r":"c"}]},{"kind":"semana","name":"Cómo es una semana","segs":[{"t":"Antes de entrar en el temario: cómo es una semana. Cada semana trabaja una sola habilidad.","r":"a"},{"t":"Empiezas con el material previo, a tu ritmo.","r":"s0"},{"t":"Sigues con seis vídeos de treinta minutos, que ves cuando te va bien.","r":"s1"},{"t":"Luego viene la clase en directo, de dos horas, un día fijo entre semana. Es para practicar, y queda grabada.","r":"s2"},{"t":"Después haces un ejercicio sobre tu propio caso, que revisa tu pod.","r":"s3"},{"t":"Y cierras con un test de veinte preguntas.","r":"s4"},{"t":"En total, unas doce horas y media a la semana. Compatibles con tu trabajo actual.","r":"total"}]},{"kind":"overview","c":"P","name":"Remote Professional","segs":[{"t":"Empezamos por Remote Professional. Ocho semanas en cuatro fases, en el orden en que lo vas a vivir.","r":"a"},{"t":"Primero, decides qué buscas.","r":"p0"},{"t":"Luego, haces que te encuentren.","r":"p1"},{"t":"Después, te contratan.","r":"p2"},{"t":"Y al final, empiezas y te asientas.","r":"p3"}]},{"kind":"week","c":"P","n":1,"icon":"brujula","phase":"Decides","title":"Deja el trayecto, no tu carrera","lead":"Eliges el nivel de trabajo remoto y el estilo de vida que encajan contigo, partiendo de un punto de partida medido.","keeps":["Starting Point Test y tu nivel de habilidades remotas","Los 5 niveles del trabajo remoto","Tu objetivo remoto a 90 días","Tu asistente personal de IA"],"milestone":"Tu objetivo remoto a 90 días","name":"Professional · Semana 1","segs":[{"t":"Semana uno. Deja el trayecto, no tu carrera.","r":"title"},{"t":"Aquí eliges el nivel de trabajo remoto y el estilo de vida que encajan contigo, y lo haces desde un punto de partida medido.","r":"lead"},{"t":"Haces el Starting Point Test, que mide tu nivel de habilidades remotas.","r":"item0"},{"t":"Conoces los cinco niveles del trabajo remoto.","r":"item1"},{"t":"Fijas tu objetivo remoto a noventa días.","r":"item2"},{"t":"Y montas tu asistente personal de IA.","r":"item3"},{"t":"Sales de la semana con tu objetivo remoto a noventa días.","r":"hito"}]},{"kind":"week","c":"P","n":2,"icon":"iman","phase":"Te encuentran","title":"Deja de enviar currículums. Haz que te busquen","lead":"Apuntas a los puestos remotos que encajan con tu perfil y consigues que los reclutadores vengan a ti.","keeps":["Test de encaje con el puesto","CV remoto y LinkedIn reescritos","Directorio de portales de empleo y plataformas freelance","Seguimiento de candidaturas y primeros mensajes de contacto"],"milestone":"CV y LinkedIn que atraen reclutadores","name":"Professional · Semana 2","segs":[{"t":"Semana dos. Deja de enviar currículums: haz que te busquen.","r":"title"},{"t":"Apuntas a los puestos remotos que encajan con tu perfil, y consigues que los reclutadores vengan a ti.","r":"lead"},{"t":"Haces el test de encaje con el puesto.","r":"item0"},{"t":"Reescribes tu CV remoto y tu LinkedIn.","r":"item1"},{"t":"Te llevas un directorio de portales de empleo y de plataformas freelance.","r":"item2"},{"t":"Y llevas el seguimiento de tus candidaturas, con tus primeros mensajes de contacto.","r":"item3"},{"t":"El resultado: un CV y un LinkedIn que atraen reclutadores.","r":"hito"}]},{"kind":"week","c":"P","n":3,"icon":"radar","phase":"Te encuentran","title":"Tu buscador con IA no duerme","lead":"Montas una búsqueda que encuentra vacantes y te prepara las candidaturas mientras tú haces otra cosa.","keeps":["Alertas diarias de empleo y de noticias del sector","Asistente de IA que adapta tu CV a cada oferta","Biblioteca de prompts"],"milestone":"Búsqueda automática en marcha","name":"Professional · Semana 3","segs":[{"t":"Semana tres. Tu buscador con IA no duerme.","r":"title"},{"t":"Montas una búsqueda que encuentra vacantes y te prepara las candidaturas mientras tú haces otra cosa.","r":"lead"},{"t":"Configuras alertas diarias de empleo y de noticias del sector.","r":"item0"},{"t":"Un asistente de IA adapta tu CV a cada oferta.","r":"item1"},{"t":"Y te quedas con una biblioteca de prompts.","r":"item2"},{"t":"Acabas la semana con tu búsqueda automática en marcha.","r":"hito"}]},{"kind":"week","c":"P","n":4,"icon":"micro","phase":"Te contratan","title":"Gana la entrevista y pon tu precio","lead":"Superas entrevistas en vídeo y evaluadas con IA, y negocias la oferta entera, no solo el sueldo.","keeps":["Checklist para preparar la entrevista","Simulador de entrevistas con IA","Banco de objeciones y guion de negociación","«¿Qué contrato es esta oferta?»"],"milestone":"Entrevista superada, oferta negociada","name":"Professional · Semana 4","segs":[{"t":"Semana cuatro. Gana la entrevista y pon tu precio.","r":"title"},{"t":"Superas entrevistas en vídeo y entrevistas evaluadas con IA. Y negocias la oferta entera, no solo el sueldo.","r":"lead"},{"t":"Esta semana tiene contenidos acreditados por Deel.","r":"deel"},{"t":"Preparas cada entrevista con un checklist.","r":"item0"},{"t":"Practicas con un simulador de entrevistas con IA.","r":"item1"},{"t":"Tienes un banco de objeciones y un guion de negociación.","r":"item2"},{"t":"Y una guía para saber qué contrato es la oferta que tienes delante.","r":"item3"},{"t":"Entrevista superada y oferta negociada.","r":"hito"}]},{"kind":"week","c":"P","n":5,"icon":"contrato","phase":"Te contratan","title":"Cobra desde cualquier país, en regla","lead":"Lees cualquier oferta remota y sabes qué contrato y qué situación fiscal te crea: EOR, empleado, contractor o autónomo.","keeps":["Comparador de tipos de contrato","Checklist de residencia fiscal","Calculadora de sueldo neto","Señales de alarma en un contrato"],"milestone":"Contrato y fiscalidad bajo control","name":"Professional · Semana 5","segs":[{"t":"Semana cinco. Cobra desde cualquier país, en regla.","r":"title"},{"t":"Aprendes a leer cualquier oferta remota y a saber qué contrato y qué situación fiscal te crea: EOR, empleado, contractor o autónomo.","r":"lead"},{"t":"Esta semana tiene contenidos acreditados por Deel.","r":"deel"},{"t":"Usas un comparador de tipos de contrato.","r":"item0"},{"t":"Repasas un checklist de residencia fiscal.","r":"item1"},{"t":"Calculas tu sueldo neto.","r":"item2"},{"t":"Y aprendes a ver las señales de alarma en un contrato.","r":"item3"},{"t":"Contrato y fiscalidad, bajo control.","r":"hito"}]},{"kind":"week","c":"P","n":6,"icon":"chispa","phase":"Empiezas y te asientas","title":"La IA como ayudante, no como sustituta","lead":"Superas el periodo de prueba, te haces visible en remoto y dejas a la IA la mitad repetitiva del trabajo.","keeps":["Plan de confianza a 90 días","Informe semanal de impacto","Kit de IA para tu trabajo","Plan de habilidades a prueba de IA y plantilla para pedir un ascenso"],"milestone":"Tus primeros 90 días, con IA","name":"Professional · Semana 6","segs":[{"t":"Semana seis. La IA como ayudante, no como sustituta.","r":"title"},{"t":"Superas el periodo de prueba, te haces visible en remoto, y dejas a la IA la mitad repetitiva del trabajo.","r":"lead"},{"t":"Esta semana tiene contenidos acreditados por Deel.","r":"deel"},{"t":"Haces tu plan de confianza a noventa días.","r":"item0"},{"t":"Preparas un informe semanal de impacto.","r":"item1"},{"t":"Montas tu kit de IA para el trabajo.","r":"item2"},{"t":"Y un plan de habilidades a prueba de IA, con una plantilla para pedir un ascenso.","r":"item3"},{"t":"Tus primeros noventa días, con la IA de tu lado.","r":"hito"}]},{"kind":"week","c":"P","n":7,"icon":"avion","phase":"Empiezas y te asientas","title":"Elige país y viaja ligero","lead":"Eliges destino y visado, y te mudas sin perder dinero ni datos por el camino.","keeps":["Test «Encuentra tu destino» y lista de visados","Checklist de mudanza, de 90 días antes a 30 después","Checklist de ciberseguridad en viaje","Cuentas multidivisa y de ahorro"],"milestone":"Destino y visado elegidos","name":"Professional · Semana 7","segs":[{"t":"Semana siete. Elige país y viaja ligero.","r":"title"},{"t":"Eliges destino y visado, y te mudas sin perder dinero ni datos por el camino.","r":"lead"},{"t":"Esta semana tiene contenidos acreditados por Deel.","r":"deel"},{"t":"Haces el test Encuentra tu destino y revisas la lista de visados.","r":"item0"},{"t":"Sigues un checklist de mudanza, desde noventa días antes hasta treinta después.","r":"item1"},{"t":"Proteges tus datos con un checklist de ciberseguridad en viaje.","r":"item2"},{"t":"Y organizas tus cuentas multidivisa y de ahorro.","r":"item3"},{"t":"Destino y visado, elegidos.","r":"hito"}]},{"kind":"week","c":"P","n":8,"icon":"personas","phase":"Empiezas y te asientas","title":"Sin soledad y sin quemarte","lead":"Construyes una red y una comunidad vivas donde vivas, y una rutina que puedes mantener.","keeps":["CRM de networking","Plan de comunidad en 3 capas","Rutina semanal de energía y límites","Tu puntuación de habilidades, antes y después"],"milestone":"Red y rutina que se sostienen","name":"Professional · Semana 8","segs":[{"t":"Semana ocho. Sin soledad y sin quemarte.","r":"title"},{"t":"Construyes una red y una comunidad vivas, vivas donde vivas, y una rutina que puedes mantener.","r":"lead"},{"t":"Montas tu CRM de networking.","r":"item0"},{"t":"Haces un plan de comunidad en tres capas.","r":"item1"},{"t":"Te marcas una rutina semanal de energía y límites.","r":"item2"},{"t":"Y ves tu puntuación de habilidades, antes y después del curso.","r":"item3"},{"t":"Una red y una rutina que se sostienen. Y con esto, te gradúas.","r":"hito"}]},{"kind":"recap","c":"P","name":"Repaso Professional","segs":[{"t":"Repaso rápido de Remote Professional.","r":"a"},{"t":"En ocho semanas pasas de decidir qué buscas a tener un CV que atrae, una búsqueda automática, una oferta negociada y un contrato en regla.","r":"b"},{"t":"Y después, un plan con IA, un destino y una red. Un empleo remoto internacional, y todo lo que lo sostiene.","r":"c"}]},{"kind":"overview","c":"F","name":"Remote Founder","segs":[{"t":"Ahora, Remote Founder. Trece semanas, y cada ejercicio se hace sobre tu propio negocio.","r":"a"},{"t":"Cinco semanas para construir la oferta.","r":"p0"},{"t":"Cuatro para conseguir clientes.","r":"p1"},{"t":"Tres para operar y proteger el negocio.","r":"p2"},{"t":"Y una última para escalar.","r":"p3"}]},{"kind":"week","c":"F","n":1,"icon":"escalera","phase":"Construye la oferta","title":"De la nómina a tu propia empresa","lead":"Eliges el modelo de negocio que encaja contigo, partiendo de un punto de partida medido.","keeps":["Founder Starting Point Test","La escalera de modelos: freelance, servicio productizado, producto digital y software","Objetivo de ingresos a 90 días","Tu cofundador personal con IA"],"milestone":"Modelo elegido y objetivo de ingresos a 90 días","name":"Founder · Semana 1","segs":[{"t":"Semana uno. De la nómina a tu propia empresa.","r":"title"},{"t":"Eliges el modelo de negocio que encaja contigo, desde un punto de partida medido.","r":"lead"},{"t":"Haces el Founder Starting Point Test.","r":"item0"},{"t":"Recorres la escalera de modelos: freelance, servicio productizado, producto digital y software.","r":"item1"},{"t":"Fijas un objetivo de ingresos a noventa días.","r":"item2"},{"t":"Y montas tu cofundador personal con IA.","r":"item3"},{"t":"Modelo elegido, y objetivo de ingresos a noventa días.","r":"hito"}]},{"kind":"week","c":"F","n":2,"icon":"diana","phase":"Construye la oferta","title":"Un problema por el que paguen","lead":"Diseñas un negocio remoto de margen alto alrededor de un nicho que paga.","keeps":["Freedom Business Canvas","Puntuación de nichos","Calculadora «¿cuántos clientes necesito?»","Asistente de IA para estudiar el mercado"],"milestone":"Un nicho que paga y unos números que cuadran","name":"Founder · Semana 2","segs":[{"t":"Semana dos. Un problema por el que paguen.","r":"title"},{"t":"Diseñas un negocio remoto de margen alto alrededor de un nicho que paga.","r":"lead"},{"t":"Trabajas con el Freedom Business Canvas.","r":"item0"},{"t":"Puntúas nichos.","r":"item1"},{"t":"Usas la calculadora de cuántos clientes necesitas.","r":"item2"},{"t":"Y estudias el mercado con un asistente de IA.","r":"item3"},{"t":"Un nicho que paga, y unos números que cuadran.","r":"hito"}]},{"kind":"week","c":"F","n":3,"icon":"chat","phase":"Construye la oferta","title":"Véndelo antes de construirlo","lead":"Consigues pruebas de compradores reales antes de gastar un euro en construir nada.","keeps":["Guion de validación","3 entrevistas con compradores reales","Página de preventa","Decisión «seguir o parar» con puntuación"],"milestone":"3 entrevistas con compradores reales","name":"Founder · Semana 3","segs":[{"t":"Semana tres. Véndelo antes de construirlo.","r":"title"},{"t":"Consigues pruebas de compradores reales antes de gastar un euro en construir nada.","r":"lead"},{"t":"Preparas tu guion de validación.","r":"item0"},{"t":"Haces tres entrevistas con compradores reales.","r":"item1"},{"t":"Publicas una página de preventa.","r":"item2"},{"t":"Y tomas la decisión de seguir o parar, con puntuación.","r":"item3"},{"t":"Tres entrevistas con compradores reales.","r":"hito"}]},{"kind":"week","c":"F","n":4,"icon":"paquete","phase":"Construye la oferta","title":"Empaquétalo con precio premium","lead":"Conviertes lo que sabes en una oferta productizada con un precio que se sostiene.","keeps":["Matriz de servicio productizado","Calculadora de precio por valor en 3 niveles","Tu oferta en una página","Crítico de tu oferta con IA"],"milestone":"Tu oferta, con 3 niveles de precio","name":"Founder · Semana 4","segs":[{"t":"Semana cuatro. Empaquétalo con precio premium.","r":"title"},{"t":"Conviertes lo que sabes en una oferta productizada, con un precio que se sostiene.","r":"lead"},{"t":"Trabajas la matriz de servicio productizado.","r":"item0"},{"t":"Calculas el precio por valor, en tres niveles.","r":"item1"},{"t":"Resumes tu oferta en una sola página.","r":"item2"},{"t":"Y la pones a prueba con un crítico de ofertas con IA.","r":"item3"},{"t":"Tu oferta, con tres niveles de precio.","r":"hito"}]},{"kind":"week","c":"F","n":5,"icon":"cohete","phase":"Construye la oferta","title":"Lanza en un fin de semana, sin código","lead":"Publicas una página o un MVP de servicio que vende y cobra.","keeps":["Página de servicio publicada","Enlace de pago con Stripe o Wise","MVP sin código con Lovable o Bolt","Dominio y correo profesional"],"milestone":"Una página publicada que ya cobra","name":"Founder · Semana 5","segs":[{"t":"Semana cinco. Lanza en un fin de semana, sin código.","r":"title"},{"t":"Publicas una página, o un MVP de servicio, que vende y cobra.","r":"lead"},{"t":"Publicas tu página de servicio.","r":"item0"},{"t":"Creas un enlace de pago con Stripe o con Wise.","r":"item1"},{"t":"Montas un MVP sin código con Lovable o con Bolt.","r":"item2"},{"t":"Y configuras tu dominio y tu correo profesional.","r":"item3"},{"t":"Una página publicada que ya cobra.","r":"hito"}]},{"kind":"week","c":"F","n":6,"icon":"chispa","phase":"Consigue clientes","title":"Tu equipo de marketing con IA","lead":"Llevas el marketing, la captación y la atención al cliente con IA que mantiene tu voz.","keeps":["Matriz de agentes de IA","De una idea a 3 posts","Formulario de captación conectado a tu seguimiento","FAQ de atención con IA y checklist de calidad"],"milestone":"Contenido y captación con IA, con tu voz","name":"Founder · Semana 6","segs":[{"t":"Semana seis. Tu equipo de marketing con IA.","r":"title"},{"t":"Llevas el marketing, la captación y la atención al cliente con una IA que mantiene tu voz.","r":"lead"},{"t":"Diseñas tu matriz de agentes de IA.","r":"item0"},{"t":"Conviertes una idea en tres posts.","r":"item1"},{"t":"Conectas un formulario de captación a tu seguimiento.","r":"item2"},{"t":"Y preparas las preguntas frecuentes de atención con IA, con su checklist de calidad.","r":"item3"},{"t":"Contenido y captación con IA, y con tu voz.","r":"hito"}]},{"kind":"week","c":"F","n":7,"icon":"globo","phase":"Consigue clientes","title":"Clientes fuera, sin salir de casa","lead":"Construyes un pipeline que trae clientes B2B internacionales.","keeps":["Perfil de cliente ideal","10 prospectos verificados","Secuencias de contacto y seguimiento","Perfil optimizado en LinkedIn, Upwork o Contra, y tu CRM"],"milestone":"10 prospectos internacionales verificados","name":"Founder · Semana 7","segs":[{"t":"Semana siete. Clientes fuera, sin salir de casa.","r":"title"},{"t":"Construyes un pipeline que te trae clientes B2B internacionales.","r":"lead"},{"t":"Defines tu perfil de cliente ideal.","r":"item0"},{"t":"Verificas diez prospectos.","r":"item1"},{"t":"Escribes tus secuencias de contacto y seguimiento.","r":"item2"},{"t":"Y optimizas tu perfil en LinkedIn, Upwork o Contra, junto a tu CRM.","r":"item3"},{"t":"Diez prospectos internacionales, verificados.","r":"hito"}]},{"kind":"week","c":"F","n":8,"icon":"apreton","phase":"Consigue clientes","title":"Cierra la venta sin presionar","lead":"Conviertes conversaciones en contratos firmados y pagados.","keeps":["Pipeline de ventas asíncrono","Guion de llamada de descubrimiento","Plantilla de propuesta y banco de objeciones","Señales de alarma en contratos con clientes"],"milestone":"Propuesta y contrato listos para firmar","name":"Founder · Semana 8","segs":[{"t":"Semana ocho. Cierra la venta sin presionar.","r":"title"},{"t":"Conviertes conversaciones en contratos firmados y pagados.","r":"lead"},{"t":"Montas un pipeline de ventas asíncrono.","r":"item0"},{"t":"Preparas tu guion de llamada de descubrimiento.","r":"item1"},{"t":"Tienes una plantilla de propuesta y un banco de objeciones.","r":"item2"},{"t":"Y aprendes las señales de alarma en los contratos con clientes.","r":"item3"},{"t":"Propuesta y contrato, listos para firmar.","r":"hito"}]},{"kind":"week","c":"F","n":9,"icon":"megafono","phase":"Consigue clientes","title":"Que los clientes pregunten por ti","lead":"Construyes autoridad pública para que los clientes vengan a ti.","keeps":["Plan de autoridad: tema, canal y frecuencia","5 primeras piezas programadas","Newsletter publicada","Flujo de reciclaje de contenido con IA"],"milestone":"Newsletter publicada y 5 piezas programadas","name":"Founder · Semana 9","segs":[{"t":"Semana nueve. Que los clientes pregunten por ti.","r":"title"},{"t":"Construyes autoridad pública, para que los clientes vengan a ti.","r":"lead"},{"t":"Haces tu plan de autoridad: tema, canal y frecuencia.","r":"item0"},{"t":"Programas tus cinco primeras piezas.","r":"item1"},{"t":"Publicas tu newsletter.","r":"item2"},{"t":"Y montas un flujo para reciclar contenido con IA.","r":"item3"},{"t":"Newsletter publicada, y cinco piezas programadas.","r":"hito"}]},{"kind":"week","c":"F","n":10,"icon":"engranaje","phase":"Opera y protege","title":"Entrega como una empresa","lead":"Entregas con calidad constante sin estar en cada mensaje, y sabes el margen de cada proyecto.","keeps":["Arquitectura de SOPs","Hub de entrega para clientes","Plantilla de proyecto y panel de márgenes","Stack remoto: Notion, Slack y Loom"],"milestone":"SOPs, hub de cliente y margen por proyecto","name":"Founder · Semana 10","segs":[{"t":"Semana diez. Entrega como una empresa.","r":"title"},{"t":"Entregas con calidad constante sin estar en cada mensaje, y sabes el margen de cada proyecto.","r":"lead"},{"t":"Diseñas tu arquitectura de SOPs, los procedimientos de tu negocio.","r":"item0"},{"t":"Montas un hub de entrega para tus clientes.","r":"item1"},{"t":"Usas una plantilla de proyecto y un panel de márgenes.","r":"item2"},{"t":"Y trabajas con un stack remoto: Notion, Slack y Loom.","r":"item3"},{"t":"SOPs, hub de cliente, y margen por proyecto.","r":"hito"}]},{"kind":"week","c":"F","n":11,"icon":"rayo","phase":"Opera y protege","title":"Automatiza el back office y delega","lead":"Liberas horas con automatización y haces bien tu primera contratación, aunque esté en otro país.","keeps":["Matriz de delegación","Back office automatizado: formulario, carpeta, contrato y seguimiento","Scorecard de contratación","Contrato de contractor y pagos internacionales"],"milestone":"Back office automatizado y primera contratación","name":"Founder · Semana 11","segs":[{"t":"Semana once. Automatiza el back office y delega.","r":"title"},{"t":"Liberas horas con automatización, y haces bien tu primera contratación, aunque esté en otro país.","r":"lead"},{"t":"Esta semana tiene contenidos acreditados por Deel.","r":"deel"},{"t":"Haces tu matriz de delegación.","r":"item0"},{"t":"Automatizas el back office: formulario, carpeta, contrato y seguimiento.","r":"item1"},{"t":"Preparas un scorecard de contratación.","r":"item2"},{"t":"Y resuelves el contrato de contractor y los pagos internacionales.","r":"item3"},{"t":"Back office automatizado, y primera contratación.","r":"hito"}]},{"kind":"week","c":"F","n":12,"icon":"edificio","phase":"Opera y protege","title":"Constituye en cualquier país, en regla","lead":"Eliges la estructura societaria y fiscal que toca a tu negocio y la mantienes en regla.","keeps":["Comparativa de sociedades a 3 años: LLC en EE. UU., e-Residency en Estonia, zona franca en EAU o tu país","Fórmula de ingreso neto","Checklist de residencia fiscal y plantilla de factura","Calendario de obligaciones"],"milestone":"Estructura societaria y fiscal elegida","name":"Founder · Semana 12","segs":[{"t":"Semana doce. Constituye en cualquier país, en regla.","r":"title"},{"t":"Eliges la estructura societaria y fiscal que le toca a tu negocio, y la mantienes en regla.","r":"lead"},{"t":"Esta semana tiene contenidos acreditados por Deel.","r":"deel"},{"t":"Comparas sociedades a tres años: una LLC en Estados Unidos, la e-Residency de Estonia, una zona franca en Emiratos, o tu propio país.","r":"item0"},{"t":"Aplicas la fórmula de ingreso neto.","r":"item1"},{"t":"Repasas el checklist de residencia fiscal y la plantilla de factura.","r":"item2"},{"t":"Y montas tu calendario de obligaciones.","r":"item3"},{"t":"Estructura societaria y fiscal, elegida.","r":"hito"}]},{"kind":"week","c":"F","n":13,"icon":"estrella","phase":"Escala","title":"Escala hacia la libertad, no al burnout","lead":"Planificas el siguiente escalón de ingresos sin vender más horas, con una rutina que puedes sostener.","keeps":["Plan de escalera de ingresos a 12 meses","Revisión semanal de CEO con IA","Rutina de energía y límites","Tu pitch del Demo Day"],"milestone":"Plan a 12 meses y tu pitch en el Demo Day","name":"Founder · Semana 13","segs":[{"t":"Semana trece. Escala hacia la libertad, no hacia el burnout.","r":"title"},{"t":"Planificas el siguiente escalón de ingresos sin vender más horas, y con una rutina que puedes sostener.","r":"lead"},{"t":"Haces tu plan de escalera de ingresos a doce meses.","r":"item0"},{"t":"Montas una revisión semanal de CEO con IA.","r":"item1"},{"t":"Fijas tu rutina de energía y límites.","r":"item2"},{"t":"Y preparas tu pitch para el Demo Day.","r":"item3"},{"t":"Tu plan a doce meses, y tu pitch en el Demo Day.","r":"hito"}]},{"kind":"recap","c":"F","name":"Repaso Founder","segs":[{"t":"Repaso de Remote Founder.","r":"a"},{"t":"Validado, con precio, vendiendo y constituido. En la semana trece no sales con apuntes: sales con una empresa en marcha.","r":"b"}]},{"kind":"deel","name":"Deel","segs":[{"t":"Una cosa más. Seis semanas de los dos cursos tienen contenidos acreditados por Deel.","r":"a"},{"t":"En Remote Professional, de la semana cuatro a la siete: entrevista, contrato, inteligencia artificial y destino.","r":"p"},{"t":"Y en Remote Founder, la once y la doce: delegar y contratar fuera, y constituir tu empresa en regla.","r":"f"}]},{"kind":"cierre","name":"Cierre","segs":[{"t":"Y así es el temario.","r":"a"},{"t":"La próxima convocatoria empieza el nueve de enero de dos mil veintisiete, en grupos de veinticinco plazas.","r":"cal"},{"t":"La semana antes, en la semana cero, conoces a tu grupo y a tu pod en Slack.","r":"pod"},{"t":"Remote Professional se gradúa en la semana ocho, y Remote Founder presenta su negocio en el Demo Day de la semana trece.","r":"fin"},{"t":"Nos vemos en clase.","r":"bye"}]}],"proPhases":[["Decides",1,1],["Te encuentran",2,3],["Te contratan",4,5],["Empiezas y te asientas",6,8]],"fouPhases":[["Construye la oferta",1,5],["Consigue clientes",6,9],["Opera y protege",10,12],["Escala",13,13]],"deel":{"P":[4,5,6,7],"F":[11,12]},"audio":false};
+(() => {
+/* ───────── utilidades ───────── */
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function wrap(t,max){const o=[];let c="";for(const w of String(t).split(" ")){if((c+" "+w).trim().length>max&&c){o.push(c);c=w}else c=(c+" "+w).trim()}if(c)o.push(c);return o}
+// Texto SVG. rv = qué frase lo revela; anim = clase de animación.
+function T(x,y,txt,o={}){
+  const {s=28,cls="",a="start",d=0,lh=1.25,max=0,rv="",anim="",style=""}=o;
+  const lines=max?wrap(txt,max):[txt];
+  const k=rv?`rv ${anim} `:(anim?anim+" ":"");
+  return `<text x="${x}" y="${y}" font-size="${s}" text-anchor="${a}" class="${k}${cls}" ${rv?`data-r="${rv}"`:""} style="--d:${d}s;${style}">${lines.map((l,i)=>`<tspan x="${x}" dy="${i?s*lh:0}">${esc(l)}</tspan>`).join("")}</text>`;
+}
+const lines=(txt,max)=>max?wrap(txt,max).length:1;
+const polar=(cx,cy,r,deg)=>{const a=deg*Math.PI/180;return [cx+r*Math.sin(a),cy-r*Math.cos(a)]};
+const arcPath=(cx,cy,r,a0,a1)=>{const [x0,y0]=polar(cx,cy,r,a0),[x1,y1]=polar(cx,cy,r,a1);return `M${x0.toFixed(1)} ${y0.toFixed(1)} A${r} ${r} 0 ${a1-a0>180?1:0} 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`};
+const COL={P:{m:"#5B4BF5",l:"#9488FF",s:"rgba(91,75,245,.2)",name:"Remote Professional",tag:"Career Accelerator",N:8,cls:"pl"},F:{m:"#E4462F",l:"#FF7C66",s:"rgba(228,70,47,.2)",name:"Remote Founder",tag:"Global Builder",N:13,cls:"rl"}};
+let seed=11;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+function gearPath(teeth,ro,ri){let d="";const st=Math.PI*2/teeth;for(let i=0;i<teeth;i++){const a=i*st;const pts=[[ri,a],[ro,a+st*.12],[ro,a+st*.45],[ri,a+st*.57]];pts.forEach(([r,an],k)=>{d+=(i===0&&k===0?"M":"L")+(r*Math.sin(an)).toFixed(1)+" "+(-r*Math.cos(an)).toFixed(1)+" "})}return d+"Z"}
+const ROT=(dur,rev)=>`<animateTransform attributeName="transform" type="rotate" from="0" to="${rev?-360:360}" dur="${dur}s" repeatCount="indefinite"/>`;
+
+/* ───────── iconos animados (caja −130…130) ───────── */
+function icon(name,L,M){
+  const S=`stroke="${L}" fill="none" stroke-linecap="round" stroke-linejoin="round"`;
+  const dr=(d,w=6,del=0,t=1.4)=>`<path class="a-draw" pathLength="1" style="--d:${del}s;--t:${t}s" d="${d}" stroke-width="${w}" ${S}/>`;
+  switch(name){
+  case "brujula": return `${dr("M0 -115 A115 115 0 1 1 -0.1 -115",6)}<circle r="92" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.15)"/>
+    ${[0,90,180,270].map(a=>{const [x0,y0]=polar(0,0,98,a),[x1,y1]=polar(0,0,112,a);return `<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="${L}" stroke-width="5"/>`}).join("")}
+    <text y="-60" font-size="22" text-anchor="middle" class="semi" style="fill:${L}">N</text>
+    <g><animateTransform attributeName="transform" type="rotate" values="-55;35;-20;12;-4;0;0" keyTimes="0;.2;.4;.55;.7;.8;1" dur="5s" repeatCount="indefinite"/>
+    <path d="M0 -78 L16 0 L-16 0Z" fill="${L}"/><path d="M0 78 L16 0 L-16 0Z" fill="rgba(255,255,255,.35)"/></g><circle r="9" fill="#fff"/>`;
+  case "iman": return `<path d="M-70 -50 L-70 20 A70 70 0 0 0 70 20 L70 -50" stroke="${M}" stroke-width="38" fill="none"/>
+    <path d="M-70 -50 L-70 -85 M70 -50 L70 -85" stroke="#F2F1FA" stroke-width="38"/>
+    ${[0,1,2,3].map(i=>`<g opacity="0"><rect x="-13" y="-17" width="26" height="34" rx="4" fill="#F2F1FA"/><path d="M-7 -8h14M-7 0h14M-7 8h9" stroke="${M}" stroke-width="3"/>
+      <animateMotion dur="2.8s" begin="${-i*.7}s" repeatCount="indefinite" path="M${i%2?140:-140} ${-120+i*20} Q ${i%2?60:-60} -150 0 -40"/>
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.2;.8;1" dur="2.8s" begin="${-i*.7}s" repeatCount="indefinite"/></g>`).join("")}
+    ${[0,1].map(i=>`<path d="M-125 ${-10+i*30} Q 0 ${-150-i*30} 125 ${-10+i*30}" stroke="${L}" stroke-dasharray="4 10" fill="none" opacity=".5"><animate attributeName="stroke-dashoffset" from="0" to="-28" dur="1s" repeatCount="indefinite"/></path>`).join("")}`;
+  case "radar": return `${[40,80,120].map(r=>`<circle r="${r}" stroke="rgba(255,255,255,.18)" fill="none" stroke-width="2"/>`).join("")}
+    <path d="M-125 0H125M0 -125V125" stroke="rgba(255,255,255,.12)" stroke-width="2"/>
+    <g>${ROT(3)}<path d="M0 0 L0 -122 A122 122 0 0 1 70 -100 Z" fill="${L}" opacity=".35"/><path d="M0 0 L0 -122" stroke="${L}" stroke-width="4"/></g>
+    ${[[52,-62,.35],[-78,28,1.6],[34,82,2.3],[-40,-90,.9]].map(([x,y,b])=>`<circle cx="${x}" cy="${y}" r="9" fill="#F2F1FA" opacity="0"><animate attributeName="opacity" values="0;1;0" dur="3s" begin="${b}s" repeatCount="indefinite"/></circle>`).join("")}
+    <circle r="8" fill="${L}"/>`;
+  case "micro": return `<rect x="-36" y="-118" width="72" height="128" rx="36" fill="${M}" stroke="${L}" stroke-width="5"/>
+    ${[-80,-58,-36,-14].map(y=>`<path d="M-20 ${y}H20" stroke="rgba(255,255,255,.55)" stroke-width="4" stroke-linecap="round"/>`).join("")}
+    ${dr("M-62 -22 A62 62 0 0 0 62 -22",6,.2,.8)}${dr("M0 40 V95 M-42 95 H42",6,.6,.6)}
+    ${[0,1,2].map(i=>`<path d="M${88+i*22} ${-80-i*14} A${80+i*30} ${80+i*30} 0 0 1 ${88+i*22} ${20+i*14}" stroke="${L}" stroke-width="5" fill="none" stroke-linecap="round" opacity="0"><animate attributeName="opacity" values="0;1;0" dur="1.8s" begin="${i*.3}s" repeatCount="indefinite"/></path>
+      <path d="M${-88-i*22} ${-80-i*14} A${80+i*30} ${80+i*30} 0 0 0 ${-88-i*22} ${20+i*14}" stroke="${L}" stroke-width="5" fill="none" stroke-linecap="round" opacity="0"><animate attributeName="opacity" values="0;1;0" dur="1.8s" begin="${i*.3}s" repeatCount="indefinite"/></path>`).join("")}`;
+  case "contrato": return `<path d="M-82 -118 H50 L84 -84 V118 H-82 Z" fill="rgba(255,255,255,.06)" stroke="${L}" stroke-width="5"/><path d="M50 -118 V-84 H84" stroke="${L}" stroke-width="5" fill="none"/>
+    ${[-70,-42,-14,14].map((y,i)=>dr(`M-56 ${y} H${i%2?30:52}`,6,.3+i*.2,.5)).join("")}
+    <path pathLength="1" d="M-58 70 C-40 40 -30 95 -12 64 S 18 50 28 78" stroke="#F2F1FA" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="1"><animate attributeName="stroke-dashoffset" values="1;0;0" keyTimes="0;.45;1" dur="3.4s" repeatCount="indefinite"/></path>
+    <g transform="translate(60 72)"><circle r="30" fill="none" stroke="${L}" stroke-width="5"><animate attributeName="r" values="30;34;30" dur="1.7s" repeatCount="indefinite"/></circle><path d="M-12 0 L-3 10 L14 -10" stroke="${L}" stroke-width="6" fill="none" stroke-linecap="round"/></g>`;
+  case "chispa": return `<g><animateTransform attributeName="transform" type="scale" values="1;1.12;1" dur="2.4s" repeatCount="indefinite"/>
+    <path d="M0 -115 C12 -22 22 -12 115 0 C22 12 12 22 0 115 C-12 22 -22 12 -115 0 C-22 -12 -12 -22 0 -115Z" fill="${L}"/></g>
+    ${[[82,-84,26],[-88,72,20],[95,70,14],[-70,-92,12]].map(([x,y,r],i)=>`<g transform="translate(${x} ${y})"><path d="M0 ${-r} L${r*.25} ${-r*.25} L${r} 0 L${r*.25} ${r*.25} L0 ${r} L${-r*.25} ${r*.25} L${-r} 0 L${-r*.25} ${-r*.25}Z" fill="#F2F1FA"><animate attributeName="opacity" values="0;1;0" dur="1.6s" begin="${i*.4}s" repeatCount="indefinite"/></path></g>`).join("")}`;
+  case "avion": return `<path id="avp" d="M-125 70 Q 0 -170 125 50" stroke="rgba(255,255,255,.3)" stroke-width="4" stroke-dasharray="6 12" fill="none"/>
+    <circle cx="-125" cy="70" r="11" fill="${L}"/><circle cx="125" cy="50" r="11" fill="#F2F1FA"/><circle cx="125" cy="50" r="12" fill="none" stroke="#F2F1FA" stroke-width="2"><animate attributeName="r" values="12;30" dur="1.6s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="1.6s" repeatCount="indefinite"/></circle>
+    <g><animateMotion dur="3.6s" repeatCount="indefinite" rotate="auto" path="M-125 70 Q 0 -170 125 50"/><path d="M-28 -9 L30 0 L-28 9 L-18 0 Z M-6 -2 L-16 -26 L-6 -26 L8 -2 Z M-6 2 L-16 26 L-6 26 L8 2 Z" fill="#F2F1FA"/></g>`;
+  case "personas": {
+    const P=[[-82,20,M],[0,-26,L],[82,20,M]];
+    return `${dr("M-82 -10 L0 -56 L82 -10 Z",4,.2,1.2)}${P.map(([x,y,c])=>`<g transform="translate(${x} ${y})"><circle cy="-30" r="24" fill="${c}"/><path d="M-40 34 A40 40 0 0 1 40 34 Z" fill="${c}"/></g>`).join("")}
+    ${["M-82 -10 L0 -56","M0 -56 L82 -10","M82 -10 L-82 -10"].map((p,i)=>`<circle r="6" fill="#F2F1FA"><animateMotion dur="1.8s" begin="${i*.6}s" repeatCount="indefinite" path="${p}"/></circle>`).join("")}
+    <path d="M-120 100 H120" stroke="rgba(255,255,255,.15)" stroke-width="3"/>`;}
+  case "escalera": return `${dr("M-115 105 H-70 V60 H-25 V15 H20 V-30 H65 V-75 H110",7,0,1.6)}
+    <circle r="12" fill="#F2F1FA"><animateMotion dur="4s" repeatCount="indefinite" path="M-115 92 H-70 V47 H-25 V2 H20 V-43 H65 V-88 H110"/></circle>
+    <path d="M110 -75 V-125" stroke="#F2F1FA" stroke-width="4"/><path d="M110 -125 L150 -112 L110 -100 Z" fill="${L}"/>`;
+  case "diana": return `${[115,82,50,18].map((r,i)=>`<circle r="${r}" fill="${i%2?"rgba(13,12,22,.9)":M}" stroke="${L}" stroke-width="3"/>`).join("")}
+    <circle r="18" fill="none" stroke="#F2F1FA" stroke-width="3" opacity="0"><animate attributeName="r" values="18;70" dur="3s" keyTimes="0;1" begin=".9s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;0;0" keyTimes="0;.02;.4;1" dur="3s" begin=".9s" repeatCount="indefinite"/></circle>
+    <g><animateTransform attributeName="transform" type="translate" values="100 -100;0 0;0 0;100 -100" keyTimes="0;.3;.85;1" dur="3s" repeatCount="indefinite"/>
+    <path d="M0 0 L90 -90" stroke="#F2F1FA" stroke-width="7" stroke-linecap="round"/><path d="M90 -90 L112 -82 M90 -90 L82 -112 M78 -78 L100 -70 M78 -78 L70 -100" stroke="${L}" stroke-width="5" stroke-linecap="round"/><path d="M0 0 L14 -4 L4 -14Z" fill="#F2F1FA"/></g>`;
+  case "chat": return `<g class="a-up" style="--d:.2s"><rect x="-122" y="-104" width="170" height="92" rx="22" fill="rgba(255,255,255,.08)" stroke="${L}" stroke-width="4"/><path d="M-96 -12 L-100 20 L-70 -12" fill="rgba(255,255,255,.08)" stroke="${L}" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M-98 -72 H20 M-98 -46 H-10" stroke="rgba(255,255,255,.5)" stroke-width="6" stroke-linecap="round"/></g>
+    <g class="a-up" style="--d:.7s"><rect x="-40" y="10" width="162" height="88" rx="22" fill="${M}"/><path d="M96 98 L104 126 L72 98" fill="${M}"/>
+    ${[0,1,2].map(i=>`<circle cx="${0+i*40}" cy="54" r="10" fill="#F2F1FA"><animate attributeName="opacity" values=".25;1;.25" dur="1.2s" begin="${i*.2}s" repeatCount="indefinite"/></circle>`).join("")}</g>`;
+  case "paquete": return `<path d="M0 -40 L100 -90 L100 50 L0 100 Z" fill="${M}" opacity=".75"/><path d="M0 -40 L-100 -90 L-100 50 L0 100 Z" fill="${M}"/><path d="M0 -40 L100 -90 L0 -140 L-100 -90 Z" fill="${L}"/>
+    <path d="M-50 -115 L50 -65" stroke="rgba(255,255,255,.6)" stroke-width="10"/>
+    <g transform="translate(70 -20)"><g><animateTransform attributeName="transform" type="rotate" values="-14;14;-14" dur="2.6s" repeatCount="indefinite"/>
+    <path d="M0 0 L0 30" stroke="#F2F1FA" stroke-width="3"/><path d="M-28 30 H28 V110 H-28 Z" fill="#F2F1FA"/>
+    ${[0,1,2].map(i=>`<rect x="${-18+i*13}" y="${98-(i+1)*18}" width="9" height="${(i+1)*18}" rx="2" fill="${M}"/>`).join("")}</g></g>`;
+  case "cohete": return `${[-70,-20,40,85].map((x,i)=>`<path d="M${x} -120 V-80" stroke="rgba(255,255,255,.4)" stroke-width="3" stroke-linecap="round"><animateTransform attributeName="transform" type="translate" values="0 0;0 260" dur="${1+i*.2}s" begin="${-i*.3}s" repeatCount="indefinite"/></path>`).join("")}
+    <g><animateTransform attributeName="transform" type="translate" values="0 6;0 -6;0 6" dur="1.6s" repeatCount="indefinite"/>
+    <path d="M0 -125 C40 -90 46 -20 40 40 H-40 C-46 -20 -40 -90 0 -125Z" fill="#F2F1FA"/><circle cy="-50" r="18" fill="${M}" stroke="${L}" stroke-width="5"/>
+    <path d="M-40 10 L-70 60 L-40 50Z M40 10 L70 60 L40 50Z" fill="${L}"/>
+    <path d="M-24 44 Q0 120 24 44Z" fill="${L}"><animate attributeName="d" values="M-24 44 Q0 120 24 44Z;M-22 44 Q0 95 22 44Z;M-24 44 Q0 120 24 44Z" dur=".35s" repeatCount="indefinite"/></path></g>`;
+  case "globo": {let m="";for(let i=0;i<5;i++)m+=`<ellipse rx="115" ry="115" fill="none" stroke="${L}" stroke-opacity=".5" stroke-width="2"><animate attributeName="rx" values="115;0;115" dur="7s" begin="${-i*1.4}s" repeatCount="indefinite"/></ellipse>`;
+    return `<circle r="115" fill="rgba(255,255,255,.05)" stroke="${L}" stroke-width="4"/>${m}${[-55,0,55].map(y=>`<ellipse cy="${y}" rx="${Math.sqrt(115*115-y*y).toFixed(0)}" ry="10" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="2"/>`).join("")}
+    <g>${ROT(6)}<circle cx="0" cy="-140" r="10" fill="#F2F1FA"/></g><g>${ROT(9,1)}<circle cx="140" cy="0" r="7" fill="${L}"/></g>`;}
+  case "apreton": return `<path d="M-130 -10 H-62 V40 H-130Z" fill="${M}"/><path d="M130 -10 H62 V40 H130Z" fill="${L}"/>
+    <path d="M-66 -14 C-40 -40 -10 -30 10 -14 L48 14 C58 22 50 38 38 32 L10 18" fill="none" stroke="#F2F1FA" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M66 -14 C40 -40 10 -30 -10 -14 M66 44 C40 64 10 60 -6 48 L-40 22" fill="none" stroke="#F2F1FA" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>
+    <circle r="40" fill="none" stroke="${L}" stroke-width="3" opacity="0"><animate attributeName="r" values="40;125" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".9;0" dur="2s" repeatCount="indefinite"/></circle>
+    <path d="M-22 -96 L-8 -82 L22 -112" stroke="${L}" stroke-width="7" fill="none" stroke-linecap="round" class="a-draw" pathLength="1" style="--d:.6s;--t:.6s"/>`;
+  case "megafono": return `<path d="M-74 -30 L46 -86 V86 L-74 30Z" fill="${M}" stroke="${L}" stroke-width="5" stroke-linejoin="round"/><rect x="-108" y="-32" width="36" height="64" rx="8" fill="#F2F1FA"/><path d="M-60 30 L-48 80 H-28 L-36 36" fill="#F2F1FA"/>
+    ${[0,1,2].map(i=>`<path d="M${72+i*26} -50 Q ${100+i*30} 0 ${72+i*26} 50" stroke="${L}" stroke-width="6" fill="none" stroke-linecap="round" opacity="0"><animate attributeName="opacity" values="0;1;0" dur="1.5s" begin="${i*.25}s" repeatCount="indefinite"/></path>`).join("")}`;
+  case "engranaje": return `<g><path d="${gearPath(12,108,86)}" fill="${M}" stroke="${L}" stroke-width="3"/><circle r="34" fill="#0D0C16" stroke="${L}" stroke-width="4"/>${ROT(9)}</g>
+    <g transform="translate(96 92)"><g><path d="${gearPath(8,52,40)}" fill="${L}"/><circle r="16" fill="#0D0C16"/>${ROT(6,1)}</g></g>`;
+  case "rayo": return `<circle r="118" fill="none" stroke="${L}" stroke-width="3" stroke-dasharray="10 14">${ROT(10)}</circle>
+    <path d="M22 -112 L-58 12 L-2 12 L-22 112 L60 -18 L4 -18 Z" fill="${L}"><animate attributeName="opacity" values="1;.55;1;1;.7;1" dur="2.2s" repeatCount="indefinite"/></path>
+    ${[0,1,2].map(i=>{const a=i*120;const [x,y]=polar(0,0,118,a);return `<circle cx="${x}" cy="${y}" r="10" fill="#F2F1FA"><animate attributeName="r" values="8;13;8" dur="1.4s" begin="${i*.45}s" repeatCount="indefinite"/></circle>`}).join("")}`;
+  case "edificio": {let w="";for(let r=0;r<5;r++)for(let c=0;c<3;c++){const i=r*3+c;w+=`<rect x="${-58+c*44}" y="${-92+r*38}" width="28" height="22" rx="3" fill="#F2F1FA" opacity=".15"><animate attributeName="opacity" values=".15;.95;.95;.15" keyTimes="0;.15;.85;1" dur="6s" begin="${(i*.37)%6}s" repeatCount="indefinite"/></rect>`}
+    return `<path d="M-125 112 H125" stroke="rgba(255,255,255,.25)" stroke-width="4"/><rect x="-80" y="-112" width="160" height="224" rx="6" fill="${M}" stroke="${L}" stroke-width="4"/>${w}
+    <rect x="-16" y="80" width="32" height="32" fill="#0D0C16"/><path d="M0 -112 V-150" stroke="#F2F1FA" stroke-width="4"/><path d="M0 -150 L36 -140 L0 -128Z" fill="${L}"><animate attributeName="d" values="M0 -150 L36 -140 L0 -128Z;M0 -150 L34 -136 L0 -128Z;M0 -150 L36 -140 L0 -128Z" dur="1.4s" repeatCount="indefinite"/></path>`;}
+  case "estrella": {const pts=[];for(let i=0;i<10;i++){const r=i%2?44:108;const [x,y]=polar(0,0,r,i*36);pts.push(x.toFixed(1)+","+y.toFixed(1))}
+    return `<g>${ROT(20)}${Array.from({length:12},(_,i)=>{const [x0,y0]=polar(0,0,122,i*30),[x1,y1]=polar(0,0,138,i*30);return `<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="${L}" stroke-width="5" stroke-linecap="round"/>`}).join("")}</g>
+    <g><animateTransform attributeName="transform" type="scale" values="1;1.08;1" dur="2s" repeatCount="indefinite"/><polygon points="${pts.join(" ")}" fill="${L}" stroke="#F2F1FA" stroke-width="3" stroke-linejoin="round"/></g>`;}
+  }
+  return "";
+}
+
+/* ───────── escenas ───────── */
+const B={}; // constructores por tipo
+const est=t=>Math.max(1.6,t.length/14.5+.35);
+
+B.portada=s=>{
+  let lineP="",lineF="";
+  for(let i=0;i<8;i++){const x=700+i*110;lineP+=`<circle class="rv pop" data-r="b" style="--d:${(.5+i*.08).toFixed(2)}s" cx="${x}" cy="520" r="${i===7?16:11}" fill="${i===7?"#9488FF":"#0D0C16"}" stroke="#9488FF" stroke-width="4"/>`}
+  for(let i=0;i<13;i++){const x=700+i*65;lineF+=`<circle class="rv pop" data-r="b" style="--d:${(4+i*.06).toFixed(2)}s" cx="${x}" cy="680" r="${i===12?16:10}" fill="${i===12?"#FF7C66":"#0D0C16"}" stroke="#FF7C66" stroke-width="4"/>`}
+  return `${T(140,250,"CLASE · ACTIVEXREMOTE",{s:20,cls:"eyebrow pl",rv:"a",anim:"fade"})}
+  ${T(140,345,"El temario,",{s:92,cls:"disp",rv:"a",d:.15})}
+  ${T(140,445,"semana a semana.",{s:92,cls:"disp pl",rv:"a",d:.35})}
+  <path class="rv draw" data-r="b" style="--d:.1s;--t:1.4s" pathLength="1" d="M700 520 H1470" stroke="#9488FF" stroke-width="8" stroke-linecap="round"/>
+  ${lineP}${T(700,480,"Remote Professional · 8 semanas · empleo remoto internacional",{s:20,cls:"semi pl",rv:"b",d:.4})}
+  <path class="rv draw" data-r="b" style="--d:3.6s;--t:1.6s" pathLength="1" d="M700 680 H1480" stroke="#FF7C66" stroke-width="8" stroke-linecap="round"/>
+  ${lineF}${T(700,640,"Remote Founder · 13 semanas · negocio que vende fuera",{s:20,cls:"semi rl",rv:"b",d:3.8})}
+  ${T(140,560,"Qué trabajas cada semana",{s:32,cls:"semi",rv:"c"})}
+  ${T(140,604,"y qué te llevas al terminarla.",{s:32,cls:"semi mut",rv:"c",d:.15})}`;
+};
+
+B.semana=s=>{
+  const cx=1140,cy=470,r=225;
+  const st=[["Material previo","A tu ritmo, antes de la semana."],["6 vídeos de 30 min","La teoría, cuando te va bien."],["Clase en directo de 2 h","Un día fijo entre semana. Queda grabada."],["Ejercicio sobre tu caso","Lo revisa tu pod."],["Test de 20 preguntas","Para cerrar la semana."]];
+  s.ring=st;
+  let arcs="";
+  st.forEach((_,i)=>{const a0=i*72+4,a1=(i+1)*72-4;
+    arcs+=`<path class="arc rv draw" data-r="s${i}" id="arc${i}" style="--t:.8s" pathLength="1" d="${arcPath(cx,cy,r,a0,a1)}" fill="none" stroke="${i===2?"#FF7C66":"#9488FF"}" stroke-width="28" stroke-linecap="round"/>`;
+    const [nx,ny]=polar(cx,cy,r+60,(a0+a1)/2);
+    arcs+=`<text class="rv pop mono" data-r="s${i}" style="--d:.3s" x="${nx.toFixed(1)}" y="${(ny+10).toFixed(1)}" font-size="30" text-anchor="middle">${i+1}</text>`;
+  });
+  for(let k=0;k<6;k++){const [x,y]=polar(cx,cy,r,76+(64/5)*k);arcs+=`<circle class="rv pop" data-r="s1" style="--d:${(.5+k*.12).toFixed(2)}s" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="6" fill="#fff"/>`}
+  return `${T(140,250,"ANTES DE EMPEZAR",{s:20,cls:"eyebrow pl",rv:"a",anim:"fade"})}
+  ${T(140,335,"Una semana,",{s:72,cls:"disp",rv:"a",d:.1})}
+  ${T(140,415,"una habilidad.",{s:72,cls:"disp pl",rv:"a",d:.3})}
+  ${T(140,500,"Material, vídeos, clase en directo, ejercicio y test. Siempre en el mismo orden.",{s:27,cls:"mut",max:34,lh:1.45,rv:"a",d:.6})}
+  <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(242,241,250,.07)" stroke-width="28" class="a-fade"/>
+  ${arcs}<g id="ringC"></g>`;
+};
+function ringSet(s,i){
+  const g=document.getElementById("ringC");if(!g)return;const cx=1140,cy=470;
+  document.querySelectorAll(".arc").forEach((a,k)=>a.classList.toggle("hot",k===i));
+  if(i<0){g.innerHTML=`<g class="a-pop" style="animation:pop .6s both">${T(cx,cy+4,"12,5 h",{s:84,a:"middle",cls:"disp"})}${T(cx,cy+56,"a la semana, más o menos",{s:22,a:"middle",cls:"mut"})}</g>`;return}
+  const live=i===2,st=s.ring[i],L=wrap(st[0],16).length;
+  g.innerHTML=`<g style="animation:up .5s var(--ease) both">${T(cx,cy-46,"PASO "+(i+1)+" DE 5",{s:15,a:"middle",cls:"eyebrow "+(live?"rl":"pl")})}${T(cx,cy+(L>1?-4:8),st[0],{s:36,a:"middle",cls:"disp",max:16,lh:1.12})}${T(cx,cy+(L>1?82:56),st[1],{s:20,a:"middle",cls:"mut",max:24,lh:1.3})}
+  ${live?`<circle cx="${cx-66}" cy="${cy-132}" r="8" fill="#FF7C66"><animate attributeName="opacity" values="1;.2;1" dur="1.1s" repeatCount="indefinite"/></circle><text x="${cx-50}" y="${cy-125}" font-size="18" class="eyebrow rl">EN DIRECTO</text>`:""}</g>`;
+}
+
+B.overview=s=>{
+  const C=COL[s.c],ph=s.c==="P"?DATA.proPhases:DATA.fouPhases,N=C.N;
+  const X=n=>160+(n-1)*(1280/(N-1)),Y=690;
+  let out=`<path d="M${X(1)} ${Y} H${X(N)}" stroke="rgba(242,241,250,.14)" stroke-width="8" stroke-linecap="round"/>`;
+  ph.forEach(([name,a,b],i)=>{
+    const x0=X(a)-(N>8?26:40),x1=X(b)+(N>8?26:40),w=x1-x0,cxm=(x0+x1)/2;
+    out+=`<path class="rv draw" data-r="p${i}" style="--t:.9s" pathLength="1" d="M${X(a)} ${Y} H${X(b)}" stroke="${C.l}" stroke-width="8" stroke-linecap="round"/>`;
+    out+=`<g class="rv up" data-r="p${i}"><rect x="${x0}" y="420" width="${w}" height="170" rx="20" fill="${C.s}" stroke="${C.l}" stroke-opacity=".6" stroke-width="2"/>
+      ${T(cxm,462,"FASE "+(i+1),{s:15,a:"middle",cls:"eyebrow "+C.cls})}
+      ${T(cxm,508,name,{s:w<160?20:26,a:"middle",cls:"disp",max:w<160?9:Math.floor(w/15),lh:1.15})}
+      ${T(cxm,570,a===b?"Semana "+a:"Semanas "+a+"–"+b,{s:16,a:"middle",cls:"mut"})}</g>`;
+    for(let n=a;n<=b;n++)out+=`<g class="rv pop" data-r="p${i}" style="--d:${(.3+(n-a)*.12).toFixed(2)}s"><circle cx="${X(n)}" cy="${Y}" r="${N>8?20:26}" fill="#0D0C16" stroke="${C.l}" stroke-width="4"/><text x="${X(n)}" y="${Y+9}" font-size="${N>8?20:24}" text-anchor="middle" class="mono">${n}</text></g>`;
+  });
+  return `${T(140,170,C.name.toUpperCase()+" · "+C.tag.toUpperCase(),{s:20,cls:"eyebrow "+C.cls,rv:"a",anim:"fade"})}
+  ${T(140,262,N+" semanas, 4 fases.",{s:84,cls:"disp",rv:"a",d:.15})}
+  ${T(140,330,s.c==="P"?"En el orden en que lo vas a vivir.":"Cada ejercicio, sobre tu propio negocio.",{s:30,cls:"mut",rv:"a",d:.4})}
+  ${out}
+  ${T(800,800,"Semana a semana: lo que trabajas y lo que te llevas.",{s:22,a:"middle",cls:"dimt",rv:"p3",d:1})}`;
+};
+
+B.week=s=>{
+  const C=COL[s.c],N=C.N;
+  // Raíl del curso
+  const rx=n=>640+(n-1)*(840/(N-1));
+  let rail=`${T(120,92,C.name.toUpperCase(),{s:16,cls:"eyebrow "+C.cls,anim:"a-fade"})}<path d="M${rx(1)} 86 H${rx(N)}" stroke="rgba(255,255,255,.14)" stroke-width="3"/>`;
+  if(s.n>1)rail+=`<path d="M${rx(1)} 86 H${rx(s.n)}" stroke="${C.l}" stroke-width="3" class="a-draw" pathLength="1" style="--t:.8s"/>`;
+  for(let n=1;n<=N;n++){
+    if(n<s.n)rail+=`<circle cx="${rx(n)}" cy="86" r="7" fill="${C.l}"/>`;
+    else if(n>s.n)rail+=`<circle cx="${rx(n)}" cy="86" r="7" fill="#0D0C16" stroke="rgba(255,255,255,.3)" stroke-width="2"/>`;
+    else rail+=`<circle cx="${rx(n)}" cy="86" r="15" fill="#0D0C16" stroke="${C.l}" stroke-width="4"/><circle class="rv pop" data-r="hito" cx="${rx(n)}" cy="86" r="9" fill="${C.l}"/><circle cx="${rx(n)}" cy="86" r="15" fill="none" stroke="${C.l}" stroke-width="2"><animate attributeName="r" values="15;30" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values=".8;0" dur="1.8s" repeatCount="indefinite"/></circle>`;
+    if(DATA.deel[s.c].includes(n))rail+=`<text x="${rx(n)}" y="122" font-size="11" text-anchor="middle" class="eyebrow dimt">DEEL</text>`;
+  }
+  // Columna izquierda
+  const tl=lines(s.title,25),yT=392,yL=yT+(tl-1)*58+62,ll=lines(s.lead,46);
+  let left=`<text class="rv pop mono" data-r="title" x="120" y="262" font-size="176" style="fill:${C.s};stroke:${C.l};stroke-width:2.5">${String(s.n).padStart(2,"0")}</text>
+    ${T(120,320,"SEMANA "+s.n+" · "+s.phase.toUpperCase(),{s:18,cls:"eyebrow "+C.cls,rv:"title",anim:"fade",d:.15})}
+    ${T(120,yT,s.title,{s:52,cls:"disp",max:25,lh:1.12,rv:"title",d:.25})}
+    ${T(120,yL,s.lead,{s:25,cls:"mut",max:46,lh:1.45,rv:"lead"})}`;
+  if(DATA.deel[s.c].includes(s.n)){const yD=yL+(ll-1)*36+34;
+    left+=`<g class="rv pop" data-r="deel"><rect x="120" y="${yD}" width="388" height="44" rx="22" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.3)"/><circle cx="146" cy="${yD+22}" r="11" fill="#F2F1FA"/><path d="M140 ${yD+22} l4 4 l8 -9" stroke="#0D0C16" stroke-width="3" fill="none" stroke-linecap="round"/>${T(168,yD+29,"Contenidos acreditados por Deel",{s:19,cls:"semi"})}</g>`;}
+  left+=`<g class="rv up" data-r="hito"><rect x="120" y="772" width="760" height="94" rx="22" fill="${C.s}" stroke="${C.l}" stroke-width="2.5"/>
+    <circle cx="174" cy="819" r="27" fill="${C.l}"/>${T(222,806,"HITO DE LA SEMANA",{s:14,cls:"eyebrow "+C.cls})}${T(222,843,s.milestone,{s:25,cls:"disp"})}</g>
+    <path class="rv draw" data-r="hito" style="--d:.35s;--t:.5s" pathLength="1" d="M161 819 l9 10 l17 -20" stroke="#0D0C16" stroke-width="6" fill="none" stroke-linecap="round"/>`;
+  // Columna derecha: lo que te llevas
+  const items=s.keeps.map(k=>{const L=wrap(k,40);return {L,h:26+L.length*28}});
+  const total=36+items.reduce((a,i)=>a+i.h+12,0);
+  const top=Math.max(420,870-total);
+  let y=top+24,right=T(920,top,"TE LLEVAS",{s:15,cls:"eyebrow mut",rv:"item0",anim:"fade"});
+  items.forEach((it,i)=>{right+=`<g class="rv up" data-r="item${i}" style="--hl:${C.l}"><rect class="card" x="920" y="${y}" width="560" height="${it.h}" rx="16" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.12)"/>
+    <circle cx="954" cy="${y+it.h/2}" r="15" fill="${C.m}"/><text x="954" y="${y+it.h/2+6}" font-size="16" text-anchor="middle" class="mono">${i+1}</text>
+    <text x="986" y="${y+it.h/2-(it.L.length-1)*14+7}" font-size="21" class="semi">${it.L.map((l,k)=>`<tspan x="986" dy="${k?28:0}">${esc(l)}</tspan>`).join("")}</text></g>`;y+=it.h+12});
+  const iy=(150+top-20)/2+10,sc=Math.min(1.15,(top-190)/270);
+  const ic=`<g transform="translate(1200 ${iy.toFixed(0)}) scale(${sc.toFixed(2)})"><g class="rv pop" data-r="title" style="--d:.4s">${icon(s.icon,C.l,C.m)}</g></g>`;
+  return rail+left+ic+right;
+};
+
+B.recap=s=>{
+  const C=COL[s.c];
+  if(s.c==="P"){
+    const ms=DATA.scenes.filter(x=>x.kind==="week"&&x.c==="P").map(x=>x.milestone);
+    let g="";ms.forEach((m,i)=>{const col=i%4,row=Math.floor(i/4),x=140+col*335,y=330+row*230,r=i<4?"b":"c",d=(i%4)*(est(s.segs[i<4?1:2].t)/4.6);
+      g+=`<g class="rv up" data-r="${r}" style="--d:${d.toFixed(2)}s"><rect x="${x}" y="${y}" width="315" height="200" rx="20" fill="${C.s}" stroke="${C.l}" stroke-opacity=".55" stroke-width="2"/>
+      <text x="${x+24}" y="${y+62}" font-size="44" class="mono" style="fill:${C.l}">${i+1}</text>
+      ${T(x+24,y+112,m,{s:24,cls:"disp",max:21,lh:1.2})}
+      <path d="M${x+270} ${y+40} l8 9 l16 -18" stroke="${C.l}" stroke-width="5" fill="none" stroke-linecap="round"/></g>`});
+    return `${T(140,170,"REPASO",{s:20,cls:"eyebrow pl",rv:"a",anim:"fade"})}${T(140,258,"Remote Professional, en ocho hitos.",{s:66,cls:"disp",rv:"a",d:.1})}${g}`;
+  }
+  const words=["Validado","Con precio","Vendiendo","Constituido"];
+  let st="";for(let i=1;i<=13;i++){const h=i*13+16;st+=`<rect class="rv gy" data-r="a" style="--d:${(.2+i*.07).toFixed(2)}s" x="${140+(i-1)*101}" y="${860-h}" width="88" height="${h}" rx="10" fill="rgba(228,70,47,${(.12+i*.025).toFixed(2)})" stroke="rgba(255,124,102,.35)"/>`}
+  const stamps=words.map((w,i)=>`<g transform="translate(${290+i*340} 470) rotate(${[-6,4,-3,5][i]})"><g class="rv stamp" data-r="b" style="--d:${(i*.62).toFixed(2)}s"><rect x="-150" y="-52" width="300" height="104" rx="18" fill="rgba(13,12,22,.75)" stroke="#FF7C66" stroke-width="5"/><text y="16" font-size="44" text-anchor="middle" class="disp rl">${w}</text></g></g>`).join("");
+  return `${st}${T(140,170,"REPASO",{s:20,cls:"eyebrow rl",rv:"a",anim:"fade"})}${T(140,258,"Remote Founder, en cuatro palabras.",{s:66,cls:"disp",rv:"a",d:.1})}${stamps}
+  ${T(800,630,"En la semana 13 sales con una empresa en marcha.",{s:36,a:"middle",cls:"semi",rv:"b",d:4.2})}`;
+};
+
+B.deel=s=>{
+  const sq=(c,n,x,y,lit,r,d)=>`<g><rect x="${x}" y="${y}" width="62" height="62" rx="12" fill="transparent" stroke="rgba(242,241,250,.25)" stroke-width="2" class="a-fade" style="--d:${d}s"/>
+    <text x="${x+31}" y="${y+41}" font-size="24" text-anchor="middle" class="mono dimt a-fade" style="--d:${d}s">${n}</text>
+    ${lit?`<g class="rv pop" data-r="${r}" style="--d:${((n-(c==="P"?4:11))*.35).toFixed(2)}s"><rect x="${x}" y="${y}" width="62" height="62" rx="12" fill="#F2F1FA"/><text x="${x+31}" y="${y+41}" font-size="24" text-anchor="middle" class="mono ink">${n}</text></g>`:""}</g>`;
+  let rp="",rf="";
+  for(let n=1;n<=8;n++)rp+=sq("P",n,540+(n-1)*72,530,DATA.deel.P.includes(n),"p",.4+n*.04);
+  for(let n=1;n<=13;n++)rf+=sq("F",n,540+(n-1)*72,700,DATA.deel.F.includes(n),"f",.6+n*.04);
+  return `<g class="rv pop" data-r="a"><rect x="140" y="215" width="300" height="300" rx="30" fill="#FFFFFF"/><image href="deel-platinum-partner.png" x="160" y="235" width="260" height="260" preserveAspectRatio="xMidYMid meet"/></g>
+  <g class="rv pop" data-r="a" style="--d:.25s"><rect x="140" y="545" width="300" height="300" rx="30" fill="#FFFFFF"/><image href="deel-global-partner.png" x="160" y="565" width="260" height="260" preserveAspectRatio="xMidYMid meet"/></g>
+  ${T(540,250,"DEEL PLATINUM PARTNER · DEEL GLOBAL PARTNER",{s:18,cls:"eyebrow mut",rv:"a",anim:"fade"})}
+  ${T(540,320,"6 semanas con contenidos",{s:56,cls:"disp",rv:"a",d:.2})}
+  ${T(540,386,"acreditados por Deel.",{s:56,cls:"disp",rv:"a",d:.35})}
+  ${T(540,512,"REMOTE PROFESSIONAL",{s:15,cls:"eyebrow pl",anim:"a-fade"})}${rp}
+  ${T(540,620,"Entrevista, contrato, IA y destino",{s:22,cls:"semi",rv:"p",d:1.4})}
+  ${T(540,682,"REMOTE FOUNDER",{s:15,cls:"eyebrow rl",anim:"a-fade"})}${rf}
+  ${T(540,800,"Delegar y contratar fuera, y constituir en regla",{s:22,cls:"semi",rv:"f",d:.8})}`;
+};
+
+B.cierre=s=>{
+  const pods=[[680,600],[870,600],[1060,600],[1250,600],[1440,600]];
+  let dots="";const cols=["#9488FF","#FF7C66","#F2F1FA"];let i=0;
+  pods.forEach(([px,py],p)=>{dots+=`<circle class="rv pop" data-r="pod" style="--d:${(2+p*.1).toFixed(2)}s" cx="${px}" cy="${py}" r="72" fill="rgba(242,241,250,.04)" stroke="rgba(242,241,250,.28)" stroke-dasharray="4 8"/>`;
+    for(let k=0;k<5;k++){const [x1,y1]=polar(px,py,38,k*72);const x0=600+rnd()*900,y0=520+rnd()*170;
+      dots+=`<g class="rv gather" data-r="pod" style="--d:.4s;--x0:${x0.toFixed(0)}px;--y0:${y0.toFixed(0)}px;transform:translate(${x1.toFixed(0)}px,${y1.toFixed(0)}px)"><circle r="14" fill="${cols[(i*7)%3]}"/></g>`;i++}});
+  const x0=600,span=860,X=w=>x0+w/13*span;
+  return `${T(600,200,"Y así es el temario.",{s:64,cls:"disp",rv:"a"})}
+  <g class="rv flip" data-r="cal"><rect x="140" y="160" width="340" height="400" rx="28" fill="#F2F1FA"/><path d="M140 188 a28 28 0 0 1 28 -28 h284 a28 28 0 0 1 28 28 v58 h-340 z" fill="#E4462F"/>
+    <text x="310" y="216" font-size="28" text-anchor="middle" class="disp" style="fill:#fff;letter-spacing:.2em">ENERO</text>
+    <text x="310" y="450" font-size="210" text-anchor="middle" class="mono ink">9</text><text x="310" y="525" font-size="32" text-anchor="middle" class="disp" style="fill:#615D7C">2027</text>
+    <circle cx="230" cy="160" r="10" fill="#0D0C16"/><circle cx="390" cy="160" r="10" fill="#0D0C16"/></g>
+  ${T(600,262,"Empieza el 9 de enero de 2027, en grupos de 25 plazas.",{s:28,cls:"semi mut",rv:"cal",d:.5})}
+  ${dots}${T(1060,720,"Semana 0: tu grupo y tu pod, en Slack",{s:22,a:"middle",cls:"semi",rv:"pod",d:2.4})}
+  <circle class="rv pop" data-r="fin" cx="${x0}" cy="380" r="11" fill="#F2F1FA"/>
+  <path class="rv draw" data-r="fin" style="--d:.2s;--t:1.2s" pathLength="1" d="M${x0} 366 H${X(8)}" stroke="#9488FF" stroke-width="8" stroke-linecap="round"/>
+  <path class="rv draw" data-r="fin" style="--d:.4s;--t:1.9s" pathLength="1" d="M${x0} 396 H${X(13)}" stroke="#FF7C66" stroke-width="8" stroke-linecap="round"/>
+  <circle class="rv pop" data-r="fin" style="--d:1.3s" cx="${X(8)}" cy="366" r="13" fill="#9488FF"/><circle class="rv pop" data-r="fin" style="--d:2.2s" cx="${X(13)}" cy="396" r="13" fill="#FF7C66"/>
+  ${T(X(8),338,"Semana 8 · Graduación",{s:20,a:"middle",cls:"semi pl",rv:"fin",d:1.4})}
+  ${T(X(13),438,"Semana 13 · Demo Day",{s:20,a:"end",cls:"semi rl",rv:"fin",d:2.3})}
+  ${T(140,650,"Nos vemos en clase.",{s:40,cls:"disp",rv:"bye"})}
+  <g class="rv up hit" data-r="bye" style="--d:.4s" id="replay" tabindex="0" role="button" aria-label="Volver a ver la clase"><rect x="140" y="700" width="200" height="66" rx="33" fill="transparent" stroke="rgba(242,241,250,.45)" stroke-width="2"/><text x="240" y="741" font-size="20" text-anchor="middle" class="semi">↺ Volver a ver</text></g>
+  <a href="presentacion.html" class="rv up" data-r="bye" style="--d:.55s"><rect x="356" y="700" width="236" height="66" rx="33" fill="#5B4BF5"/><text x="474" y="741" font-size="20" text-anchor="middle" class="disp">Ver la presentación</text></a>
+  ${T(600,830,"activexremote.com",{s:22,cls:"mono dimt",rv:"bye",d:.8})}`;
+};
+
+/* ───────── montaje ───────── */
+const S=DATA.scenes;
+S.forEach(s=>{s.est=s.segs.reduce((a,g)=>a+(g.dur||est(g.t))+.35,0)+.8});
+document.getElementById("scenes").innerHTML=S.map((s,i)=>`<g class="scene" id="s${i}">${B[s.kind](s)}</g>`).join("");
+const total=S.reduce((a,s)=>a+s.est,0);
+const mood=s=>s.c==="P"?"p":s.c==="F"?"r":"";
+const segsEl=document.getElementById("segs");
+segsEl.innerHTML=S.map((s,i)=>`<button class="seg ${mood(s)}" type="button" style="flex:${s.est.toFixed(1)}" title="${esc(s.name)}" aria-label="Ir a ${esc(s.name)}" data-i="${i}"><i></i></button>`).join("");
+const fills=[...segsEl.querySelectorAll("i")];
+const idx=document.getElementById("index");
+const groups=[["La clase",s=>!s.c],["Remote Professional",s=>s.c==="P"],["Remote Founder",s=>s.c==="F"]];
+let ih="";let lastG=null;
+S.forEach((s,i)=>{const g=s.c==="P"?"Remote Professional":s.c==="F"?"Remote Founder":(i<3?"Empezamos":"Para acabar");if(g!==lastG){ih+=`<h2>${g}</h2>`;lastG=g}
+  const lab=s.kind==="week"?`S${s.n}`:"·";const txt=s.kind==="week"?s.title:s.name;
+  ih+=`<button type="button" class="${mood(s)}" data-i="${i}"><span>${lab}</span>${esc(txt)}</button>`});
+idx.innerHTML=ih;
+const fmt=x=>`${Math.floor(x/60)}:${String(Math.floor(x%60)).padStart(2,"0")}`;
+document.getElementById("startInfo").textContent=`Unos ${Math.round(total/60)} minutos · ${S.filter(s=>s.kind==="week").length} semanas explicadas · subtítulos incluidos`;
+
+/* ───────── voz ───────── */
+let voiceOn=true,musicOn=true,ccOn=true,esVoice=null;
+const hasTTS="speechSynthesis" in window;
+function pickVoice(){
+  if(!hasTTS)return;const vs=speechSynthesis.getVoices();if(!vs.length)return;
+  const es=vs.filter(v=>/^es[-_]ES/i.test(v.lang));
+  const pref=[/Google español$/i,/Microsoft (Alvaro|Elvira).*Online/i,/Mónica|Monica/i,/Jorge/i,/Marisol/i];
+  esVoice=null;for(const r of pref){esVoice=es.find(v=>r.test(v.name));if(esVoice)break}
+  if(!esVoice)esVoice=es.find(v=>!v.localService)||es[0]||vs.find(v=>/^es/i.test(v.lang))||null;
+  const note=document.getElementById("voicenote");
+  note.textContent=DATA.audio?"":esVoice?`Voz en off: ${esVoice.name}.`:"Este navegador no tiene voz en español: la clase sigue con subtítulos.";
+}
+if(hasTTS){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+let token=0,audioEl=new Audio(),safety=null;
+function speak(g,done){
+  const my=++token;let fired=false;
+  const fin=()=>{if(fired||my!==token)return;fired=true;clearTimeout(safety);done()};
+  const ms=(g.dur||est(g.t))*1000;
+  clearTimeout(safety);
+  if(voiceOn&&DATA.audio&&g.file){audioEl.src="audio/"+g.file;audioEl.onended=fin;audioEl.onerror=()=>setTimeout(fin,ms);audioEl.play().catch(()=>setTimeout(fin,ms));safety=setTimeout(fin,ms+4000);return}
+  if(voiceOn&&hasTTS&&esVoice){
+    const u=new SpeechSynthesisUtterance(g.t);u.voice=esVoice;u.lang=esVoice.lang;u.rate=1.04;u.pitch=1;
+    u.onend=fin;u.onerror=()=>setTimeout(fin,300);
+    speechSynthesis.cancel();speechSynthesis.speak(u);safety=setTimeout(fin,ms*2.2+3000);return}
+  safety=setTimeout(fin,ms);
+}
+function hush(){token++;clearTimeout(safety);try{audioEl.pause()}catch(_){};if(hasTTS)speechSynthesis.cancel()}
+
+/* ───────── música ───────── */
+let ac=null,master=null,verb=null,pads=[];
+const CH=[[146.83,185,220,277.18],[123.47,146.83,185,220],[98,123.47,146.83,185],[110,138.59,164.81,220]];
+const PEN=[293.66,329.63,369.99,440,493.88,587.33,659.25,739.99,880,987.77];
+function initAudio(){if(ac)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;ac=new C();master=ac.createGain();master.gain.value=0;master.connect(ac.destination);
+  const dl=ac.createDelay();dl.delayTime.value=.33;const fb=ac.createGain();fb.gain.value=.3;const wet=ac.createGain();wet.gain.value=.35;dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(master);verb=dl}
+function musicLevel(){if(!ac)return;master.gain.cancelScheduledValues(ac.currentTime);master.gain.linearRampToValueAtTime(musicOn&&playing?.32:0,ac.currentTime+.6)}
+function pad(ci){if(!ac)return;const now=ac.currentTime;
+  pads.forEach(({o,g})=>{g.gain.cancelScheduledValues(now);g.gain.setValueAtTime(g.gain.value,now);g.gain.linearRampToValueAtTime(0,now+1.5);o.stop(now+1.6)});pads=[];
+  const lp=ac.createBiquadFilter();lp.type="lowpass";lp.frequency.value=700;lp.connect(master);
+  CH[ci%4].forEach((f,k)=>[-5,5].forEach(det=>{const o=ac.createOscillator();o.type=k%2?"triangle":"sawtooth";o.frequency.value=f;o.detune.value=det;const g=ac.createGain();g.gain.value=0;g.gain.linearRampToValueAtTime(.016,now+2);o.connect(g);g.connect(lp);o.start(now);pads.push({o,g})}))}
+function pluck(n){if(!ac||!musicOn)return;const now=ac.currentTime,f=PEN[n%PEN.length];const o=ac.createOscillator(),g=ac.createGain();o.type="sine";o.frequency.value=f;
+  g.gain.setValueAtTime(0,now);g.gain.linearRampToValueAtTime(.12,now+.01);g.gain.exponentialRampToValueAtTime(.0008,now+.9);o.connect(g);g.connect(master);g.connect(verb);o.start(now);o.stop(now+1)}
+
+/* ───────── reproductor ───────── */
+const svg=document.getElementById("svg"),stage=document.getElementById("stage"),cc=document.getElementById("cc");
+let sc=0,sg=0,playing=false,segStartAt=0,segElapsed=0,started=false;
+const blobP=document.getElementById("blobP"),blobR=document.getElementById("blobR");
+function enter(i){
+  sc=Math.max(0,Math.min(S.length-1,i));sg=-1;
+  document.querySelectorAll(".scene").forEach(g=>g.classList.remove("on"));
+  const g=document.getElementById("s"+sc);g.querySelectorAll(".rv.in").forEach(e=>e.classList.remove("in"));g.querySelectorAll(".cur").forEach(e=>e.classList.remove("cur"));
+  void g.getBoundingClientRect();g.classList.add("on");
+  const m=mood(S[sc]);blobP.style.opacity=m==="r"?.2:1;blobR.style.opacity=m==="p"?.2:1;
+  if(S[sc].kind==="semana")ringSet(S[sc],-2);
+  pad(sc);
+  idx.querySelectorAll("button").forEach(b=>b.setAttribute("aria-current",String(+b.dataset.i===sc)));
+}
+function reveal(k){
+  const s=S[sc],r=s.segs[k].r,g=document.getElementById("s"+sc);
+  g.querySelectorAll(".cur").forEach(e=>e.classList.remove("cur"));
+  g.querySelectorAll(`[data-r="${r}"]`).forEach(e=>{e.classList.add("in");if(/^item/.test(r))e.classList.add("cur")});
+  if(s.kind==="semana"){const m=r.match(/^s(\d)$/);ringSet(s,m?+m[1]:r==="total"?-1:-2)}
+  if(/^item|hito|p\d|title/.test(r))pluck(k+sc);
+  cc.textContent=s.segs[k].t;
+}
+function runSeg(k){
+  sg=k;reveal(k);segStartAt=performance.now();segElapsed=0;
+  speak(S[sc].segs[k],()=>{if(!playing)return;
+    setTimeout(()=>{if(!playing||sg!==k)return;
+      if(k+1<S[sc].segs.length)runSeg(k+1);
+      else setTimeout(()=>{if(!playing||sg!==k)return;if(sc+1<S.length){enter(sc+1);runSeg(0)}else{setPlaying(false);cc.textContent="Fin de la clase."}},700)},350)});
+}
+function setPlaying(p){
+  playing=p;stage.classList.toggle("paused",!p);p?svg.unpauseAnimations():svg.pauseAnimations();
+  document.getElementById("playIco").innerHTML=p?'<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>':'<path d="M7 4v16l13-8z"/>';
+  document.getElementById("play").setAttribute("aria-label",p?"Pausar":"Reproducir");
+  musicLevel();
+}
+function play(){if(!started)return begin();initAudio();ac?.resume?.();setPlaying(true);if(sg<0)runSeg(0);else runSeg(sg)}
+function pause(){hush();setPlaying(false)}
+function jump(i){hush();enter(i);if(!started){started=true;document.getElementById("start").hidden=true;initAudio();ac?.resume?.()}setPlaying(true);runSeg(0)}
+function begin(){started=true;document.getElementById("start").hidden=true;initAudio();ac?.resume?.();enter(sc);setPlaying(true);runSeg(0)}
+function ui(){
+  const s=S[sc];let inScene=0;for(let k=0;k<Math.max(0,sg);k++)inScene+=(s.segs[k].dur||est(s.segs[k].t))+.35;
+  if(sg>=0){const cur=s.segs[sg].dur||est(s.segs[sg].t);inScene+=Math.min(cur,playing?(performance.now()-segStartAt)/1000:segElapsed)}
+  fills.forEach((f,i)=>f.style.width=i<sc?"100%":i>sc?"0%":(Math.min(1,inScene/s.est)*100).toFixed(1)+"%");
+  const done=S.slice(0,sc).reduce((a,x)=>a+x.est,0)+inScene;
+  document.getElementById("time").textContent=`${fmt(done)} / ${fmt(total)}`;
+  document.getElementById("chap").textContent=`${sc+1}/${S.length} · ${s.name}`;
+  requestAnimationFrame(ui);
+}
+document.getElementById("go").onclick=begin;
+document.getElementById("play").onclick=()=>playing?pause():play();
+document.getElementById("prev").onclick=()=>jump(sg>1?sc:sc-1);
+document.getElementById("next").onclick=()=>jump(sc+1);
+segsEl.addEventListener("click",e=>{const b=e.target.closest(".seg");if(b)jump(+b.dataset.i)});
+idx.addEventListener("click",e=>{const b=e.target.closest("button");if(b){jump(+b.dataset.i);document.getElementById("player").scrollIntoView({behavior:"smooth",block:"start"})}});
+const tog=(id,get,set)=>{const b=document.getElementById(id);b.onclick=()=>{set(!get());b.setAttribute("aria-pressed",String(get()))}};
+tog("voice",()=>voiceOn,v=>{voiceOn=v;if(playing){hush();runSeg(sg)}});
+tog("music",()=>musicOn,v=>{musicOn=v;initAudio();musicLevel()});
+tog("ccb",()=>ccOn,v=>{ccOn=v;cc.hidden=!v});
+document.getElementById("fs").onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.getElementById("player").requestFullscreen?.().catch(()=>{})}catch(_){}};
+svg.addEventListener("click",e=>{const r=e.target.closest("#replay");if(r){jump(0);return}if(e.target.closest("a"))return;if(!started)return;playing?pause():play()});
+document.addEventListener("keydown",e=>{
+  if(e.target.closest&&e.target.closest("button,a")&&(e.key===" "||e.key==="Enter"))return;
+  const k=e.key.toLowerCase();
+  if(k===" "){e.preventDefault();started?(playing?pause():play()):begin()}
+  else if(k==="arrowright")jump(sc+1);else if(k==="arrowleft")jump(sg>1?sc:sc-1);
+  else if(k==="v")document.getElementById("voice").click();else if(k==="m")document.getElementById("music").click();
+  else if(k==="c")document.getElementById("ccb").click();else if(k==="f")document.getElementById("fs").click();
+});
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&playing)pause()});
+enter(0);
+// Primera imagen completa aunque no se haya pulsado nada.
+document.querySelectorAll("#s0 .rv").forEach(e=>e.classList.add("in"));
+cc.textContent="Pulsa «Empezar la clase». Puedes saltar a cualquier semana desde el índice de abajo.";
+setPlaying(false);stage.classList.remove("paused");requestAnimationFrame(ui);
+window.__clase={S,jump,enter,reveal,pause};
+})();
+</script>
+</body>
+</html>

@@ -21,6 +21,9 @@ const PUBLIC_PATHS = [
   "/dry-run",
   // El checkout se hace sin cuenta: la cuenta se crea al confirmarse el pago.
   "/matricula",
+  // Vídeos internos (presentación y clase del temario). La URL lleva un código
+  // que solo conoce el equipo; sin él, la página da 404. Ver app/privado.
+  "/privado",
   "/login",
   "/auth/callback",
   // Recoge la sesión que llega en el fragmento de la URL. Tiene que ser
