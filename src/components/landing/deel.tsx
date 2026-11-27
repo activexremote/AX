@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { DEEL_BADGES, DEEL_URL, deelArea, deelCopy, deelCourseCopy, deelHomeCopy, deelWeek, deelWeeks } from "@/app/bienvenida/deel";
+import { DEEL_BADGES, DEEL_URL, deelCopy, deelCourseCopy, deelWeek, deelWeeks } from "@/app/bienvenida/deel";
 import { courseCopy } from "@/app/cursos/copy";
 import { getLocale } from "@/lib/i18n/server";
 import "@/components/landing/deel.scss";
@@ -9,10 +9,10 @@ import "@/components/landing/deel.scss";
 //  Deel en las landings
 //
 //  Cuatro piezas, todas con la copy de bienvenida/deel.ts:
-//   · DeelSeal: el sello del héroe, badge + «7 módulos acreditados».
+//   · DeelSeal: el sello del héroe, badge + «contenidos acreditados».
 //   · DeelSection: la sección entera, quién es Deel y qué acredita.
 //   · DeelShort: la versión de una tarjeta, para el dry run.
-//   · DeelTag: la etiqueta de un módulo acreditado en los temarios.
+//   · DeelTag: la etiqueta de una semana acreditada en los temarios.
 //
 //  Los badges van como los entrega Deel (ver las reglas en deel.ts): nada de
 //  filtros ni de recolorear, y nunca dentro del mismo icono que nuestra marca.
@@ -51,25 +51,12 @@ export function DeelTag({ label, area, tone = "light" }: { label: string; area?:
 }
 
 /**
- * La sección entera. Con `cursos` (la home), habla del formato 2.0: las
- * semanas acreditadas de cada curso, con su título sacado de cursos/copy.ts.
- * Sin él, el programa antiguo por módulos (landing de campaña).
+ * La sección entera: badges, quién es Deel y, por curso, las semanas con
+ * contenido acreditado (el título de cada semana sale de cursos/copy.ts).
  */
-export async function DeelSection({ cursos = false }: { cursos?: boolean } = {}) {
+export async function DeelSection() {
   const locale = await getLocale();
-  const base = deelCopy[locale];
-  const h = deelHomeCopy[locale];
-  const c = cursos
-    ? {
-        ...base,
-        title: h.title,
-        lead: h.lead,
-        stats: [h.stat, ...base.stats.slice(1)],
-        modulesTitle: h.listTitle,
-        gains: [...base.gains.slice(0, 2), h.gain],
-        note: h.note,
-      }
-    : base;
+  const c = deelCopy[locale];
   const weekGroups = (["remote-professional", "remote-founder"] as const).map((slug) => {
     const course = courseCopy[locale][slug];
     return {
@@ -120,7 +107,7 @@ export async function DeelSection({ cursos = false }: { cursos?: boolean } = {})
 
           <div className="axr-deel__modules">
             <h3>{c.modulesTitle}</h3>
-            {cursos && weekGroups.map((g) => (
+            {weekGroups.map((g) => (
               <div key={g.slug} className="axr-deel__group" data-camino={g.slug}>
                 <span className="axr-deel__group-name">{g.name}</span>
                 <ol>
@@ -132,22 +119,6 @@ export async function DeelSection({ cursos = false }: { cursos?: boolean } = {})
                           {deelCourseCopy[locale].weekLabel} {w.n} · {w.title}
                         </strong>
                         <span className="axr-deel__area">{w.area}</span>
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            ))}
-            {!cursos && c.groups.map((g) => (
-              <div key={g.camino} className="axr-deel__group" data-camino={g.camino}>
-                <span className="axr-deel__group-name">{g.name}</span>
-                <ol>
-                  {g.modules.map((m) => (
-                    <li key={`${g.camino}-${m.n}`}>
-                      <span className="axr-deel__n">{m.n}</span>
-                      <span className="axr-deel__m">
-                        <strong>{m.title}</strong>
-                        <span className="axr-deel__area">{deelArea(g.camino, m.n, locale)}</span>
                       </span>
                     </li>
                   ))}
@@ -179,7 +150,7 @@ export async function DeelSection({ cursos = false }: { cursos?: boolean } = {})
 /**
  * La sección de Deel de una landing de curso (formato 2.0): los badges, el
  * boilerplate de Deel y las semanas de ESE curso que tocan contenido
- * acreditado. La de la home (DeelSection) habla del programa antiguo.
+ * acreditado. La de la home (DeelSection) enseña los dos cursos.
  */
 export async function DeelCourse({ weeks }: { weeks: { n: number; title: string; area: string }[] }) {
   const locale = await getLocale();

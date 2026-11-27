@@ -5,31 +5,32 @@
 //  la calculadora del gestor leen de aquí. (La web y Stripe tienen su propio
 //  catálogo en lib/stripe/catalog.ts.)
 //
-//  A plazos se paga más que al contado (con un curso y con los dos): nunca
+//  A plazos se paga más que al contado: nunca
 //  se anuncia como «sin intereses». Sin imports a propósito: los scripts de los PDF lo leen
 //  con Node.
 // ══════════════════════════════════════════════════════════
 
-/** Céntimos, como Stripe: nada de euros en coma flotante. */
-export const PRECIO_CONTADO = 199_000;
-export const PRECIO_PLAZOS = 219_000;
-/** Los dos cursos (lib/stripe/catalog.ts, «pack-dos»): el mismo descuento por pagar al contado que con uno. */
-export const PRECIO_DOS_CONTADO = 279_000;
-export const PRECIO_DOS_PLAZOS = 299_000;
-export const PLAZOS_POR_DEFECTO = 3;
+// Formato 2.0 (nov. 2026): cada curso tiene su precio. Son los mismos
+// importes que lib/stripe/catalog.ts y que los dosieres en PDF.
+//   Professional (8 semanas):  890 € al contado, o 990 € en 5 cuotas de 198 €.
+//   Founder (13 semanas):    1.490 € al contado, o 1.590 € en 5 cuotas de 318 €.
+// No hay precio de pack: los dos cursos se pagan cada uno a su precio.
+
+/** Cuántas cuotas se ofrecen por defecto, y como máximo. */
+export const PLAZOS_POR_DEFECTO = 5;
 /** Entre cuántos plazos se puede repartir. Fuera de esto, lo decide el equipo. */
 export const PLAZOS_MIN = 2;
-export const PLAZOS_MAX = 6;
-export const PLAZOS_MAX_DOS = 10;
-/** El último día del curso: con un curso, un cargo después de esta fecha se avisa. */
-export const FIN_CURSO = "2027-02-21";
+export const PLAZOS_MAX = 5;
 
-export type Producto = "uno" | "dos";
-export const PRODUCTOS: Record<Producto, { contado: number; plazos: number; maxCuotas: number; avisoFinCurso: boolean }> = {
-  uno: { contado: PRECIO_CONTADO, plazos: PRECIO_PLAZOS, maxCuotas: PLAZOS_MAX, avisoFinCurso: true },
-  // Hasta 10 cuotas: con los dos cursos el pago se alarga más allá del curso
-  // a propósito, así que no se avisa.
-  dos: { contado: PRECIO_DOS_CONTADO, plazos: PRECIO_DOS_PLAZOS, maxCuotas: PLAZOS_MAX_DOS, avisoFinCurso: false },
+export type Producto = "professional" | "founder";
+/**
+ * Céntimos, como Stripe: nada de euros en coma flotante. `fin` es el último
+ * día del curso empezando el 9 de enero de 2027 (8 y 13 semanas): un cargo
+ * después de esa fecha se avisa en la calculadora.
+ */
+export const PRODUCTOS: Record<Producto, { nombre: string; contado: number; plazos: number; maxCuotas: number; fin: string }> = {
+  professional: { nombre: "Remote Professional", contado: 89_000, plazos: 99_000, maxCuotas: PLAZOS_MAX, fin: "2027-03-05" },
+  founder: { nombre: "Remote Founder", contado: 149_000, plazos: 159_000, maxCuotas: PLAZOS_MAX, fin: "2027-04-09" },
 };
 
 /** El día de hoy en Madrid, como «2026-11-11». */
@@ -37,7 +38,7 @@ export const hoyMadrid = (d = new Date()) => new Intl.DateTimeFormat("en-CA", { 
 
 const ENTEROS = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", useGrouping: "always", maximumFractionDigits: 0 });
 const DECIMALES = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", useGrouping: "always", minimumFractionDigits: 2 });
-/** 199000 → «1.990 €»; 73000 → «730 €»; 54750 → «547,50 €». */
+/** 149000 → «1.490 €»; 19800 → «198 €»; 54750 → «547,50 €». */
 export const euros = (centimos: number) => (centimos % 100 ? DECIMALES : ENTEROS).format(centimos / 100);
 
 export type Cuota = { n: number; fecha: string; importe: number };
@@ -53,9 +54,8 @@ function sumarMeses(iso: string, meses: number) {
 
 /**
  * Las cuotas de un pago a plazos: iguales, redondeadas a 5 céntimos y con lo
- * que sobre en la primera, y una al mes desde el primer cargo. Con 2.190 €
- * salen exactas de 2 a 6 plazos (1.095, 730, 547,50, 438 y 365 €); con
- * 2.990 €, en 10 son 299 €.
+ * que sobre en la primera, y una al mes desde el primer cargo. En 5 plazos
+ * salen exactas: 198 € (Professional) y 318 € (Founder).
  */
 export function calcularPlazos(total: number, plazos: number, primerCargo: string): Cuota[] {
   const base = Math.floor(total / plazos / 5) * 5;
@@ -63,7 +63,7 @@ export function calcularPlazos(total: number, plazos: number, primerCargo: strin
   return Array.from({ length: plazos }, (_, i) => ({ n: i + 1, fecha: sumarMeses(primerCargo, i), importe: base + (i === 0 ? resto : 0) }));
 }
 
-/** Para el texto: «3 cuotas de 730 €», o la primera aparte si no salen iguales. */
+/** Para el texto: «5 cuotas de 198 €», o la primera aparte si no salen iguales. */
 export function resumenPlazos(cuotas: Cuota[]) {
   const [primera, ...resto] = cuotas;
   if (resto.every((c) => c.importe === primera.importe)) return `${cuotas.length} cuotas de ${euros(primera.importe)}`;

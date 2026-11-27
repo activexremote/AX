@@ -346,10 +346,10 @@ export const landingCopy = {
       lead: "Cada convocatoria es un grupo reducido: una clase en directo cada semana, campus virtual con vídeos y grabaciones, y tu pod y la comunidad en Slack durante todo el curso.",
       planName: "Remote Professional · Remote Founder",
       // ⚠︎ SIN PRECIOS por ahora, a petición del equipo, y sin botón de
-      // matrícula: la única salida es pedir información. Los importes de
-      // salida (noviembre de 2026) son 1.990 € por curso en pago único,
-      // 2.190 € a plazos (3 × 730 €) y los dos 2.790 € o 2.990 € a plazos (ver
-      // lib/stripe/catalog.ts); si vuelven a la web, van aquí y en el FAQ.
+      // matrícula: la única salida es pedir información. Los importes del
+      // formato 2.0 están en lib/stripe/catalog.ts (Professional 890 € o
+      // 5 × 198 €; Founder 1.490 € o 5 × 318 €); si vuelven a la web, van
+      // aquí y en el FAQ.
       planStart: "Arranca el 9 de enero de 2027 · grupos de 25 plazas",
       features: [
         "8 semanas en Remote Professional, 13 en Remote Founder",

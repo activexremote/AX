@@ -2,14 +2,14 @@
 
 import { useMemo, useState } from "react";
 
-import { calcularPlazos, euros, FIN_CURSO, PLAZOS_MIN, PLAZOS_POR_DEFECTO, PRODUCTOS, resumenPlazos, type Producto } from "@/lib/comercial/precios";
+import { calcularPlazos, euros, PLAZOS_MIN, PLAZOS_POR_DEFECTO, PRODUCTOS, resumenPlazos, type Producto } from "@/lib/comercial/precios";
 import type { ComercialCopy } from "@/lib/i18n/comercial";
 import { rellenar } from "@/lib/i18n/dry-run";
 
 // ══════════════════════════════════════════════════════════
 //  La calculadora de plazos
 //
-//  Un curso o los dos, en pago único o a plazos (cuotas mensuales desde el
+//  Remote Professional o Remote Founder, en pago único o a plazos (cuotas mensuales desde el
 //  día del primer cargo, hasta el máximo de cada producto): el total, cada
 //  cuota con su fecha y el mensaje con las condiciones, para copiarlo y
 //  mandarlo o pegarlo en Zoho.
@@ -19,7 +19,7 @@ const FECHA = new Intl.DateTimeFormat("es-ES", { timeZone: "UTC", day: "numeric"
 const fecha = (iso: string) => FECHA.format(new Date(`${iso}T00:00:00Z`));
 
 export function Calculadora({ hoy, c }: { /** Hoy en Madrid, «2026-11-11»: el primer cargo por defecto. */ hoy: string; c: ComercialCopy }) {
-  const [producto, setProducto] = useState<Producto>("uno");
+  const [producto, setProducto] = useState<Producto>("professional");
   const [modo, setModo] = useState<"contado" | "plazos">("plazos");
   const [n, setN] = useState(PLAZOS_POR_DEFECTO);
   const [nombre, setNombre] = useState("");
@@ -32,8 +32,8 @@ export function Calculadora({ hoy, c }: { /** Hoy en Madrid, «2026-11-11»: el 
   const cuotas = useMemo(() => (modo === "plazos" && valido ? calcularPlazos(p.plazos, cuotasN, primero) : []), [modo, valido, p.plazos, cuotasN, primero]);
   const total = modo === "plazos" ? p.plazos : p.contado;
   const diferencia = p.plazos - p.contado;
-  const tardio = p.avisoFinCurso && Boolean(cuotas.at(-1) && cuotas.at(-1)!.fecha > FIN_CURSO);
-  const curso = producto === "dos" ? "los dos cursos (Remote Professional y Remote Founder)" : "el curso";
+  const tardio = Boolean(cuotas.at(-1) && cuotas.at(-1)!.fecha > p.fin);
+  const curso = `el curso ${p.nombre}`;
 
   const mensaje = useMemo(() => {
     const saludo = nombre.trim() ? `Hola, ${nombre.trim()}.` : "Hola.";
@@ -61,9 +61,9 @@ ${lineas}${cierre}`;
         <div className="axr-calc__field">
           <span>{c.calcProduct}</span>
           <div className="axr-calc__seg" role="radiogroup" aria-label={c.calcProduct}>
-            {(["uno", "dos"] as const).map((k) => (
+            {(["professional", "founder"] as const).map((k) => (
               <button key={k} type="button" role="radio" aria-checked={producto === k} className={producto === k ? "is-on" : undefined} onClick={() => setProducto(k)}>
-                {k === "uno" ? c.calcOne : c.calcTwo}
+                {PRODUCTOS[k].nombre}
                 <small>{euros(PRODUCTOS[k].contado)}</small>
               </button>
             ))}
@@ -118,7 +118,7 @@ ${lineas}${cierre}`;
 
       {tardio ? (
         <p className="axr-calc__warn" role="status">
-          {rellenar(c.calcAfterEnd, { f: fecha(FIN_CURSO) })}
+          {rellenar(c.calcAfterEnd, { f: fecha(p.fin) })}
         </p>
       ) : null}
 
@@ -134,7 +134,7 @@ ${lineas}${cierre}`;
           </thead>
           <tbody>
             {cuotas.map((q) => (
-              <tr key={q.n} className={p.avisoFinCurso && q.fecha > FIN_CURSO ? "is-late" : undefined}>
+              <tr key={q.n} className={q.fecha > p.fin ? "is-late" : undefined}>
                 <td>{q.n}</td>
                 <td>{fecha(q.fecha)}</td>
                 <td>{euros(q.importe)}</td>

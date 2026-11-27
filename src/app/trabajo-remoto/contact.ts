@@ -14,9 +14,9 @@ export const WHATSAPP_NUMBER = "";
 // ══════════════════════════════════════════════════════════
 //  La convocatoria
 //
-//  La misma que la de la portada y las páginas de curso: siete fines de
-//  semana, sábado y domingo, cuatro horas cada día: 14 módulos y 56 h
-//  lectivas. Del 9 de enero al 21 de febrero de 2027.
+//  La misma que la de la portada y las páginas de curso: arranca el 9 de
+//  enero de 2027. Remote Professional dura 8 semanas y Remote Founder 13,
+//  con una clase en directo de 2 h cada semana.
 //
 //  Antes era propia, porque la portada vendía otra convocatoria en diciembre.
 //  Desde que la web usa las fechas de esta landing, la constante vive en

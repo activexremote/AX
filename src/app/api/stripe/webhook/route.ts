@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type Stripe from "stripe";
 
 import { stripe } from "@/lib/stripe/client";
-import { ALL_OFFERS, OFFERS, isOfferKey } from "@/lib/stripe/catalog";
+import { orderOffer } from "@/lib/stripe/catalog";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { registerZohoEnrolment } from "@/lib/zoho/crm";
 import {
@@ -127,7 +127,7 @@ async function onCheckoutCompleted(session: Stripe.Checkout.Session) {
   const nombre = [order.first_name, order.last_name].filter(Boolean).join(" ");
   const fullName = nombre || email;
 
-  const offer = isOfferKey(order.offer) ? ALL_OFFERS[order.offer] : null;
+  const offer = orderOffer(order.offer);
   const isInstalments = offer?.mode === "subscription";
 
   const user = await ensureUser(email, fullName);
@@ -232,10 +232,10 @@ async function onSubscriptionEnded(subscription: Stripe.Subscription) {
   const order = await getOrderBySubscription(subscription.id);
   if (!order) return;
 
-  const offer = isOfferKey(order.offer) ? ALL_OFFERS[order.offer] : null;
+  const offer = orderOffer(order.offer);
   const total = offer?.charges ?? 3;
 
-  // Terminar los tres plazos también cierra la suscripción: eso es el final
+  // Terminar todos los plazos también cierra la suscripción: eso es el final
   // feliz y el acceso se queda. Lo que hay que atender es lo otro — que se
   // cancele antes de haberlos pagado todos, porque si no quien paga un plazo
   // y cancela se queda el curso entero.
@@ -294,7 +294,7 @@ async function onInvoicePaid(invoice: Stripe.Invoice) {
   if (!order) return;
 
   const paid = order.instalments_paid + 1;
-  const offer = isOfferKey(order.offer) ? ALL_OFFERS[order.offer] : null;
+  const offer = orderOffer(order.offer);
   const total = offer?.charges ?? 3;
 
   // Un impago anterior pudo suspender el acceso: al ponerse al día se
@@ -304,7 +304,7 @@ async function onInvoicePaid(invoice: Stripe.Invoice) {
   }
 
   if (paid >= total) {
-    // Checkout no sabe cobrar "tres veces y para": la suscripción se corta
+    // Checkout no sabe cobrar "N veces y para": la suscripción se corta
     // aquí, contando facturas pagadas. Contarlas es más fiable que calcular
     // una fecha de corte, que se desvía en cuanto hay un reintento.
     try {
@@ -344,7 +344,7 @@ async function onInvoiceFailed(invoice: Stripe.Invoice) {
     lines: [
       `*Alumno:* ${order.email}`,
       `*Curso(s):* ${order.courses.join(" + ")}`,
-      `*Plazo:* ${order.instalments_paid + 1} de ${OFFERS["curso-plazos"].charges}`,
+      `*Plazo:* ${order.instalments_paid + 1} de ${orderOffer(order.offer)?.charges ?? "?"}`,
       "Acceso suspendido hasta que se regularice.",
     ],
   });

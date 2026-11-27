@@ -11,10 +11,12 @@ type Copy = (typeof checkoutCopy)["es"];
 export type OfferView = {
   key: string;
   courses: 1 | 2;
+  /** El curso de la oferta: cada curso tiene su precio. */
+  course?: string;
   amount: string;
   total: string;
   charges: number;
-  early: boolean;
+  plan: string;
 };
 
 type Props = {
@@ -29,14 +31,15 @@ export function CheckoutForm({ copy, offers, initialCourse, initialOffer }: Prop
   const uid = useId();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [offer, setOffer] = useState(
-    () => offers.find((o) => o.key === initialOffer)?.key ?? offers[0]?.key ?? "",
+  // Primero el curso y después cómo pagarlo: cada curso tiene su precio, así
+  // que las formas de pago que se enseñan son las del curso elegido.
+  const [course, setCourse] = useState(
+    () => offers.find((o) => o.key === initialOffer)?.course ?? (copy.courses.some((c) => c.key === initialCourse) ? initialCourse! : "remote-professional"),
   );
-  const [course, setCourse] = useState(initialCourse ?? "remote-professional");
-
-  const selected = offers.find((o) => o.key === offer);
-  // El pack ya incluye los dos: preguntar el camino ahí sólo confunde.
-  const needsCourse = selected?.courses === 1;
+  const forCourse = offers.filter((o) => o.course === course);
+  const [plan, setPlan] = useState(() => offers.find((o) => o.key === initialOffer)?.plan ?? "unico");
+  const selected = forCourse.find((o) => o.plan === plan) ?? forCourse[0];
+  const offer = selected?.key ?? "";
 
   function handleSubmit(formData: FormData) {
     setError(null);
@@ -54,9 +57,30 @@ export function CheckoutForm({ copy, offers, initialCourse, initialOffer }: Prop
   return (
     <form className="axr-checkout__form" action={handleSubmit} noValidate>
       <fieldset className="axr-checkout__block">
+        <legend>{copy.courseLabel}</legend>
+        <div className="axr-checkout__courses">
+          {copy.courses.map((c) => (
+            <label key={c.key} className="axr-checkout__course" data-on={c.key === course}>
+              <input
+                type="radio"
+                name="course"
+                value={c.key}
+                checked={c.key === course}
+                onChange={() => setCourse(c.key)}
+              />
+              <span>
+                <strong>{c.name}</strong>
+                <em>{c.sub}</em>
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset className="axr-checkout__block">
         <legend>{copy.offerLabel}</legend>
         <div className="axr-checkout__offers">
-          {offers.map((o) => {
+          {forCourse.map((o) => {
             const c = copy.offers[o.key as keyof Copy["offers"]];
             return (
               <label key={o.key} className="axr-checkout__offer" data-on={o.key === offer}>
@@ -65,12 +89,11 @@ export function CheckoutForm({ copy, offers, initialCourse, initialOffer }: Prop
                   name="offer"
                   value={o.key}
                   checked={o.key === offer}
-                  onChange={() => setOffer(o.key)}
+                  onChange={() => setPlan(o.plan)}
                 />
                 <span className="axr-checkout__offer-body">
                   <span className="axr-checkout__offer-head">
                     <strong>{c.name}</strong>
-                    {o.early && <em className="axr-checkout__badge">{copy.earlyBadge}</em>}
                   </span>
                   <span className="axr-checkout__offer-price">
                     {o.amount}
@@ -84,34 +107,6 @@ export function CheckoutForm({ copy, offers, initialCourse, initialOffer }: Prop
           })}
         </div>
       </fieldset>
-
-      {needsCourse ? (
-        <fieldset className="axr-checkout__block">
-          <legend>
-            {copy.courseLabel}
-            <span>{copy.courseHint}</span>
-          </legend>
-          <div className="axr-checkout__courses">
-            {copy.courses.map((c) => (
-              <label key={c.key} className="axr-checkout__course" data-on={c.key === course}>
-                <input
-                  type="radio"
-                  name="course"
-                  value={c.key}
-                  checked={c.key === course}
-                  onChange={() => setCourse(c.key)}
-                />
-                <span>
-                  <strong>{c.name}</strong>
-                  <em>{c.sub}</em>
-                </span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
-      ) : (
-        <p className="axr-checkout__both">{copy.bothCourses}</p>
-      )}
 
       <fieldset className="axr-checkout__block">
         <legend>{copy.dataLabel}</legend>
