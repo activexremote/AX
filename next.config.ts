@@ -49,6 +49,11 @@ const nextConfig: NextConfig = {
   // «Permitir» sin saberlo.
   async headers() {
     return [
+      // Los vídeos internos no se indexan, ni la página ni sus HTML estáticos.
+      {
+        source: "/privado/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }],
+      },
       {
         source: "/mcp/:path*",
         headers: [
