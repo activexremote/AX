@@ -50,8 +50,8 @@ export type LegalDoc = {
 export type LegalSlug = "aviso-legal" | "privacidad" | "cookies" | "terminos";
 
 /** Fecha de última revisión de los cuatro documentos. */
-const UPDATED_ES = "21 de octubre de 2026";
-const UPDATED_EN = "21 October 2026";
+const UPDATED_ES = "27 de noviembre de 2026";
+const UPDATED_EN = "27 November 2026";
 
 // ══════════════════════════════════════════════════════════
 //  ESPAÑOL
@@ -174,7 +174,7 @@ const AVISO_ES: LegalDoc = {
       blocks: [
         {
           t: "p",
-          text: "El diploma que se entrega al terminar el programa es una certificación privada de empresa: detalla los módulos superados y lleva el sello de las entidades certificadoras en su respectiva área. No es un título oficial, no equivale a un grado universitario ni a ninguna titulación del sistema educativo, y no habilita para el ejercicio de profesiones reguladas.",
+          text: "El diploma que se entrega al terminar el programa es una certificación privada de empresa: detalla los contenidos superados y lleva el sello de las entidades certificadoras en su respectiva área. No es un título oficial, no equivale a un grado universitario ni a ninguna titulación del sistema educativo, y no habilita para el ejercicio de profesiones reguladas.",
         },
       ],
     },
@@ -708,16 +708,16 @@ const TERMINOS_ES: LegalDoc = {
       blocks: [
         {
           t: "p",
-          text: "Cada curso consta de 14 módulos —7 de núcleo común y 7 de especialización según el camino elegido— impartidos en una sesión en directo de 4 horas por semana durante 14 semanas, 56 horas lectivas en total. La matrícula incluye:",
+          text: "Remote Professional dura 8 semanas y Remote Founder, 13. Cada semana trabaja una habilidad e incluye material previo, 6 vídeos de unos 30 minutos, una sesión en directo de 2 horas, un ejercicio sobre el caso del alumno y un test; la dedicación estimada es de unas 12,5 horas semanales. La matrícula incluye:",
         },
         {
           t: "ul",
           items: [
-            "Acceso al campus virtual con las grabaciones de las sesiones y el material narrado.",
-            "Frameworks y plantillas descargables de cada módulo.",
-            "Un ejercicio práctico por módulo, con feedback del equipo docente.",
+            "Acceso al campus virtual con los vídeos, el material y las grabaciones de las sesiones en directo.",
+            "Plantillas y herramientas descargables de cada semana.",
+            "Un ejercicio por semana sobre el caso del alumno, revisado en su grupo de trabajo (pod).",
             "Acompañamiento y seguimiento en el espacio de comunidad durante todo el programa.",
-            "Diploma acreditativo de los módulos superados al completar el programa.",
+            "Diploma de ActiveXRemote al completar el curso.",
           ],
         },
         {
@@ -751,9 +751,10 @@ const TERMINOS_ES: LegalDoc = {
           t: "table",
           head: ["Concepto", "Importe"],
           rows: [
-            ["Un curso (Remote Professional o Remote Founder), en pago único", "1.990 €."],
-            ["Un curso (Remote Professional o Remote Founder), a plazos", "2.190 € en total, en 3 cargos mensuales de 730 €."],
-            ["Los dos cursos (Remote Professional y Remote Founder)", "2.790 € en pago único, o 2.990 € en total a plazos, hasta en 10 cargos mensuales."],
+            ["Remote Professional (8 semanas), en pago único", "890 €."],
+            ["Remote Professional (8 semanas), a plazos", "990 € en total, en 5 cargos mensuales de 198 €."],
+            ["Remote Founder (13 semanas), en pago único", "1.490 €."],
+            ["Remote Founder (13 semanas), a plazos", "1.590 € en total, en 5 cargos mensuales de 318 €."],
           ],
         },
         {
@@ -815,7 +816,7 @@ const TERMINOS_ES: LegalDoc = {
       blocks: [
         {
           t: "p",
-          text: "Al completar el programa se emite un diploma que detalla los módulos superados y lleva el sello de las entidades certificadoras en su respectiva área. Es una certificación privada de empresa: no es un título oficial, no equivale a un grado universitario y no habilita para profesiones reguladas. La emisión requiere haber seguido el programa y entregado los ejercicios en las condiciones que se comunican al inicio.",
+          text: "Al completar el programa se emite un diploma que detalla los contenidos superados y lleva el sello de las entidades certificadoras en su respectiva área. Es una certificación privada de empresa: no es un título oficial, no equivale a un grado universitario y no habilita para profesiones reguladas. La emisión requiere haber seguido el programa y entregado los ejercicios en las condiciones que se comunican al inicio.",
         },
       ],
     },
@@ -995,7 +996,7 @@ const AVISO_EN: LegalDoc = {
       blocks: [
         {
           t: "p",
-          text: "The diploma issued on completion is a private corporate certification: it lists the modules completed and carries the seal of the certifying bodies in their respective areas. It is not an official qualification, is not equivalent to a university degree or to any qualification within the state education system, and does not license you to practise regulated professions.",
+          text: "The diploma issued on completion is a private corporate certification: it lists the content completed and carries the seal of the certifying bodies in their respective areas. It is not an official qualification, is not equivalent to a university degree or to any qualification within the state education system, and does not license you to practise regulated professions.",
         },
       ],
     },
@@ -1519,16 +1520,16 @@ const TERMINOS_EN: LegalDoc = {
       blocks: [
         {
           t: "p",
-          text: "Each course comprises 14 modules — 7 common core and 7 specialisation modules for your chosen path — delivered in one 4-hour live session per week over 14 weeks, 56 teaching hours in total. Enrolment includes:",
+          text: "Remote Professional runs for 8 weeks and Remote Founder for 13. Each week works on one skill and includes prep material, six videos of around 30 minutes, a 2-hour live session, an exercise on the student's own case and a test; the estimated workload is around 12.5 hours a week. Enrolment includes:",
         },
         {
           t: "ul",
           items: [
-            "Access to the virtual campus with session recordings and narrated material.",
-            "Downloadable frameworks and templates for every module.",
-            "One hands-on exercise per module, with feedback from the teaching team.",
+            "Access to the virtual campus with the videos, materials and recordings of the live sessions.",
+            "Downloadable templates and tools for every week.",
+            "One exercise per week on the student's own case, reviewed in their working group (pod).",
             "Support and follow-up in the community space throughout the program.",
-            "A diploma certifying the modules completed at the end of the program.",
+            "An ActiveXRemote diploma on completing the course.",
           ],
         },
         {
@@ -1562,9 +1563,10 @@ const TERMINOS_EN: LegalDoc = {
           t: "table",
           head: ["Item", "Price"],
           rows: [
-            ["One course (Remote Professional or Remote Founder), single payment", "€1,990."],
-            ["One course (Remote Professional or Remote Founder), in instalments", "€2,190 in total, in 3 monthly charges of €730."],
-            ["Both courses (Remote Professional and Remote Founder)", "€2,790 in a single payment, or €2,990 in total in instalments, in up to 10 monthly charges."],
+            ["Remote Professional (8 weeks), single payment", "€890."],
+            ["Remote Professional (8 weeks), in instalments", "€990 in total, in 5 monthly charges of €198."],
+            ["Remote Founder (13 weeks), single payment", "€1,490."],
+            ["Remote Founder (13 weeks), in instalments", "€1,590 in total, in 5 monthly charges of €318."],
           ],
         },
         {
@@ -1626,7 +1628,7 @@ const TERMINOS_EN: LegalDoc = {
       blocks: [
         {
           t: "p",
-          text: "On completing the program a diploma is issued listing the modules completed and carrying the seal of the certifying bodies in their respective areas. It is a private corporate certification: not an official qualification, not equivalent to a university degree, and it does not license you to practise regulated professions. Issuance requires having followed the program and submitted the exercises under the conditions communicated at the start.",
+          text: "On completing the program a diploma is issued listing the content completed and carrying the seal of the certifying bodies in their respective areas. It is a private corporate certification: not an official qualification, not equivalent to a university degree, and it does not license you to practise regulated professions. Issuance requires having followed the program and submitted the exercises under the conditions communicated at the start.",
         },
       ],
     },

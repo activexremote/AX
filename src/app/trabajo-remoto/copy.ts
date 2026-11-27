@@ -9,16 +9,19 @@ import type { Locale } from "@/lib/i18n/config";
 //  con alguien cambiando un titular aquí y rompiéndolo en la portada.
 //
 //  ── Regla de contenido ───────────────────────────────────
-//  Aquí sólo entra lo que ya sostiene la web pública: 14 módulos, 56 h,
-//  grupos de 25. Nada de cifras nuevas.
+//  Aquí sólo entra lo que ya sostiene la web pública (formato 2.0, nov. 2026):
+//  Remote Professional 8 semanas, Remote Founder 13, unas 12,5 h a la semana,
+//  una clase en directo de 2 h entre semana, grupos de 25. Nada de cifras
+//  nuevas. Las semanas de cada curso no se escriben aquí: el temario las lee
+//  de cursos/copy.ts, igual que la portada.
 //
 //  ⚠︎ SIN PRECIOS. Se han retirado a petición del equipo: esta página no
 //  muestra importes por ahora. Si vuelven, van en `hero.facts`, que es de
 //  donde salieron.
 //
-//  ⚠︎ El CALENDARIO es el de toda la web: siete fines de semana, del 9 de
-//  enero al 21 de febrero de 2027, dos clases de cuatro horas por fin de
-//  semana. La fecha vive en bienvenida/cohort.ts.
+//  ⚠︎ El CALENDARIO es el de toda la web: la convocatoria arranca el 9 de
+//  enero de 2027. La fecha vive en bienvenida/cohort.ts. No se da fecha de
+//  fin: depende del curso (8 o 13 semanas).
 //
 //  En particular NO hay rangos salariales ni número de alumnos: la
 //  referencia los lleva, nosotros no tenemos dato verificable y publicarlo
@@ -57,9 +60,9 @@ export type AdCopy = (typeof adCopy)["es"];
 export const adCopy = {
   es: {
     meta: {
-      title: "Formación online en directo para trabajar sin fronteras · 7 fines de semana",
+      title: "Formación online en directo para trabajar sin fronteras · Remote Professional y Remote Founder",
       description:
-        "Curso 100 % online y en directo, en español: consigue un empleo remoto internacional o monta tu negocio global. 14 módulos, 56 h, grupos de 25 plazas.",
+        "Curso 100 % online, en español y con clase en directo cada semana: consigue un empleo remoto internacional en 8 semanas o monta tu negocio global en 13. Grupos de 25 plazas.",
     },
     nav: {
       // La marca sola no dice a qué nos dedicamos. Quien llega desde un
@@ -83,16 +86,14 @@ export const adCopy = {
       // de caber en una pantalla de portátil.
       titleTop: "La Escuela para conseguir tu empleo remoto internacional o crear tu propio negocio global.",
       titleBottom: "Escoge entre el Curso Remote Professional o el Curso Remote Founder.",
-      lead: "Formación online y en directo. Clases de cuatro horas los fines de semana, durante siete semanas, y los recursos que necesitas al terminar cada módulo.",
+      lead: "Formación online con una clase en directo cada semana. 8 semanas para el empleo, 13 para el negocio, y cada semana terminas con algo que ya puedes usar.",
       formTitle: "Recibe el curso completo",
       formLead: "Temario, fechas, horarios y condiciones. Sin compromiso.",
-      // Cuatro datos, no seis: aquí van los de decisión —qué formato, cuándo
-      // empieza, a qué ritmo y cuánto cuesta—. El tamaño del programa lo
-      // cuenta la banda de cifras de justo debajo.
+      // Tres datos de decisión: qué formato, cuándo empieza y a qué ritmo.
       facts: [
-        { k: "Formato", v: "100 % online, en directo" },
-        { k: "Empieza y finaliza", v: "9 ene → 21 feb de 2027" },
-        { k: "Ritmo", v: "2 clases de 4 h por fin de semana" },
+        { k: "Formato", v: "100 % online, clase en directo semanal" },
+        { k: "Empieza", v: "9 de enero de 2027 · 8 o 13 semanas" },
+        { k: "Ritmo", v: "Unas 12,5 h a la semana" },
       ],
       partnersLabel: "Partners con beneficios para alumnos",
       partnersNote: "Acuerdos con las plataformas que sostienen el trabajo remoto internacional.",
@@ -121,11 +122,11 @@ export const adCopy = {
     live: {
       badge: "En directo",
       title: "Clases en directo de fundadores de empresas y perfiles clave que trabajan en remoto.",
-      body: "Cada módulo es una clase de cuatro horas en directo con alumnos en remoto: realizarás casos reales y prácticos, aprenderás las herramientas que utilizan las empresas más innovadoras que trabajan en remoto.",
+      body: "Cada semana, una clase de dos horas en directo con tu grupo: la teoría ya la has visto en vídeo, así que la clase es para practicar con casos reales y las herramientas que usan las empresas que trabajan en remoto.",
       points: [
-        { k: "En vivo, no grabado", v: "Tendrás una formación directa y personalizada junto a tu grupo de alumnos." },
-        { k: "Desde donde estés", v: "Solo hace falta conexión: da igual el país o el huso. Las clases son en fin de semana." },
-        { k: "Y queda grabada", v: "En el campus, sin caducidad, por si te pierdes una." },
+        { k: "En vivo, con tu grupo", v: "Una clase de 2 h a la semana, un día fijo entre semana, para practicar con el resto del grupo." },
+        { k: "Desde donde estés", v: "Solo hace falta conexión: da igual el país o el huso. Los vídeos van a tu ritmo." },
+        { k: "Y queda grabada", v: "En el campus, por si un día no puedes ir." },
       ],
       videoLabel: "Fragmento de una clase en directo del curso",
     },
@@ -142,7 +143,7 @@ export const adCopy = {
       {
         icon: "group" as const,
         title: "Metodología práctica con profesionales en activo",
-        body: "Clases en directo con quien trabaja así todos los días. Grupos de 25, un entregable por módulo y corrección con tu nombre encima.",
+        body: "Clases en directo con quien trabaja así todos los días. Grupos de 25, un ejercicio sobre tu caso cada semana y un pod de 4–5 personas que lo revisa contigo.",
       },
       {
         icon: "globe" as const,
@@ -152,45 +153,45 @@ export const adCopy = {
       {
         icon: "stack" as const,
         title: "Herramientas y plataformas estratégicas",
-        body: "Notion, Slack, Wise, Deel, Zapier y modelos de IA, abiertos en pantalla durante la clase e integrados en los ejercicios de cada módulo.",
+        body: "Notion, Slack, Wise, Deel, Zapier y modelos de IA, abiertos en pantalla y con una herramienta de IA nueva cada semana, integrada en el ejercicio.",
       },
     ],
 
     // ── LA ESTRUCTURA ────────────────────────────────────
     // Dueña de "dos caminos" y de las cuatro salidas. El cronograma de abajo
-    // no vuelve a contar los módulos: cuenta lo que te pasa a ti.
+    // no vuelve a contar las semanas: cuenta lo que te pasa a ti.
     outcomes: {
-      title: "Un curso compuesto por una base común del trabajo remoto y la especialización que elijas: Remote Founder o Remote Professional",
-      coreTag: "Módulos 01 – 07",
-      coreName: "7 módulos de núcleo",
-      coreNote: "Los mismos para todos",
+      title: "Una escuela, dos cursos con su propio recorrido: Remote Professional o Remote Founder",
+      coreTag: "Mismo método",
+      coreName: "Una semana, una habilidad",
+      coreNote: "Vídeos, clase en directo y ejercicio sobre tu caso",
       takeLabel: "Sales con",
       paths: [
         {
-          tag: "Módulos 08 – 14",
+          tag: "8 semanas",
           name: "Remote Professional",
           items: [
             {
               role: "Para conseguir empleo fuera",
-              take: "CV, LinkedIn y portfolio listos para recruiters internacionales",
+              take: "CV y LinkedIn que atraen reclutadores, entrevista ensayada y oferta negociada",
             },
             {
-              role: "Para facturar como contractor",
-              take: "Contrato, facturación internacional y fiscalidad resueltas",
+              role: "Para trabajar desde cualquier país",
+              take: "Contrato y fiscalidad bajo control, y la IA como ayudante en tu trabajo",
             },
           ],
         },
         {
-          tag: "Módulos 08 – 14",
+          tag: "13 semanas",
           name: "Remote Founder",
           items: [
             {
               role: "Para montar tu negocio",
-              take: "Una oferta validada y un sistema de captación B2B en marcha",
+              take: "Una oferta validada con compradores reales y clientes B2B internacionales",
             },
             {
               role: "Para dejar de vender horas",
-              take: "Servicio empaquetado, procesos escritos y tareas automatizadas",
+              take: "Entrega, back office automatizado y tu empresa constituida en regla",
             },
           ],
         },
@@ -199,7 +200,7 @@ export const adCopy = {
 
     // ── QUÉ TE PASA A TI ─────────────────────────────────
     // Empieza en el formulario a propósito: la duda de quien está leyendo un
-    // anuncio no es «cuántos módulos hay», es «qué pasa si dejo mis datos».
+    // anuncio no es «cuántas semanas hay», es «qué pasa si dejo mis datos».
     timeline: {
       title: "Qué pasa desde que dejas tus datos",
       items: [
@@ -211,27 +212,27 @@ export const adCopy = {
         },
         {
           n: "01",
-          when: "Antes de empezar",
+          when: "Antes del 9 de enero",
           title: "Reservas plaza",
-          desc: "Pago único o tres plazos. Entras al campus y al Slack del grupo.",
+          desc: "Eliges curso y reservas tu plaza. Entras al campus y al Slack del grupo.",
         },
         {
           n: "02",
-          when: "Findes 1 – 4",
-          title: "Montas la base",
-          desc: "Fiscalidad, herramientas, IA, legal y hábitos de trabajo remoto.",
+          when: "Semana 0",
+          title: "Conoces a tu pod",
+          desc: "Te presentas al grupo y conoces a tu pod de 4–5 personas antes de la primera clase.",
         },
         {
           n: "03",
-          when: "Findes 4 – 7",
-          title: "Construyes lo tuyo",
-          desc: "Con el núcleo hecho ya sabes qué camino te encaja. Aquí se produce.",
+          when: "Cada semana",
+          title: "Una habilidad nueva",
+          desc: "Vídeos a tu ritmo, clase en directo de 2 h y un ejercicio sobre tu caso real.",
         },
         {
           n: "04",
-          when: "Al terminar",
-          title: "Te lo llevas todo",
-          desc: "Diploma, grabaciones, plantillas y comunidad. Sin caducidad.",
+          when: "Semana 8 o 13",
+          title: "Terminas con el trabajo hecho",
+          desc: "Graduación en Professional, Demo Day en Founder, y el diploma de ActiveXRemote.",
         },
       ],
     },
@@ -243,60 +244,24 @@ export const adCopy = {
     // ── EL TEMARIO Y LAS DUDAS ───────────────────────────
     program: {
       eyebrow: "El temario",
-      title: "Catorce módulos en siete fines de semana",
-      lead: "Dos módulos por fin de semana: siete de núcleo común y siete de la especialización que elijas. Cada uno abre con el marco, sigue con la herramienta en pantalla y termina con un ejercicio aplicado a tu caso.",
-      // Cinco dudas que no contesta ninguna otra sección. El formato, el
-      // ritmo y el precio ya están en el héroe y no vuelven aquí.
+      title: "Dos cursos, semana a semana",
+      lead: "Cada semana trabaja una habilidad: material previo y 6 vídeos de 30 minutos, una clase en directo de 2 horas para practicar, un ejercicio sobre tu caso y un test. Remote Professional son 8 semanas; Remote Founder, 13.",
+      // Cinco dudas que no contesta ninguna otra sección. El formato y el
+      // ritmo ya están en el héroe y no vuelven aquí.
       howLabel: "Las dudas de siempre",
       how: [
-        { icon: "check" as const, k: "Nivel previo", v: "Ninguno: el núcleo empieza desde cero" },
+        { icon: "check" as const, k: "Nivel previo", v: "Ninguno: empiezas desde tu punto de partida" },
         { icon: "globe" as const, k: "Idioma", v: "Clases en español, materiales en ES y EN" },
-        { icon: "replay" as const, k: "Al terminar", v: "Diploma con los módulos superados y las horas" },
-        { icon: "chat" as const, k: "Entre clase y clase", v: "Feedback del equipo y grupo en Slack" },
-        { icon: "clock" as const, k: "Dedicación real", v: "8 h de clase el finde y 2 – 3 h de ejercicio" },
+        { icon: "replay" as const, k: "Al terminar", v: "Diploma de ActiveXRemote" },
+        { icon: "chat" as const, k: "Entre clase y clase", v: "Tu pod y el grupo en Slack" },
+        { icon: "clock" as const, k: "Dedicación real", v: "Unas 12,5 h a la semana, compatibles con tu trabajo" },
       ],
       toolsLabel: "Se abren en clase, no en un anexo",
       cta: "Recibe el temario completo",
-      groups: [
-        {
-          tag: "Módulos 01 – 07 · Todos",
-          name: "Núcleo común · 7 módulos",
-          modules: [
-            { n: "01", title: "Mindset remoto y el nuevo mercado global" },
-            { n: "02", title: "Geoposicionamiento y optimización fiscal" },
-            { n: "03", title: "Blueprint de reubicación internacional" },
-            { n: "04", title: "Stack tecnológico de alto rendimiento" },
-            { n: "05", title: "IA para productividad remota" },
-            { n: "06", title: "Life Ops: energía y anti-burnout" },
-            { n: "07", title: "Legal y compliance transfronterizo" },
-          ],
-        },
-        {
-          tag: "Módulos 08 – 14 · Camino 01",
-          name: "Remote Professional · 7 módulos",
-          modules: [
-            { n: "08", title: "Cómo encontrar los empleos remotos que no se publican" },
-            { n: "09", title: "Candidaturas con IA y filtros ATS" },
-            { n: "10", title: "Marca personal y portfolio internacional" },
-            { n: "11", title: "Entrevista en vídeo y asíncrona" },
-            { n: "12", title: "Negociación salarial y compensación global" },
-            { n: "13", title: "Tus primeros 90 días en un equipo distribuido" },
-            { n: "14", title: "Roles senior, advisory y fraccionales" },
-          ],
-        },
-        {
-          tag: "Módulos 08 – 14 · Camino 02",
-          name: "Remote Founder · 7 módulos",
-          modules: [
-            { n: "08", title: "Diseño y validación del negocio remoto" },
-            { n: "09", title: "Operaciones y marketing con IA" },
-            { n: "10", title: "Captación de clientes B2B internacionales" },
-            { n: "11", title: "Ofertas premium y landings que convierten" },
-            { n: "12", title: "Procesos, SOPs y entrega al cliente" },
-            { n: "13", title: "Automatización, delegación y escala" },
-            { n: "14", title: "Estructura corporativa borderless" },
-          ],
-        },
+      // Las semanas salen de cursos/copy.ts; aquí sólo los rótulos.
+      tracks: [
+        { slug: "remote-professional" as const, tag: "Curso 01 · 8 semanas", name: "Remote Professional" },
+        { slug: "remote-founder" as const, tag: "Curso 02 · 13 semanas", name: "Remote Founder" },
       ],
     },
 
@@ -428,15 +393,15 @@ export const adCopy = {
     // tarjetas aceptadas y quién cobra), así que su texto sale de
     // bienvenida/copy.ts y aquí sólo queda lo propio de esta página.
     footer: {
-      note: "Cada marca es propiedad de su compañía: los partners aportan beneficios para nuestros alumnos y Deel acredita siete módulos del programa, pero ninguno emite el diploma. El diploma lo emite ActiveXRemote detallando los módulos superados: es una certificación privada de empresa, no un título oficial ni un grado universitario.",
+      note: "Cada marca es propiedad de su compañía: los partners aportan beneficios para nuestros alumnos y Deel acredita contenidos de los dos cursos, pero ninguno emite el diploma. El diploma lo emite ActiveXRemote: es una certificación privada de empresa, no un título oficial ni un grado universitario.",
     },
   },
 
   en: {
     meta: {
-      title: "Live online training to work without borders · 7 weekends",
+      title: "Live online training to work without borders · Remote Professional and Remote Founder",
       description:
-        "A 100% online, live course in Spanish: land an international remote job or build your own global business. 14 modules, 56 hours, cohorts of 25.",
+        "A 100% online course in Spanish with a live class every week: land an international remote job in 8 weeks or build your own global business in 13. Cohorts of 25.",
     },
     nav: {
       school: "Remote work school",
@@ -449,13 +414,13 @@ export const adCopy = {
       badge: "Cohort of 9 January 2027 · 25 seats",
       titleTop: "The school for landing an international remote job or building your own global business.",
       titleBottom: "Choose between the Remote Professional course and the Remote Founder course.",
-      lead: "Live online training, taught in Spanish. Four-hour classes at weekends, over seven weeks, and the resources you need at the end of every module.",
+      lead: "Online training in Spanish with a live class every week. 8 weeks for the job, 13 for the business, and every week ends with something you can already use.",
       formTitle: "Get the full course",
       formLead: "Syllabus, dates, schedule and terms. No strings attached.",
       facts: [
-        { k: "Format", v: "100% online, live" },
-        { k: "Runs", v: "9 Jan → 21 Feb 2027" },
-        { k: "Pace", v: "Two 4-hour classes per weekend" },
+        { k: "Format", v: "100% online, weekly live class" },
+        { k: "Starts", v: "9 January 2027 · 8 or 13 weeks" },
+        { k: "Pace", v: "Around 12.5 h a week" },
       ],
       partnersLabel: "Partners with student benefits",
       partnersNote: "Agreements with the platforms that hold up international remote work.",
@@ -478,11 +443,11 @@ export const adCopy = {
     live: {
       badge: "Live",
       title: "Live classes from company founders and key people who work remotely.",
-      body: "Every module is a four-hour live class with students joining remotely: you'll work through real, hands-on cases and learn the tools that the most innovative remote companies use.",
+      body: "Every week, a two-hour live class with your group: you've already seen the theory on video, so class is for practising real cases with the tools remote companies use.",
       points: [
-        { k: "Live, not recorded", v: "Direct, personal training alongside your group of students." },
-        { k: "From wherever you are", v: "All you need is a connection: country and time zone don't matter. Classes run at weekends." },
-        { k: "And it is recorded", v: "It stays in the campus, with no expiry, in case you miss one." },
+        { k: "Live, with your group", v: "One 2-hour class a week, on a fixed weekday, to practise with the rest of the group." },
+        { k: "From wherever you are", v: "All you need is a connection: country and time zone don't matter. Videos go at your own pace." },
+        { k: "And it is recorded", v: "It stays in the campus in case you can't make it one day." },
       ],
       videoLabel: "A clip from a live class of the course",
     },
@@ -496,7 +461,7 @@ export const adCopy = {
       {
         icon: "group" as const,
         title: "Hands-on method, taught by working professionals",
-        body: "Live classes with people who work this way every day. Groups of 25, one deliverable per module and marking with your name on it.",
+        body: "Live classes with people who work this way every day. Groups of 25, an exercise on your own case every week and a pod of 4–5 people who review it with you.",
       },
       {
         icon: "globe" as const,
@@ -506,42 +471,42 @@ export const adCopy = {
       {
         icon: "stack" as const,
         title: "Strategic tools and platforms",
-        body: "Notion, Slack, Wise, Deel, Zapier and AI models, open on screen during class and built into every module's exercises.",
+        body: "Notion, Slack, Wise, Deel, Zapier and AI models, open on screen, with a new AI tool every week built into the exercise.",
       },
     ],
 
     outcomes: {
-      title: "A course built on a shared base in remote work, plus the specialisation you choose: Remote Founder or Remote Professional",
-      coreTag: "Modules 01 – 07",
-      coreName: "7 core modules",
-      coreNote: "The same for everyone",
+      title: "One school, two courses with their own route: Remote Professional or Remote Founder",
+      coreTag: "Same method",
+      coreName: "One week, one skill",
+      coreNote: "Videos, a live class and an exercise on your case",
       takeLabel: "You leave with",
       paths: [
         {
-          tag: "Modules 08 – 14",
+          tag: "8 weeks",
           name: "Remote Professional",
           items: [
             {
               role: "To land a job abroad",
-              take: "CV, LinkedIn and portfolio ready for international recruiters",
+              take: "A CV and LinkedIn that attract recruiters, a rehearsed interview and a negotiated offer",
             },
             {
-              role: "To invoice as a contractor",
-              take: "Contract, international invoicing and tax position sorted",
+              role: "To work from any country",
+              take: "Contract and tax under control, and AI as your assistant at work",
             },
           ],
         },
         {
-          tag: "Modules 08 – 14",
+          tag: "13 weeks",
           name: "Remote Founder",
           items: [
             {
               role: "To build your business",
-              take: "A validated offer and a B2B acquisition system running",
+              take: "An offer validated with real buyers and international B2B clients",
             },
             {
               role: "To stop selling hours",
-              take: "A packaged service, written processes and automated tasks",
+              take: "Delivery, an automated back office and your company incorporated and compliant",
             },
           ],
         },
@@ -559,27 +524,27 @@ export const adCopy = {
         },
         {
           n: "01",
-          when: "Before it starts",
-          title: "You book a seat",
-          desc: "One payment or three instalments. You get into the campus and the group's Slack.",
+          when: "Before 9 January",
+          title: "You book a place",
+          desc: "You pick your course and book your place. You get into the campus and the group's Slack.",
         },
         {
           n: "02",
-          when: "Weekends 1 – 4",
-          title: "You build the base",
-          desc: "Tax, tools, AI, legal and remote working habits.",
+          when: "Week 0",
+          title: "You meet your pod",
+          desc: "You introduce yourself to the group and meet your pod of 4–5 people before the first class.",
         },
         {
           n: "03",
-          when: "Weekends 4 – 7",
-          title: "You build your own thing",
-          desc: "With the core done you know which path fits. This is where you produce.",
+          when: "Every week",
+          title: "A new skill",
+          desc: "Videos at your own pace, a 2-hour live class and an exercise on your real case.",
         },
         {
           n: "04",
-          when: "When it ends",
-          title: "You keep everything",
-          desc: "Diploma, recordings, templates and community. No expiry.",
+          when: "Week 8 or 13",
+          title: "You finish with the work done",
+          desc: "Graduation in Professional, Demo Day in Founder, and the ActiveXRemote diploma.",
         },
       ],
     },
@@ -590,58 +555,21 @@ export const adCopy = {
 
     program: {
       eyebrow: "The syllabus",
-      title: "Fourteen modules over seven weekends",
-      lead: "Two modules per weekend: seven of common core and seven of the specialisation you pick. Each opens with the framework, moves to the tool on screen and ends with an exercise applied to your own case.",
+      title: "Two courses, week by week",
+      lead: "Each week works on one skill: prep material and six 30-minute videos, a 2-hour live class to practise, an exercise on your case and a test. Remote Professional runs for 8 weeks; Remote Founder for 13.",
       howLabel: "The usual questions",
       how: [
-        { icon: "check" as const, k: "Prior level", v: "None: the core starts from zero" },
+        { icon: "check" as const, k: "Prior level", v: "None: you start from where you are" },
         { icon: "globe" as const, k: "Language", v: "Classes in Spanish, materials in ES and EN" },
-        { icon: "replay" as const, k: "When it ends", v: "A diploma listing the modules passed and the hours" },
-        { icon: "chat" as const, k: "Between classes", v: "Team feedback and your group on Slack" },
-        { icon: "clock" as const, k: "Real workload", v: "8 h of class per weekend and 2 – 3 h of exercise" },
+        { icon: "replay" as const, k: "When it ends", v: "The ActiveXRemote diploma" },
+        { icon: "chat" as const, k: "Between classes", v: "Your pod and the group on Slack" },
+        { icon: "clock" as const, k: "Real workload", v: "Around 12.5 h a week, alongside your job" },
       ],
       toolsLabel: "Opened in class, not in an appendix",
       cta: "Get the full syllabus",
-      groups: [
-        {
-          tag: "Modules 01 – 07 · Everyone",
-          name: "Common core · 7 modules",
-          modules: [
-            { n: "01", title: "Remote mindset and the new global market" },
-            { n: "02", title: "Geopositioning and tax optimisation" },
-            { n: "03", title: "International relocation blueprint" },
-            { n: "04", title: "High-performance tech stack" },
-            { n: "05", title: "AI for remote productivity" },
-            { n: "06", title: "Life Ops: energy and anti-burnout" },
-            { n: "07", title: "Cross-border legal and compliance" },
-          ],
-        },
-        {
-          tag: "Modules 08 – 14 · Path 01",
-          name: "Remote Professional · 7 modules",
-          modules: [
-            { n: "08", title: "Finding the remote jobs that never get posted" },
-            { n: "09", title: "AI-driven applications and ATS filters" },
-            { n: "10", title: "International personal branding and portfolio" },
-            { n: "11", title: "Video and asynchronous interviews" },
-            { n: "12", title: "Salary negotiation and global compensation" },
-            { n: "13", title: "Your first 90 days in a distributed team" },
-            { n: "14", title: "Senior, advisory and fractional roles" },
-          ],
-        },
-        {
-          tag: "Modules 08 – 14 · Path 02",
-          name: "Remote Founder · 7 modules",
-          modules: [
-            { n: "08", title: "Remote business design and validation" },
-            { n: "09", title: "AI-driven operations and marketing" },
-            { n: "10", title: "International B2B client acquisition" },
-            { n: "11", title: "Premium offers and landing pages that convert" },
-            { n: "12", title: "Processes, SOPs and client delivery" },
-            { n: "13", title: "Automation, delegation and scale" },
-            { n: "14", title: "Borderless corporate structure" },
-          ],
-        },
+      tracks: [
+        { slug: "remote-professional" as const, tag: "Course 01 · 8 weeks", name: "Remote Professional" },
+        { slug: "remote-founder" as const, tag: "Course 02 · 13 weeks", name: "Remote Founder" },
       ],
     },
 
@@ -735,7 +663,7 @@ export const adCopy = {
     },
 
     footer: {
-      note: "Each brand belongs to its own company: partners provide benefits for our students and Deel accredits seven modules of the programme, but none of them issues the diploma. The diploma is issued by ActiveXRemote listing the modules passed: it is a private company certification, not an official qualification or a university degree.",
+      note: "Each brand belongs to its own company: partners provide benefits for our students and Deel accredits content in both courses, but none of them issues the diploma. The diploma is issued by ActiveXRemote: it is a private company certification, not an official qualification or a university degree.",
     },
   },
 } satisfies Record<Locale, unknown>;

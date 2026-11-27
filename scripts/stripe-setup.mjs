@@ -43,7 +43,7 @@ if (WRITE && !key.startsWith("sk_test_")) {
 
 const stripe = new Stripe(key);
 
-// ⚠︎ Los cuatro precios del programa largo se repiten aquí a mano y tienen que
+// ⚠︎ Los cuatro precios de los cursos (formato 2.0) se repiten aquí a mano y tienen que
 // coincidir con lib/stripe/catalog.ts: si cambia un importe, este script crea
 // un price_… nuevo (no reutiliza el viejo) y hay que pegar el id nuevo en las
 // variables de entorno, en local y en Vercel. Los relámpago NO: se leen del registro real (ver más abajo),
@@ -51,38 +51,38 @@ const stripe = new Stripe(key);
 // precio es cómo se acaba cobrando 75 € por algo anunciado a 65.
 const CATALOG = [
   {
-    offer: "curso-unico",
-    env: "STRIPE_PRICE_CURSO_UNICO",
-    product: "Curso ActiveXRemote · un camino",
-    description: "14 módulos en directo: 7 de núcleo común y 7 del camino elegido.",
-    unitAmount: 199000,
+    offer: "professional-unico",
+    env: "STRIPE_PRICE_PROFESSIONAL_UNICO",
+    product: "Remote Professional · 8 semanas",
+    description: "Curso online de 8 semanas: clase en directo semanal, vídeos, ejercicios sobre tu caso y diploma de ActiveXRemote.",
+    unitAmount: 89000,
     recurring: null,
   },
   {
-    offer: "curso-anticipada",
-    env: "STRIPE_PRICE_CURSO_ANTICIPADA",
-    product: "Curso ActiveXRemote · un camino",
-    description: "14 módulos en directo: 7 de núcleo común y 7 del camino elegido.",
-    unitAmount: 210000,
-    recurring: null,
-    nickname: "Matrícula anticipada",
-  },
-  {
-    offer: "curso-plazos",
-    env: "STRIPE_PRICE_CURSO_PLAZOS",
-    product: "Curso ActiveXRemote · un camino",
-    description: "14 módulos en directo: 7 de núcleo común y 7 del camino elegido.",
-    unitAmount: 73000,
+    offer: "professional-plazos",
+    env: "STRIPE_PRICE_PROFESSIONAL_PLAZOS",
+    product: "Remote Professional · 8 semanas",
+    description: "Curso online de 8 semanas: clase en directo semanal, vídeos, ejercicios sobre tu caso y diploma de ActiveXRemote.",
+    unitAmount: 19800,
     recurring: { interval: "month" },
-    nickname: "3 plazos de 730 €",
+    nickname: "5 plazos de 198 €",
   },
   {
-    offer: "pack-dos",
-    env: "STRIPE_PRICE_PACK_DOS",
-    product: "Curso ActiveXRemote · los dos caminos",
-    description: "Los 21 módulos: el núcleo común y los dos caminos completos.",
-    unitAmount: 279000,
+    offer: "founder-unico",
+    env: "STRIPE_PRICE_FOUNDER_UNICO",
+    product: "Remote Founder · 13 semanas",
+    description: "Curso online de 13 semanas: clase en directo semanal, vídeos, clínicas, ejercicios sobre tu negocio, Demo Day y diploma de ActiveXRemote.",
+    unitAmount: 149000,
     recurring: null,
+  },
+  {
+    offer: "founder-plazos",
+    env: "STRIPE_PRICE_FOUNDER_PLAZOS",
+    product: "Remote Founder · 13 semanas",
+    description: "Curso online de 13 semanas: clase en directo semanal, vídeos, clínicas, ejercicios sobre tu negocio, Demo Day y diploma de ActiveXRemote.",
+    unitAmount: 31800,
+    recurring: { interval: "month" },
+    nickname: "5 plazos de 318 €",
   },
 ];
 
@@ -123,7 +123,7 @@ for (const item of CATALOG) {
   if (!WRITE) {
     console.log(
       `+ ${item.offer.padEnd(18)} se crearía  ${(item.unitAmount / 100).toFixed(2)} €` +
-      (item.recurring ? " / mes ×3" : ""),
+      (item.recurring ? " / mes ×5" : ""),
     );
     lines.push(`${item.env}=price_…`);
     continue;

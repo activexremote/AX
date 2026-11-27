@@ -9,9 +9,11 @@
 //  Marcas: {nombre}, {comercial} y {curso}.
 // ══════════════════════════════════════════════════════════
 
-import { calcularPlazos, euros, PLAZOS_POR_DEFECTO, PRECIO_CONTADO, PRECIO_PLAZOS, resumenPlazos } from "./precios.ts";
+import { calcularPlazos, euros, PLAZOS_POR_DEFECTO, PRODUCTOS, resumenPlazos } from "./precios.ts";
 
-const PAGO = `pago único de ${euros(PRECIO_CONTADO)}, o a plazos: ${euros(PRECIO_PLAZOS)} en total (${resumenPlazos(calcularPlazos(PRECIO_PLAZOS, PLAZOS_POR_DEFECTO, "2027-01-01"))})`;
+const pago = (p: (typeof PRODUCTOS)[keyof typeof PRODUCTOS]) =>
+  `${p.nombre}, pago único de ${euros(p.contado)} o a plazos, ${euros(p.plazos)} en total (${resumenPlazos(calcularPlazos(p.plazos, PLAZOS_POR_DEFECTO, "2027-01-01"))})`;
+const PAGO = `${pago(PRODUCTOS.professional)}; ${pago(PRODUCTOS.founder)}`;
 
 export type Plantilla = {
   id: string;

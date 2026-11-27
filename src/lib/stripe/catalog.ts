@@ -25,21 +25,30 @@ export function isCourseKey(v: unknown): v is CourseKey {
 /**
  * Clave de oferta.
  *
- * Las cuatro primeras son el programa largo. `relampago-…` es un curso
- * relámpago suelto, y hay una por curso porque cada uno puede tener su precio
- * y necesita su propio price_… en Stripe.
+ * Formato 2.0 (nov. 2026): cada curso tiene su precio, así que la oferta lleva
+ * el curso dentro (`professional-…`, `founder-…`) y ya no hay que leerlo del
+ * formulario. `relampago-…` es un curso relámpago suelto.
+ *
+ * Las cuatro claves antiguas (`curso-…`, `pack-dos`) ya no se venden: siguen
+ * aquí sólo para leer los pedidos que se hicieron con ellas (el webhook
+ * necesita saber cuántos plazos tenía una suscripción viva).
  */
 export type OfferKey =
-  | "curso-unico"
-  | "curso-plazos"
-  | "curso-anticipada"
-  | "pack-dos"
+  | "professional-unico"
+  | "professional-plazos"
+  | "founder-unico"
+  | "founder-plazos"
+  | LegacyOfferKey
   | `relampago-${string}`;
+
+type LegacyOfferKey = "curso-unico" | "curso-plazos" | "curso-anticipada" | "pack-dos";
 
 export type Offer = {
   key: OfferKey;
-  /** Cuántos cursos entran. 1 = el alumno elige cuál; 2 = los dos. */
+  /** Cuántos cursos entran. */
   courses: 1 | 2;
+  /** El curso que se compra, cuando la oferta es de un curso concreto. */
+  course?: CourseKey;
   /** "payment" cobra una vez; "subscription" son los plazos. */
   mode: "payment" | "subscription";
   plan: "unico" | "plazos" | "anticipada";
@@ -54,60 +63,74 @@ export type Offer = {
   until?: string;
 };
 
-/** Matrícula anticipada: hasta el 31 de octubre, como anuncia el FAQ. */
-export const EARLY_BIRD_UNTIL = "2026-10-31T23:59:59+01:00";
+/** Cuántas cuotas mensuales tienen los plazos de los dos cursos. */
+export const INSTALMENTS = 5;
 
-export const OFFERS: Record<OfferKey, Offer> = {
-  "curso-unico": {
-    key: "curso-unico",
+// Precios del formato 2.0 (nov. 2026), los mismos que los dosieres en PDF:
+//   Professional: 890 € al contado, o 5 × 198 € = 990 €.
+//   Founder:    1.490 € al contado, o 5 × 318 € = 1.590 €.
+// A plazos se paga más que al contado: en ningún sitio se anuncian como
+// «sin intereses».
+export const OFFERS: Record<"professional-unico" | "professional-plazos" | "founder-unico" | "founder-plazos", Offer> = {
+  "professional-unico": {
+    key: "professional-unico",
     courses: 1,
+    course: "remote-professional",
     mode: "payment",
     plan: "unico",
-    // Precio de salida (noviembre de 2026). Era 2.400 €.
-    unitAmount: 199000,
+    unitAmount: 89000,
     charges: 1,
     currency: "eur",
-    priceEnv: "STRIPE_PRICE_CURSO_UNICO",
+    priceEnv: "STRIPE_PRICE_PROFESSIONAL_UNICO",
   },
-  "curso-anticipada": {
-    key: "curso-anticipada",
+  "professional-plazos": {
+    key: "professional-plazos",
     courses: 1,
-    mode: "payment",
-    plan: "anticipada",
-    unitAmount: 210000,
-    charges: 1,
-    currency: "eur",
-    priceEnv: "STRIPE_PRICE_CURSO_ANTICIPADA",
-    until: EARLY_BIRD_UNTIL,
-  },
-  "curso-plazos": {
-    key: "curso-plazos",
-    courses: 1,
-    // Suscripción mensual que se corta sola tras el tercer cobro: Checkout no
-    // sabe hacer "cóbrame tres veces y para", así que el webhook la cancela
-    // cuando cuenta la tercera factura pagada.
+    course: "remote-professional",
+    // Suscripción mensual que se corta sola tras el último cobro: Checkout no
+    // sabe hacer "cóbrame cinco veces y para", así que el webhook la cancela
+    // cuando cuenta la última factura pagada.
     mode: "subscription",
     plan: "plazos",
-    // 3 × 730 € = 2.190 €: a plazos se paga más que al contado, así que en
-    // ningún sitio se anuncian como «sin intereses». Eran 3 × 800 €.
-    unitAmount: 73000,
-    charges: 3,
+    unitAmount: 19800,
+    charges: INSTALMENTS,
     currency: "eur",
-    priceEnv: "STRIPE_PRICE_CURSO_PLAZOS",
+    priceEnv: "STRIPE_PRICE_PROFESSIONAL_PLAZOS",
   },
-  "pack-dos": {
-    key: "pack-dos",
-    courses: 2,
+  "founder-unico": {
+    key: "founder-unico",
+    courses: 1,
+    course: "remote-founder",
     mode: "payment",
     plan: "unico",
-    // Precio de salida (noviembre de 2026) en pago único. Era 3.900 €. A
-    // plazos son 2.990 € (hasta 10 cuotas) y los cobra el equipo con un
-    // enlace de pago: el checkout de la web sólo hace los plazos de un curso.
-    unitAmount: 279000,
+    unitAmount: 149000,
     charges: 1,
     currency: "eur",
-    priceEnv: "STRIPE_PRICE_PACK_DOS",
+    priceEnv: "STRIPE_PRICE_FOUNDER_UNICO",
   },
+  "founder-plazos": {
+    key: "founder-plazos",
+    courses: 1,
+    course: "remote-founder",
+    mode: "subscription",
+    plan: "plazos",
+    unitAmount: 31800,
+    charges: INSTALMENTS,
+    currency: "eur",
+    priceEnv: "STRIPE_PRICE_FOUNDER_PLAZOS",
+  },
+};
+
+/**
+ * Las ofertas del programa de 14 módulos. NO se venden: no entran en
+ * ALL_OFFERS, así que el checkout las rechaza. Sólo las lee el webhook para
+ * los pedidos que ya existían.
+ */
+const LEGACY_OFFERS: Record<LegacyOfferKey, Offer> = {
+  "curso-unico": { key: "curso-unico", courses: 1, mode: "payment", plan: "unico", unitAmount: 199000, charges: 1, currency: "eur", priceEnv: "STRIPE_PRICE_CURSO_UNICO" },
+  "curso-anticipada": { key: "curso-anticipada", courses: 1, mode: "payment", plan: "anticipada", unitAmount: 210000, charges: 1, currency: "eur", priceEnv: "STRIPE_PRICE_CURSO_ANTICIPADA" },
+  "curso-plazos": { key: "curso-plazos", courses: 1, mode: "subscription", plan: "plazos", unitAmount: 73000, charges: 3, currency: "eur", priceEnv: "STRIPE_PRICE_CURSO_PLAZOS" },
+  "pack-dos": { key: "pack-dos", courses: 2, mode: "payment", plan: "unico", unitAmount: 279000, charges: 1, currency: "eur", priceEnv: "STRIPE_PRICE_PACK_DOS" },
 };
 
 // ── Cursos relámpago ──────────────────────────────────────
@@ -144,8 +167,16 @@ export function flashOffer(courseKey: string): Offer | undefined {
   return FLASH_OFFERS[`relampago-${courseKey}`];
 }
 
-/** Todas las ofertas que existen, del tipo que sean. */
+/** Todas las ofertas que se pueden comprar, del tipo que sean. */
 export const ALL_OFFERS: Record<string, Offer> = { ...OFFERS, ...FLASH_OFFERS };
+
+/**
+ * La oferta de un pedido ya hecho, también si es de las antiguas. Para el
+ * webhook: nunca para abrir un pago.
+ */
+export function orderOffer(key: string): Offer | null {
+  return ALL_OFFERS[key] ?? LEGACY_OFFERS[key as LegacyOfferKey] ?? null;
+}
 
 export function isOfferKey(v: unknown): v is OfferKey {
   return typeof v === "string" && v in ALL_OFFERS;
@@ -158,38 +189,26 @@ export function isOfferAvailable(offer: Offer, now: Date = new Date()): boolean 
   return now.getTime() <= new Date(offer.until).getTime();
 }
 
-/**
- * Las ofertas que se pueden comprar ahora mismo.
- *
- * Mientras la matrícula anticipada esté viva sustituye al pago único de un
- * curso: enseñar los dos a la vez sería pedirle a alguien que elija pagar 300 €
- * de más.
- */
+/** Las ofertas del programa que se pueden comprar ahora mismo. */
 export function availableOffers(now: Date = new Date()): Offer[] {
-  const early = isOfferAvailable(OFFERS["curso-anticipada"], now);
-  return [
-    early ? OFFERS["curso-anticipada"] : OFFERS["curso-unico"],
-    OFFERS["curso-plazos"],
-    OFFERS["pack-dos"],
-  ];
+  return Object.values(OFFERS).filter((o) => isOfferAvailable(o, now));
 }
 
 /**
  * Ofertas del programa largo. `availableOffers()` NO las incluye a propósito:
  * la pantalla de matrícula vende el programa, y colar ahí un curso de 75 €
- * junto a uno de 1.990 € sólo consigue que nadie entienda qué está comprando.
+ * junto a uno de 890 € sólo consigue que nadie entienda qué está comprando.
  */
 export function totalAmount(offer: Offer): number {
   return offer.unitAmount * offer.charges;
 }
 
 /**
- * Importe con el formato de cada idioma: 1.990 € / €1,990.
+ * Importe con el formato de cada idioma: 1.490 € / €1,490.
  *
  * `useGrouping: "always"` no es cosmético. En español, CLDR no agrupa los
- * números de cuatro cifras, así que por defecto salía "1990 €" mientras el
- * resto de la web —FAQ, bloque de precio, landings de curso— escribe
- * "1.990 €". Que la cifra cambie de aspecto justo en la pantalla de pago es
+ * números de cuatro cifras, así que por defecto salía "1490 €" mientras el
+ * resto —dosieres, condiciones, equipo comercial— escribe "1.490 €". Que la cifra cambie de aspecto justo en la pantalla de pago es
  * de las cosas que hacen dudar de si es el mismo importe.
  */
 export function formatAmount(cents: number, locale: string): string {

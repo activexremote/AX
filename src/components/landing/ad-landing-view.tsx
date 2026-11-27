@@ -11,7 +11,8 @@ import { AdClocks, AdFx, AdHeroVideo, AdLiveVideo, AdStickyBar } from "@/compone
 import { AdMap } from "@/components/landing/ad-map";
 import { RemoteCompanies } from "@/components/landing/ad-logos";
 import { DeelSeal, DeelSection, DeelTag } from "@/components/landing/deel";
-import { deelArea, deelCopy, type Camino } from "@/app/bienvenida/deel";
+import { deelCopy, deelWeek } from "@/app/bienvenida/deel";
+import { courseCopy } from "@/app/cursos/copy";
 import { adCopy } from "@/app/trabajo-remoto/copy";
 import { COHORT_START, STACK_TOOLS, WHATSAPP_NUMBER } from "@/app/trabajo-remoto/contact";
 import { landingCopy } from "@/app/bienvenida/copy";
@@ -576,8 +577,8 @@ export async function AdLandingView() {
       </section>
 
       {/* ── Temario, plegado ──────────────────────────── */}
-      {/* Los catorce módulos caben, pero desplegados son tres pantallas de
-          scroll en mitad del embudo. <details> enseña la estructura y deja el
+      {/* Las semanas de los dos cursos caben, pero desplegadas son varias
+          pantallas de scroll en mitad del embudo. <details> enseña la estructura y deja el
           detalle a un clic, sin JavaScript y sin sacar nada del HTML. */}
       <section id="temario" className="axr-ad__program axr-ad__section axr-ad__wrap">
         <div className="axr-ad__program-grid">
@@ -615,10 +616,12 @@ export async function AdLandingView() {
 
           <div data-reveal>
             <div className="axr-ad__program-panel" data-spot>
-              {c.program.groups.map((g, i) => {
-                const camino = (["core", "remote-professional", "remote-founder"] as Camino[])[i];
+              {c.program.tracks.map((g, i) => {
+                // Las semanas, de cursos/copy.ts: lo mismo que dicen la
+                // portada y la landing de cada curso.
+                const weeks = courseCopy[locale][g.slug].roadmap.weeks;
                 return (
-                <details key={g.name} className="axr-ad__fold" open={i === 0}>
+                <details key={g.slug} className="axr-ad__fold" open={i === 0}>
                   <summary>
                     <span>
                       <em>{g.tag}</em>
@@ -627,20 +630,23 @@ export async function AdLandingView() {
                     <span className="axr-ad__fold-sign" aria-hidden />
                   </summary>
                   <ol>
-                    {g.modules.map((m) => (
-                      <li key={m.n}>
-                        <span>{m.n}</span>
-                        <em className="axr-ad__fold-title">
-                          {m.title}
-                          {deelArea(camino, m.n, locale) ? (
-                            <>
-                              {" "}
-                              <DeelTag label={deelCopy[locale].tag} area={deelArea(camino, m.n, locale)} />
-                            </>
-                          ) : null}
-                        </em>
-                      </li>
-                    ))}
+                    {weeks.map((w) => {
+                      const area = deelWeek(g.slug, w.n, locale);
+                      return (
+                        <li key={w.n}>
+                          <span>{String(w.n).padStart(2, "0")}</span>
+                          <em className="axr-ad__fold-title">
+                            {w.title}
+                            {area ? (
+                              <>
+                                {" "}
+                                <DeelTag label={deelCopy[locale].tag} area={area} />
+                              </>
+                            ) : null}
+                          </em>
+                        </li>
+                      );
+                    })}
                   </ol>
                 </details>
                 );

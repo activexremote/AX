@@ -1,5 +1,4 @@
 import type { Locale } from "@/lib/i18n/config";
-import type { OfferKey } from "@/lib/stripe/catalog";
 
 // Copy del checkout. Separada de la landing porque aquí no se vende: se cobra.
 // El tono cambia — frases cortas, cero adjetivos y ninguna sorpresa sobre lo
@@ -14,9 +13,7 @@ export const checkoutCopy: Record<Locale, {
   courseHint: string;
   courses: { key: string; name: string; sub: string }[];
   offerLabel: string;
-  offers: Record<OfferKey, { name: string; detail: string; note?: string }>;
-  bothCourses: string;
-  earlyBadge: string;
+  offers: Record<"professional-unico" | "professional-plazos" | "founder-unico" | "founder-plazos", { name: string; detail: string; note?: string }>;
   totalLabel: string;
   dataLabel: string;
   firstName: string;
@@ -45,36 +42,34 @@ export const checkoutCopy: Record<Locale, {
   es: {
     meta: {
       title: "Matrícula",
-      description: "Formaliza tu matrícula en el programa de ActiveXRemote. Pago seguro con Stripe.",
+      description: "Formaliza tu matrícula en Remote Professional o Remote Founder. Pago seguro con Stripe.",
     },
     eyebrow: "Matrícula",
     title: "Reserva tu plaza.",
     lead: "Grupos de 25 plazas. Al confirmarse el pago recibes en tu email el acceso al campus virtual.",
 
-    courseLabel: "¿Qué camino haces?",
-    courseHint: "Los 7 módulos de núcleo común entran en los dos.",
+    courseLabel: "¿Qué curso haces?",
+    courseHint: "Remote Professional dura 8 semanas; Remote Founder, 13.",
     courses: [
-      { key: "remote-professional", name: "Remote Professional", sub: "Career Accelerator" },
-      { key: "remote-founder", name: "Remote Founder", sub: "Global Builder" },
+      { key: "remote-professional", name: "Remote Professional", sub: "8 semanas" },
+      { key: "remote-founder", name: "Remote Founder", sub: "13 semanas" },
     ],
 
     offerLabel: "¿Cómo prefieres pagarlo?",
     offers: {
-      "curso-unico": { name: "Pago único", detail: "Un curso, un solo cargo." },
-      "curso-anticipada": {
-        name: "Matrícula anticipada",
-        detail: "Un curso, un solo cargo.",
-        note: "Precio reducido hasta el 31 de octubre.",
+      "professional-unico": { name: "Pago único", detail: "Todo el curso en un solo cargo. Te ahorras 100 €." },
+      "professional-plazos": {
+        name: "5 plazos",
+        detail: "Cinco cargos mensuales de 198 € (990 € en total).",
+        note: "El primer cargo es hoy; los otros cuatro, el mismo día de los meses siguientes. Se detiene solo al quinto. Cada cargo lleva su factura.",
       },
-      "curso-plazos": {
-        name: "3 plazos",
-        detail: "Un curso. Tres cargos mensuales de 730 €.",
-        note: "El primer cargo es hoy; los otros dos, el mismo día de los dos meses siguientes. Se detiene solo al tercero.",
+      "founder-unico": { name: "Pago único", detail: "Todo el curso en un solo cargo. Te ahorras 100 €." },
+      "founder-plazos": {
+        name: "5 plazos",
+        detail: "Cinco cargos mensuales de 318 € (1.590 € en total).",
+        note: "El primer cargo es hoy; los otros cuatro, el mismo día de los meses siguientes. Se detiene solo al quinto. Cada cargo lleva su factura.",
       },
-      "pack-dos": { name: "Los dos caminos", detail: "Los 14 módulos completos de ambos cursos." },
     },
-    bothCourses: "Remote Professional + Remote Founder",
-    earlyBadge: "Precio anticipado",
     totalLabel: "Total",
 
     dataLabel: "Tus datos",
@@ -89,7 +84,7 @@ export const checkoutCopy: Record<Locale, {
     secure: "El pago lo procesa Stripe. No guardamos ni vemos los datos de tu tarjeta.",
 
     errors: {
-      missing_course: "Elige un camino.",
+      missing_course: "Elige un curso.",
       missing_offer: "Elige una forma de pago.",
       missing_fields: "Completa nombre, apellidos y email.",
       bad_email: "Revisa la dirección de email.",
@@ -121,7 +116,7 @@ export const checkoutCopy: Record<Locale, {
       inbox:
         "Te hemos enviado un email con el acceso al campus virtual. Si no lo ves en unos minutos, mira en spam.",
       instalmentsNote:
-        "Los otros dos plazos se cargarán automáticamente en la misma tarjeta, el mismo día de los dos meses siguientes.",
+        "Los otros cuatro plazos se cargarán automáticamente en la misma tarjeta, el mismo día de los meses siguientes.",
       campus: "Entrar al campus",
       home: "Volver a la portada",
       pendingTitle: "Estamos confirmando el pago.",
@@ -133,36 +128,34 @@ export const checkoutCopy: Record<Locale, {
   en: {
     meta: {
       title: "Enrolment",
-      description: "Complete your enrolment in the ActiveXRemote program. Secure payment with Stripe.",
+      description: "Complete your enrolment in Remote Professional or Remote Founder. Secure payment with Stripe.",
     },
     eyebrow: "Enrolment",
     title: "Reserve your seat.",
     lead: "Groups of 25 seats. Once the payment clears you get campus access in your inbox.",
 
-    courseLabel: "Which path are you taking?",
-    courseHint: "The 7 core modules are included in both.",
+    courseLabel: "Which course are you taking?",
+    courseHint: "Remote Professional runs for 8 weeks; Remote Founder for 13.",
     courses: [
-      { key: "remote-professional", name: "Remote Professional", sub: "Career Accelerator" },
-      { key: "remote-founder", name: "Remote Founder", sub: "Global Builder" },
+      { key: "remote-professional", name: "Remote Professional", sub: "8 weeks" },
+      { key: "remote-founder", name: "Remote Founder", sub: "13 weeks" },
     ],
 
     offerLabel: "How would you like to pay?",
     offers: {
-      "curso-unico": { name: "One payment", detail: "One course, a single charge." },
-      "curso-anticipada": {
-        name: "Early enrolment",
-        detail: "One course, a single charge.",
-        note: "Reduced price until October 31.",
+      "professional-unico": { name: "One payment", detail: "The whole course in a single charge. You save €100." },
+      "professional-plazos": {
+        name: "5 instalments",
+        detail: "Five monthly charges of €198 (€990 in total).",
+        note: "The first charge is today; the other four on the same day of the following months. It stops on its own after the fifth. Every charge comes with its invoice.",
       },
-      "curso-plazos": {
-        name: "3 instalments",
-        detail: "One course. Three monthly charges of €730.",
-        note: "The first charge is today; the other two on the same day of the following two months. It stops on its own after the third.",
+      "founder-unico": { name: "One payment", detail: "The whole course in a single charge. You save €100." },
+      "founder-plazos": {
+        name: "5 instalments",
+        detail: "Five monthly charges of €318 (€1,590 in total).",
+        note: "The first charge is today; the other four on the same day of the following months. It stops on its own after the fifth. Every charge comes with its invoice.",
       },
-      "pack-dos": { name: "Both paths", detail: "All 14 modules of both courses." },
     },
-    bothCourses: "Remote Professional + Remote Founder",
-    earlyBadge: "Early price",
     totalLabel: "Total",
 
     dataLabel: "Your details",
@@ -176,7 +169,7 @@ export const checkoutCopy: Record<Locale, {
     secure: "Payment is processed by Stripe. We never see or store your card details.",
 
     errors: {
-      missing_course: "Pick a path.",
+      missing_course: "Pick a course.",
       missing_offer: "Pick a payment option.",
       missing_fields: "Fill in your first name, last name and email.",
       bad_email: "Check the email address.",
@@ -208,7 +201,7 @@ export const checkoutCopy: Record<Locale, {
       inbox:
         "We've emailed you access to the virtual campus. If you don't see it in a few minutes, check your spam folder.",
       instalmentsNote:
-        "The other two instalments will be charged automatically to the same card, on the same day of the following two months.",
+        "The other four instalments will be charged automatically to the same card, on the same day of the following months.",
       campus: "Enter the campus",
       home: "Back to the homepage",
       pendingTitle: "We're confirming the payment.",

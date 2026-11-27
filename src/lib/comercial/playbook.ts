@@ -12,15 +12,14 @@
 //  script del PDF con Node, sin compilar.
 // ══════════════════════════════════════════════════════════
 
-import { calcularPlazos, euros, PLAZOS_MAX_DOS, PLAZOS_POR_DEFECTO, PRECIO_CONTADO, PRECIO_DOS_CONTADO, PRECIO_DOS_PLAZOS, PRECIO_PLAZOS, resumenPlazos } from "./precios.ts";
+import { calcularPlazos, euros, PLAZOS_POR_DEFECTO, PRODUCTOS, resumenPlazos } from "./precios.ts";
 
-const CONTADO = euros(PRECIO_CONTADO);
-const APLAZADO = euros(PRECIO_PLAZOS);
-const CUOTAS = resumenPlazos(calcularPlazos(PRECIO_PLAZOS, PLAZOS_POR_DEFECTO, "2027-01-01"));
-const AHORRO = euros(PRECIO_PLAZOS - PRECIO_CONTADO);
-const DOS = euros(PRECIO_DOS_CONTADO);
-const DOS_APLAZADO = euros(PRECIO_DOS_PLAZOS);
-const DOS_CUOTAS = resumenPlazos(calcularPlazos(PRECIO_DOS_PLAZOS, PLAZOS_MAX_DOS, "2027-01-01"));
+const P = PRODUCTOS.professional;
+const F = PRODUCTOS.founder;
+const cuotas = (p: typeof P) => resumenPlazos(calcularPlazos(p.plazos, PLAZOS_POR_DEFECTO, "2027-01-01"));
+/** «Professional: 890 € o 990 € a plazos · Founder: 1.490 € o 1.590 € a plazos». */
+const PRECIOS = `Remote Professional: ${euros(P.contado)} en pago único o ${euros(P.plazos)} a plazos (${cuotas(P)}) · Remote Founder: ${euros(F.contado)} en pago único o ${euros(F.plazos)} a plazos (${cuotas(F)})`;
+const AHORRO = euros(P.plazos - P.contado);
 
 export type Bloque =
   | { t: "p"; x: string }
@@ -79,14 +78,14 @@ export const PLAYBOOK: Seccion[] = [
           ["Idioma", "Clases en español · materiales en español e inglés"],
           ["Nivel previo", "Ninguno"],
           ["Si faltas a una clase", "Queda grabada en el campus, sin caducidad"],
-          ["Precio de salida", `${CONTADO} en pago único · ${APLAZADO} a plazos (por ejemplo, ${CUOTAS}) · los dos cursos, ${DOS} al contado o ${DOS_APLAZADO} a plazos (hasta en ${DOS_CUOTAS})`],
+          ["Precio", PRECIOS],
           ["Pago", "Con tarjeta, por Stripe · factura por cada pago"],
           ["Desistimiento", "14 días naturales (ver «Lo que nunca decimos»)"],
         ],
       },
       {
         t: "aviso",
-        x: `Los precios no están publicados en la web: se dan en la conversación, cuando la persona ya sabe qué le aporta el curso. Nunca los mandes en el primer mensaje sin contexto. A plazos se pagan ${AHORRO} más que al contado, con un curso y con los dos: nunca digas «sin intereses». Para calcular las cuotas y sus fechas, usa la calculadora del gestor.`,
+        x: `Los precios no están publicados en la web: se dan en la conversación, cuando la persona ya sabe qué le aporta el curso. Nunca los mandes en el primer mensaje sin contexto. A plazos se pagan ${AHORRO} más que al contado, en los dos cursos: nunca digas «sin intereses». Para calcular las cuotas y sus fechas, usa la calculadora del gestor.`,
       },
       {
         t: "p",
@@ -119,7 +118,7 @@ export const PLAYBOOK: Seccion[] = [
           { titulo: "¿Quieres trabajar para una empresa o para ti?", texto: "Si la respuesta es «para una empresa», es Remote Professional. Si es «para mí» o «tengo clientes», es Remote Founder." },
           { titulo: "¿Cobras hoy por horas?", texto: "Si es freelance y cobra por horas, Founder le enseña a salir de ese techo. Si quiere estabilidad y nómina, Professional." },
           { titulo: "¿No lo tiene claro?", texto: "Tranquilidad: la elección llega en el cuarto fin de semana y es reversible. Empieza por el núcleo común y decide con más información." },
-          { titulo: "¿Quiere los dos?", texto: `Los dos cursos juntos son ${DOS} al contado, o ${DOS_APLAZADO} a plazos, hasta en ${DOS_CUOTAS}. Ofrécelo solo si de verdad quiere ambos caminos.` },
+          { titulo: "¿Quiere los dos?", texto: `No hay precio de pack: cada curso se paga a su precio (${euros(P.contado)} y ${euros(F.contado)} al contado). Ofrécelo solo si de verdad quiere los dos.` },
         ],
       },
     ],
@@ -134,7 +133,7 @@ export const PLAYBOOK: Seccion[] = [
         x: [
           { titulo: "En directo, no un vídeo más", texto: "Cada módulo son 4 horas en vivo, con preguntas y ejercicio en clase. Y queda grabado, sin caducidad. Para quien ya ha abandonado algún curso online, es el argumento clave." },
           { titulo: "Sales con entregables, no con apuntes", texto: "Cada módulo termina en algo que usas al día siguiente: una lista de empresas objetivo, un guion de negociación, una página de servicios, un contrato de contractor." },
-          { titulo: "Acreditado por Deel", texto: "ActiveXRemote es Deel Platinum Partner y Deel Global Partner. 7 módulos están acreditados por Deel, la plataforma de nóminas y RR. HH. presente en más de 150 países. La acreditación aparece en el diploma." },
+          { titulo: "Acreditado por Deel", texto: "ActiveXRemote es Deel Platinum Partner y Deel Global Partner. Los contenidos de fiscalidad, compensación y contratación internacional de los dos cursos están acreditados por Deel, la plataforma de nóminas y RR. HH. presente en más de 150 países: semanas 4 a 7 en Professional y 11 y 12 en Founder. La acreditación aparece en el diploma." },
           { titulo: "Lo enseña gente que lo hace", texto: "Isaac R. Betanzos lleva más de 12 años levantando ecosistemas de venta directa y de canal en tecnología (Broadcom, Deel, Rossum AI), en seis continentes, y vive en Dubái." },
           { titulo: "Grupos de 25", texto: "No es un curso masivo. Te conocen por tu nombre y te corrigen el ejercicio." },
           { titulo: "La IA como ventaja", texto: "Se usa en todo el curso: para buscar empleo, preparar entrevistas, automatizar un negocio. Y el campus tiene un asistente con IA para las dudas." },
@@ -230,7 +229,7 @@ export const PLAYBOOK: Seccion[] = [
           { titulo: "Encuentra la duda real", texto: "«Se lo está pensando» casi nunca es la duda real. Pregunta: «¿Qué es lo que te frena: las fechas, el precio o saber si es para ti?» Con la duda concreta, se puede trabajar." },
           { titulo: "Conecta con su caso, no con el temario", texto: "Elige el módulo que resuelve su problema y cuéntaselo: «Me dijiste que te da miedo la fiscalidad si te vas a Portugal; el módulo 2 compara tu situación con tres destinos.»" },
           { titulo: "Haz visible el coste de no hacer nada", texto: "Sin dramatizar: «Si sigues buscando como hasta ahora, ¿cuánto tiempo más crees que tardarás?» Que lo diga la otra persona." },
-          { titulo: "Quita riesgo", texto: `Pago a plazos (${CUOTAS}). Clases grabadas si falta a alguna. La elección de camino es reversible. 14 días de desistimiento según las condiciones.` },
+          { titulo: "Quita riesgo", texto: `Pago a plazos (${cuotas(P)} en Professional, ${cuotas(F)} en Founder). Clases grabadas si falta a alguna. La elección de camino es reversible. 14 días de desistimiento según las condiciones.` },
           { titulo: "Dale espacio, con fecha", texto: "«Piénsalo con calma. ¿Te escribo el viernes y me dices?» Y escríbele el viernes. El seguimiento sin fecha se pierde." },
         ],
       },
@@ -248,7 +247,7 @@ export const PLAYBOOK: Seccion[] = [
       {
         t: "objeciones",
         x: [
-          { dice: "Es caro.", piensa: "No sé si me lo voy a devolver.", responde: `Compáralo con lo que busca: un sueldo internacional o el primer cliente de fuera. Son 56 h en directo con grupos de 25, entregables y acceso sin caducidad. Si el problema es pagarlo de golpe: a plazos, ${APLAZADO} en total (${CUOTAS}). Si puede pagarlo de una vez, ${CONTADO} y se ahorra ${AHORRO}.` },
+          { dice: "Es caro.", piensa: "No sé si me lo voy a devolver.", responde: `Compáralo con lo que busca: un sueldo internacional o el primer cliente de fuera. Son 56 h en directo con grupos de 25, entregables y acceso sin caducidad. Si el problema es pagarlo de golpe, hay 5 cuotas: ${cuotas(P)} en Professional o ${cuotas(F)} en Founder. Si puede pagarlo de una vez, se ahorra ${AHORRO}.` },
           { dice: "No tengo tiempo.", piensa: "Me da miedo no poder seguirlo.", responde: "Son los fines de semana: 8 h de clase y 2 – 3 h de ejercicio por semana, durante 7 semanas. Si falta a una clase, queda grabada. ¿Qué fin de semana te preocupa?" },
           { dice: "Me lo pienso.", piensa: "Hay algo que no me has resuelto.", responde: "«Claro. ¿Qué es lo que más te hace dudar?» Y trabaja esa duda. Cierra con fecha: «¿Te escribo el viernes?»" },
           { dice: "Lo puedo aprender gratis en YouTube.", piensa: "No veo la diferencia.", responde: "Es verdad que la información está. Lo que no está es el orden, el feedback sobre tu ejercicio, las preguntas en directo y un grupo que avanza contigo. ¿Cuánto tiempo llevas aprendiendo así?" },
@@ -295,7 +294,7 @@ export const PLAYBOOK: Seccion[] = [
       },
       {
         t: "p",
-        x: `Cuando alguien dice sí: confirma el curso, la forma de pago (${CONTADO} en pago único o ${APLAZADO} a plazos, con las cuotas de la calculadora) y los datos de factura, márcalo como inscrito en Zoho y avisa al equipo, que le envía el enlace de pago seguro. La matrícula se cierra hablando con el equipo: hoy la web no vende directamente.`,
+        x: `Cuando alguien dice sí: confirma el curso, la forma de pago (${PRECIOS}; las fechas de las cuotas, en la calculadora) y los datos de factura, márcalo como inscrito en Zoho y avisa al equipo, que le envía el enlace de pago seguro. La matrícula se cierra hablando con el equipo: hoy la web no vende directamente.`,
       },
     ],
   },
@@ -316,7 +315,7 @@ export const PLAYBOOK: Seccion[] = [
           "«Curso». Siempre «curso».",
           "Cifras reales y con fuente: «56 h en directo», «grupos de 25».",
           "«Especialista en Remote Business».",
-          "«Deel Platinum Partner y Deel Global Partner. 7 módulos acreditados por Deel.»",
+          "«Deel Platinum Partner y Deel Global Partner. Contenidos acreditados por Deel en los dos cursos.»",
           "«Queda grabada» y «acceso sin caducidad».",
           "Tú, siempre. Frases cortas.",
         ],
@@ -326,7 +325,7 @@ export const PLAYBOOK: Seccion[] = [
           "Testimonios, valoraciones o número de alumnos: aún no tenemos datos publicables.",
           "Nombres de docentes que no estén confirmados.",
           "Precios de Deel, que Deel es exclusivo nuestro, o productos de Deel que no ha anunciado.",
-          `Descuentos, becas u ofertas que no existan. Un curso: ${CONTADO} o ${APLAZADO} a plazos; los dos: ${DOS} o ${DOS_APLAZADO} a plazos.`,
+          `Descuentos, becas u ofertas que no existan. ${PRECIOS}.`,
           "«Sin intereses»: a plazos siempre se paga más.",
           "Urgencia falsa: «últimas plazas» sin el número real.",
           "«Líder», «el mejor», «número 1».",

@@ -44,10 +44,11 @@ export default async function CheckoutPage({
   const offers: OfferView[] = !CHECKOUT_OPEN ? [] : availableOffers().map((o) => ({
     key: o.key,
     courses: o.courses,
+    course: o.course,
     amount: formatAmount(o.unitAmount, locale),
     total: formatAmount(totalAmount(o), locale),
     charges: o.charges,
-    early: o.plan === "anticipada",
+    plan: o.plan,
   }));
 
   return (

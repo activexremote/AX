@@ -26,7 +26,8 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { MATERIAL, type MaterialId } from "../src/lib/comercial/material.ts";
-import { DEEL_BADGES, deelCopy } from "../src/app/bienvenida/deel.ts";
+import { DEEL_BADGES, deelCopy, deelWeek, deelWeeks } from "../src/app/bienvenida/deel.ts";
+import { courseCopy } from "../src/app/cursos/copy.ts";
 import { CATEGORIES, COURSE_CATEGORIES, TOOLS } from "../src/app/bienvenida/tools.ts";
 import { TOOL_ICONS } from "../src/components/landing/tool-icons.ts";
 import { funnelCopy, modelCopy } from "../src/app/cursos/signature.ts";
@@ -308,12 +309,21 @@ function campusMovil() {
 }
 
 function deel(camino?: "professional" | "founder") {
-  const grupos = DEEL.groups.filter((g) => !camino || g.camino === "core" || g.camino === `remote-${camino}`);
+  // Formato 2.0: semanas acreditadas por curso (deel.ts → SEMANAS_DEEL).
+  const grupos = (["remote-professional", "remote-founder"] as const)
+    .filter((slug) => !camino || slug === `remote-${camino}`)
+    .map((slug) => ({
+      name: courseCopy.es[slug].hero.eyebrow.split(" · ")[0],
+      modules: deelWeeks(slug).map((n) => ({
+        n: `S${n}`,
+        title: `${courseCopy.es[slug].roadmap.weeks.find((w) => w.n === n)?.title ?? ""} · ${deelWeek(slug, n, "es") ?? ""}`,
+      })),
+    }));
   return slide(`
     <div class="deel">
       <div>
         ${kicker("Acreditación")}
-        <h2>${camino ? `${grupos.reduce((s, g) => s + g.modules.length, 0)} módulos de tu curso, acreditados por Deel.` : esc(DEEL.title)}</h2>
+        <h2>${camino ? `${grupos.reduce((s, g) => s + g.modules.length, 0)} semanas de tu curso con contenidos acreditados por Deel.` : esc(DEEL.title)}</h2>
         <p class="lead lead--corto">${esc(DEEL.short.body)}</p>
         <div class="deel__ganas">${DEEL.gains.map((g) => `<div><strong>${esc(g.title)}</strong><p>${esc(g.body)}</p></div>`).join("")}</div>
       </div>

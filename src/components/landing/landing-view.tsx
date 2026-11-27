@@ -4,7 +4,7 @@ import { BrandMark } from "@/components/brand-mark";
 import { SlackLogo } from "@/components/slack-logo";
 import { PartnerSection, PartnerStrip } from "@/components/landing/partners";
 import { DeelSeal, DeelSection, DeelTag } from "@/components/landing/deel";
-import { deelCopy, deelHomeCopy, deelWeek } from "@/app/bienvenida/deel";
+import { deelCopy, deelWeek } from "@/app/bienvenida/deel";
 import { courseCopy } from "@/app/cursos/copy";
 import { LandingNav } from "@/components/landing/landing-nav";
 import { RatingBadges } from "@/components/landing/rating-badges";
@@ -133,7 +133,7 @@ export async function LandingView() {
           {/* Dentro de la columna del texto y no a todo el ancho del héroe:
               la columna del formulario es más alta, así que aquí hay hueco
               de sobra y la tira no le suma ni un píxel al alto del héroe. */}
-          <DeelSeal sub={deelHomeCopy[locale].seal} />
+          <DeelSeal />
           <PartnerStrip tone="dark" />
         </div>
 
@@ -171,7 +171,7 @@ export async function LandingView() {
       {/* ── Deel ────────────────────────────────────── */}
       {/* Justo después del tamaño del programa: es el respaldo más fuerte que
           tiene y tiene que verse antes de elegir camino. */}
-      <DeelSection cursos />
+      <DeelSection />
 
       <section id="caminos" className="axr-lp__paths">
         <header className="axr-lp__paths-head">

@@ -55,6 +55,10 @@ export async function startCheckout(formData: FormData): Promise<CheckoutResult>
 
   if (relampago) {
     courses = [relampago.key as DbCourseKey];
+  } else if (offer.course) {
+    // Formato 2.0: cada curso tiene su precio, así que la oferta ya dice qué
+    // curso es. Se ignora lo que llegue en el formulario.
+    courses = [offer.course];
   } else if (offer.courses === 2) {
     courses = ["remote-professional", "remote-founder"];
   } else {
@@ -171,7 +175,7 @@ async function getOrigin() {
  * nada de lo que se cobra.
  *
  * ── Por qué aquí NO se pide el email antes ────────────────
- * En el checkout del programa sí se pide, y con razón: son 1.990 €, la
+ * En el checkout del programa sí se pide, y con razón: son 890 € o más, la
  * decisión es larga y quien abandona a mitad es alguien a quien llamar.
  *
  * Un relámpago de 75 € se compra por impulso desde un anuncio. Meter tres
@@ -194,7 +198,7 @@ export async function startDirectCheckout(offerKey: string): Promise<CheckoutRes
   if (!isOfferAvailable(offer)) return { error: "offer_expired" };
 
   // Sólo los relámpago. El programa largo tiene su propio embudo y su
-  // formulario, y colar aquí una compra de 1.990 € sin recoger un dato sería
+  // formulario, y colar aquí una compra de 890 € sin recoger un dato sería
   // regalar el peor de los dos mundos.
   const relampago = offerKey.startsWith("relampago-")
     ? flashByKey(offerKey.slice("relampago-".length))
