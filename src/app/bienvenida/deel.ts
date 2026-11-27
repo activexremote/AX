@@ -65,7 +65,7 @@ export function deelArea(camino: Camino, n: string, locale: Locale): string | nu
 // acreditada va a la semana donde ha ido a parar su contenido; el núcleo
 // común (02, 03, 07) se reparte entre las dos.
 // ⚠︎ Pendiente de que Deel confirme el nuevo reparto.
-type Curso = Exclude<Camino, "core">;
+export type Curso = Exclude<Camino, "core">;
 
 const SEMANAS_DEEL: Record<Curso, Record<number, { es: string; en: string }>> = {
   "remote-professional": {
@@ -104,6 +104,35 @@ export const deelCourseCopy: Record<Locale, { seal: (n: number) => string; title
     lead: "Deel, the platform thousands of companies use to hire, pay and manage teams worldwide, has reviewed and accredited what you learn about contracts, tax, compensation and international hiring.",
     weekLabel: "Week",
     listTitle: "Where you cover it",
+  },
+};
+
+/**
+ * La sección de Deel de la home en el formato 2.0: lo que cambia respecto a
+ * deelCopy (que aún usan la landing de campaña y el dry run, con el programa
+ * antiguo). El boilerplate, los badges y las reglas son los mismos.
+ */
+export const deelHomeCopy: Record<
+  Locale,
+  { seal: string; title: string; lead: string; stat: { value: string; label: string }; listTitle: string; gain: { title: string; body: string }; note: string }
+> = {
+  es: {
+    seal: "Contenidos acreditados en los dos cursos",
+    title: "Contenidos de los dos cursos, acreditados por Deel.",
+    lead: "Deel, la plataforma con la que miles de empresas contratan, pagan y gestionan equipos en todo el mundo, ha revisado y acreditado lo que aprendes sobre fiscalidad, reubicación, contratación internacional, compensación y compliance. Lo que aprendes ahí es cómo se hace de verdad.",
+    stat: { value: String(Object.keys(SEMANAS_DEEL["remote-professional"]).length + Object.keys(SEMANAS_DEEL["remote-founder"]).length), label: "semanas con contenidos acreditados" },
+    listTitle: "Dónde lo trabajas",
+    gain: { title: "Acreditación en tu diploma", body: "Tu diploma indica qué contenidos que has superado están acreditados por Deel." },
+    note: "Deel y sus badges de partner son marcas de Deel y se usan con su permiso. Deel acredita los contenidos indicados; el diploma lo emite ActiveXRemote y es una certificación privada de empresa, no un título oficial ni un grado universitario.",
+  },
+  en: {
+    seal: "Accredited content in both courses",
+    title: "Content from both courses, accredited by Deel.",
+    lead: "Deel, the platform thousands of companies use to hire, pay and manage teams worldwide, has reviewed and accredited what you learn about tax, relocation, international hiring, compensation and compliance. What you learn there is how it is really done.",
+    stat: { value: String(Object.keys(SEMANAS_DEEL["remote-professional"]).length + Object.keys(SEMANAS_DEEL["remote-founder"]).length), label: "weeks of accredited content" },
+    listTitle: "Where you cover it",
+    gain: { title: "Accreditation on your diploma", body: "Your diploma shows which of the content you passed is accredited by Deel." },
+    note: "Deel and its partner badges are trademarks of Deel, used with permission. Deel accredits the content listed; the diploma is issued by ActiveXRemote and is a private company certification, not an official qualification or a university degree.",
   },
 };
 

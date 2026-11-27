@@ -4,7 +4,8 @@ import { BrandMark } from "@/components/brand-mark";
 import { SlackLogo } from "@/components/slack-logo";
 import { PartnerSection, PartnerStrip } from "@/components/landing/partners";
 import { DeelSeal, DeelSection, DeelTag } from "@/components/landing/deel";
-import { deelArea, deelCopy, type Camino } from "@/app/bienvenida/deel";
+import { deelCopy, deelHomeCopy, deelWeek } from "@/app/bienvenida/deel";
+import { courseCopy } from "@/app/cursos/copy";
 import { LandingNav } from "@/components/landing/landing-nav";
 import { RatingBadges } from "@/components/landing/rating-badges";
 import { LandingFooter } from "@/components/landing/landing-footer";
@@ -132,7 +133,7 @@ export async function LandingView() {
           {/* Dentro de la columna del texto y no a todo el ancho del héroe:
               la columna del formulario es más alta, así que aquí hay hueco
               de sobra y la tira no le suma ni un píxel al alto del héroe. */}
-          <DeelSeal />
+          <DeelSeal sub={deelHomeCopy[locale].seal} />
           <PartnerStrip tone="dark" />
         </div>
 
@@ -170,7 +171,7 @@ export async function LandingView() {
       {/* ── Deel ────────────────────────────────────── */}
       {/* Justo después del tamaño del programa: es el respaldo más fuerte que
           tiene y tiene que verse antes de elegir camino. */}
-      <DeelSection />
+      <DeelSection cursos />
 
       <section id="caminos" className="axr-lp__paths">
         <header className="axr-lp__paths-head">
@@ -214,7 +215,7 @@ export async function LandingView() {
       {/* ── Cursos relámpago ────────────────────────── */}
       {/* Una banda, no una sección: dos líneas de texto y una tira con el
           curso debajo. Es una salida lateral para quien no está listo para
-          un programa de 14 semanas, y una salida lateral no puede ocupar
+          un curso de 8 o 13 semanas, y una salida lateral no puede ocupar
           una pantalla entera en medio de la página que vende el programa.
 
           Todo lo demás —qué es un relámpago, el ciclo, la comparación— está
@@ -316,84 +317,66 @@ export async function LandingView() {
         </div>
       </section>
 
-      {/* ── Currículo (14 módulos) ──────────────────── */}
+      {/* ── Programa: los dos recorridos ─────────────── */}
+      {/* Formato 2.0: cada curso con sus semanas, sacadas de cursos/copy.ts
+          para que la home y la landing de curso digan lo mismo. Se ven las
+          fases; las semanas, quien las despliega. <details> lo resuelve sin
+          JavaScript y el contenido sigue en el HTML para buscadores y
+          lectores de pantalla. */}
       <section id="modulos" className="axr-lp__curriculum">
         <header className="axr-lp__curriculum-head">
           <span className="axr-lp__eyebrow">{c.curriculum.eyebrow}</span>
           <h2>{c.curriculum.title}</h2>
           <p>{c.curriculum.lead}</p>
         </header>
-        {/* Los 14 módulos desplegados eran varias pantallas de scroll en
-            mitad del embudo. Se ve la estructura —dos fases, siete y siete— y
-            el detalle se despliega quien lo quiera. <details> lo resuelve sin
-            JavaScript, y el contenido sigue estando en el HTML para quien lo
-            lee sin abrirlo: un buscador o un lector de pantalla. */}
-        <details className="axr-lp__curriculum-fold">
-          {/* <summary> sólo admite contenido de frase y un encabezado: de ahí
-              que el tag y el enlace sean <span> y el título un <h3> suelto,
-              en vez de envolverlo todo en un <div>. */}
-          <summary>
-            <span className="axr-lp__phase-tag">{c.curriculum.coreTag}</span>
-            <h3>{c.curriculum.coreName}</h3>
-            <span className="axr-lp__curriculum-more">
-              {c.curriculum.coreToggle}
-              <span className="axr-lp__faq-sign" aria-hidden />
-            </span>
-          </summary>
-          <ol className="axr-lp__curriculum-grid">
-            {c.curriculum.modules.map((m) => (
-              <li key={m.n} className="axr-lp__module">
-                <span className="axr-lp__module-n">{m.n}</span>
-                <div>
-                  <strong>{m.title}</strong>
-                  <p>{m.desc}</p>
-                  {deelArea("core", m.n, locale) ? <DeelTag label={deelCopy[locale].tag} area={deelArea("core", m.n, locale)} /> : null}
-                </div>
-              </li>
-            ))}
-          </ol>
-        </details>
-
-        {/* Fase 2: los 7 módulos propios de cada curso. */}
-        <div className="axr-lp__curriculum-phase axr-lp__curriculum-phase--tracks">
-          <span className="axr-lp__phase-tag">{c.curriculum.tracksTag}</span>
-          <h3>{c.curriculum.tracksTitle}</h3>
-        </div>
         <div className="axr-lp__tracks">
-          {c.curriculum.tracks.map((track, i) => (
-            <article key={track.name} className="axr-lp__track" data-variant={i}>
-              <header className="axr-lp__track-head">
-                <span className="axr-lp__track-tag">{track.tag}</span>
-                <h4>{track.name}</h4>
-              </header>
-              <details className="axr-lp__curriculum-fold">
-                <summary>
-                  <span className="axr-lp__curriculum-more">
-                    {c.curriculum.trackToggle}
-                    <span className="axr-lp__faq-sign" aria-hidden />
-                  </span>
-                </summary>
-                <ol className="axr-lp__track-modules">
-                  {track.modules.map((m) => (
-                    <li key={m.n}>
-                      <span className="axr-lp__track-n">{m.n}</span>
-                      <div>
-                        <strong>{m.title}</strong>
-                        <p>{m.desc}</p>
-                        {deelArea(track.href.split("/").pop() as Camino, m.n, locale) ? (
-                          <DeelTag label={deelCopy[locale].tag} area={deelArea(track.href.split("/").pop() as Camino, m.n, locale)} tone="dark" />
-                        ) : null}
-                      </div>
+          {c.curriculum.tracks.map((track, i) => {
+            const course = courseCopy[locale][track.slug];
+            return (
+              <article key={track.slug} className="axr-lp__track" data-variant={i}>
+                <header className="axr-lp__track-head">
+                  <span className="axr-lp__track-tag">{track.tag}</span>
+                  <h4>{course.hero.eyebrow.split(" · ")[0]}</h4>
+                  <p className="axr-lp__track-duration">{track.duration}</p>
+                </header>
+                <ol className="axr-lp__track-phases">
+                  {course.roadmap.phases.map((ph) => (
+                    <li key={ph.name}>
+                      <strong>{ph.name}</strong>
+                      <span>{ph.weeks}</span>
                     </li>
                   ))}
                 </ol>
-              </details>
-              <LocaleLink href={track.href} className="axr-lp__track-cta">
-                {c.curriculum.trackCta}
-                <span aria-hidden>→</span>
-              </LocaleLink>
-            </article>
-          ))}
+                <details className="axr-lp__curriculum-fold">
+                  <summary>
+                    <span className="axr-lp__curriculum-more">
+                      {track.toggle}
+                      <span className="axr-lp__faq-sign" aria-hidden />
+                    </span>
+                  </summary>
+                  <ol className="axr-lp__track-modules">
+                    {course.roadmap.weeks.map((w) => {
+                      const area = deelWeek(track.slug, w.n, locale);
+                      return (
+                        <li key={w.n}>
+                          <span className="axr-lp__track-n">{String(w.n).padStart(2, "0")}</span>
+                          <div>
+                            <strong>{w.title}</strong>
+                            <p>{w.milestone}</p>
+                            {area ? <DeelTag label={deelCopy[locale].tag} area={area} /> : null}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </details>
+                <LocaleLink href={track.href} className="axr-lp__track-cta">
+                  {c.curriculum.trackCta}
+                  <span aria-hidden>→</span>
+                </LocaleLink>
+              </article>
+            );
+          })}
         </div>
       </section>
 

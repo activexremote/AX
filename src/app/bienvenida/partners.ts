@@ -96,7 +96,7 @@ const es: PartnerCopy = {
   // El diploma sigue siendo lo que es, y eso no lo cambia tener acuerdos:
   // estos partners no acreditan el programa. Quien acredita módulos es Deel,
   // y eso tiene su propia sección (bienvenida/deel.ts).
-  note: "Cada marca es propiedad de su compañía. Estos partners aportan beneficios y condiciones para nuestros alumnos, pero no acreditan el programa ni emiten el diploma: lo emite ActiveXRemote detallando los módulos superados, y es una certificación privada de empresa, no un título oficial ni un grado universitario.",
+  note: "Cada marca es propiedad de su compañía. Estos partners aportan beneficios y condiciones para nuestros alumnos, pero no acreditan el programa ni emiten el diploma: lo emite ActiveXRemote, y es una certificación privada de empresa, no un título oficial ni un grado universitario.",
 };
 
 const en: PartnerCopy = {
@@ -109,7 +109,7 @@ const en: PartnerCopy = {
     quantum:         { area: "Mindset & Performance", desc: "Trains the head to sustain the change, not just the technique." },
   },
   benefitLabel: "Student benefit",
-  note: "Each brand belongs to its own company. These partners provide benefits and conditions for our students, but they do not accredit the programme or issue the diploma: ActiveXRemote issues it, listing the modules passed, and it is a private company certification, not an official qualification or a university degree.",
+  note: "Each brand belongs to its own company. These partners provide benefits and conditions for our students, but they do not accredit the programme or issue the diploma: ActiveXRemote issues it, and it is a private company certification, not an official qualification or a university degree.",
 };
 
 export const partnerCopy: Record<Locale, PartnerCopy> = { es, en };

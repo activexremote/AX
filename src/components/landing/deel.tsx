@@ -1,6 +1,7 @@
 import Image from "next/image";
 
-import { DEEL_BADGES, DEEL_URL, deelArea, deelCopy, deelCourseCopy } from "@/app/bienvenida/deel";
+import { DEEL_BADGES, DEEL_URL, deelArea, deelCopy, deelCourseCopy, deelHomeCopy, deelWeek, deelWeeks } from "@/app/bienvenida/deel";
+import { courseCopy } from "@/app/cursos/copy";
 import { getLocale } from "@/lib/i18n/server";
 import "@/components/landing/deel.scss";
 
@@ -49,9 +50,38 @@ export function DeelTag({ label, area, tone = "light" }: { label: string; area?:
   );
 }
 
-export async function DeelSection() {
+/**
+ * La sección entera. Con `cursos` (la home), habla del formato 2.0: las
+ * semanas acreditadas de cada curso, con su título sacado de cursos/copy.ts.
+ * Sin él, el programa antiguo por módulos (landing de campaña).
+ */
+export async function DeelSection({ cursos = false }: { cursos?: boolean } = {}) {
   const locale = await getLocale();
-  const c = deelCopy[locale];
+  const base = deelCopy[locale];
+  const h = deelHomeCopy[locale];
+  const c = cursos
+    ? {
+        ...base,
+        title: h.title,
+        lead: h.lead,
+        stats: [h.stat, ...base.stats.slice(1)],
+        modulesTitle: h.listTitle,
+        gains: [...base.gains.slice(0, 2), h.gain],
+        note: h.note,
+      }
+    : base;
+  const weekGroups = (["remote-professional", "remote-founder"] as const).map((slug) => {
+    const course = courseCopy[locale][slug];
+    return {
+      slug,
+      name: course.hero.eyebrow.split(" · ")[0],
+      weeks: deelWeeks(slug).map((n) => ({
+        n,
+        title: course.roadmap.weeks.find((w) => w.n === n)?.title ?? "",
+        area: deelWeek(slug, n, locale) ?? "",
+      })),
+    };
+  });
 
   return (
     <section id="deel" className="axr-deel">
@@ -90,7 +120,25 @@ export async function DeelSection() {
 
           <div className="axr-deel__modules">
             <h3>{c.modulesTitle}</h3>
-            {c.groups.map((g) => (
+            {cursos && weekGroups.map((g) => (
+              <div key={g.slug} className="axr-deel__group" data-camino={g.slug}>
+                <span className="axr-deel__group-name">{g.name}</span>
+                <ol>
+                  {g.weeks.map((w) => (
+                    <li key={`${g.slug}-${w.n}`}>
+                      <span className="axr-deel__n">{String(w.n).padStart(2, "0")}</span>
+                      <span className="axr-deel__m">
+                        <strong>
+                          {deelCourseCopy[locale].weekLabel} {w.n} · {w.title}
+                        </strong>
+                        <span className="axr-deel__area">{w.area}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            ))}
+            {!cursos && c.groups.map((g) => (
               <div key={g.camino} className="axr-deel__group" data-camino={g.camino}>
                 <span className="axr-deel__group-name">{g.name}</span>
                 <ol>
