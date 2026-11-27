@@ -47,6 +47,7 @@
     &:hover, &:focus-visible { transform: translateY(-3px); border-color: #f2f1fa; }
     &--both { background: linear-gradient(140deg, rgba(91, 75, 245, 0.35), rgba(228, 70, 47, 0.25)); }
     &--class { background: linear-gradient(140deg, rgba(91, 75, 245, 0.45), rgba(23, 21, 42, 0.9)); }
+    &--master { background: linear-gradient(140deg, rgba(245, 184, 65, 0.3), rgba(228, 70, 47, 0.25)); }
   }
 
   &__tag { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #f2f1fa !important; opacity: 0.75; }
