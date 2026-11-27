@@ -4326,3 +4326,36 @@ $axr-tool-cats:
     color: var(--lp-body);
   }
 }
+
+// ── Programa 2.0: duración y fases de cada curso ────────
+.axr-lp__track-duration {
+  margin: 0.35rem 0 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--lp-body);
+}
+
+.axr-lp__track-phases {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: var(--lp-radius-sm);
+    background: var(--lp-soft);
+  }
+  strong { font-size: 0.9375rem; font-weight: 700; letter-spacing: -0.01em; }
+  span { flex: none; font-size: 0.8125rem; color: var(--lp-body); }
+}
+
+.axr-lp__track-modules .axr-deel-tag { margin-top: 0.4rem; }
+// Dentro de la tarjeta el plegable ocupa todo el ancho (la tarjeta es flex en
+// columna y, con margin auto, se encogía y se centraba).
+.axr-lp__track .axr-lp__curriculum-fold { width: 100%; margin: 0; }
